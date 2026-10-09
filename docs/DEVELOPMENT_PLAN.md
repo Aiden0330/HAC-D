@@ -354,3 +354,5 @@ Known gaps and next steps:
 - Inference workloads are not simulated by the Monte Carlo module (training only).
 - The CCF treatment in the closed forms is conservative (β·Σλ over all domain instances); the simulator uses blast radii.
 - Library records are not yet editable from the UI beyond "use as rate"; adding records goes through the `add-parameter` skill.
+
+- 2026-10-09: v2 enhancement proposal (Ascend topology, dual-path MTTR, sub-health, original vs compensated, switchover, Excel import) in `PLAN_V2_AVAILABILITY_ENHANCEMENTS.md`.
