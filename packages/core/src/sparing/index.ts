@@ -2,7 +2,7 @@
  * Spare sizing (survey §6.3): Binomial P-quantile (ByteRobust), Poisson blocked
  * probability and quantile (Meta Sparing), in-repair pipeline with turnaround.
  */
-import { binomQuantile, binomCdf, poissonCdf, poissonQuantile, logChoose } from '../math/special.js';
+import { binomQuantile, binomCdf, poissonSf, poissonQuantile, logChoose } from '../math/special.js';
 
 /** ByteRobust: K ~ Binomial(N, p_daily); hot spares = smallest k with P(K ≤ k) ≥ q. */
 export function hotSparesBinomial(nMachines: number, pDaily: number, quantile = 0.99): number {
@@ -22,7 +22,7 @@ export function hotSparesPoisson(nUnits: number, lambdaPerHour: number, mttrHour
 /** Meta Sparing Poisson approximation: Pr(blocked) ≈ 1 − Σ_{n≤R} m^n/n!·e^{−m}, m = L·MTTR/MTBF. */
 export function blockedProbabilityPoisson(blocksL: number, mttrHours: number, mtbfHours: number, sparesR: number): number {
   const m = (blocksL * mttrHours) / mtbfHours;
-  return Math.max(0, 1 - poissonCdf(m, sparesR));
+  return poissonSf(m, sparesR);
 }
 
 /** Meta Sparing exact form: Pr(blocked) = 1 − (1 + MTTR/MTBF)^{−L} Σ_{n≤R} C(L,n)(MTTR/MTBF)^n. */
@@ -34,7 +34,11 @@ export function blockedProbabilityBinomial(blocksL: number, mttrHours: number, m
 
 /** Smallest R such that the Poisson blocked probability ≤ target. */
 export function sparesForBlockedTarget(blocksL: number, mttrHours: number, mtbfHours: number, targetBlocked: number): number {
-  return poissonQuantile((blocksL * mttrHours) / mtbfHours, 1 - targetBlocked);
+  const m = (blocksL * mttrHours) / mtbfHours;
+  let R = Math.max(0, Math.floor(m) - 1);
+  while (poissonSf(m, R) > targetBlocked * (1 + 1e-9) && R < 1e7) R++;
+  while (R > 0 && poissonSf(m, R - 1) <= targetBlocked * (1 + 1e-9)) R--;
+  return R;
 }
 
 export interface PipelineSpares {

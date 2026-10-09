@@ -120,6 +120,23 @@ export function poissonCdf(mu: number, k: number): number {
   return Math.min(1, s);
 }
 
+/** P(X > k) for X ~ Poisson(mu), summed directly over the upper tail (accurate for tiny tails). */
+export function poissonSf(mu: number, k: number): number {
+  if (mu <= 0) return 0;
+  if (k < 0) return 1;
+  if (k < mu) return Math.max(0, 1 - poissonCdf(mu, k));
+  let lp = -mu + (k + 1) * Math.log(mu) - lgamma(k + 2); // log pmf at k+1
+  let term = Math.exp(lp);
+  let s = term;
+  let i = k + 1;
+  while (term > s * 1e-18 && i < k + 100000) {
+    i++;
+    term *= mu / i;
+    s += term;
+  }
+  return Math.min(1, s);
+}
+
 /** Smallest k with P(X ≤ k) ≥ q, X ~ Poisson(mu). */
 export function poissonQuantile(mu: number, q: number): number {
   if (mu <= 0 || q <= 0) return 0;

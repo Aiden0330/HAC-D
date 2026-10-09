@@ -11,3 +11,5 @@ export * from './allocation/index.js';
 export * from './sensitivity/index.js';
 export * from './cost/index.js';
 export * from './scenario/index.js';
+export * from './mc/index.js';
+export * from './mc/fromScenario.js';
