@@ -57,7 +57,7 @@ export function ScenarioPage() {
       </div>
       <Card>
         <div className="btn-row">
-          <Select value={exampleKey} onChange={setExampleKey} options={Object.keys(EXAMPLES).map((k) => ({ value: k, label: `${k} — ${EXAMPLES[k]().meta.name}` }))} />
+          <div className="select-fill"><Select value={exampleKey} onChange={setExampleKey} options={Object.keys(EXAMPLES).map((k) => ({ value: k, label: `${k} — ${EXAMPLES[k]().meta.name}` }))} /></div>
           <button type="button" className="btn" onClick={() => store.loadExample(exampleKey)}>{t('scenario.examples')}</button>
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>{t('scenario.importJson')}</button>
           <input ref={fileRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importJson(f); e.currentTarget.value = ''; }} />

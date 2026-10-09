@@ -16,7 +16,8 @@ p { margin: 0 0 8px; }
 small, .muted { color: var(--ink-3); }
 button, input, select, textarea { font: inherit; color: inherit; }
 
-.app { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+.app { display: grid; grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 1fr); min-height: 100vh; }
+.chrome, .nav { min-width: 0; }
 .chrome { position: sticky; top: 0; z-index: 20; }
 .topbar {
   display: flex; align-items: center; gap: 16px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--rule);
@@ -25,7 +26,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topbar .brand .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .topbar .spacer { flex: 1; }
 .topbar .scenario-select { max-width: 320px; min-width: 0; }
-.topbar .scenario-select select { max-width: 100%; }
+.topbar .scenario-select select { max-width: 100%; min-width: 0; flex: 1 1 auto; width: 100%; }
+.topbar .brand { min-width: 0; }
+.topbar .brand h1 { white-space: nowrap; }
 @media (max-width: 760px) {
   .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
   .topbar .brand { flex: 1 1 auto; }
@@ -39,7 +42,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .nav button[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 .nav button:hover { color: var(--ink); }
-main { padding: 16px; max-width: 1480px; width: 100%; margin: 0 auto; }
+main { padding: 16px; max-width: 1480px; width: 100%; margin: 0 auto; min-width: 0; }
+.table-wrap { max-width: 100%; }
+.btn-row select, .form-grid select, .field select { max-width: 100%; min-width: 0; }
+.btn-row > .select-fill { flex: 1 1 240px; min-width: 0; max-width: 100%; }
+.select-fill select { width: 100%; }
 .page-title { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .page-title .sub { color: var(--ink-3); }
 

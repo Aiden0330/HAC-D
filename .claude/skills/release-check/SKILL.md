@@ -17,4 +17,4 @@ Browser (dev server from `.claude/launch.json`, name `web`): open each page (Sce
 
 ## Automated browser checks (v2)
 
-With the dev server running (`npm run dev`), `npm run shots` (Playwright, Chromium) captures every page at 1280×900 and 375×812 in light and dark into `shots/`, uploads a fixture workbook on the Import page and imports it, and prints `HORIZONTAL OVERFLOW` or console errors per page. Inspect the PNGs; the in-app browser pane renders the 1280 px layout too small to judge.
+With the dev server running (`npm run dev`), `npm run shots` (Playwright, Chromium) captures every page at 1280×900 and 375×812 in light and dark into `shots/`, uploads a fixture workbook on the Import page and imports it, and prints `HORIZONTAL OVERFLOW` or console errors per page. Inspect the PNGs; the in-app browser pane renders the 1280 px layout too small to judge. `node scripts/overflow-check.mjs` lists the innermost elements wider than a 375 px viewport per page (rows inside `.table-wrap` scrollers are expected).
