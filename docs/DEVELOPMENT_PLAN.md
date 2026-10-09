@@ -356,3 +356,16 @@ Known gaps and next steps:
 - Library records are not yet editable from the UI beyond "use as rate"; adding records goes through the `add-parameter` skill.
 
 - 2026-10-09: v2 enhancement proposal (Ascend topology, dual-path MTTR, sub-health, original vs compensated, switchover, Excel import) in `PLAN_V2_AVAILABILITY_ENHANCEMENTS.md`.
+
+### v2 status (2026-10-09, all four decisions = recommended options)
+
+| Phase | Status | Evidence |
+|---|---|---|
+| E1 Core models | done | `ctmc/repair.ts` (dual repair, k-of-n with switchover, sub-health, straggler, plane loss), `rbd` measures + waterfall, schema v0.2 (backward compatible); 26 v2 golden vectors computed independently (`test/golden/golden_v2.json`), 298 core tests |
+| E2 Ladder + integration | done | `recovery/ladder.ts` with `mindcluster-a3` / `generic-auto-restart`; evaluation uses straggler law, isolation interruptions, ladder R(N); MC adapter with the dual-repair distribution |
+| E3 Ascend | done | `SuperpodSchema` + presets (`cloudmatrix384`, `atlas950`), superpod count scopes, examples `ascend-cm384` / `ascend-atlas950`; 104 sourced records merged into the library (`docs/ASCEND_SOURCES.md`) |
+| E4 Importers | done | `packages/importers`: SheetJS reader, 19-tag fingerprint catalogue with header-context retagging, topology extraction (levels / indentation / outline / formula graph), scenario conversion, reconciliation, xlsx export; 9 fixture workbooks, 29 tests; CLI `methods` / `import-excel` / `export-excel`, MCP tools |
+| E5 Web | done | Import page; measures card and waterfall (Report), KPIs (Scenario), columns (Compare), sub-health and ladder cards (Training); scenario editors for supernode geometry, measures, ladder, component details |
+| E6 Export + docs | done | xlsx export (Report / Import / CLI / MCP); README, USER_GUIDE, MODEL_REFERENCE §10–17, ASCEND_SOURCES |
+
+Open after v2: image / diagram import (adapter onto the TopologyDraft IR), Monte Carlo for the isolate policy and switchover failures (closed forms only), per-block measures in the RBD diagram, Playwright automation.

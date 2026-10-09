@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { EXAMPLES, parseScenario, type Scenario } from '@hac-d/core';
 
-export type Page = 'scenario' | 'library' | 'training' | 'inference' | 'spares' | 'allocation' | 'compare' | 'simulate' | 'report';
+export type Page = 'scenario' | 'library' | 'training' | 'inference' | 'spares' | 'allocation' | 'compare' | 'simulate' | 'report' | 'import';
 export type Theme = 'auto' | 'light' | 'dark';
 
 const STORAGE_KEY = 'hacd-scenarios-v1';

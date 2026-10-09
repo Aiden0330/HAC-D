@@ -12,6 +12,18 @@ export function download(filename: string, content: string, type = 'application/
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export function downloadBytes(filename: string, bytes: Uint8Array, type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'): void {
+  const blob = new Blob([bytes as BlobPart], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function scenarioFilename(s: Scenario, ext: string): string {
   return `${(s.meta.id ?? s.meta.name).replace(/[^a-z0-9-_]+/gi, '-')}.${ext}`;
 }

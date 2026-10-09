@@ -2,7 +2,7 @@
 export const strings = {
   en: {
     app: { title: 'HAC-D', eyebrow: 'AI cluster availability modeling', footer: 'First-order closed forms with validity flags; non-exponential or correlated inputs route to Monte Carlo. Grounded in the survey chapter “AI 集群可靠性建模”.' },
-    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report' },
+    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
     theme: { auto: 'Auto', light: 'Light', dark: 'Dark' },
     common: {
       formula: 'Formula', table: 'Table', chart: 'Chart', download: 'Download', copy: 'Copy', add: 'Add', remove: 'Remove', run: 'Run', running: 'Running…', reset: 'Reset', apply: 'Apply',
@@ -23,6 +23,12 @@ export const strings = {
       template: 'Template', trainingSeries: 'Training job (series)', trainingHotSpares: 'Training job with hot spares (k-of-n nodes)', inferenceNk: 'Inference N+k replicas', infrastructure: 'Infrastructure (declared redundancy)',
       addComponent: 'Add component', fromLibrary: 'From library…', redundancy: 'Redundancy', ccf: 'CCF β / domain', failslow: 'Fail-slow', enabled: 'On',
       jsonInvalid: 'Invalid scenario JSON', jsonApplied: 'Scenario updated from JSON', workloadType: 'Workload type', training: 'Training', inference: 'Inference',
+      superpod: 'Supernode (SuperPoD) geometry', superpodPreset: 'Supernode preset', generic: 'Generic (none)', custom: 'Custom', npusPerNode: 'NPUs per node', cpusPerNode: 'CPUs per node', l1PerNode: 'L1 UB chips per node', computeRacks: 'Compute racks', commRacks: 'Communication racks', subPlanes: 'UB sub-planes', l2PerSubPlane: 'L2 chips per sub-plane', l2Ports: 'L2 ports per chip', linksPerL1: 'Links per L1 chip', transceiversPerLink: 'Transceivers per link', derivedCounts: 'Derived counts', assumedFields: 'fields assumed (not public)',
+      measures: 'Measures', subhealthThreshold: 'Sub-health threshold φ_min', commShare: 'Communication share f_comm', primaryMeasure: 'Headline measure',
+      repairPaths: 'Repair paths', dualRepair: 'Dual-path repair (automatic → manual)', autoCoverage: 'Automatic coverage c', autoSuccess: 'Automatic success s', autoMttr: 'Automatic MTTR (h)', manualMttr: 'Manual MTTR (h)', meanRepair: 'E[R]',
+      switchover: 'Switchover', switchoverSuccess: 'Success probability', switchoverOutage: 'Outage per switchover (s)', switchoverRecovery: 'Failed-switch recovery (h)',
+      subhealth: 'Sub-health', shRate: 'Entry rate (/h)', shDuration: 'Duration (h)', shPerformance: 'Performance φ', shEscalation: 'Escalation ×', shPolicy: 'Policy', shDetectP: 'Detection probability', shDetectDelay: 'Detection delay (h)', tolerate: 'tolerate (run slow)', isolate: 'isolate (switch out)', legacyFailslow: 'legacy fail-slow (v1) in use', convert: 'Convert to sub-health',
+      details: 'Details', ladder: 'Recovery ladder', rung: 'Rung', kind: 'Kind', success: 'Success', reach: 'Reach', timeS: 'Time (s)', ladderNote: 'Rungs are tried in order; the last (manual) rung always succeeds. MindCluster preset values are assumptions until measured.', customise: 'Customise rungs', pipelineMode: 'pipeline', ladderMode: 'ladder', provenance: 'Provenance',
     },
     training: {
       title: 'Training job', sub: 'MTBI, optimal checkpoint interval, goodput and its loss terms, scale extrapolation with validity flags.',
@@ -31,6 +37,7 @@ export const strings = {
       regime: 'Regime', regime_checkpoint: 'checkpoint-dominated', regime_restart: 'restart-dominated', regime_invalid: 'first-order invalid',
       intervalCurve: 'Goodput vs checkpoint interval', components: 'Interruption share by component class', dalyFull: 'Daly full model',
       recoveryStages: 'Recovery pipeline at N', stage: 'Stage', meanS: 'Mean', shareOfR: 'Share of R', dominant: 'dominant', effectiveGoodput: 'Effective goodput', wall: 'Wall-clock (days)',
+      ladderAt: 'Recovery ladder at N', subhealthTitle: 'Sub-health (straggler law)', pSlowed: 'P(job slowed)', perfFactor: 'Job performance factor φ_job', isolationRate: 'Isolation interruptions / h', hardwareRate: 'Hardware interruptions / h', minPerf: 'Lowest performance φ', pManual: 'P(person needed)',
     },
     inference: {
       title: 'Inference service', sub: 'N+k replicas: service-up vs capacity-sufficient availability, k for the target, replica failure arrivals.',
@@ -51,19 +58,29 @@ export const strings = {
     compare: {
       title: 'Compare options', sub: 'Side-by-side KPIs of the scenarios you select, plus one-at-a-time sensitivity of the active scenario.',
       select: 'Scenarios to compare', metric: 'Metric', tornado: 'Tornado: one-at-a-time ×½ / ×2', best: 'best', pareto: 'Goodput vs lost $/day',
+      original: 'Original A', performability: 'Perf-weighted A', human: 'Human fraction',
     },
     simulate: {
       title: 'Monte Carlo', sub: 'Discrete-event simulation of the job with Weibull/lognormal lifetimes, lemon units, common cause, hot-spare pool, fail-slow; compared with the closed form.',
       replications: 'Replications', seed: 'Seed', workHours: 'Simulated work (hours)', run: 'Run simulation', goodputDist: 'Goodput distribution across replications', ci: '95 % CI', closedForm: 'Closed form', mc: 'Monte Carlo', delta: 'Δ',
       agrees: 'Monte Carlo agrees with the closed form', disagrees: 'Monte Carlo disagrees with the closed form: prefer the simulation', failures: 'Failures by class (all replications)', peakSpares: 'Peak spares in use (P99)', blocked: 'Blocked fraction', notTraining: 'Simulation currently covers training workloads.',
     },
-    report: { title: 'Design review', sub: 'The survey’s 11-item checklist applied to the active scenario, assumptions, and exports.', checklist: 'Checklist', export: 'Export', exportHtml: 'Self-contained HTML report', exportCsv: 'Components CSV', importanceTitle: 'Importance measures', cutsets: 'Minimal cut sets (top)', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
+    report: { title: 'Design review', sub: 'The survey’s 11-item checklist applied to the active scenario, assumptions, and exports.', checklist: 'Checklist', export: 'Export', exportHtml: 'Self-contained HTML report', exportCsv: 'Components CSV', exportXlsx: 'Excel workbook (live formulas)', importanceTitle: 'Importance measures', cutsets: 'Minimal cut sets (top)', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
+    measures: {
+      title: 'Original vs compensated', sub: 'Original (原始): every unit fault is an outage repaired manually, redundancy removed. Compensated (补偿后): after redundancy, switchover success, automatic recovery and the sub-health policy.',
+      original: 'Original', compensated: 'Compensated', strict: 'Strict (sub-health = down)', tolerant: 'Tolerant (sub-health = up)', performability: 'Performance-weighted', waterfall: 'Compensation waterfall (unavailability by step)', step_original: 'original', step_redundancy: '+ redundancy', 'step_auto-recovery': '+ automatic recovery', 'step_subhealth-policy': '+ sub-health policy',
+      switchoverPenalty: 'Switchover penalty', humanFraction: 'Events needing a person', autoShare: 'Downtime on the automatic path', gain: 'Gain ΔA', unavailabilityRatio: 'U_original / U_compensated', mtbfRatio: 'MTBF ratio', approximate: 'A first-order or reduced model was used in at least one block.', measure: 'Measure', unavailability: 'Unavailability', frequency: 'ν (/h)',
+    },
+    import: {
+      title: 'Import spreadsheet', sub: 'Load an availability workbook: detect the methods it uses, extract the topology, convert it into a scenario and reconcile with the sheet’s own numbers.',
+      choose: 'Choose .xlsx / .xls / .csv', sheet: 'Sheet', methods: 'Methods detected', hits: 'Formula fingerprints', columns: 'Column roles', role: 'Role', header: 'Header', tree: 'Extracted topology', confidence: 'Confidence', importBtn: 'Import as scenario', imported: 'Imported scenario', reconcile: 'Reconciliation (spreadsheet vs HAC-D)', excelValue: 'Spreadsheet', engineValue: 'HAC-D', delta: 'Δ', noCached: 'The file carries no cached results (saved without calculation): only structure and parameters were compared.', evidence: 'Evidence', noHeader: 'No header row recognised on this sheet: pick another sheet or set the column roles.', futureImage: 'Diagram / image import will feed the same topology draft.', exportXlsx: 'Export the active scenario to Excel', node: 'Node', cell: 'Cell', formula: 'Formula', method: 'Method', none: '—',
+    },
     library: { title: 'Parameter library', sub: 'Survey-sourced parameters with 口径 and provenance. Filter, inspect, and use as component rates.', query: 'Search', class: 'Class', confidence: 'Confidence', stage: 'Stage', ratesOnly: 'Rates only', records: 'records', use: 'Use as rate', applicability: 'Applicability', caveat: 'Caveat', derivation: 'Derivation', loading: 'Loading library…' },
     rbd: { title: 'Reliability block diagram', sub: 'Auto-laid out from the structure; red outline marks the block with the highest failure frequency.' },
   },
   zh: {
     app: { title: 'HAC-D', eyebrow: 'AI 集群可用性建模', footer: '一阶解析式附有效性标记；非指数或相关故障输入转入蒙特卡洛。依据综述章节《AI 集群可靠性建模》。' },
-    nav: { scenario: '方案', library: '参数库', training: '训练作业', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审' },
+    nav: { scenario: '方案', library: '参数库', training: '训练作业', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
     theme: { auto: '自动', light: '浅色', dark: '深色' },
     common: {
       formula: '公式', table: '表格', chart: '图', download: '下载', copy: '复制', add: '新增', remove: '删除', run: '运行', running: '运行中…', reset: '重置', apply: '应用',
@@ -84,6 +101,12 @@ export const strings = {
       template: '模板', trainingSeries: '同步训练作业（串联）', trainingHotSpares: '带热备的训练作业（节点 k-of-n）', inferenceNk: '推理 N+k 副本', infrastructure: '基础设施（声明冗余）',
       addComponent: '新增部件', fromLibrary: '从参数库…', redundancy: '冗余', ccf: '共因 β / 域', failslow: 'fail-slow', enabled: '启用',
       jsonInvalid: '方案 JSON 无效', jsonApplied: '已从 JSON 更新方案', workloadType: '负载类型', training: '训练', inference: '推理',
+      superpod: '超节点（SuperPoD）几何', superpodPreset: '超节点预设', generic: '通用（无）', custom: '自定义', npusPerNode: '每节点 NPU 数', cpusPerNode: '每节点 CPU 数', l1PerNode: '每节点 L1 UB 交换芯片数', computeRacks: '计算机柜数', commRacks: '通信机柜数', subPlanes: 'UB 子平面数', l2PerSubPlane: '每子平面 L2 芯片数', l2Ports: '每 L2 芯片端口数', linksPerL1: '每 L1 芯片上联链路数', transceiversPerLink: '每链路光模块数', derivedCounts: '推算数量', assumedFields: '非公开、按假设取值的字段',
+      measures: '度量口径', subhealthThreshold: '亚健康阈值 φ_min', commShare: '通信占比 f_comm', primaryMeasure: '首要度量',
+      repairPaths: '修复路径', dualRepair: '双路径修复（自动 → 人工）', autoCoverage: '自动恢复覆盖率 c', autoSuccess: '自动恢复成功率 s', autoMttr: '自动恢复 MTTR（小时）', manualMttr: '人工修复 MTTR（小时）', meanRepair: 'E[R]',
+      switchover: '倒换', switchoverSuccess: '倒换成功率', switchoverOutage: '每次倒换中断（秒）', switchoverRecovery: '倒换失败恢复时间（小时）',
+      subhealth: '亚健康', shRate: '进入率（/小时）', shDuration: '持续时间（小时）', shPerformance: '性能 φ', shEscalation: '恶化倍数', shPolicy: '策略', shDetectP: '检测概率', shDetectDelay: '检测时延（小时）', tolerate: '容忍（降速运行）', isolate: '隔离（倒换出去）', legacyFailslow: '当前使用 v1 的 fail-slow 字段', convert: '转换为亚健康',
+      details: '详情', ladder: '分级恢复', rung: '级', kind: '类型', success: '成功率', reach: '到达概率', timeS: '时间（秒）', ladderNote: '各级按顺序尝试，最后一级（人工）必成功。MindCluster 预设取值为假设，待实测替换。', customise: '自定义各级', pipelineMode: '流水线', ladderMode: '分级恢复', provenance: '出处',
     },
     training: {
       title: '训练作业', sub: 'MTBI、最优 checkpoint 间隔、goodput 及其损失分项、按规模外推与有效性标记。',
@@ -92,6 +115,7 @@ export const strings = {
       regime: '区间', regime_checkpoint: 'checkpoint 主导', regime_restart: '重启主导', regime_invalid: '一阶式失效',
       intervalCurve: 'goodput 随 checkpoint 间隔的变化', components: '各部件类的中断率占比', dalyFull: 'Daly 完整模型',
       recoveryStages: '规模 N 下的恢复流水线', stage: '阶段', meanS: '均值', shareOfR: '占 R 比例', dominant: '主导', effectiveGoodput: '有效 goodput', wall: '墙钟时间（天）',
+      ladderAt: '规模 N 下的分级恢复', subhealthTitle: '亚健康（掉队者定律）', pSlowed: '作业被拖慢的概率', perfFactor: '作业性能因子 φ_job', isolationRate: '隔离引起的中断（/小时）', hardwareRate: '硬件中断（/小时）', minPerf: '最低性能 φ', pManual: '需要人工的概率',
     },
     inference: {
       title: '推理服务', sub: 'N+k 副本：「有服务」与「容量充足」两个可用率、达到目标所需的 k、副本故障到达。',
@@ -112,13 +136,23 @@ export const strings = {
     compare: {
       title: '方案对比', sub: '所选方案的 KPI 并排对比，以及当前方案的单因素敏感性。',
       select: '选择要对比的方案', metric: '指标', tornado: '龙卷风图：单因素 ×½ / ×2', best: '最优', pareto: 'goodput 对每日损失',
+      original: '原始可用率', performability: '性能加权可用率', human: '需人工比例',
     },
     simulate: {
       title: '蒙特卡洛', sub: '作业的离散事件仿真：Weibull/对数正态寿命、lemon 节点、共因、热备池、fail-slow；与解析式交叉验证。',
       replications: '重复次数', seed: '随机种子', workHours: '仿真工作量（小时）', run: '运行仿真', goodputDist: '各次重复的 goodput 分布', ci: '95% 置信区间', closedForm: '解析式', mc: '蒙特卡洛', delta: 'Δ',
       agrees: '蒙特卡洛与解析式一致', disagrees: '蒙特卡洛与解析式不一致：以仿真为准', failures: '各类部件故障数（全部重复）', peakSpares: '备机占用峰值（P99）', blocked: '阻塞时间占比', notTraining: '仿真目前覆盖训练负载。',
     },
-    report: { title: '设计评审', sub: '综述的 11 条设计评审清单应用于当前方案，附假设与导出。', checklist: '清单', export: '导出', exportHtml: '自包含 HTML 报告', exportCsv: '部件 CSV', importanceTitle: '重要度', cutsets: '最小割集（前若干）', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
+    report: { title: '设计评审', sub: '综述的 11 条设计评审清单应用于当前方案，附假设与导出。', checklist: '清单', export: '导出', exportHtml: '自包含 HTML 报告', exportCsv: '部件 CSV', exportXlsx: 'Excel 工作簿（含公式）', importanceTitle: '重要度', cutsets: '最小割集（前若干）', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
+    measures: {
+      title: '原始 vs 补偿后', sub: '原始：每个单元故障都造成中断、仅人工修复、不计冗余。补偿后：计入冗余、倒换成功率、自动恢复与亚健康策略。',
+      original: '原始', compensated: '补偿后', strict: '严格（亚健康计为不可用）', tolerant: '宽松（亚健康计为可用）', performability: '性能加权', waterfall: '补偿瀑布（各步的不可用率）', step_original: '原始', step_redundancy: '+ 冗余', 'step_auto-recovery': '+ 自动恢复', 'step_subhealth-policy': '+ 亚健康策略',
+      switchoverPenalty: '倒换损失', humanFraction: '需人工处理的事件比例', autoShare: '自动路径的停机占比', gain: '增益 ΔA', unavailabilityRatio: 'U_原始 / U_补偿后', mtbfRatio: 'MTBF 比', approximate: '至少一个块使用了一阶近似或简化模型。', measure: '度量', unavailability: '不可用率', frequency: 'ν（/小时）',
+    },
+    import: {
+      title: '导入表格', sub: '加载可用性计算表：识别所用方法、提取拓扑、转换为方案并与表内数值对账。',
+      choose: '选择 .xlsx / .xls / .csv', sheet: '工作表', methods: '识别到的方法', hits: '公式指纹', columns: '列角色', role: '角色', header: '表头', tree: '提取的拓扑', confidence: '置信度', importBtn: '导入为方案', imported: '已导入方案', reconcile: '对账（表格 vs HAC-D）', excelValue: '表格', engineValue: 'HAC-D', delta: 'Δ', noCached: '文件没有缓存计算结果（保存时未计算）：仅比较了结构与参数。', evidence: '依据', noHeader: '该工作表未识别到表头：请换一个工作表或手动设置列角色。', futureImage: '图片 / 框图导入将复用同一拓扑草稿。', exportXlsx: '将当前方案导出为 Excel', node: '节点', cell: '单元格', formula: '公式', method: '方法', none: '—',
+    },
     library: { title: '参数库', sub: '来自综述、带口径与出处的参数。筛选、查看并用作部件故障率。', query: '搜索', class: '类别', confidence: '置信', stage: '阶段', ratesOnly: '仅故障率', records: '条记录', use: '用作故障率', applicability: '适用范围', caveat: '注意', derivation: '算式', loading: '正在加载参数库…' },
     rbd: { title: '可靠性框图', sub: '由结构自动布局；红色边框为故障频率最高的块。' },
   },

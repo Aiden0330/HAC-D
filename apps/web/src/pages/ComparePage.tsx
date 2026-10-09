@@ -51,10 +51,13 @@ export function ComparePage() {
       {cmp && cmp.rows.length > 0 && (
         <Card>
           <DataTable
-            columns={['', t('common.availability'), t('common.mtbi'), t('common.recovery'), t('common.goodput'), t('common.lost_per_day'), 'blocked', 'hot spares P99', t('inference.capacity'), 'k*', 'checklist warn']}
+            columns={['', t('common.availability'), t('compare.original'), t('compare.performability'), t('compare.human'), t('common.mtbi'), t('common.recovery'), t('common.goodput'), t('common.lost_per_day'), 'blocked', 'hot spares P99', t('inference.capacity'), 'k*', 'checklist warn']}
             rows={cmp.rows.map((r) => [
               r.name,
               `${fmtPct(r.availability, 4)}${cmp.best.availability === r.id ? ' ★' : ''}`,
+              fmtPct(r.originalAvailability, 4),
+              fmtPct(r.performability, 4),
+              fmtPct(r.humanFraction, 0),
               r.mtbiHours !== undefined ? `${fmtHours(r.mtbiHours, lang)}${cmp.best.mtbiHours === r.id ? ' ★' : ''}` : '—',
               r.recoveryS !== undefined ? `${fmtDuration(r.recoveryS, lang)}${cmp.best.recoveryS === r.id ? ' ★' : ''}` : '—',
               r.effectiveGoodput !== undefined ? `${fmtPct(r.effectiveGoodput, 2)}${cmp.best.effectiveGoodput === r.id ? ' ★' : ''}` : '—',

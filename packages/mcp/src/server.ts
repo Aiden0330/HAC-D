@@ -1,15 +1,17 @@
 #!/usr/bin/env -S node --import tsx
 /**
  * HAC-D MCP server (stdio). Tools: list_examples, get_example, evaluate_scenario, compare_scenarios,
- * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema.
+ * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
+ * excel_method_report, import_excel_scenario, export_excel (v2).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, basename } from 'node:path';
+import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook } from '@hac-d/importers';
 import {
   EXAMPLES, parseScenario, evaluateScenario, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario, scenarioJsonSchema, filterLibrary,
   type Library, type AllocationMethod, type TornadoMetric,
@@ -74,6 +76,32 @@ server.registerTool(
   'library_search',
   { description: 'Search the survey-sourced parameter library (531 records with 口径 and provenance): failure rates, MTTR stage times, SDC rates, spare ratios, checkpoint overheads.', inputSchema: { query: z.string().optional(), class: z.string().optional(), kind: z.string().optional(), confidence: z.string().optional(), stage: z.string().optional(), ratesOnly: z.boolean().optional(), limit: z.number().int().min(1).max(200).optional() } },
   async ({ query, class: cls, kind, confidence, stage, ratesOnly, limit }) => text(filterLibrary(lib(), { query, class: cls, kind, confidence, stage, ratesOnly }).slice(0, limit ?? 50)),
+);
+
+server.registerTool(
+  'excel_method_report',
+  { description: 'Read an availability workbook (.xlsx/.xls/.csv path on disk) and report which calculation methods its formulas use (A = MTBF/(MTBF+MTTR), series product, rare-event sum, parallel complement, k-of-n COMBIN/BINOM.DIST, switchover weighting, MTTR auto/manual mixture, Markov MMULT/MINVERSE …) with cell addresses and column roles.', inputSchema: { path: z.string() } },
+  async ({ path }) => text(methodReport(readWorkbook(new Uint8Array(readFileSync(path)), basename(path)))),
+);
+
+server.registerTool(
+  'import_excel_scenario',
+  { description: 'Extract the component topology (series / parallel / k-of-n groups, quantities, MTBF/MTTR/FIT/λ, switchover success, auto/manual MTTR) from a workbook on disk, convert it into a HAC-D scenario, evaluate it and reconcile with the sheet’s own cached values. Returns the method report, the topology draft with evidence, the scenario JSON and the reconciliation table.', inputSchema: { path: z.string(), sheet: z.string().optional() } },
+  async ({ path, sheet }) => {
+    const r = importSpreadsheet(new Uint8Array(readFileSync(path)), basename(path), { sheet });
+    return text({ sheet: r.sheet, confidence: r.draft.confidence, notes: [...r.draft.notes, ...r.conversion.notes], methods: r.report.methods, columns: r.draft.columns, tree: r.draft.root, scenario: r.conversion.input, availability: r.result.system.availability, measures: r.result.system.measures, reconciliation: r.reconciliation });
+  },
+);
+
+server.registerTool(
+  'export_excel',
+  { description: 'Write a scenario and its evaluation as an .xlsx workbook with live formulas (Inputs, Structure with per-block combination formulas next to HAC-D values, Results with original vs compensated measures and the waterfall, Formulas).', inputSchema: { scenario: scenarioArg, outPath: z.string() } },
+  async ({ scenario, outPath }) => {
+    const s = toScenario(scenario);
+    const bytes = exportWorkbook(s, evaluateScenario(s));
+    writeFileSync(outPath, bytes);
+    return text({ path: outPath, bytes: bytes.byteLength, sheets: ['Inputs', 'Structure', 'Results', 'Formulas'] });
+  },
 );
 
 const transport = new StdioServerTransport();

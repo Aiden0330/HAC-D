@@ -195,3 +195,8 @@ Precedence when several could apply: survey flag (`scan-level` > `vendor` > `pap
 - `checkpoint.cost.fti_l*` (Di et al. SC 2014) and `ccf.post_power_event_failure_multiplier.lanl` ('thesis') have `url: null` because neither item exists in the survey's reference list; the Frontier CUG 2024 figures are attached to the SC-W'23 DOI with the CUG paper noted as URL-less.
 - Titan Weibull shapes 「约 5 / 7」 were paired with OTB and DBE in listing order (Table 4-2 does not label the pairing); see `distribution.note`.
 - Meta Sparing demo parameters (tray 20K h, rack 10K h, MTTR 24 h) are `paper-reported` with 「演示值」 caveats rather than `assumed`, since `assumed` is reserved for empty placeholders.
+
+
+## Ascend merge (2026-10-09, v2)
+
+104 records from `data-staging/ascend/ascend-records.json` were merged (classes: {'ascend': 93, 'nic_optics': 7, 'switch': 3, 'hbm': 1}). Sources, discrepancies and the analogue assumptions are documented in `docs/ASCEND_SOURCES.md`. New vocab: class `ascend`, kinds `bandwidth` / `claim`, units GB/s, Gbps, PB/s, Tbps, code, m, m2, n/a, ns, pct_per_month, per_gpu_h, us.

@@ -5,8 +5,8 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 ## Quick start
 
 ```bash
-npm install            # Node 20+, workspaces (core, cli, mcp, web)
-npm test               # 245 tests incl. 143 independently computed golden vectors
+npm install            # Node 20+, workspaces (core, importers, cli, mcp, web)
+npm test               # 327 tests incl. 143 + 26 independently computed golden vectors (v1 + v2 models)
 npm run dev            # web app at http://localhost:5173 (bilingual zh/en, light/dark)
 npm run build -w @hac-d/web   # static bundle in apps/web/dist
 ```
@@ -20,21 +20,37 @@ node --import tsx packages/cli/src/main.ts eval ex1.json
 node --import tsx packages/cli/src/main.ts compare ex1.json nvl72.json
 node --import tsx packages/cli/src/main.ts allocate nvl72.json --goodput 0.98 --method arinc
 node --import tsx packages/cli/src/main.ts simulate ex1.json --reps 100
+node --import tsx packages/cli/src/main.ts example ascend-cm384 > cm384.json          # CloudMatrix384 supernode (v2)
+node --import tsx packages/cli/src/main.ts measures cm384.json                       # original vs compensated + waterfall
+node --import tsx packages/cli/src/main.ts methods book.xlsx                         # which availability methods a spreadsheet uses
+node --import tsx packages/cli/src/main.ts import-excel book.xlsx --out imported.json # topology + parameters → scenario, reconciled
+node --import tsx packages/cli/src/main.ts export-excel cm384.json cm384.xlsx        # workbook with live formulas
 ```
 
-MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $PWD/packages/mcp/src/server.ts`): tools `list_examples`, `get_example`, `scenario_schema`, `evaluate_scenario`, `compare_scenarios`, `allocate_scenario`, `tornado_scenario`, `simulate_scenario`, `library_search`.
+MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $PWD/packages/mcp/src/server.ts`): tools `list_examples`, `get_example`, `scenario_schema`, `evaluate_scenario`, `compare_scenarios`, `allocate_scenario`, `tornado_scenario`, `simulate_scenario`, `library_search`, and (v2) `excel_method_report`, `import_excel_scenario`, `export_excel`.
+
+## v2 (2026-10-09): Ascend topology, repair paths, sub-health, original vs compensated, Excel
+
+- **Original vs compensated measures** (原始 / 补偿后): every evaluation reports the inherent availability (every unit fault is an outage repaired manually, redundancy removed) next to the compensated one (redundancy, switchover success, automatic recovery, sub-health policy), with a four-step waterfall and a switchover penalty. Strict / tolerant / performance-weighted sub-health measures are shown alongside.
+- **Dual-path repair**: automatic coverage `c`, success `s`, automatic and manual MTTR; exact inside k-of-n groups (chain over automatic / manual / switch-failed states), `E[R] = c·T_a + (1 − c·s)·T_m` for series units; the share of events that reach a person is reported.
+- **Switchover success rate** on parallel, k-of-n and standby groups, with a per-switchover micro-outage and a failed-switch recovery time.
+- **Sub-health** (亚健康): entry rate or steady-state probability, duration, performance factor, escalation, tolerate vs isolate policy with detection; threshold rule (default 0.7 = MindCluster's 30 % degradation); straggler law for synchronous jobs; fabric plane loss as a performance factor.
+- **Recovery ladder**: ordered rungs with success probabilities (MindCluster preset: operator-level → process-level online recovery → process / pod / job rescheduling → elastic scale-in → manual).
+- **CloudMatrix384 / Atlas 950 presets**: supernode geometry from the Huawei paper (48 nodes × 8 NPU, 7 UB sub-planes × 16 L2 chips, 5,376 optical links) with count scopes for L1/L2 chips, links, transceivers and sub-planes; 104 sourced records in the library (`docs/ASCEND_SOURCES.md`); failure rates are analogues tagged `assumed`.
+- **Excel import / export** (`packages/importers`, SheetJS): method fingerprinting of formulas (A = MTBF/(MTBF+MTTR), series product, rare-event sum, parallel complement, k-of-n COMBIN / BINOM.DIST, switchover weighting, MTTR mixtures, Markov MMULT/MINVERSE …), topology extraction from level columns, indentation, outline levels and the formula dependency graph, conversion to a scenario, reconciliation against the sheet's own numbers, and export of a workbook with live formulas. Nine synthetic fixture workbooks under `packages/importers/test/fixtures`.
 
 ## Layout
 
 | Path | What |
 |---|---|
 | `packages/core` | Numerics: `math` (special functions, Lambert W, RNG, distributions), `units` (口径 conversions), `rbd` (series / parallel / k-of-n / standby / repeat blocks, importance, cut sets), `ctmc` (birth–death, k-of-n repairable, standby with switch, degraded and SDC-latent units), `checkpoint` (Young, Daly, Saxena, first-order goodput with validity flags, TrainMover, Epoch), `sparing` (binomial / Poisson quantiles, blocked probability), `mttr` (six-stage pipeline with scale laws and presets), `allocation` (equal, ARINC, AGREE, feasibility, minimum effort, cost-optimal, availability split, goodput budget), `sensitivity`, `cost`, `mc` (discrete-event simulator), `scenario` (zod schema, structure builder, evaluator, checklist, examples, comparison, tornado, allocation), `library` (parameter records) |
-| `packages/core/data/library.json` | 531 survey-sourced parameter records with 口径 and provenance (9 explicit placeholders) |
-| `packages/core/test/golden` | Golden vectors computed independently in Python (`compute_golden.py`) and the report of matches against the survey |
+| `packages/core/data/library.json` | 635 parameter records with 口径 and provenance: 531 from the survey (9 explicit placeholders) + 104 Ascend / CloudMatrix records |
+| `packages/core/test/golden` | Golden vectors computed independently in Python (`compute_golden.py`, `compute_golden_v2.py`) and the reports of matches |
+| `packages/importers` | Spreadsheet importer / exporter: workbook reader, formula fingerprinting, topology draft, scenario conversion, reconciliation, xlsx export |
 | `packages/cli` | `hacd` command line |
 | `packages/mcp` | MCP server over the same core |
-| `apps/web` | Vite + React app: Scenario, Training, Inference, Spares & domains, Allocation, Compare, Simulate (Web Worker), Report, Library |
-| `docs` | Development plan, model reference, user guide |
+| `apps/web` | Vite + React app: Scenario, Training, Inference, Spares & domains, Allocation, Compare, Simulate (Web Worker), Report, Import, Library |
+| `docs` | Development plan (+ v2 enhancement plan), model reference (§10–17 = v2 models), user guide, Ascend source notes |
 | `.claude/skills` | `model-check`, `add-parameter`, `scenario-review`, `release-check` |
 
 ## Modeling principles
@@ -45,5 +61,6 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - Spares are sized by quantile (binomial P99 / Poisson), never by ratio; block size is checked against the failure domain.
 - Non-exponential lifetimes, lemon units, common cause and a finite hot-spare pool are simulated; the Monte Carlo result is compared with the closed form and a disagreement is flagged.
 - Parameters from the survey keep their provenance and confidence (measured / paper-reported / vendor / derived / assumed / scan-level); assumed values are meant to be swept, not trusted.
+- Original and compensated measures are always both shown, so the credit taken for redundancy, switchover, automation and sub-health handling is explicit (v2).
 
 See `docs/MODEL_REFERENCE.md` for the formulas and their survey anchors, and `docs/USER_GUIDE.md` for the pages.

@@ -1,6 +1,6 @@
 {
  "version": "0.1",
- "generated": "2026-10-08",
+ "generated": "2026-10-09 (v2 merge of Ascend records)",
  "source_document": "ai-cluster-reliability-modeling.html (2026-10-08)",
  "vocab": {
   "class": {
@@ -28,7 +28,8 @@
    "ocs": "光电路交换机 OCS",
    "psu_power": "电源 / UPS / PDU",
    "storage": "共享存储 / 文件系统",
-   "tpu_machine": "TPU 机器"
+   "tpu_machine": "TPU 机器",
+   "ascend": "Huawei Ascend / CloudMatrix / Atlas SuperPoD facts (topology counts, vendor claims, MindCluster fault handling) — see docs/ASCEND_SOURCES.md"
   },
   "kind": {
    "fraction": "比例、份额、覆盖率、精度类指标",
@@ -42,10 +43,17 @@
    "mttf": "平均失效前时间",
    "duration": "非 MTTR 阶段的时长（测试、间隔、提前量；本库扩展）",
    "mttr": "恢复/修复/缓解时间",
-   "probability": "每事件条件概率"
+   "probability": "每事件条件概率",
+   "bandwidth": "link or fabric bandwidth (unit in record)",
+   "claim": "vendor or press claim kept for reference, not a measured parameter"
   },
   "unit": [
    "FIT",
+   "GB/s",
+   "Gbps",
+   "PB/s",
+   "Tbps",
+   "code",
    "count",
    "days",
    "fraction",
@@ -53,10 +61,14 @@
    "gpu_h_per_event",
    "h",
    "iteration",
+   "m",
+   "m2",
    "min",
    "months",
+   "n/a",
    "node_h_per_event",
    "normalized",
+   "ns",
    "pct",
    "pct_per_day",
    "pct_per_month",
@@ -77,6 +89,7 @@
    "processor_h_per_event",
    "s",
    "socket_h_per_event",
+   "us",
    "x"
   ],
   "unit_notes": {
@@ -111,7 +124,9 @@
    "auto_recovery_share",
    "automation_share",
    "availability",
+   "availability_target",
    "available_utilization",
+   "bandwidth",
    "block_repair",
    "board_event",
    "boot_failure",
@@ -137,11 +152,16 @@
    "debug_replay_share",
    "defective_link_ratio",
    "defective_node",
+   "definition",
    "degraded_throughput",
    "detection_coverage",
+   "detection_latency",
    "detection_overhead",
+   "detection_period",
    "detection_probability",
    "detection_sensitivity_ratio",
+   "detection_threshold",
+   "detector_threshold",
    "ecc_coverage",
    "effective_training_time",
    "error_interarrival",
@@ -152,7 +172,9 @@
    "failure_rate_reduction",
    "false_negative_rate",
    "false_positive_rate",
+   "fault_coverage",
    "fit_reduction",
+   "flap_tolerance",
    "fleet_uptime",
    "goodput",
    "goodput_gain",
@@ -174,11 +196,13 @@
    "job_restart",
    "job_restart_time",
    "job_termination",
+   "latency",
    "lead_time",
    "lemon_node",
    "level1_failure",
    "level2_failure",
    "level3_failure",
+   "link_failure",
    "link_flap",
    "localization_f1",
    "loop_availability",
@@ -188,6 +212,7 @@
    "memory_error_ratio",
    "mfu_during_checkpoint",
    "mfu_gain",
+   "mtbf_ratio",
    "nic_failure",
    "node_availability",
    "node_failure",
@@ -197,6 +222,7 @@
    "nvlink_error",
    "nvlink_failure",
    "off_the_bus",
+   "optical_path_switchover",
    "pcie_degradation_reset_resolved",
    "pcie_reseat",
    "performance_regression",
@@ -207,10 +233,16 @@
    "prediction_accuracy",
    "rack_failure",
    "recall",
+   "recovery_levels",
+   "recovery_rule",
+   "recovery_time",
    "recovery_time_gap",
+   "reexecution_success",
+   "reliability_ratio",
    "resource_ratio",
    "restart_overhead",
    "retrain_overhead",
+   "retry_limit",
    "sbe_count",
    "sbe_dbe_cooccurrence",
    "sbe_event",
@@ -242,7 +274,9 @@
    "storage_failure",
    "straggler_machine",
    "stranded_capacity",
+   "subhealth_fault",
    "switch_failure",
+   "switch_survival",
    "system_availability",
    "system_failure",
    "system_interruption",
@@ -254,6 +288,9 @@
    "time_efficiency",
    "time_to_coverage",
    "time_to_mitigate",
+   "topology_claim",
+   "topology_count",
+   "training_availability",
    "tray_failure",
    "ueo_event",
    "uer_clustering",
@@ -26150,6 +26187,4796 @@
    "caveat": {
     "zh": "表 4-2「MTTR 分布」一行只有 LANL CPU 集群的 lognormal（均值 355 min、中位 54 min，旧代参照）；AI 集群各阶段见 §5 的点值与区间，没有可拟合的完整分布；备件模型应按分位数取值",
     "en": "Table 4-2's 'MTTR distribution' row only has the LANL CPU-cluster lognormal (mean 355 min, median 54 min; legacy reference); AI clusters have per-stage point values and ranges in §5 but no fittable full distribution; spare models should use quantiles"
+   }
+  },
+  {
+   "id": "ascend.cm384.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "CloudMatrix384 单超节点 384 颗昇腾 910C NPU",
+    "en": "CloudMatrix384 supernode: 384 Ascend 910C NPUs"
+   },
+   "value": 384,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "论文正文称 Ascend 910（Register/SemiAnalysis 称 910C）；48 节点 × 8",
+    "en": "Paper writes 'Ascend 910' (press: 910C); = 48 nodes × 8 NPUs"
+   }
+  },
+  {
+   "id": "ascend.cm384.cpus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "CloudMatrix384 单超节点 192 颗鲲鹏 CPU",
+    "en": "CloudMatrix384 supernode: 192 Kunpeng CPUs"
+   },
+   "value": 192,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "48 节点 × 4；CPU 也接入 UB 平面（参与全互联）",
+    "en": "= 48 nodes × 4; CPUs are also on the UB plane"
+   }
+  },
+  {
+   "id": "ascend.cm384.racks_total",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "CloudMatrix384 共 16 机柜",
+    "en": "CloudMatrix384 spans 16 racks"
+   },
+   "value": 16,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "12 计算柜 + 4 通信柜（§3.3.3）",
+    "en": "12 compute + 4 communication racks (§3.3.3)"
+   }
+  },
+  {
+   "id": "ascend.cm384.compute_racks",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "12 个计算机柜（承载 48 节点）",
+    "en": "12 compute racks hosting the 48 nodes"
+   },
+   "value": 12,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "每柜 4 节点 / 32 NPU（推算 48/12）",
+    "en": "4 nodes / 32 NPUs per rack (48/12, consistent with The Register)"
+   }
+  },
+  {
+   "id": "ascend.cm384.communication_racks",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "4 个通信机柜（放置 L2 UB 交换机）",
+    "en": "4 communication racks housing the L2 UB switches"
+   },
+   "value": 4,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "L2 交换芯片集中放置：通信柜断电 = 多个子平面同时受损的共因源",
+    "en": "L2 chips are concentrated here: a rack-level power/cooling event is a common-cause source for several sub-planes"
+   }
+  },
+  {
+   "id": "ascend.cm384.nodes",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "48 个昇腾 910 计算节点",
+    "en": "48 Ascend 910 compute nodes"
+   },
+   "value": 48,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "节点 = 8 NPU + 4 CPU + 7 片板载 L1 UB 交换芯片",
+    "en": "Node = 8 NPUs + 4 CPUs + 7 on-board L1 UB switch chips"
+   }
+  },
+  {
+   "id": "ascend.cm384.npus_per_node",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每节点 8 颗 NPU",
+    "en": "8 NPUs per node"
+   },
+   "value": 8,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "node",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "§3.3.2；节点内 12 个处理器经 UB 链路接板载交换芯片",
+    "en": "§3.3.2; the 12 processors connect to the on-board switches via UB links"
+   }
+  },
+  {
+   "id": "ascend.cm384.cpus_per_node",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每节点 4 颗鲲鹏 CPU（全互联 NUMA）",
+    "en": "4 Kunpeng CPUs per node (full-mesh NUMA)"
+   },
+   "value": 4,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "node",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "其中一颗挂擎天卡（DPU，VPC 平面出口）",
+    "en": "One CPU hosts the Qingtian DPU card (VPC-plane egress)"
+   }
+  },
+  {
+   "id": "ascend.cm384.l1_switch_chips_per_node",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每节点 7 片板载 L1 UB 交换芯片",
+    "en": "7 on-board L1 UB switch chips per node"
+   },
+   "value": 7,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "node",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "与 7 个 L2 子平面一一对应；板载芯片故障通常意味着整节点隔离而非热插拔更换",
+    "en": "Map one-to-one onto the 7 L2 sub-planes; an on-board chip fault usually means isolating the whole node rather than a hot swap"
+   }
+  },
+  {
+   "id": "ascend.cm384.l2_subplanes",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "L2 UB 交换层划分为 7 个独立子平面",
+    "en": "L2 UB switching tier partitioned into 7 independent sub-planes"
+   },
+   "value": 7,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "子平面独立：单子平面失效 → 带宽降 1/7 而非全断（需确认 HCCL 是否能降级运行）",
+    "en": "Sub-planes are independent: losing one costs 1/7 of bandwidth rather than connectivity (whether HCCL degrades gracefully must be confirmed)"
+   }
+  },
+  {
+   "id": "ascend.cm384.l2_chips_per_subplane",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每个子平面 16 片 L2 UB 交换芯片",
+    "en": "16 L2 UB switch chips per sub-plane"
+   },
+   "value": 16,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "sub-plane",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "§3.3.3",
+    "en": "§3.3.3"
+   }
+  },
+  {
+   "id": "ascend.cm384.l2_ports_per_chip",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每片 L2 UB 交换芯片 48 端口",
+    "en": "48 ports per L2 UB switch chip"
+   },
+   "value": 48,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "L2 UB switch chip",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "48 端口 = 48 节点各 1 条链路（每子平面每节点 1 片 L1 → 16 条链路分别到 16 片 L2）",
+    "en": "48 ports = one link from each of the 48 nodes (each node's L1 chip of that sub-plane sends one link to every L2 chip)"
+   }
+  },
+  {
+   "id": "ascend.cm384.l1_fanout_links",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每片 L1 芯片向其子平面的 16 片 L2 芯片各出 1 条链路（16 条上行）",
+    "en": "Each L1 chip fans out 16 links (one to every L2 chip of its sub-plane)"
+   },
+   "value": 16,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "L1 UB switch chip",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "论文称上行带宽恰等于节点内 UB 容量（无阻塞）",
+    "en": "Paper: aggregate uplink bandwidth 'precisely matches' the node's internal UB capacity (non-blocking)"
+   }
+  },
+  {
+   "id": "ascend.cm384.ub_transceivers_per_die",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每个 910 die 集成 7 个高速 UB 收发器",
+    "en": "Each Ascend 910 die integrates seven high-speed UB transceivers"
+   },
+   "value": 7,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "die",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "§3.3.1；每 NPU 2 die → 14（与 Register 的 14 条 UB 链路一致）",
+    "en": "§3.3.1; 2 dies per NPU → 14 (matches The Register's 14 UB links)"
+   }
+  },
+  {
+   "id": "ascend.cm384.rdma_interfaces_per_die",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每个 die 1 个独立 RDMA（scale-out）接口",
+    "en": "One dedicated RDMA (scale-out) interface per die"
+   },
+   "value": 1,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "die",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "仅 NPU 参与 RDMA 平面（RoCE）",
+    "en": "Only NPUs participate in the RDMA plane (RoCE)"
+   }
+  },
+  {
+   "id": "ascend.cm384.dies_per_npu",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每颗 910C 封装 2 个相同计算 die",
+    "en": "2 identical compute dies per Ascend 910 package"
+   },
+   "value": 2,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "npu",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "跨 die 互联为片内单点；die 级失效模式无公开数据",
+    "en": "Cross-die fabric is an on-package single point; no public die-level failure data"
+   }
+  },
+  {
+   "id": "ascend.cm384.hbm_stacks_per_npu",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每颗 910C 共享 8 个封装内存储堆叠（HBM）",
+    "en": "8 on-package memory (HBM) stacks shared by the two dies"
+   },
+   "value": 8,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "npu",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "HBM 堆叠数是 HBM 故障暴露量的分母（H100 为 5 个活跃 HBM3 堆叠）",
+    "en": "Stack count is the exposure denominator for HBM faults (H100: 5 active HBM3 stacks)"
+   }
+  },
+  {
+   "id": "ascend.cm384.network_planes",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "三个网络平面：UB（scale-up）、RDMA（scale-out, RoCE）、VPC（擎天卡）",
+    "en": "Three network planes: UB (scale-up), RDMA (scale-out, RoCE), VPC (Qingtian card)"
+   },
+   "value": 3,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "三平面故障属不同事件类，不可相加；VPC 面承载管理/存储流量",
+    "en": "Faults on the three planes are different event classes and must not be summed; VPC carries control/storage traffic"
+   }
+  },
+  {
+   "id": "ascend.cm384.nonblocking_l2",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "L2 交换层无阻塞（无超售）",
+    "en": "L2 switching tier is non-blocking (no oversubscription)"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_claim",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "无阻塞意味着任一 L1–L2 链路失效都会在该子平面制造热点，而非被冗余吸收",
+    "en": "Non-blocking means any L1–L2 link loss creates a hotspot in that sub-plane rather than being absorbed by spare capacity"
+   }
+  },
+  {
+   "id": "ascend.cm384.vpc_bw_per_node",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "每节点经擎天卡访问 EVS 的带宽通常低于 400 Gbps",
+    "en": "Per-node EVS access bandwidth via the Qingtian card is 'typically under 400 Gbps'"
+   },
+   "value": 400,
+   "unit": "Gbps",
+   "range": {
+    "low": null,
+    "high": 400
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": "typically under 400 Gbps"
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "node",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "上限值（原文 under 400 Gbps）；影响 checkpoint 写入/加载阶段时长",
+    "en": "Upper bound ('typically under 400 Gbps'); bounds checkpoint write/load stage times"
+   }
+  },
+  {
+   "id": "ascend.cm384.l1_switch_chips",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "全超节点 336 片 L1 UB 交换芯片",
+    "en": "336 L1 UB switch chips in the supernode"
+   },
+   "value": 336,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "48 nodes × 7 L1 chips per node = 336"
+   },
+   "caveat": {
+    "zh": "板载芯片；单片失效的爆炸半径 = 1 节点 1/7 带宽（若 HCCL 可降级）或整节点",
+    "en": "On-board; blast radius of one chip = 1/7 of one node's bandwidth (if HCCL degrades) or the whole node"
+   }
+  },
+  {
+   "id": "ascend.cm384.l2_switch_chips",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "全超节点 112 片 L2 UB 交换芯片",
+    "en": "112 L2 UB switch chips in the supernode"
+   },
+   "value": 112,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "7 sub-planes × 16 L2 chips = 112"
+   },
+   "caveat": {
+    "zh": "单片 L2 失效影响 48 节点各 1/112 的上行容量（同子平面内 1/16）",
+    "en": "One L2 chip failure removes 1/112 of total uplink capacity (1/16 within its sub-plane) for all 48 nodes"
+   }
+  },
+  {
+   "id": "ascend.cm384.l1_l2_links",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "L1–L2 链路共 5,376 条",
+    "en": "5,376 L1–L2 links"
+   },
+   "value": 5376,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "336 L1 chips × 16 links = 5,376 = 112 L2 chips × 48 ports"
+   },
+   "caveat": {
+    "zh": "两种算法一致，说明端口全部用满（无备用端口）",
+    "en": "Both derivations agree, implying every L2 port is used (no spare ports)"
+   }
+  },
+  {
+   "id": "ascend.cm384.links_per_subplane",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每个子平面 768 条 L1–L2 链路",
+    "en": "768 L1–L2 links per sub-plane"
+   },
+   "value": 768,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "sub-plane",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "16 L2 chips × 48 ports = 768 = 48 nodes × 16 links"
+   },
+   "caveat": {
+    "zh": "= 该子平面全部 L2 端口数",
+    "en": "= all L2 ports of that sub-plane"
+   }
+  },
+  {
+   "id": "ascend.cm384.l1_l2_transceiver_ends",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "L1–L2 链路两端共 10,752 个收发端",
+    "en": "10,752 transceiver ends on the L1–L2 links (two per link)"
+   },
+   "value": 10752,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "5,376 links × 2 ends = 10,752"
+   },
+   "caveat": {
+    "zh": "假设每条链路两端各 1 个可插拔/板载收发器；若为多通道模块复用则实际模块数更少（见 SemiAnalysis 6,912 的口径差异）",
+    "en": "Assumes one transceiver per link end; fewer physical modules if links are multiplexed onto multi-lane modules (see the 6,912 discrepancy)"
+   }
+  },
+  {
+   "id": "ascend.cm384.node_uplinks",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每节点 112 条 L1→L2 上行链路",
+    "en": "112 L1→L2 uplinks per node"
+   },
+   "value": 112,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "node",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (paper v3, Jun 2025)"
+   },
+   "provenance": {
+    "source": "Serving Large Language Models on Huawei CloudMatrix384 (arXiv:2506.12708v3, §3.3.1–3.3.3)",
+    "org": "Huawei Cloud / Huawei",
+    "venue": "arXiv (v3, 19 Jun 2025)",
+    "year": 2025,
+    "url": "https://arxiv.org/html/2506.12708v3",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "7 L1 chips × 16 uplinks = 112 = 8 NPUs × 14 links"
+   },
+   "caveat": {
+    "zh": "恰等于 8 NPU × 14 UB 链路（NPU 侧），与论文“上行带宽恰等于节点内 UB 容量”一致（忽略 CPU 的 UB 链路）",
+    "en": "Equals 8 NPUs × 14 UB links on the NPU side, consistent with the paper's 'uplink precisely matches internal UB capacity' (ignoring CPU UB links)"
+   }
+  },
+  {
+   "id": "ascend.cm384.npu_ub_links_total",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "NPU 侧 UB 链路共 5,376 条",
+    "en": "5,376 NPU-side UB links in total"
+   },
+   "value": 5376,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025 (WAIC specs via The Register)"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "384 NPUs × 14 UB links (The Register) = 5,376"
+   },
+   "caveat": {
+    "zh": "与 L1–L2 链路数相等是无阻塞设计的结果，不是同一组链路；NPU→L1 为板内链路",
+    "en": "Equal to the L1–L2 link count by non-blocking design, but these are different links (NPU→L1 is on-board)"
+   }
+  },
+  {
+   "id": "ascend.cm384.ub_bw_per_npu",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "每 NPU UB 单向带宽 392 GB/s（推算）",
+    "en": "Per-NPU unidirectional UB bandwidth 392 GB/s (derived)"
+   },
+   "value": 392,
+   "unit": "GB/s",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "npu",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "14 links × 28 GB/s = 392 GB/s (= 3,136 Gbps; 224 Gbps per link)"
+   },
+   "caveat": {
+    "zh": "论文 v3 正文未给出 392 GB/s（仅图中）；SemiAnalysis 转述为 2.8 Tbps（350 GB/s），见口径差异",
+    "en": "Paper v3 body text does not state 392 GB/s (figures only); SemiAnalysis relays 2.8 Tbps (350 GB/s) — see discrepancies"
+   }
+  },
+  {
+   "id": "ascend.cm384.ub_links_per_npu",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每颗 910C 14 条 UB 链路（每 die 7 条）",
+    "en": "14 UB links per 910C (seven per compute die)"
+   },
+   "value": 14,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "npu",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-07-29"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "华为规格经 The Register 转述；与论文每 die 7 个收发器一致",
+    "en": "Huawei spec relayed by The Register; consistent with the paper's 7 transceivers per die"
+   }
+  },
+  {
+   "id": "ascend.cm384.ub_link_bw",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "单条 UB 链路 28 GB/s",
+    "en": "28 GB/s per UB link"
+   },
+   "value": 28,
+   "unit": "GB/s",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "link",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-07-29"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "单向；= 224 Gbps/链路",
+    "en": "Unidirectional; = 224 Gbps per link"
+   }
+  },
+  {
+   "id": "ascend.cm384.npus_per_compute_rack",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "每计算柜 32 颗 NPU",
+    "en": "32 NPUs per compute rack"
+   },
+   "value": 32,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "compute rack",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-07-29"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "与 384/12 = 32 一致；机柜级供电/冷却事件的爆炸半径 = 4 节点",
+    "en": "Consistent with 384/12 = 32; a rack-level power/cooling event takes 4 nodes"
+   }
+  },
+  {
+   "id": "ascend.cm384.rdma_bw_per_npu",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "每 NPU 400 Gbps scale-out（RDMA/RoCE）网络",
+    "en": "400 Gbps of scale-out (RDMA/RoCE) networking per accelerator"
+   },
+   "value": 400,
+   "unit": "Gbps",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "npu",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-07-29"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "论文仅称每 die 1 个 RDMA 接口，未给带宽；FiberMall 转述每 die 200 Gbps（合 400 Gbps/NPU）",
+    "en": "Paper gives one RDMA interface per die but no rate; FiberMall relays 200 Gbps per die (= 400 Gbps per NPU)"
+   }
+  },
+  {
+   "id": "ascend.cm384.max_training_cluster_npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "华为宣称 CloudMatrix 可组成最多 165,000 NPU 的训练集群",
+    "en": "Huawei claims training clusters of up to 165,000 NPUs"
+   },
+   "value": 165000,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "cluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "multi-supernode cluster",
+    "period": "2025-07-29"
+   },
+   "provenance": {
+    "source": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best (Tobias Mann)",
+    "org": "The Register (relaying Huawei specifications)",
+    "venue": "The Register",
+    "year": 2025,
+    "url": "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称；≈ 430 个 CM384 超节点",
+    "en": "Vendor claim; ≈ 430 CM384 supernodes"
+   }
+  },
+  {
+   "id": "ascend.cm384.lpo_transceivers_semianalysis",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "SemiAnalysis：整 Pod 需 6,912 个 400G LPO 光收发器",
+    "en": "SemiAnalysis: the CloudMatrix Pod requires 6,912 400G LPO transceivers"
+   },
+   "value": 6912,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-04-16 (public preview, before paywall)"
+   },
+   "provenance": {
+    "source": "Huawei AI CloudMatrix 384 – China's Answer to Nvidia GB200 NVL72 (public preview, 16 Apr 2025)",
+    "org": "SemiAnalysis",
+    "venue": "SemiAnalysis newsletter",
+    "year": 2025,
+    "url": "https://newsletter.semianalysis.com/p/huawei-ai-cloudmatrix-384-chinas-answer-to-nvidia-gb200-nvl72",
+    "survey_ref": null,
+    "confidence": "scan-level",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "原文为 400G（非部分二手来源所写的 800G），“绝大多数用于 scale-up”；该计数模型（每 NPU 7 个 400G 模块 + 交换侧镜像）与论文 L1–L2 链路口径不同，见 ASCEND_SOURCES.md 口径差异",
+    "en": "Public preview says 400G (not 800G as some secondary sources state), 'the vast majority for the scale-up network'; its counting model (7×400G modules per NPU + mirrored switch side) differs from the paper's L1–L2 link 口径 — see discrepancies"
+   }
+  },
+  {
+   "id": "ascend.cm384.scaleup_transceivers_secondary",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "二手转述：6,912 中 5,376 个用于 scale-up（UB）",
+    "en": "Secondary relay: 5,376 of the 6,912 transceivers are for scale-up (UB)"
+   },
+   "value": 5376,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-05-09"
+   },
+   "provenance": {
+    "source": "Huawei CloudMatrix と 910C のセミ分析 (FiberMall blog relaying SemiAnalysis, 9 May 2025)",
+    "org": "FiberMall (secondary)",
+    "venue": "vendor blog",
+    "year": 2025,
+    "url": "https://www.fibermall.com/ja/blog/?p=17241",
+    "survey_ref": null,
+    "confidence": "scan-level",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "FiberMall 日文页转述 SemiAnalysis 付费部分，数字多处被 XNUMX 占位符破坏；= 2 × 384 × 7 的交换侧镜像计法",
+    "en": "FiberMall Japanese page relaying SemiAnalysis's paywalled section; several numbers mangled to 'XNUMX'; = 2 × 384 × 7 (NPU side mirrored on the switch side)"
+   }
+  },
+  {
+   "id": "ascend.cm384.scaleout_transceivers_secondary",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "二手转述：1,536 个 400G 光模块用于 scale-out（384 网卡 + 768 leaf + 384 spine）",
+    "en": "Secondary relay: 1,536 400G transceivers for scale-out (384 NIC + 768 leaf + 384 spine)"
+   },
+   "value": 1536,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supernode",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025-05-09"
+   },
+   "provenance": {
+    "source": "Huawei CloudMatrix と 910C のセミ分析 (FiberMall blog relaying SemiAnalysis, 9 May 2025)",
+    "org": "FiberMall (secondary)",
+    "venue": "vendor blog",
+    "year": 2025,
+    "url": "https://www.fibermall.com/ja/blog/?p=17241",
+    "survey_ref": null,
+    "confidence": "scan-level",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "两层 1:1 fat-tree 的内部自洽计数；未在 SemiAnalysis 公开部分核验",
+    "en": "Internally consistent for a two-tier 1:1 fat-tree; not verifiable in SemiAnalysis's public text"
+   }
+  },
+  {
+   "id": "ascend.cm384.ub_bw_per_npu_semianalysis",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "SemiAnalysis（转述）：每 910C 2.8 Tbps 单向 scale-up 带宽（7 × 400G）",
+    "en": "SemiAnalysis (relayed): 2.8 Tbps unidirectional scale-up bandwidth per 910C (7 × 400G modules)"
+   },
+   "value": 2.8,
+   "unit": "Tbps",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "npu",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "384 NPUs, 192 CPUs, 48 nodes, 16 racks",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "Huawei CloudMatrix と 910C のセミ分析 (FiberMall blog relaying SemiAnalysis, 9 May 2025)",
+    "org": "FiberMall (secondary)",
+    "venue": "vendor blog",
+    "year": 2025,
+    "url": "https://www.fibermall.com/ja/blog/?p=17241",
+    "survey_ref": null,
+    "confidence": "scan-level",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "= 350 GB/s，低于 Register 14 × 28 GB/s = 392 GB/s（3.136 Tbps）；二者口径不同（模块速率 vs 链路速率）",
+    "en": "= 350 GB/s vs The Register's 14 × 28 GB/s = 392 GB/s (3.136 Tbps); module rate vs link rate 口径 differ"
+   }
+  },
+  {
+   "id": "ascend.atlas950.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 最多 8,192 颗昇腾 950DT",
+    "en": "Atlas 950 SuperPoD: up to 8,192 Ascend 950DT NPUs"
+   },
+   "value": 8192,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "announced 2025-09-18; ships Q4 2026"
+   },
+   "provenance": {
+    "source": "Huawei Unveils World's Most Powerful SuperPoDs and SuperClusters (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025 press release, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-lingqu-ai-superpod",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称；2026 Q4 上市（徐直军主旨演讲）",
+    "en": "Vendor claim; availability Q4 2026 (Xu keynote)"
+   }
+  },
+  {
+   "id": "ascend.atlas950.cabinets_total",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 满配 160 个机柜",
+    "en": "Atlas 950 SuperPoD full configuration: 160 cabinets"
+   },
+   "value": 160,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "128 计算柜 + 32 互联柜，占地约 1,000 m²，柜间全光互联",
+    "en": "128 compute + 32 communications cabinets, ~1,000 m², all-optical inter-cabinet links"
+   }
+  },
+  {
+   "id": "ascend.atlas950.compute_cabinets",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 128 个计算柜",
+    "en": "Atlas 950 SuperPoD: 128 compute cabinets"
+   },
+   "value": 128,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "8,192 / 128 = 64 NPU/柜，与 MWC 2026 新闻稿一致",
+    "en": "8,192 / 128 = 64 NPUs per cabinet, consistent with the MWC 2026 release"
+   }
+  },
+  {
+   "id": "ascend.atlas950.communication_cabinets",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 32 个互联（通信）柜",
+    "en": "Atlas 950 SuperPoD: 32 communications cabinets"
+   },
+   "value": 32,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "计算柜:通信柜 = 4:1（CM384 为 3:1）",
+    "en": "Compute:communication = 4:1 (CM384 is 3:1)"
+   }
+  },
+  {
+   "id": "ascend.atlas950.npus_per_cabinet",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 每柜 64 颗 NPU",
+    "en": "Atlas 950 SuperPoD integrates 64 NPUs per cabinet"
+   },
+   "value": 64,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "compute cabinet",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "2026-03-02"
+   },
+   "provenance": {
+    "source": "Huawei Unveiled the Latest SuperPoD, Making an AI Infrastructure New Option to the World (MWC Barcelona 2026)",
+    "org": "Huawei",
+    "venue": "MWC Barcelona 2026 press release, 2 Mar 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/3/mwc-superpod-ai",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "机柜级事件爆炸半径 = 64 NPU（CM384 为 32）",
+    "en": "Cabinet-level blast radius = 64 NPUs (CM384: 32)"
+   }
+  },
+  {
+   "id": "ascend.atlas950.floor_area",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 占地约 1,000 m²",
+    "en": "Atlas 950 SuperPoD deployed in ~1,000 m²"
+   },
+   "value": 1000,
+   "unit": "m2",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_claim",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs, 160 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "柜间距离大 → 全光互联，光链路数量是可靠性核心变量",
+    "en": "Large inter-cabinet distances force all-optical links; optical link count becomes the key reliability variable"
+   }
+  },
+  {
+   "id": "ascend.atlas950.interconnect_bw",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "Atlas 950 SuperPoD 互联带宽 16.3 PB/s",
+    "en": "Atlas 950 SuperPoD interconnect bandwidth 16.3 PB/s"
+   },
+   "value": 16.3,
+   "unit": "PB/s",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "演讲中既说 16 PB/s 也说 16.3 PB/s；IT之家转载 16.3 PB/s",
+    "en": "Keynote says both '16 PB/s' and '16.3 PB/s'; ITHome relays 16.3 PB/s"
+   }
+  },
+  {
+   "id": "ascend.atlas950.ub_latency",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "灵衢互联时延 2.1 微秒",
+    "en": "UnifiedBus interconnect latency 2.1 microseconds"
+   },
+   "value": 2.1,
+   "unit": "us",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "latency",
+    "denominator": "event",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperPoD (Ascend 950DT)",
+    "scale": "8,192 NPUs",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称；口径（单跳/端到端、负载）未说明",
+    "en": "Vendor claim; 口径 (per hop vs end-to-end, load) not defined"
+   }
+  },
+  {
+   "id": "ascend.atlas960.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperPoD 最多 15,488 颗昇腾 960",
+    "en": "Atlas 960 SuperPoD: up to 15,488 Ascend 960 NPUs"
+   },
+   "value": 15488,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperPoD (Ascend 960)",
+    "scale": "15,488 NPUs, 220 cabinets",
+    "period": "announced 2025-09-18; ships Q4 2027"
+   },
+   "provenance": {
+    "source": "Huawei Unveils World's Most Powerful SuperPoDs and SuperClusters (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025 press release, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-lingqu-ai-superpod",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称；2027 Q4；2026 年发布的 Atlas 960E（4,096 NPU, NPO）是另一产品",
+    "en": "Vendor claim; Q4 2027; the Atlas 960E announced in 2026 (4,096 NPUs, NPO) is a different product"
+   }
+  },
+  {
+   "id": "ascend.atlas960.cabinets_total",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperPoD 220 个机柜",
+    "en": "Atlas 960 SuperPoD: 220 cabinets"
+   },
+   "value": 220,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperPoD (Ascend 960)",
+    "scale": "15,488 NPUs, 220 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "176 计算 + 44 通信",
+    "en": "176 compute + 44 communications"
+   }
+  },
+  {
+   "id": "ascend.atlas960.compute_cabinets",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperPoD 176 个计算柜",
+    "en": "Atlas 960 SuperPoD: 176 compute cabinets"
+   },
+   "value": 176,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperPoD (Ascend 960)",
+    "scale": "15,488 NPUs, 220 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "15,488 / 176 = 88 NPU/柜（高于 Atlas 950 的 64），华为未解释",
+    "en": "15,488 / 176 = 88 NPUs per cabinet (vs 64 for Atlas 950); Huawei gives no explanation"
+   }
+  },
+  {
+   "id": "ascend.atlas960.communication_cabinets",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperPoD 44 个通信柜",
+    "en": "Atlas 960 SuperPoD: 44 communications cabinets"
+   },
+   "value": 44,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperPoD (Ascend 960)",
+    "scale": "15,488 NPUs, 220 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "4:1 比例与 Atlas 950 相同",
+    "en": "Same 4:1 ratio as Atlas 950"
+   }
+  },
+  {
+   "id": "ascend.atlas960.npus_per_compute_cabinet_derived",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperPoD 每计算柜 88 颗 NPU（推算）",
+    "en": "Atlas 960 SuperPoD: 88 NPUs per compute cabinet (derived)"
+   },
+   "value": 88,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "compute cabinet",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperPoD (Ascend 960)",
+    "scale": "15,488 NPUs, 220 cabinets",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "15,488 / 176 = 88"
+   },
+   "caveat": {
+    "zh": "仅为算术推算；可能计算柜密度不同或‘柜’口径不同",
+    "en": "Arithmetic only; cabinet density or the definition of 'cabinet' may differ"
+   }
+  },
+  {
+   "id": "ascend.atlas950_supercluster.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperCluster 超过 50 万（52 万余）昇腾 950DT",
+    "en": "Atlas 950 SuperCluster: over 500,000 (520,000+) Ascend 950DT NPUs"
+   },
+   "value": 520000,
+   "unit": "count",
+   "range": {
+    "low": 500000,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": ">500,000 (press) / 520,000+ (keynote)"
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supercluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperCluster",
+    "scale": "64 SuperPoDs",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "64 个 Atlas 950 超节点、1 万多机柜；2026 Q4",
+    "en": "64 Atlas 950 SuperPoDs, >10,000 cabinets; Q4 2026"
+   }
+  },
+  {
+   "id": "ascend.atlas950_supercluster.superpods",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperCluster 由 64 个 Atlas 950 超节点组成",
+    "en": "Atlas 950 SuperCluster = 64 Atlas 950 SuperPoDs"
+   },
+   "value": 64,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supercluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperCluster",
+    "scale": "64 SuperPoDs",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "64 × 8,192 = 524,288，与“52 万多”一致",
+    "en": "64 × 8,192 = 524,288, consistent with '520,000+'"
+   }
+  },
+  {
+   "id": "ascend.atlas950_supercluster.cabinets",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 950 SuperCluster 超过 10,000 个机柜",
+    "en": "Atlas 950 SuperCluster: over 10,000 cabinets"
+   },
+   "value": 10000,
+   "unit": "count",
+   "range": {
+    "low": 10000,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": ">10,000"
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supercluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 950 SuperCluster",
+    "scale": "64 SuperPoDs",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "64 × 160 = 10,240",
+    "en": "64 × 160 = 10,240"
+   }
+  },
+  {
+   "id": "ascend.atlas960_supercluster.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960 SuperCluster 超过 100 万昇腾 NPU",
+    "en": "Atlas 960 SuperCluster: over one million Ascend NPUs"
+   },
+   "value": 1000000,
+   "unit": "count",
+   "range": {
+    "low": 1000000,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": ">1,000,000"
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supercluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960 SuperCluster",
+    "scale": "million-NPU class",
+    "period": "announced 2025-09-18; Q4 2027"
+   },
+   "provenance": {
+    "source": "Huawei Unveils World's Most Powerful SuperPoDs and SuperClusters (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025 press release, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-lingqu-ai-superpod",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商路线图；2027 Q4",
+    "en": "Vendor roadmap; Q4 2027"
+   }
+  },
+  {
+   "id": "ascend.ub2.optical_fault_switchover",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "灵衢 2.0：光路百纳秒级故障检测与保护切换",
+    "en": "UnifiedBus 2.0: 100-ns-level fault detection and protection switching on optical paths"
+   },
+   "value": 100,
+   "unit": "ns",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": "order-of-magnitude claim"
+   },
+   "koujing": {
+    "event": "optical_path_switchover",
+    "denominator": "event",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "UnifiedBus 2.0 (Atlas 950 SuperPoD and later)",
+    "scale": "all-optical inter-cabinet links",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "英文稿 '100-ns-level'，中文稿“百纳秒级”（数百纳秒量级）；目标是让光模块闪断对应用无感；未定义检测覆盖率与切换成功率",
+    "en": "English text '100-ns-level', Chinese text 百纳秒级 ('hundreds-of-ns level'); intent: optical-module flaps imperceptible to applications; coverage and switchover success probability undefined"
+   }
+  },
+  {
+   "id": "ascend.ub2.optical_reliability_gain",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "灵衢：光互联可靠性提升 100 倍",
+    "en": "UnifiedBus: optical interconnect made '100 times more reliable'"
+   },
+   "value": 100,
+   "unit": "x",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "reliability_ratio",
+    "denominator": "optical interconnect",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "UnifiedBus 2.0 (Atlas 950 SuperPoD and later)",
+    "scale": "all-optical inter-cabinet links",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "基线未说明（传统可插拔光模块？）；指标未定义（失效率？闪断率？应用可见中断？）",
+    "en": "Baseline unstated (conventional pluggable optics?); metric undefined (failure rate? flap rate? application-visible interruptions?)"
+   }
+  },
+  {
+   "id": "ascend.ub2.interconnect_reach",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "灵衢互联距离超过 200 米",
+    "en": "UnifiedBus interconnect range over 200 meters"
+   },
+   "value": 200,
+   "unit": "m",
+   "range": {
+    "low": 200,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_claim",
+    "denominator": "link",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "UnifiedBus 2.0",
+    "scale": "all-optical inter-cabinet links",
+    "period": "announced 2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "铜缆最多连两柜 → 大超节点必须全光",
+    "en": "Copper reaches two cabinets at most → large SuperPoDs must be all-optical"
+   }
+  },
+  {
+   "id": "ascend.atlas900a3.deployed_units",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 900 A3 超节点已部署超过 300 套（2025-09）",
+    "en": "More than 300 Atlas 900 A3 SuperPoDs deployed (as of Sep 2025)"
+   },
+   "value": 300,
+   "unit": "count",
+   "range": {
+    "low": 300,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": ">300"
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "fleet",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD (Ascend 910C, dual-die)",
+    "scale": "fleet of >300 supernodes",
+    "period": "2025-09-18"
+   },
+   "provenance": {
+    "source": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HUAWEI CONNECT 2025)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2025, Shanghai, 18 Sep 2025",
+    "year": 2025,
+    "url": "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "灵衢 1.0 自 2025 年 3 月交付；服务 20 多个客户；无公开现场故障数据",
+    "en": "UnifiedBus 1.0 shipping since March 2025; 20+ customers; no public field-failure data"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960E SuperPoD 最多 4,096 颗 NPU",
+    "en": "Atlas 960E SuperPoD scales to 4,096 NPUs"
+   },
+   "value": 4096,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "全光灵衢 + NPO；8 EFLOPS FP8 / 16 EFLOPS FP4",
+    "en": "All-optical UnifiedBus + NPO; 8 EFLOPS FP8 / 16 EFLOPS FP4"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.system_availability",
+   "class": "ascend",
+   "kind": "availability",
+   "name": {
+    "zh": "Atlas 960E 系统可用度 99.8%",
+    "en": "Atlas 960E: 99.8% system availability"
+   },
+   "value": 99.8,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "system_availability",
+    "denominator": "wall_clock (undefined by source)",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称；统计周期、是否含计划内停机、作业级还是系统级均未定义；99.8% ≈ 17.5 h/年不可用",
+    "en": "Vendor claim; period, planned-downtime treatment and job-vs-system scope undefined; 99.8% ≈ 17.5 h/yr unavailable"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.fault_free_time_gain",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "Atlas 960E 系统无故障运行时间翻倍",
+    "en": "Atlas 960E: system fault-free operating time doubled"
+   },
+   "value": 2,
+   "unit": "x",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "mtbf_ratio",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "基线未说明（推测为可插拔光模块方案）；部分媒体改写为 MTBF 翻倍",
+    "en": "Baseline unstated (presumably the pluggable-optics design); some press rewrites it as 'MTBF doubled'"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.hi_one_units",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960E 集成 5,500 个 Hi-ONE NPO 光引擎",
+    "en": "Atlas 960E integrates 5,500 Hi-ONE NPO optical engines"
+   },
+   "value": 5500,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "每个 7.2 Tbit/s；取代 48,000 个 800G 光模块 → 光学器件数减少约 8.7 倍",
+    "en": "7.2 Tbit/s each; replaces 48,000 800G modules → ~8.7× fewer optical devices"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.replaced_800g_modules",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "传统设计连接同等 NPU 需 48,000 个 800G 光模块",
+    "en": "A conventional design would need 48,000 800G optical modules for the same NPUs"
+   },
+   "value": 48000,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "superpod",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "华为自述的反事实基线；48,000 / 4,096 ≈ 11.7 模块/NPU",
+    "en": "Huawei's own counterfactual baseline; 48,000 / 4,096 ≈ 11.7 modules per NPU"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.hi_one_capacity",
+   "class": "ascend",
+   "kind": "bandwidth",
+   "name": {
+    "zh": "Hi-ONE 单引擎传输容量 7.2 Tbit/s",
+    "en": "Hi-ONE optical engine: 7.2 Tbit/s transmission capacity"
+   },
+   "value": 7.2,
+   "unit": "Tbps",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "bandwidth",
+    "denominator": "optical engine",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperPoD (NPO, Hi-ONE optical engines)",
+    "scale": "4,096 NPUs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "5,500 × 7.2 Tbit/s = 39.6 Pbit/s ≈ 4.95 PB/s 原始光容量",
+    "en": "5,500 × 7.2 Tbit/s = 39.6 Pbit/s ≈ 4.95 PB/s raw optical capacity"
+   }
+  },
+  {
+   "id": "ascend.atlas960e.supercluster_npus",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "Atlas 960E SuperCluster 最多 512,000 NPU（多轨拓扑可达 100 万）",
+    "en": "Atlas 960E SuperCluster: up to 512,000 NPUs (one million with multi-rail topology)"
+   },
+   "value": 512000,
+   "unit": "count",
+   "range": {
+    "low": 512000,
+    "high": 1000000
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "topology_count",
+    "denominator": "supercluster",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 960E SuperCluster",
+    "scale": "125 SuperPoDs",
+    "period": "announced 2026-09-17"
+   },
+   "provenance": {
+    "source": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD (press release)",
+    "org": "Huawei",
+    "venue": "HUAWEI CONNECT 2026, Shanghai, 17 Sep 2026",
+    "year": 2026,
+    "url": "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称",
+    "en": "Vendor claim"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.recovery_ladder_levels",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "MindCluster 断点续训恢复梯级：6 级",
+    "en": "MindCluster resumable-training recovery ladder: 6 levels"
+   },
+   "value": 6,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_levels",
+    "denominator": "fault-handling ladder",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 Cluster Scheduling User Guide — Resumable Training — Fault Handling Description",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_021.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "算子级在线恢复 → 进程级在线恢复 → 进程级重调度 → Pod 级重调度 → 作业级重调度（默认）→ 弹性训练；高层失败回退到低层",
+    "en": "Operator-level online recovery → process-level online recovery → process-level rescheduling → pod-level rescheduling → job-level rescheduling (default) → elastic training; failure at a higher rung falls back to the next lower rung"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.operator_level_coverage",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "算子级在线恢复覆盖：处理器网络故障与灵衢互联设备故障（HCCS/RoCE 链路 down → HCCL 重传算子）",
+    "en": "Operator-level online recovery covers processor network faults and UnifiedBus interconnect device faults (HCCS/RoCE linkdown → HCCL retransmits the operator)"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "fault_coverage",
+    "denominator": "recovery level",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Atlas 900 A3 SuperPoD cluster computing system",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Resumable Training — Operator-Level Online Recovery",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_114.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "仅 Atlas A3；不支持 MC2、Watchdog；CANN 检测 linkdown → 终止当前算子 → 恢复链路（HCCS 走 BGP 切换 / RoCE 链路倒换）→ 重执行算子；失败则触发进程级在线恢复",
+    "en": "Atlas A3 only; not with MC2 or Watchdog; CANN detects linkdown → kills the current operator → restores the link (BGP switching on HCCS / failover on RoCE) → re-executes → resumes; on failure escalates to process-level online recovery"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.process_level_online_coverage",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "进程级在线恢复（step 级重算）覆盖：HCCS L1–L2 端口/链路故障、RoCE 上层端口/链路故障（算子级失败后）、片上内存不可纠正错误（如 0x80E01801，隔离后 step 级重试）",
+    "en": "Process-level online recovery (step-level recomputation) covers HCCS L1–L2 port/link faults and RoCE upper-level port/link faults after operator-level recovery fails, plus on-chip memory uncorrectable errors (e.g., 0x80E01801: isolate, retry the step)"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "fault_coverage",
+    "denominator": "recovery level",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Resumable Training — Process-Level Online Recovery",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_026.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "默认关闭；需 PyTorch 2.7.1 + MindSpeed-LLM 2.3.0；不与优雅容错同开；HCCL 建链阶段故障会导致失败；HCCL 内存地址故障不覆盖；checkpoint 经 NPU 间高速网络传输，依赖健康 NPU 上的优化器副本",
+    "en": "Disabled by default; needs PyTorch 2.7.1 + MindSpeed-LLM 2.3.0; not with graceful fault tolerance; faults during HCCL link setup make it fail; HCCL memory-address faults not covered; checkpoint data moves NPU-to-NPU and depends on optimizer replicas on healthy NPUs"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.process_level_rescheduling_dependence",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "进程级重调度：recover（迁移故障节点容器到备用服务器）/ recover-in-place（仅重启故障进程）；依赖备用冗余计算服务器；耗时与作业规模弱相关",
+    "en": "Process-level rescheduling: 'recover' (migrate the faulty node's containers to a standby server) or 'recover-in-place' (restart only the faulty processes); depends on backup redundant compute servers; time weakly related to job scale"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "fault_coverage",
+    "denominator": "recovery level",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Resumable Training — Process-Level Rescheduling",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_025.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "ClusterD 销毁故障服务器上的作业容器并重调度到备用服务器；recover-in-place 仅处理业务进程异常和 RestartRequest/RestartBusiness 级处理器故障；Atlas A3 上 NPU/OS 掉线可能导致失败；无备机时走弹性训练缩容",
+    "en": "ClusterD destroys the job container on the faulty server and reschedules it to the standby server; recover-in-place handles only service-process exceptions and RestartRequest/RestartBusiness-level processor faults; on Atlas A3 an NPU/OS disconnection may make it fail; without a spare server the job falls to elastic (scale-in) training"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.rank0_rule",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "rank 0 规则：hccl/rankIndex 为 0 的 Pod 故障时不触发 Pod 级/进程级重调度，改走作业级重调度",
+    "en": "Rank-0 rule: a fault on the pod with hccl/rankIndex 0 does not trigger pod-level or process-level rescheduling; job-level rescheduling is used instead"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_rule",
+    "denominator": "faults on rank-0 pod",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Resumable Training — Process-Level Rescheduling",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_025.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "建模含义：1/N 的节点故障（N = 节点数）必然落到最慢梯级；对 48 节点超节点约 2%",
+    "en": "Modelling implication: a fraction 1/N of node faults (N = node count) always takes the slowest rung — about 2% for a 48-node supernode"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.job_level_default",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "作业级重调度为默认级：每次故障停止所有 Pod，恢复时间随作业规模急剧增长；无备机且硬件不可恢复时转弹性训练",
+    "en": "Job-level rescheduling is the default: every fault stops all pods and recovery time grows steeply with job scale; with an unrecoverable hardware fault and no spare server, elastic (scale-in) training is used"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "fault_coverage",
+    "denominator": "recovery level",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 Cluster Scheduling User Guide — Resumable Training — Fault Handling Description",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/dl_resume_021.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "文档原话 'increases exponentially with task scale'（作业级）与 'superlinearly'（Pod 级）；两种重调度策略：直接重调度（可检测硬件故障，隔离节点/处理器）与无条件重试（不可检测故障，fault-retry-times 次）",
+    "en": "Doc wording: recovery time 'increases exponentially with task scale' (job-level) and 'superlinearly' (pod-level); two policies: direct rescheduling (detectable hardware faults; node/processor isolated) and unconditional retry (undetectable faults; up to fault-retry-times)"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_fault_code",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "慢节点故障码 110001010，级别 SubHealthFault（单次上报）；恢复码 100001011 NotHandleFault",
+    "en": "Slow-node fault code 110001010, level SubHealthFault (single-event reporting); recovery code 100001011 NotHandleFault"
+   },
+   "value": 110001010,
+   "unit": "code",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "subhealth_fault",
+    "denominator": "node",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "亚健康事件不是故障事件：进入可用率模型时属降速（fail-slow）事件类，不得与中断相加",
+    "en": "A sub-health event is not a failure event: it belongs to the fail-slow class and must not be added to interruptions"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_degradation_threshold",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "慢节点判定阈值 degradationPercentage 默认 0.3（允许 30% 性能下降）",
+    "en": "Slow-node threshold degradationPercentage default 0.3 (30% allowed performance drop)"
+   },
+   "value": 0.3,
+   "unit": "fraction",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detector_threshold",
+    "denominator": "node",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "低于 30% 的降速不会被判定为慢节点，是降速损失模型的灵敏度下限",
+    "en": "Slowdowns under 30% are not flagged: this is the sensitivity floor for a fail-slow loss model"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_consecutive_anomalies",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "慢节点判定需连续异常次数 nConsecAnomaliesSignifySlow 默认 3",
+    "en": "Slow-node detection requires nConsecAnomaliesSignifySlow = 3 consecutive anomalies (default)"
+   },
+   "value": 3,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detector_threshold",
+    "denominator": "consecutive detections",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "其余默认：normalNumber 20，nSigma 3，clusterMeanDistance 1.3，cardOneNode 16",
+    "en": "Other defaults: normalNumber 20, nSigma 3, clusterMeanDistance 1.3, cardOneNode 16"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_detection_period",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "慢节点检测周期 nSecondsDoOneDetection 默认 30 s",
+    "en": "Slow-node detection interval nSecondsDoOneDetection default 30 s"
+   },
+   "value": 30,
+   "unit": "s",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detection_period",
+    "denominator": "detection",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "仅在线部署（ClusterD + NodeD）支持",
+    "en": "Only the online deployment (ClusterD + NodeD) is supported"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_min_detection_latency_derived",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "慢节点最短判定时延 ≥ 90 s（推算）",
+    "en": "Minimum slow-node detection latency ≥ 90 s (derived)"
+   },
+   "value": 90,
+   "unit": "s",
+   "range": {
+    "low": 90,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detection_latency",
+    "denominator": "event",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "3 consecutive anomalies × 30 s period = 90 s"
+   },
+   "caveat": {
+    "zh": "下界：不含数据清洗与调度延迟；是降速事件 MTTR 中“检测”阶段的最小值",
+    "en": "Lower bound: excludes data-cleaning and scheduling delay; minimum of the 'detect' stage in a fail-slow MTTR"
+   }
+  },
+  {
+   "id": "ascend.mindcluster.slow_node_nsigma",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "慢节点阈值 nSigma 默认 3",
+    "en": "Slow-node threshold nSigma default 3"
+   },
+   "value": 3,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detector_threshold",
+    "denominator": "detection",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Ascend training clusters managed by MindCluster 7.3 (Atlas 800T A2 / Atlas 900 A3 SuperPoD)",
+    "scale": null,
+    "period": "MindCluster 7.3.0 (2025)"
+   },
+   "provenance": {
+    "source": "MindCluster 7.3.0 — Fault Diagnosis — Slow Node Diagnosis",
+    "org": "Huawei Ascend (hiascend.com documentation)",
+    "venue": "MindCluster 7.3.0 docs",
+    "year": 2025,
+    "url": "https://www.hiascend.com/document/detail/en/mindcluster/730/clustersched/schedulingug/mindxdlFDUG138.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "3σ 上下阈值；与 degradationPercentage 共同决定误报/漏报",
+    "en": "3-sigma upper/lower thresholds; with degradationPercentage sets false-positive/negative trade-off"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.training_availability_10k",
+   "class": "ascend",
+   "kind": "availability",
+   "name": {
+    "zh": "万卡集群训练可用度 98%（全年 358 天可随时启动训练）",
+    "en": "10,000-card cluster training availability 98% (training can start on 358 of 365 days)"
+   },
+   "value": 98,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "training_availability",
+    "denominator": "calendar days (358/365)",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06"
+   },
+   "provenance": {
+    "source": "算法创新Lab助力昇腾云实现万卡级算力集群突破 (Huawei Cloud Algorithm Innovation Lab news page)",
+    "org": "Huawei Cloud",
+    "venue": "huaweicloud.com lab news",
+    "year": 2025,
+    "url": "https://www.huaweicloud.com/lab/algorithm/news/Ascend_10k_cards_level_computing_power_cluster_breakthrough.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商自述；口径为“可随时启动训练的天数”，不是作业 goodput，也未说明故障如何计入；98% ≈ 7.3 天/年",
+    "en": "Vendor claim; 口径 is 'days on which training can start', not job goodput; fault accounting undefined; 98% ≈ 7.3 days/yr"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.inference_availability_requirement",
+   "class": "ascend",
+   "kind": "availability",
+   "name": {
+    "zh": "AI 推理可用度需达到 99.95%（华为提出的要求，非实测）",
+    "en": "AI inference availability 'needs to reach 99.95%' (a requirement stated by Huawei, not a measurement)"
+   },
+   "value": 99.95,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "availability_target",
+    "denominator": "wall_clock",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "inference services",
+    "period": "2025-06-10"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；与华为云 ModelArts SLA 的 99.95% 月度目标数值相同；99.95% ≈ 4.4 h/年",
+    "en": "Press relay; numerically the same as the ModelArts SLA monthly target; 99.95% ≈ 4.4 h/yr"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.recovery_job_level_10k",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "万卡作业故障恢复训练 10 分钟内（作业级）",
+    "en": "10,000-card job recovers training within 10 minutes (job-level)"
+   },
+   "value": 10,
+   "unit": "min",
+   "range": {
+    "low": null,
+    "high": 10
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06-10",
+    "stage": "restart"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述华为云宣称值（上限“10 分钟内”）；对应 MindCluster 作业级重调度；含 checkpoint 加载",
+    "en": "Press relay of Huawei Cloud claim (upper bound 'within 10 min'); maps to MindCluster job-level rescheduling; includes checkpoint load"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.recovery_process_level_rescheduling",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "进程级重调度恢复 3 分钟内",
+    "en": "Process-level rescheduling recovery within 3 minutes"
+   },
+   "value": 3,
+   "unit": "min",
+   "range": {
+    "low": null,
+    "high": 3
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06-10",
+    "stage": "restart"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；依赖备用服务器；不含故障检测时间",
+    "en": "Press relay; depends on standby servers; excludes detection time"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.recovery_process_level_online",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "进程级在线恢复 30 秒内重新开始训练",
+    "en": "Process-level online recovery restarts training within 30 seconds"
+   },
+   "value": 30,
+   "unit": "s",
+   "range": {
+    "low": null,
+    "high": 30
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06-10",
+    "stage": "restart"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；对应 MindCluster step 级重算（默认关闭）",
+    "en": "Press relay; maps to MindCluster step-level recomputation (disabled by default)"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.recovery_step_level_hbm_mbe",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "HBM 多比特 ECC 故障经 Step 级重调度 1 分钟内恢复",
+    "en": "HBM multi-bit ECC faults handled by step-level rescheduling within 1 minute"
+   },
+   "value": 1,
+   "unit": "min",
+   "range": {
+    "low": null,
+    "high": 1
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06-10",
+    "stage": "restart"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；MindCluster 文档对应“片上内存 UCE 隔离 + step 级重试”；华为同时宣称用户因故障损失的算力减少 5%",
+    "en": "Press relay; MindCluster docs call this on-chip-memory UCE isolation + step-level retry; Huawei also claims a 5% reduction in compute lost to faults"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.step_level_compute_loss_reduction",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "Step 级重调度使用户因故障损失的算力减少 5%",
+    "en": "Step-level rescheduling cuts compute lost to faults by 5%"
+   },
+   "value": 5,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "goodput_gain",
+    "denominator": "lost compute",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "10,000-card class",
+    "period": "2025-06-10"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "基线与统计口径未说明",
+    "en": "Baseline and accounting undefined"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.optical_flap_tolerance",
+   "class": "ascend",
+   "kind": "probability",
+   "name": {
+    "zh": "超节点可容忍超过 99% 的光模块闪断（不中断训练）",
+    "en": "Supernode tolerates over 99% of optical-module flaps without interrupting training"
+   },
+   "value": 99,
+   "unit": "pct",
+   "range": {
+    "low": 99,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "flap_tolerance",
+    "denominator": "optical-module flap events",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "CloudMatrix384 / Atlas 900 A3 SuperPoD",
+    "scale": null,
+    "period": "2025-06-10"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "手段：链路级重传、光模块动态调整 Lane、重执行 HCCL 算子、借轨通信、双层路由快速恢复、Step 级重调度；建模为闪断事件的中断概率 ≤ 1%",
+    "en": "Mechanisms: link-level retransmission, dynamic lane adjustment, HCCL operator re-execution, rail borrowing, two-layer fast reroute, step-level rescheduling; model as P(interruption | flap) ≤ 1%"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.inference_token_retry_recovery",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "推理 TOKEN 级重试：HBM KV Cache 故障到重新输出 Token 不到 10 秒",
+    "en": "Inference TOKEN-level retry: under 10 s from an HBM KV-cache fault to tokens flowing again"
+   },
+   "value": 10,
+   "unit": "s",
+   "range": {
+    "low": null,
+    "high": 10
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "inference",
+    "period": "2025-06-10",
+    "workload": "inference"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；华为称相对行业 10 分钟实例恢复影响降低 60 倍",
+    "en": "Press relay; Huawei claims a 60× smaller impact than the industry's 10-minute instance recovery"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.inference_instance_restart",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "推理实例内重启恢复 5 分钟以内",
+    "en": "Inference in-instance restart recovery within 5 minutes"
+   },
+   "value": 5,
+   "unit": "min",
+   "range": {
+    "low": null,
+    "high": 5
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_time",
+    "denominator": "event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Ascend clusters (Atlas 800T A2 and CloudMatrix; 10,000-card class)",
+    "scale": "inference",
+    "period": "2025-06-10",
+    "workload": "inference"
+   },
+   "provenance": {
+    "source": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断 (QbitAI, 金磊, 10 Jun 2025 — press relay of Huawei Cloud claims)",
+    "org": "QbitAI 量子位 (relaying Huawei Cloud)",
+    "venue": "qbitai.com",
+    "year": 2025,
+    "url": "https://www.qbitai.com/2025/06/292512.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "量子位转述；带内快速故障感知 + 权重/镜像预热",
+    "en": "Press relay; in-band fault sensing + weight/image pre-warming"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.subhealth_definition",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "亚健康定义：硬件或系统处于非正常工作状态，但尚未引发显著故障",
+    "en": "Sub-health definition: hardware or a system is in an abnormal working state that has not yet caused a significant failure"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "definition",
+    "denominator": "n/a",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud (general)",
+    "scale": null,
+    "period": "2026"
+   },
+   "provenance": {
+    "source": "云可用性工程Lab 研究方向 (Huawei Cloud Availability Engineering Lab, research directions)",
+    "org": "Huawei Cloud",
+    "venue": "huaweicloud.com/lab/reliability",
+    "year": 2026,
+    "url": "https://www.huaweicloud.com/lab/reliability/research.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "华为云可用性工程 Lab 研究方向页；亚健康管理、SDC 测试、混沌工程为其研究方向；无量化数据",
+    "en": "Huawei Cloud Availability Engineering Lab research page; sub-health management, SDC testing and chaos engineering are listed directions; no quantitative data"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.modelarts_subhealth_guidance",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "ModelArts 节点故障处置：NPU/GPU/IB/网络类指标“可能是亚健康，建议先重启节点，未恢复则发起维修”；K8s NotReady 先设不可调度并迁移业务 Pod",
+    "en": "ModelArts node-fault guidance: NPU/GPU/IB/network indicators 'may be sub-health — restart the node first; if not recovered, start repair'; for K8s NotReady, cordon the node and move business pods first"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "recovery_rule",
+    "denominator": "node fault",
+    "level": "node",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud ModelArts Lite Cluster (Ascend/GPU)",
+    "scale": null,
+    "period": "2026"
+   },
+   "provenance": {
+    "source": "如何定位和处理Cluster资源池节点故障 (ModelArts troubleshooting)",
+    "org": "Huawei Cloud",
+    "venue": "support.huaweicloud.com",
+    "year": 2026,
+    "url": "https://support.huaweicloud.com/trouble-modelarts/modelarts_13_0287.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "NPU 其他错误、ECC 计数过多、NTP 失败、kubelet 磁盘只读、GPU SMI 错误直接报修；节点代理（DaemonSet）写 NodeCondition 并上报 AOM；无时长数据",
+    "en": "NPU 'other errors', excessive ECC counts, NTP failure, read-only kubelet disk, GPU SMI errors go straight to repair; node-agent DaemonSet writes NodeCondition and reports to AOM; no durations given"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.hccl_reexec_success",
+   "class": "ascend",
+   "kind": "probability",
+   "name": {
+    "zh": "超节点 HCCL 通信算子级重执行成功率约 95%",
+    "en": "Supernode HCCL operator-level re-execution success rate about 95%"
+   },
+   "value": 95,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "reexecution_success",
+    "denominator": "re-execution attempts",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Snt9b23 supernode (Ascend)",
+    "scale": null,
+    "period": "2026-02-06"
+   },
+   "provenance": {
+    "source": "开启超节点HCCL通信算子级重执行机制 (ModelArts Lite Server user manual, Snt9b23 supernode; updated 2026-02-06)",
+    "org": "Huawei Cloud",
+    "venue": "support.huaweicloud.com",
+    "year": 2026,
+    "url": "https://support.huaweicloud.com/resmgmt-modelarts/usermanual-server-0037.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "前提：故障发生时通信域内所有卡停在同一通信算子，否则无法重执行；默认等待 5000 ms、重试间隔 1000 ms、最多 3 次",
+    "en": "Requires all cards in the communication domain to be stopped at the same operator; defaults: 5000 ms wait, 1000 ms interval, max 3 retries"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.roce_flap_threshold",
+   "class": "ascend",
+   "kind": "duration",
+   "name": {
+    "zh": "RoH/RoCE 平面闪断持续超过 30 秒或断链才触发借轨 + 算子级重执行",
+    "en": "RoH/RoCE plane: a flap lasting over 30 s, or a link-down, triggers rail borrowing and operator-level re-execution"
+   },
+   "value": 30,
+   "unit": "s",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "detection_threshold",
+    "denominator": "event",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Snt9b23 supernode (Ascend)",
+    "scale": null,
+    "period": "2026-02-06"
+   },
+   "provenance": {
+    "source": "开启超节点HCCL通信算子级重执行机制 (ModelArts Lite Server user manual, Snt9b23 supernode; updated 2026-02-06)",
+    "org": "Huawei Cloud",
+    "venue": "support.huaweicloud.com",
+    "year": 2026,
+    "url": "https://support.huaweicloud.com/resmgmt-modelarts/usermanual-server-0037.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "30 秒内的闪断由链路层吸收；是 RoCE 面闪断的“可见性阈值”",
+    "en": "Flaps shorter than 30 s are absorbed at the link layer; this is the visibility threshold for RoCE-plane flaps"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.hccl_reexec_max_retries",
+   "class": "ascend",
+   "kind": "count",
+   "name": {
+    "zh": "HCCL 重执行最大次数默认 3",
+    "en": "HCCL re-execution maximum retries default 3"
+   },
+   "value": 3,
+   "unit": "count",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "retry_limit",
+    "denominator": "fault event",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Snt9b23 supernode (Ascend)",
+    "scale": null,
+    "period": "2026-02-06"
+   },
+   "provenance": {
+    "source": "开启超节点HCCL通信算子级重执行机制 (ModelArts Lite Server user manual, Snt9b23 supernode; updated 2026-02-06)",
+    "org": "Huawei Cloud",
+    "venue": "support.huaweicloud.com",
+    "year": 2026,
+    "url": "https://support.huaweicloud.com/resmgmt-modelarts/usermanual-server-0037.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "超过后回退到 checkpoint 断点续训",
+    "en": "Beyond this the framework falls back to checkpoint resume"
+   }
+  },
+  {
+   "id": "ascend.huaweicloud.hccs_l1_l2_flap_behavior",
+   "class": "ascend",
+   "kind": "claim",
+   "name": {
+    "zh": "HCCS 平面 L1–L2 间光模块闪断/断链：1520 设备自动切换路径（需多路径）；断链可能丢包并中断业务，框架回退到上一个 checkpoint；HCCL 重执行降低回退概率",
+    "en": "HCCS plane L1–L2 optical-module flap/link-down: the 1520 device switches path automatically (if multipath exists); a link-down may drop packets and interrupt the job, which then resumes from the last checkpoint; HCCL re-execution lowers the rollback probability"
+   },
+   "value": null,
+   "unit": "n/a",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "fault_coverage",
+    "denominator": "optical-module flap events",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei Cloud Snt9b23 supernode (Ascend)",
+    "scale": null,
+    "period": "2026-02-06"
+   },
+   "provenance": {
+    "source": "开启超节点HCCL通信算子级重执行机制 (ModelArts Lite Server user manual, Snt9b23 supernode; updated 2026-02-06)",
+    "org": "Huawei Cloud",
+    "venue": "support.huaweicloud.com",
+    "year": 2026,
+    "url": "https://support.huaweicloud.com/resmgmt-modelarts/usermanual-server-0037.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "文档明言该超节点“光模块故障率高”；两条路径：吸收（无影响）vs 回退 checkpoint（损失 τ+δ）——即双路径 MTTR 的直接证据",
+    "en": "Doc explicitly says this supernode has a 'high optical-module failure rate'; two outcomes — absorbed (no loss) vs checkpoint rollback (lose τ+δ) — direct evidence for a dual-path MTTR model"
+   }
+  },
+  {
+   "id": "nic_optics.optical_module_afr.huawei_traditional",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "传统光模块年失效率可高达 4‰",
+    "en": "Annual failure rate of traditional optical modules 'can be as high as 4‰'"
+   },
+   "value": 0.004,
+   "unit": "per_year",
+   "range": {
+    "low": null,
+    "high": 0.004
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": "up to 4‰"
+   },
+   "koujing": {
+    "event": "component_failure",
+    "denominator": "module_year",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei datacenter optical modules (StarryLink), AI training clusters of >10,000 cards",
+    "scale": ">10,000-card cluster",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "What Is Optical Module Channel Loss Resistance? Why Do We Need It? (Huawei info-finder encyclopedia)",
+    "org": "Huawei (vendor)",
+    "venue": "info.support.huawei.com",
+    "year": 2025,
+    "url": "https://info.support.huawei.com/info-finder/encyclopedia/en/Optical+module+channel+loss+resistance.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商营销页；作为 UB L1–L2 光链路模块失效率的量级参考（0.4%/年 ≈ 0.033%/月 ≈ 457 FIT）",
+    "en": "Vendor marketing page; order-of-magnitude analogue for UB L1–L2 optical-module failures (0.4%/yr ≈ 0.033%/month ≈ 457 FIT)"
+   }
+  },
+  {
+   "id": "nic_optics.optical_module_afr.huawei_channel_loss_resistance",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "通道抗损技术后光模块年失效率 0.4‰",
+    "en": "With channel loss resistance, optical-module annual failure rate 0.4‰"
+   },
+   "value": 0.0004,
+   "unit": "per_year",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "component_failure",
+    "denominator": "module_year",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei datacenter optical modules (StarryLink), AI training clusters of >10,000 cards",
+    "scale": ">10,000-card cluster",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "What Is Optical Module Channel Loss Resistance? Why Do We Need It? (Huawei info-finder encyclopedia)",
+    "org": "Huawei (vendor)",
+    "venue": "info.support.huawei.com",
+    "year": 2025,
+    "url": "https://info.support.huawei.com/info-finder/encyclopedia/en/Optical+module+channel+loss+resistance.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商宣称 10 倍提升：单通道故障时降速运行而非中断（两通道一组）；口径从“模块失效”变为“应用可见失效”",
+    "en": "Vendor claims 10× from degrading to a lower rate on single-channel faults (two channels per group) instead of failing; 口径 shifts from 'module failure' to 'application-visible failure'"
+   }
+  },
+  {
+   "id": "nic_optics.optical_interruptions_per_year.huawei_10k_cluster",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "万卡集群每年约 60 次训练中断由光模块故障引起（约 90% 为单通道故障）",
+    "en": "About 60 training interruptions per year caused by optical-module failures in a >10,000-card cluster (about 90% single-channel faults)"
+   },
+   "value": 60,
+   "unit": "per_year",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "job_interruption_unplanned",
+    "denominator": "cluster of >10,000 cards",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei datacenter optical modules (StarryLink), AI training clusters of >10,000 cards",
+    "scale": ">10,000-card cluster",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "What Is Optical Module Channel Loss Resistance? Why Do We Need It? (Huawei info-finder encyclopedia)",
+    "org": "Huawei (vendor)",
+    "venue": "info.support.huawei.com",
+    "year": 2025,
+    "url": "https://info.support.huawei.com/info-finder/encyclopedia/en/Optical+module+channel+loss+resistance.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商示例；华为企业网站另一页（无法抓取，403）据报称“每 3.6 天一次、平均恢复 2 小时”（≈100 次/年），与 60 不一致；宣称可降至 6 次/年",
+    "en": "Vendor example; another e.huawei.com page (unfetchable, HTTP 403) reportedly says 'every 3.6 days, ~2 h recovery' (≈100/yr), inconsistent with 60; claimed reducible to 6/yr"
+   }
+  },
+  {
+   "id": "nic_optics.single_channel_fault_share.huawei",
+   "class": "nic_optics",
+   "kind": "probability",
+   "name": {
+    "zh": "光模块故障中约 90% 为单通道故障",
+    "en": "About 90% of optical-module faults are single-channel faults"
+   },
+   "value": 90,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "composition_share",
+    "denominator": "optical-module faults",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Huawei datacenter optical modules (StarryLink), AI training clusters of >10,000 cards",
+    "scale": ">10,000-card cluster",
+    "period": "2025"
+   },
+   "provenance": {
+    "source": "What Is Optical Module Channel Loss Resistance? Why Do We Need It? (Huawei info-finder encyclopedia)",
+    "org": "Huawei (vendor)",
+    "venue": "info.support.huawei.com",
+    "year": 2025,
+    "url": "https://info.support.huawei.com/info-finder/encyclopedia/en/Optical+module+channel+loss+resistance.html",
+    "survey_ref": null,
+    "confidence": "vendor",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "厂商数字；决定“降速运行”路径可吸收的故障份额",
+    "en": "Vendor figure; sets the share of faults that a degrade-rather-than-fail path can absorb"
+   }
+  },
+  {
+   "id": "nic_optics.nic_tor_link_failure_rate.hpn",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "阿里 HPN 生产集群：每月 0.057% 的 NIC–ToR 链路失效",
+    "en": "Alibaba HPN production clusters: 0.057% of NIC–ToR links fail each month"
+   },
+   "value": 0.057,
+   "unit": "pct_per_month",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "link_failure",
+    "denominator": "link_month",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "H800 clusters, Alibaba HPN (RoCE, 400G NIC–ToR links)",
+    "scale": "multiple O(10K)-GPU clusters",
+    "period": "Feb 2023 – Jan 2024 (Fig. 5)"
+   },
+   "provenance": {
+    "source": "Alibaba HPN: A Data Center Network for Large Language Model Training (§2.3)",
+    "org": "Alibaba Cloud",
+    "venue": "ACM SIGCOMM 2024",
+    "year": 2024,
+    "url": "https://ennanzhai.github.io/pub/sigcomm24-hpn.pdf",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "链路 = 网卡 + 光模块/线缆 + 交换机端口；作为 UB L1–L2 光链路失效率的类比：5,376 条链路 × 0.057%/月 ≈ 3.1 次/月/超节点（若 UB 链路与 RoCE 链路同质）",
+    "en": "Link = NIC + optics/cable + switch port; as an analogue for UB L1–L2 links: 5,376 × 0.057%/month ≈ 3.1 link failures per supernode-month if UB links behave like RoCE links"
+   }
+  },
+  {
+   "id": "switch.tor_critical_error_rate.hpn",
+   "class": "switch",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "阿里 HPN：每月约 0.051% 的 ToR 交换机发生严重错误或崩溃",
+    "en": "Alibaba HPN: about 0.051% of ToR switches encounter critical errors and crashes each month"
+   },
+   "value": 0.051,
+   "unit": "pct_per_month",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "switch_failure",
+    "denominator": "switch_month",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Alibaba HPN ToR switches (51.2T Ethernet)",
+    "scale": "multiple O(10K)-GPU clusters",
+    "period": "2023–2024"
+   },
+   "provenance": {
+    "source": "Alibaba HPN: A Data Center Network for Large Language Model Training (§2.3)",
+    "org": "Alibaba Cloud",
+    "venue": "ACM SIGCOMM 2024",
+    "year": 2024,
+    "url": "https://ennanzhai.github.io/pub/sigcomm24-hpn.pdf",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "作为 L2 UB 交换芯片（48 端口 ASIC）失效率类比：112 片 × 0.051%/月 ≈ 0.057 次/月/超节点（≈ 每 17.5 月一次）；板载 L1 芯片按节点级处理",
+    "en": "Analogue for L2 UB switch chips (48-port ASIC): 112 × 0.051%/month ≈ 0.057 per supernode-month (≈ one per 17.5 months); treat on-board L1 chips at node level"
+   }
+  },
+  {
+   "id": "nic_optics.link_flap_count_per_day.hpn",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "阿里生产集群每天发生 5K–60K 次链路闪断",
+    "en": "5K–60K link flapping cases happen each day in Alibaba's production clusters"
+   },
+   "value": null,
+   "unit": "per_day",
+   "range": {
+    "low": 5000,
+    "high": 60000
+   },
+   "distribution": {
+    "type": "none",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "link_flap",
+    "denominator": "Alibaba production clusters (fleet size unstated)",
+    "level": "fleet",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Alibaba HPN (RoCE Ethernet)",
+    "scale": "fleet-wide",
+    "period": "2023–2024"
+   },
+   "provenance": {
+    "source": "Alibaba HPN: A Data Center Network for Large Language Model Training (§2.3)",
+    "org": "Alibaba Cloud",
+    "venue": "ACM SIGCOMM 2024",
+    "year": 2024,
+    "url": "https://ennanzhai.github.io/pub/sigcomm24-hpn.pdf",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "分母（链路总数）未给出，不能换算成每链路闪断率；闪断是降速事件类，不得与链路失效相加",
+    "en": "Denominator (total link count) not given, so no per-link flap rate; flaps are a fail-slow class and must not be added to link failures"
+   }
+  },
+  {
+   "id": "switch.network_interruption_rate.llama3_derived",
+   "class": "switch",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "Llama 3 预训练：网络交换机/线缆导致的非计划中断率 1.65e-6 每 GPU·h（推算）",
+    "en": "Llama 3 pre-training: unplanned interruptions attributed to network switch/cable, 1.65e-6 per GPU·h (derived)"
+   },
+   "value": 1.65e-06,
+   "unit": "per_gpu_h",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "job_interruption_unplanned",
+    "denominator": "gpu_h",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "H100 (16,384 GPUs, RoCE back-end, Meta)",
+    "scale": "16K-GPU job",
+    "period": "54-day snapshot, 2024"
+   },
+   "provenance": {
+    "source": "The Llama 3 Herd of Models (§3.3.4, Table 5)",
+    "org": "Meta",
+    "venue": "arXiv:2407.21783",
+    "year": 2024,
+    "url": "https://arxiv.org/html/2407.21783",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "35 interruptions / (16,384 GPUs × 54 days × 24 h) = 35 / 21,233,664 GPU·h = 1.65e-6 per GPU·h"
+   },
+   "caveat": {
+    "zh": "35 次（8.4% / 419）；作业级口径（任一交换机/线缆故障中断整个作业）；作为 CM384 L2 交换/光链路造成作业中断率的类比：384 NPU × 1.65e-6 ≈ 6.3e-4/h ≈ 每 66 天一次",
+    "en": "35 events (8.4% of 419); job-level 口径 (any switch/cable fault interrupts the whole job); analogue for CM384 L2/optics-caused job interruptions: 384 × 1.65e-6 ≈ 6.3e-4/h ≈ one per 66 days"
+   }
+  },
+  {
+   "id": "nic_optics.nic_interruption_rate.llama3_derived",
+   "class": "nic_optics",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "Llama 3 预训练：NIC 导致的非计划中断率 3.3e-7 每 GPU·h（推算）",
+    "en": "Llama 3 pre-training: NIC-attributed unplanned interruptions, 3.3e-7 per GPU·h (derived)"
+   },
+   "value": 3.3e-07,
+   "unit": "per_gpu_h",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "job_interruption_unplanned",
+    "denominator": "gpu_h",
+    "level": "job",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "H100 (16,384 GPUs, one 400G NIC per GPU, Meta)",
+    "scale": "16K-GPU job",
+    "period": "54-day snapshot, 2024"
+   },
+   "provenance": {
+    "source": "The Llama 3 Herd of Models (§3.3.4, Table 5)",
+    "org": "Meta",
+    "venue": "arXiv:2407.21783",
+    "year": 2024,
+    "url": "https://arxiv.org/html/2407.21783",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "7 interruptions / 21,233,664 GPU·h = 3.3e-7 per GPU·h"
+   },
+   "caveat": {
+    "zh": "7 次（1.7% / 419，Table 5）；作为 910C 每 die RDMA 接口/擎天卡的类比",
+    "en": "7 events (1.7% of 419, Table 5); analogue for the 910C per-die RDMA interface / Qingtian NIC"
+   }
+  },
+  {
+   "id": "switch.survival_3month.msft_ccr2021",
+   "class": "switch",
+   "kind": "probability",
+   "name": {
+    "zh": "Azure 18 万+交换机：部署后 3 个月内不间断运行概率 98%",
+    "en": "Azure cohort of 180,000+ switches: 98% likelihood of functioning uninterrupted for over 3 months after deployment"
+   },
+   "value": 98,
+   "unit": "pct",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "switch_survival",
+    "denominator": "switches (3-month window)",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "Azure datacenter switches (multiple vendors, SONiC and vendor OS)",
+    "scale": "180,000+ switches",
+    "period": "2021"
+   },
+   "provenance": {
+    "source": "Surviving switch failures in cloud datacenters (Singh, Mukhtar, Krishna, Parkhi, Padhye, Maltz)",
+    "org": "Microsoft Azure",
+    "venue": "ACM SIGCOMM CCR, April 2021",
+    "year": 2021,
+    "url": "https://ccronline.sigcomm.org/?p=1180",
+    "survey_ref": null,
+    "confidence": "paper-reported",
+    "derivation": null
+   },
+   "caveat": {
+    "zh": "早期寿命（部署后）存活率，非稳态失效率；若按常数风险率换算 ≈ 0.67%/月，高于 HPN 的 0.051%/月（含早期失效与计划外断电）；某一厂商交换机失效概率是其他厂商 2 倍",
+    "en": "Early-life survival after deployment, not a steady-state rate; naive constant-hazard conversion ≈ 0.67%/month, above HPN's 0.051%/month (includes infant mortality and unplanned power loss); one vendor's switches fail twice as often"
+   }
+  },
+  {
+   "id": "hbm.uer_rate.calchas_derived",
+   "class": "hbm",
+   "kind": "failure_rate",
+   "name": {
+    "zh": "Calchas（华为 DSA 上的 HBM2）：每堆叠·年约 0.025 次不可纠正错误（UER，推算上界）",
+    "en": "Calchas (HBM2 on Huawei DSAs): about 0.025 uncorrectable errors (UER) per stack-year (derived upper bound)"
+   },
+   "value": 0.0247,
+   "unit": "per_year",
+   "range": {
+    "low": null,
+    "high": null
+   },
+   "distribution": {
+    "type": "point",
+    "shape": null,
+    "note": null
+   },
+   "koujing": {
+    "event": "uer_event",
+    "denominator": "stack_year",
+    "level": "component",
+    "includes_planned": false,
+    "dedup": null
+   },
+   "applicability": {
+    "hardware": "HBM2 stacks on Huawei DSAs (19 datacenters)",
+    "scale": ">60,000 stacks",
+    "period": "27 months"
+   },
+   "provenance": {
+    "source": "Removing Obstacles before Breaking Through the Memory Wall: A Close Look at HBM Errors in the Field (Calchas) — counts already in library (hbm.uer_count.calchas)",
+    "org": "Huawei",
+    "venue": "USENIX ATC 2024",
+    "year": 2024,
+    "url": "https://www.usenix.org/conference/atc24/presentation/wu-ronglong",
+    "survey_ref": null,
+    "confidence": "derived",
+    "derivation": "3,334 UER / (60,000 stacks × 27/12 yr) = 3,334 / 135,000 stack-years = 0.0247 per stack-year"
+   },
+   "caveat": {
+    "zh": "分母为“>60,000 堆叠”故为上界；UER ≠ 作业中断（部分可被页隔离/重试吸收）；对 910C（8 堆叠）≈ 0.2 UER/NPU·年 ≈ 2.3e-5 每 NPU·h 的上界；HBM2 旧世代，对 HBM2E/HBM3 仅作量级参考",
+    "en": "Denominator '>60,000 stacks' makes this an upper bound; UER ≠ job interruption (some absorbed by page isolation/retry); for a 910C (8 stacks) ≈ 0.2 UER per NPU-year ≈ 2.3e-5 per NPU·h upper bound; older HBM2 generation — order-of-magnitude only for HBM2E/HBM3"
    }
   }
  ]

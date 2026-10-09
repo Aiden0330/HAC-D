@@ -17,6 +17,9 @@
       ],
       "@hac-d/core/library.json": [
         "../../packages/core/data/library.json"
+      ],
+      "@hac-d/importers": [
+        "../../packages/importers/src/index.ts"
       ]
     }
   },

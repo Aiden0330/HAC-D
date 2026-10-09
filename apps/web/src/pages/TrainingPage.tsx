@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { goodputFirstOrder, dalyGoodput, scaleTable, recoveryTimeS, resolvePipeline, PIPELINE_PRESETS } from '@hac-d/core';
+import { goodputFirstOrder, dalyGoodput, scaleTable, recoveryTimeS, resolveRecovery, PIPELINE_PRESETS } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, DataTable, Badge } from '../components/ui.js';
 import { StackedBar } from '../charts/StackedBar.js';
@@ -30,13 +30,13 @@ export function TrainingPage() {
   const scaleSeries = useMemo(() => {
     const lamPerGpu = tr.interruptionRatePerHour / tr.nGpus;
     const delta = scenario.workload.type === 'training' ? scenario.workload.deltaS : 0;
-    const pipeline = resolvePipeline(scenario);
+    const model = resolveRecovery(scenario);
     const sizes = tr.scale.map((r) => r.nGpus);
     const main = { label: `${t('common.goodput')} · R(N)`, points: tr.scale.map((r) => ({ x: r.nGpus, y: r.goodput.goodput, flag: r.goodput.validity })) };
     const alt = PIPELINE_PRESETS['automated-probe-standby'];
     const altRows = scaleTable(lamPerGpu, delta, (n) => recoveryTimeS(alt, n), sizes);
     const series = [main];
-    if (pipeline.id !== alt.id) series.push({ label: `${t('common.goodput')} · ${alt.name ?? alt.id}`, points: altRows.map((r) => ({ x: r.nGpus, y: r.goodput.goodput, flag: r.goodput.validity })), muted: true } as typeof main & { muted: boolean });
+    if (model.id !== alt.id) series.push({ label: `${t('common.goodput')} · ${alt.name ?? alt.id}`, points: altRows.map((r) => ({ x: r.nGpus, y: r.goodput.goodput, flag: r.goodput.validity })), muted: true } as typeof main & { muted: boolean });
     return series;
   }, [tr, scenario, t]);
 
@@ -57,7 +57,7 @@ export function TrainingPage() {
       <div className="kpi-row">
         <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t('training.dalyFull')} ${fmtPct(tr.dalyGoodput, 2)}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
         <Kpi label={t('common.mtbi')} value={fmtDuration(tr.mtbiS, lang)} note={`${fmtNum(tr.interruptionsPerDay, 1)} ${t('common.interruptions_per_day')}`} />
-        <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={`${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
+        <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
         <Kpi label={t('common.interval')} value={fmtDuration(tr.tauS, lang)} note={tr.intervalModel} />
         <Kpi label={t('common.lost_per_day')} value={fmtMoney(tr.lostDollarsPerDay)} note={`${fmtInt(tr.wastedGpuHoursPerDay)} ${t('common.wasted')}`} />
         <Kpi label={t('training.wall')} value={fmtNum(tr.wallClockDays, 1)} note={`${fmtNum(tr.expectedInterruptions, 0)} interruptions · P(no interruption 24 h) ${fmtPct(tr.pNoInterruption24h, 1)}`} />
@@ -86,10 +86,19 @@ export function TrainingPage() {
           />
         </Card>
         <Card formula={result.formulas.recovery}>
-          <h2 style={{ fontSize: 14, marginBottom: 6 }}>{t('training.recoveryStages')} (N = {fmtInt(tr.nGpus)})</h2>
+          <h2 style={{ fontSize: 14, marginBottom: 6 }}>{tr.recoveryKind === 'ladder' ? t('training.ladderAt') : t('training.recoveryStages')} (N = {fmtInt(tr.nGpus)})</h2>
           <DataTable columns={[t('training.stage'), t('training.meanS'), t('training.shareOfR'), t('common.notes')]} numericFrom={1} rows={tr.recovery.stages.map((s) => [s.name === tr.recovery.dominant ? <b key="d">{s.name}</b> : s.name, fmtDuration(s.meanS, lang), fmtPct(s.share, 1), <span key="n" className="muted" style={{ fontSize: 12 }}>{s.note ?? ''}</span>])} />
         </Card>
       </div>
+      {tr.subhealth && (
+        <Card title={t('training.subhealthTitle')} formula={result.formulas.subhealth}>
+          <div className="kpi-row">
+            <Kpi label={t('training.pSlowed')} value={fmtPct(tr.subhealth.pSlowed, 2)} />
+            <Kpi label={t('training.perfFactor')} value={fmtPct(tr.subhealth.performanceFactor, 3)} note={`${t('training.minPerf')} ${fmtPct(tr.subhealth.minPerformance, 0)}`} tone={tr.subhealth.performanceFactor < 0.95 ? 'warn' : undefined} />
+            <Kpi label={t('training.isolationRate')} value={tr.subhealth.isolationInterruptionsPerHour.toExponential(2)} note={`${t('training.hardwareRate')} ${tr.subhealth.hardwareInterruptionsPerHour.toExponential(2)}`} />
+          </div>
+        </Card>
+      )}
       <Card formula={result.formulas.scale} sub={t('training.scaleNote')}>
         <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel="N (GPU)" yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
         <DataTable

@@ -11,8 +11,9 @@ import { ComparePage } from './pages/ComparePage.js';
 import { SimulatePage } from './pages/SimulatePage.js';
 import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
+import { ImportPage } from './pages/ImportPage.js';
 
-const PAGES: Page[] = ['scenario', 'training', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'library'];
+const PAGES: Page[] = ['scenario', 'training', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'import', 'library'];
 
 export function App() {
   const { t } = useTranslation();
@@ -68,6 +69,7 @@ export function App() {
         {page === 'simulate' && <SimulatePage />}
         {page === 'report' && <ReportPage />}
         {page === 'library' && <LibraryPage />}
+        {page === 'import' && <ImportPage />}
         <footer className="site">{t('app.footer')}</footer>
       </main>
     </div>

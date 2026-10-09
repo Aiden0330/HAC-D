@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, type Scenario, type Component } from '@hac-d/core';
+import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, type Scenario, type Component, type Superpod } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
@@ -9,7 +9,8 @@ import { download, scenarioFilename } from '../lib/export.js';
 import { fmtPct, fmtDuration, fmtHours } from '../lib/format.js';
 
 const RATE_UNITS = ['per_h', 'per_1e6_h', 'FIT', 'per_year', 'per_day', 'per_1000_node_day', 'per_month', 'per_week', 'mtbf_h', 'gpu_h_per_event', 'gpu_day_per_event'] as const;
-const DOMAINS = ['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster'] as const;
+const DOMAINS = ['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack'] as const;
+const SUPERPOD_FIELDS: (keyof Superpod)[] = ['npusPerNode', 'cpusPerNode', 'l1PerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink'];
 const SUBSYSTEMS = ['compute', 'memory', 'interconnect', 'network', 'host', 'storage', 'power', 'cooling', 'software', 'other'] as const;
 const STAGES = ['detect', 'localize', 'remediate', 'restart', 'load', 'warmup'] as const;
 
@@ -69,7 +70,8 @@ export function ScenarioPage() {
       </Card>
       {!active.error && result && (
         <div className="kpi-row">
-          <Kpi label={t('common.availability')} value={fmtPct(result.system.availability, 4)} note={`${t('common.mtbf')} ${fmtHours(result.system.mtbfHours, lang)}`} />
+          <Kpi label={`${t('common.availability')} (${t('measures.compensated')})`} value={fmtPct(result.system.availability, 4)} note={`${t('common.mtbf')} ${fmtHours(result.system.mtbfHours, lang)}`} />
+          <Kpi label={`${t('common.availability')} (${t('measures.original')})`} value={fmtPct(result.system.measures.original.availability, 4)} note={`${t('measures.performability')} ${fmtPct(result.system.measures.performability, 4)}`} />
           {result.training && <Kpi label={t('common.goodput')} value={fmtPct(result.training.effectiveGoodput, 2)} note={`${t('common.mtbi')} ${fmtDuration(result.training.mtbiS, lang)} · R ${fmtDuration(result.training.recoveryS, lang)}`} tone={result.training.effectiveGoodput < 0.9 ? 'bad' : undefined} />}
           {result.inference && <Kpi label={t('inference.capacity')} value={fmtPct(result.inference.capacityAvailability, 4)} note={`k* = ${result.inference.kRequiredForTarget}`} />}
           <Kpi label={t('common.weakest')} value={result.system.weakestBlock?.name ?? '—'} />
@@ -96,6 +98,41 @@ export function ScenarioPage() {
             <Field label={t('scenario.racksPerZone')}><NumberInput value={s.topology.racksPerZone} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, racksPerZone: Math.round(v) } }))} /></Field>
             <Field label={t('scenario.nvlinkDomain')}><NumberInput value={s.topology.nvlinkDomainGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nvlinkDomainGpus: Math.round(v) } }))} /></Field>
             <Field label={t('scenario.planes')}><NumberInput value={s.topology.networkPlanes} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, networkPlanes: Math.round(v) } }))} /></Field>
+          </div>
+          <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.superpod')}</h3>
+          <div className="form-grid">
+            <Field label={t('scenario.superpodPreset')}>
+              <Select
+                value={s.topology.superpod?.preset ?? 'generic'}
+                onChange={(v) =>
+                  upd((x) => ({
+                    ...x,
+                    topology: {
+                      ...x.topology,
+                      superpod: v === 'generic' ? undefined : v === 'custom' ? { ...(x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values), preset: 'custom' } : { ...SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values },
+                    },
+                  }))
+                }
+                options={[{ value: 'generic', label: t('scenario.generic') }, { value: 'cloudmatrix384', label: 'CloudMatrix384 (Atlas 900 A3)' }, { value: 'atlas950', label: 'Atlas 950 SuperPoD' }, { value: 'custom', label: t('scenario.custom') }]}
+              />
+            </Field>
+            {s.topology.superpod && SUPERPOD_FIELDS.map((f) => (
+              <Field key={f} label={t(`scenario.${f}`)}>
+                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, superpod: { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' } } }))} />
+              </Field>
+            ))}
+          </div>
+          {s.topology.superpod && (
+            <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+              {s.topology.superpod.preset !== 'custom' && <span>{t('scenario.assumedFields')}: {SUPERPOD_PRESETS[s.topology.superpod.preset].assumed.join(', ')} · {SUPERPOD_PRESETS[s.topology.superpod.preset].source}. </span>}
+              {!active.error && result && <span>{t('scenario.derivedCounts')}: {result.counts.nodes} nodes · {result.counts.supernodes} supernode(s) · {result.counts.l1Switches} L1 · {result.counts.l2Switches} L2 · {result.counts.opticalLinks} links · {result.counts.transceivers} transceivers · {result.counts.subPlanes} sub-planes</span>}
+            </div>
+          )}
+          <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.measures')}</h3>
+          <div className="form-grid">
+            <Field label={t('scenario.subhealthThreshold')}><NumberInput value={s.measures.subhealthThreshold} min={0} max={1} step={0.05} onChange={(v) => upd((x) => ({ ...x, measures: { ...x.measures, subhealthThreshold: v } }))} /></Field>
+            <Field label={t('scenario.commShare')}><NumberInput value={s.measures.commShare} min={0} max={1} step={0.05} onChange={(v) => upd((x) => ({ ...x, measures: { ...x.measures, commShare: v } }))} /></Field>
+            <Field label={t('scenario.primaryMeasure')}><Select value={s.measures.primary} onChange={(v) => upd((x) => ({ ...x, measures: { ...x.measures, primary: v } }))} options={[{ value: 'compensated', label: t('measures.compensated') }, { value: 'original', label: t('measures.original') }]} /></Field>
           </div>
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.workload')}</h3>
           <div className="form-grid">
@@ -161,53 +198,110 @@ export function ScenarioPage() {
 function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
   const { t } = useTranslation();
   const presets = Object.keys(PIPELINE_PRESETS);
+  const ladders = Object.keys(LADDER_PRESETS);
   const mode = s.recovery.mode;
+  const selectValue = mode === 'preset' ? s.recovery.preset : mode === 'pipeline' ? 'custom' : s.recovery.rungs ? 'ladder-custom' : `ladder:${s.recovery.preset}`;
+  const n = s.workload.type === 'training' ? s.workload.nGpus : s.workload.replicasRequired * s.workload.gpusPerReplica;
+  const ladder = mode === 'ladder' ? (s.recovery.rungs ? { id: 'custom', rungs: s.recovery.rungs } : LADDER_PRESETS[s.recovery.preset ?? '']) : undefined;
+  const ladderResult = ladder ? ladderExpectation(ladder as Parameters<typeof ladderExpectation>[0], n) : undefined;
+  const onSelect = (v: string) => {
+    if (v === 'custom') {
+      const p = mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset] : null;
+      upd((x) => ({ ...x, recovery: { mode: 'pipeline', stages: (p?.stages ?? [{ name: 'detect', value: 60 }, { name: 'localize', value: 60 }, { name: 'remediate', value: 60 }, { name: 'restart', value: 120 }, { name: 'load', value: 60 }]).map((st) => ({ ...st })) as never } }));
+    } else if (v === 'ladder-custom') {
+      const base = ladder ?? LADDER_PRESETS['mindcluster-a3'];
+      upd((x) => ({ ...x, recovery: { mode: 'ladder', preset: base.id, rungs: base.rungs.map((r) => ({ ...r })) as never } }));
+    } else if (v.startsWith('ladder:')) upd((x) => ({ ...x, recovery: { mode: 'ladder', preset: v.slice(7) } }));
+    else upd((x) => ({ ...x, recovery: { mode: 'preset', preset: v } }));
+  };
+  const setRung = (i: number, patch: Record<string, unknown>) =>
+    upd((x) => (x.recovery.mode === 'ladder' && x.recovery.rungs ? { ...x, recovery: { ...x.recovery, rungs: x.recovery.rungs.map((r, j) => (j === i ? ({ ...r, ...patch } as typeof r) : r)) } } : x));
   return (
-    <Card title={t('scenario.recovery')}>
+    <Card title={mode === 'ladder' ? t('scenario.ladder') : t('scenario.recovery')} sub={mode === 'ladder' ? t('scenario.ladderNote') : undefined}>
       <div className="form-grid">
         <Field label={t('scenario.preset')}>
           <Select
-            value={mode === 'preset' ? s.recovery.preset : 'custom'}
-            onChange={(v) => {
-              if (v === 'custom') {
-                const p = mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset] : null;
-                upd((x) => ({ ...x, recovery: { mode: 'pipeline', stages: (p?.stages ?? [{ name: 'detect', value: 60 }, { name: 'localize', value: 60 }, { name: 'remediate', value: 60 }, { name: 'restart', value: 120 }, { name: 'load', value: 60 }]).map((st) => ({ ...st })) as never } }));
-              } else upd((x) => ({ ...x, recovery: { mode: 'preset', preset: v } }));
-            }}
-            options={[...presets.map((p) => ({ value: p, label: PIPELINE_PRESETS[p].name ?? p })), { value: 'custom', label: 'custom pipeline…' }]}
+            value={selectValue}
+            onChange={onSelect}
+            options={[
+              ...presets.map((p) => ({ value: p, label: `${t('scenario.pipelineMode')}: ${PIPELINE_PRESETS[p].name ?? p}` })),
+              { value: 'custom', label: `${t('scenario.pipelineMode')}: ${t('scenario.custom')}` },
+              ...ladders.map((l) => ({ value: `ladder:${l}`, label: `${t('scenario.ladderMode')}: ${LADDER_PRESETS[l].name?.en ?? l}` })),
+              { value: 'ladder-custom', label: `${t('scenario.ladderMode')}: ${t('scenario.custom')}` },
+            ]}
           />
         </Field>
+        {ladderResult && <Field label={`E[T] @ N = ${n}`}><div style={{ padding: '6px 0' }}>{ladderResult.meanS.toFixed(0)} s · {t('training.pManual')} {(ladderResult.pManual * 100).toFixed(2)} %</div></Field>}
       </div>
-      <div className="table-wrap" style={{ marginTop: 8 }}>
-        <table className="data">
-          <thead>
-            <tr><th>{t('scenario.stage')}</th><th className="num">{t('scenario.valueS')}</th><th>{t('scenario.scaleLaw')}</th><th className="num">{t('scenario.refN')}</th><th className="num">{t('scenario.exponent')} / {t('scenario.slope')}</th><th>{t('common.notes')}</th><th></th></tr>
-          </thead>
-          <tbody>
-            {(s.recovery.mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset]?.stages ?? [] : s.recovery.mode === 'pipeline' ? s.recovery.stages : []).map((st, i) => {
-              const ro = mode === 'preset';
-              const setStage = (patch: Record<string, unknown>) =>
-                upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: x.recovery.stages.map((q, j) => (j === i ? ({ ...q, ...patch } as typeof q) : q)) } } : x));
-              const law = st.scale ?? { type: 'constant' as const };
-              return (
-                <tr key={i}>
-                  <td>{ro ? st.name : <Select value={st.name} onChange={(v) => setStage({ name: v })} options={STAGES.map((n) => ({ value: n, label: n }))} />}</td>
-                  <td className="num">{ro ? (typeof st.value === 'number' ? st.value.toFixed(0) : 'dist') : <NumberInput value={typeof st.value === 'number' ? st.value : 0} min={0} onChange={(v) => setStage({ value: v })} />}</td>
-                  <td>{ro ? law.type : <Select value={law.type} onChange={(v) => setStage({ scale: v === 'constant' ? { type: 'constant' } : v === 'linear' ? { type: 'linear', refN: 8192 } : v === 'power' ? { type: 'power', refN: 8192, exponent: 0.5 } : v === 'log' ? { type: 'log', refN: 8192, slope: 0.3 } : { type: 'order-statistic', refN: 8192, cv: 0.2 } })} options={['constant', 'linear', 'power', 'log', 'order-statistic'].map((n) => ({ value: n, label: n }))} />}</td>
-                  <td className="num">{'refN' in law ? (ro ? law.refN : <NumberInput value={law.refN} min={1} onChange={(v) => setStage({ scale: { ...law, refN: v } })} />) : '—'}</td>
-                  <td className="num">{'exponent' in law ? (ro ? law.exponent : <NumberInput value={law.exponent} onChange={(v) => setStage({ scale: { ...law, exponent: v } })} />) : 'slope' in law ? (ro ? law.slope : <NumberInput value={law.slope} onChange={(v) => setStage({ scale: { ...law, slope: v } })} />) : 'cv' in law ? (ro ? law.cv : <NumberInput value={law.cv} onChange={(v) => setStage({ scale: { ...law, cv: v } })} />) : '—'}</td>
-                  <td className="muted" style={{ fontSize: 11, maxWidth: 260 }}>{st.note ?? ''}</td>
-                  <td>{!ro && <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: x.recovery.stages.filter((_q, j) => j !== i) } } : x))}>×</button>}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {mode === 'pipeline' && (
-        <div className="btn-row" style={{ marginTop: 8 }}>
-          <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: [...x.recovery.stages, { name: 'warmup', value: 30 }] } } : x))}>{t('common.add')}</button>
-        </div>
+      {mode !== 'ladder' ? (
+        <>
+          <div className="table-wrap" style={{ marginTop: 8 }}>
+            <table className="data">
+              <thead>
+                <tr><th>{t('scenario.stage')}</th><th className="num">{t('scenario.valueS')}</th><th>{t('scenario.scaleLaw')}</th><th className="num">{t('scenario.refN')}</th><th className="num">{t('scenario.exponent')} / {t('scenario.slope')}</th><th>{t('common.notes')}</th><th></th></tr>
+              </thead>
+              <tbody>
+                {(s.recovery.mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset]?.stages ?? [] : s.recovery.mode === 'pipeline' ? s.recovery.stages : []).map((st, i) => {
+                  const ro = mode === 'preset';
+                  const setStage = (patch: Record<string, unknown>) =>
+                    upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: x.recovery.stages.map((q, j) => (j === i ? ({ ...q, ...patch } as typeof q) : q)) } } : x));
+                  const law = st.scale ?? { type: 'constant' as const };
+                  return (
+                    <tr key={i}>
+                      <td>{ro ? st.name : <Select value={st.name} onChange={(v) => setStage({ name: v })} options={STAGES.map((nm) => ({ value: nm, label: nm }))} />}</td>
+                      <td className="num">{ro ? (typeof st.value === 'number' ? st.value.toFixed(0) : 'dist') : <NumberInput value={typeof st.value === 'number' ? st.value : 0} min={0} onChange={(v) => setStage({ value: v })} />}</td>
+                      <td>{ro ? law.type : <Select value={law.type} onChange={(v) => setStage({ scale: v === 'constant' ? { type: 'constant' } : v === 'linear' ? { type: 'linear', refN: 8192 } : v === 'power' ? { type: 'power', refN: 8192, exponent: 0.5 } : v === 'log' ? { type: 'log', refN: 8192, slope: 0.3 } : { type: 'order-statistic', refN: 8192, cv: 0.2 } })} options={['constant', 'linear', 'power', 'log', 'order-statistic'].map((nm) => ({ value: nm, label: nm }))} />}</td>
+                      <td className="num">{'refN' in law ? (ro ? law.refN : <NumberInput value={law.refN} min={1} onChange={(v) => setStage({ scale: { ...law, refN: v } })} />) : '—'}</td>
+                      <td className="num">{'exponent' in law ? (ro ? law.exponent : <NumberInput value={law.exponent} onChange={(v) => setStage({ scale: { ...law, exponent: v } })} />) : 'slope' in law ? (ro ? law.slope : <NumberInput value={law.slope} onChange={(v) => setStage({ scale: { ...law, slope: v } })} />) : 'cv' in law ? (ro ? law.cv : <NumberInput value={law.cv} onChange={(v) => setStage({ scale: { ...law, cv: v } })} />) : '—'}</td>
+                      <td className="muted" style={{ fontSize: 11, maxWidth: 260 }}>{st.note ?? ''}</td>
+                      <td>{!ro && <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: x.recovery.stages.filter((_q, j) => j !== i) } } : x))}>×</button>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {mode === 'pipeline' && (
+            <div className="btn-row" style={{ marginTop: 8 }}>
+              <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: [...x.recovery.stages, { name: 'warmup', value: 30 }] } } : x))}>{t('common.add')}</button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="table-wrap" style={{ marginTop: 8 }}>
+            <table className="data">
+              <thead>
+                <tr><th>{t('scenario.rung')}</th><th>{t('scenario.kind')}</th><th className="num">{t('scenario.success')}</th><th className="num">{t('scenario.timeS')}</th><th className="num">{t('scenario.reach')}</th><th className="num">E[T] share</th><th>{t('common.notes')}</th><th></th></tr>
+              </thead>
+              <tbody>
+                {(ladder?.rungs ?? []).map((r, i) => {
+                  const ro = !(s.recovery.mode === 'ladder' && s.recovery.rungs);
+                  const res = ladderResult?.rungs[i];
+                  const last = i === (ladder?.rungs.length ?? 0) - 1;
+                  return (
+                    <tr key={r.id}>
+                      <td>{ro ? r.id : <input value={r.id} onChange={(e) => setRung(i, { id: e.target.value })} style={{ width: 140 }} />}</td>
+                      <td>{ro ? r.kind : <Select value={r.kind} onChange={(v) => setRung(i, { kind: v })} options={[{ value: 'auto', label: 'auto' }, { value: 'manual', label: 'manual' }]} />}</td>
+                      <td className="num">{ro || last ? (last ? 1 : r.successProbability).toFixed(2) : <NumberInput value={r.successProbability} min={0} max={1} step={0.05} onChange={(v) => setRung(i, { successProbability: v })} />}</td>
+                      <td className="num">{ro ? (typeof r.timeS === 'number' ? r.timeS.toFixed(0) : 'dist') : <NumberInput value={typeof r.timeS === 'number' ? r.timeS : 0} min={0} onChange={(v) => setRung(i, { timeS: v })} />}</td>
+                      <td className="num">{res ? `${(res.reachProbability * 100).toFixed(2)} %` : ''}</td>
+                      <td className="num">{res ? `${(res.share * 100).toFixed(1)} %` : ''}</td>
+                      <td className="muted" style={{ fontSize: 11, maxWidth: 260 }}>{r.note ?? ''}{r.confidence ? ` (${r.confidence})` : ''}</td>
+                      <td>{!ro && !last && <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'ladder' && x.recovery.rungs ? { ...x, recovery: { ...x.recovery, rungs: x.recovery.rungs.filter((_q, j) => j !== i) } } : x))}>×</button>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="btn-row" style={{ marginTop: 8 }}>
+            {s.recovery.mode === 'ladder' && !s.recovery.rungs && <button type="button" className="btn small" onClick={() => onSelect('ladder-custom')}>{t('scenario.customise')}</button>}
+            {s.recovery.mode === 'ladder' && s.recovery.rungs && (
+              <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'ladder' && x.recovery.rungs ? { ...x, recovery: { ...x.recovery, rungs: [...x.recovery.rungs.slice(0, -1), { id: `rung-${x.recovery.rungs.length}`, kind: 'auto', successProbability: 0.5, timeS: 300 }, x.recovery.rungs[x.recovery.rungs.length - 1]] } } : x))}>{t('common.add')}</button>
+            )}
+          </div>
+        </>
       )}
     </Card>
   );
@@ -215,6 +309,8 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
 
 function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
   const { t } = useTranslation();
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  const toggle = (id: string) => setOpen((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const setComp = (id: string, fn: (c: Component) => Component) => upd((x) => ({ ...x, components: x.components.map((c) => (c.id === id ? fn(c) : c)) }));
   const add = () =>
     upd((x) => ({
@@ -224,62 +320,124 @@ function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
         { id: `component-${x.components.length + 1}`, name: { en: 'New component' }, subsystem: 'other', countRule: { per: 'fixed', count: 1 }, failure: { value: 10, unit: 'per_1e6_h', provenance: { source: 'assumed', confidence: 'assumed' } }, repair: { mttrHours: 8 }, enabled: true } as Component,
       ],
     }));
+  const manualOf = (c: Component) => c.repair.manual?.mttrHours ?? c.repair.mttrHours ?? 0;
+  const units = (c: Component) => (c.countRule.per === 'fixed' ? c.countRule.count : c.countRule.factor);
   return (
     <Card title={t('scenario.components')} actions={<button type="button" className="btn small" onClick={add}>{t('scenario.addComponent')}</button>}>
       <div className="table-wrap">
         <table className="data">
           <thead>
             <tr>
-              <th>{t('scenario.enabled')}</th><th>id · {t('common.name')}</th><th>subsystem</th><th>{t('common.count')}</th><th className="num">λ</th><th>{t('common.unit')}</th><th className="num">{t('common.mttr')}</th><th>{t('scenario.redundancy')}</th><th>{t('scenario.ccf')}</th><th>{t('scenario.failslow')}</th><th>{t('common.confidence')}</th><th></th>
+              <th>{t('scenario.enabled')}</th><th>id · {t('common.name')}</th><th>subsystem</th><th>{t('common.count')}</th><th className="num">λ</th><th>{t('common.unit')}</th><th className="num">{t('scenario.manualMttr')}</th><th>{t('scenario.redundancy')}</th><th>{t('scenario.repairPaths')} · {t('scenario.subhealth')}</th><th>{t('common.confidence')}</th><th></th>
             </tr>
           </thead>
           <tbody>
-            {s.components.map((c) => (
-              <tr key={c.id}>
-                <td><input type="checkbox" checked={c.enabled} onChange={(e) => setComp(c.id, (q) => ({ ...q, enabled: e.target.checked }))} /></td>
-                <td style={{ minWidth: 160 }}>
-                  <div className="mono" style={{ fontSize: 11 }}>{c.id}</div>
-                  <input value={c.name?.en ?? ''} placeholder="name" onChange={(e) => setComp(c.id, (q) => ({ ...q, name: { ...q.name, en: e.target.value } }))} />
-                </td>
-                <td><Select value={c.subsystem} onChange={(v) => setComp(c.id, (q) => ({ ...q, subsystem: v }))} options={SUBSYSTEMS.map((x) => ({ value: x, label: x }))} /></td>
-                <td style={{ minWidth: 150 }}>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <Select value={c.countRule.per} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: v === 'fixed' ? { per: 'fixed', count: 1 } : { per: v as 'gpu', factor: 1 } }))} options={['gpu', 'node', 'rack', 'zone', 'fixed', 'supernode', 'comm_rack', 'l1_switch', 'l2_switch', 'subplane', 'optical_link', 'transceiver'].map((x) => ({ value: x, label: `per ${x}` }))} />
-                    <NumberInput value={c.countRule.per === 'fixed' ? c.countRule.count : c.countRule.factor} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: q.countRule.per === 'fixed' ? { per: 'fixed', count: v } : { per: q.countRule.per, factor: v } }))} />
-                  </div>
-                </td>
-                <td className="num" style={{ minWidth: 90 }}><NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} /></td>
-                <td><Select value={c.failure.unit} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, unit: v } }))} options={RATE_UNITS.map((u) => ({ value: u, label: u }))} /></td>
-                <td className="num" style={{ minWidth: 80 }}><NumberInput value={c.repair.manual?.mttrHours ?? c.repair.mttrHours ?? 0} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} /></td>
-                <td style={{ minWidth: 170 }}>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <Select value={c.redundancy?.scheme ?? 'series'} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: v === 'series' ? undefined : { scheme: v as 'parallel', n: q.countRule.per === 'fixed' ? q.countRule.count : q.countRule.factor, k: v === 'kofn' ? Math.max(1, (q.countRule.per === 'fixed' ? q.countRule.count : q.countRule.factor) - 1) : undefined } }))} options={['series', 'parallel', 'kofn', 'standby'].map((x) => ({ value: x, label: x }))} />
-                    {c.redundancy?.scheme === 'kofn' && <NumberInput value={c.redundancy.k ?? 1} min={1} step={1} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, k: Math.round(v) } }))} />}
-                  </div>
-                </td>
-                <td style={{ minWidth: 170 }}>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <Select value={c.ccf?.domain ?? ''} onChange={(v) => setComp(c.id, (q) => ({ ...q, ccf: v ? { domain: v as 'rack', beta: q.ccf?.beta ?? 0.05 } : undefined }))} options={[{ value: '', label: '—' }, ...DOMAINS.map((d) => ({ value: d, label: d }))]} />
-                    {c.ccf && <NumberInput value={c.ccf.beta} min={0} max={1} step={0.01} onChange={(v) => setComp(c.id, (q) => ({ ...q, ccf: { ...q.ccf!, beta: v } }))} />}
-                  </div>
-                </td>
-                <td style={{ minWidth: 150 }}>
-                  <input type="checkbox" checked={!!c.failslow} onChange={(e) => setComp(c.id, (q) => ({ ...q, failslow: e.target.checked ? { ratePerHour: 1e-6, durationHours: 1.2, capacity: 0.5 } : undefined }))} />
-                  {c.failslow && (
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <NumberInput value={c.failslow.ratePerHour} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failslow: { ...q.failslow!, ratePerHour: v } }))} />
-                      <NumberInput value={c.failslow.durationHours} min={0.001} onChange={(v) => setComp(c.id, (q) => ({ ...q, failslow: { ...q.failslow!, durationHours: v } }))} />
-                      <NumberInput value={c.failslow.capacity} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, failslow: { ...q.failslow!, capacity: v } }))} />
-                    </div>
+            {s.components.map((c) => {
+              const isOpen = open.has(c.id);
+              const dual = !!c.repair.auto && c.repair.auto.coverage > 0;
+              return (
+                <Fragment key={c.id}>
+                  <tr>
+                    <td><input type="checkbox" checked={c.enabled} onChange={(e) => setComp(c.id, (q) => ({ ...q, enabled: e.target.checked }))} /></td>
+                    <td style={{ minWidth: 160 }}>
+                      <div className="mono" style={{ fontSize: 11 }}>{c.id}</div>
+                      <input value={c.name?.en ?? ''} placeholder="name" onChange={(e) => setComp(c.id, (q) => ({ ...q, name: { ...q.name, en: e.target.value } }))} />
+                    </td>
+                    <td><Select value={c.subsystem} onChange={(v) => setComp(c.id, (q) => ({ ...q, subsystem: v }))} options={SUBSYSTEMS.map((x) => ({ value: x, label: x }))} /></td>
+                    <td style={{ minWidth: 150 }}>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <Select value={c.countRule.per} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: v === 'fixed' ? { per: 'fixed', count: 1 } : { per: v as 'gpu', factor: 1 } }))} options={['gpu', 'node', 'rack', 'zone', 'fixed', 'supernode', 'comm_rack', 'l1_switch', 'l2_switch', 'subplane', 'optical_link', 'transceiver'].map((x) => ({ value: x, label: `per ${x}` }))} />
+                        <NumberInput value={units(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: q.countRule.per === 'fixed' ? { per: 'fixed', count: v } : { per: q.countRule.per, factor: v } }))} />
+                      </div>
+                    </td>
+                    <td className="num" style={{ minWidth: 90 }}><NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} /></td>
+                    <td><Select value={c.failure.unit} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, unit: v } }))} options={RATE_UNITS.map((u) => ({ value: u, label: u }))} /></td>
+                    <td className="num" style={{ minWidth: 80 }}><NumberInput value={manualOf(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} /></td>
+                    <td style={{ minWidth: 170 }}>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <Select value={c.redundancy?.scheme ?? 'series'} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: v === 'series' ? undefined : { ...q.redundancy, scheme: v as 'parallel', n: units(q), k: v === 'kofn' ? Math.max(1, units(q) - 1) : undefined } }))} options={['series', 'parallel', 'kofn', 'standby'].map((x) => ({ value: x, label: x }))} />
+                        {c.redundancy?.scheme === 'kofn' && <NumberInput value={c.redundancy.k ?? 1} min={1} step={1} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, k: Math.round(v) } }))} />}
+                      </div>
+                    </td>
+                    <td style={{ minWidth: 150, fontSize: 12 }}>
+                      <div>{dual ? `${t('scenario.autoCoverage')} ${c.repair.auto!.coverage} · ${c.repair.auto!.mttrHours} h` : t('scenario.manualMttr')}</div>
+                      <div className="muted">{c.subhealth ? `${t('scenario.subhealth')}: φ ${c.subhealth.performance} · ${c.subhealth.policy}` : c.failslow ? t('scenario.legacyFailslow') : '—'}{c.redundancy?.switchover ? ` · ${t('scenario.switchover')} ${c.redundancy.switchover.successProbability}` : ''}</div>
+                    </td>
+                    <td>
+                      <Badge status={c.failure.provenance?.confidence ?? 'assumed'}>{c.failure.provenance?.confidence ?? 'none'}</Badge>
+                      {c.failure.provenance?.source && <div className="muted" style={{ fontSize: 10, maxWidth: 160 }}>{c.failure.provenance.source}</div>}
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <button type="button" className="btn small" aria-expanded={isOpen} onClick={() => toggle(c.id)}>{t('scenario.details')}</button>{' '}
+                      <button type="button" className="btn small" onClick={() => upd((x) => ({ ...x, components: x.components.filter((q) => q.id !== c.id) }))} disabled={s.components.length <= 1}>×</button>
+                    </td>
+                  </tr>
+                  {isOpen && (
+                    <tr className="details">
+                      <td colSpan={11} style={{ background: 'var(--surface-2)', padding: '10px 12px' }}>
+                        <div className="grid cols-3" style={{ gap: 12 }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 6px', fontSize: 13 }}>{t('scenario.repairPaths')}</h4>
+                            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+                              <input type="checkbox" checked={dual} onChange={(e) => setComp(c.id, (q) => ({ ...q, repair: e.target.checked ? { ...q.repair, auto: { coverage: 0.8, successProbability: 0.9, mttrHours: 0.1 }, manual: { mttrHours: manualOf(q) } } : { ...q.repair, auto: undefined, manual: undefined, mttrHours: manualOf(q) } }))} />
+                              {t('scenario.dualRepair')}
+                            </label>
+                            {dual && (
+                              <div className="form-grid" style={{ marginTop: 6 }}>
+                                <Field label={t('scenario.autoCoverage')}><NumberInput value={c.repair.auto!.coverage} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, auto: { ...q.repair.auto!, coverage: v } } }))} /></Field>
+                                <Field label={t('scenario.autoSuccess')}><NumberInput value={c.repair.auto!.successProbability} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, auto: { ...q.repair.auto!, successProbability: v } } }))} /></Field>
+                                <Field label={t('scenario.autoMttr')}><NumberInput value={c.repair.auto!.mttrHours} min={0} step={0.01} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, auto: { ...q.repair.auto!, mttrHours: v } } }))} /></Field>
+                                <Field label={t('scenario.manualMttr')}><NumberInput value={manualOf(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: { mttrHours: v } } }))} /></Field>
+                              </div>
+                            )}
+                            <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.ccf')}</h4>
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              <Select value={c.ccf?.domain ?? ''} onChange={(v) => setComp(c.id, (q) => ({ ...q, ccf: v ? { domain: v as 'rack', beta: q.ccf?.beta ?? 0.05 } : undefined }))} options={[{ value: '', label: '—' }, ...DOMAINS.map((d) => ({ value: d, label: d }))]} />
+                              {c.ccf && <NumberInput value={c.ccf.beta} min={0} max={1} step={0.01} onChange={(v) => setComp(c.id, (q) => ({ ...q, ccf: { ...q.ccf!, beta: v } }))} />}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 style={{ margin: '0 0 6px', fontSize: 13 }}>{t('scenario.subhealth')}</h4>
+                            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+                              <input type="checkbox" checked={!!c.subhealth} onChange={(e) => setComp(c.id, (q) => ({ ...q, subhealth: e.target.checked ? { ratePerHour: q.failslow?.ratePerHour ?? 1e-5, durationHours: q.failslow?.durationHours ?? 1, performance: q.failslow?.capacity ?? 0.7, escalationMultiplier: 1, policy: 'tolerate' } : undefined, failslow: e.target.checked ? undefined : q.failslow }))} />
+                              {t('scenario.subhealth')}{c.failslow && !c.subhealth ? ` (${t('scenario.legacyFailslow')})` : ''}
+                            </label>
+                            {c.subhealth && (
+                              <div className="form-grid" style={{ marginTop: 6 }}>
+                                <Field label={t('scenario.shRate')}><NumberInput value={c.subhealth.ratePerHour ?? 0} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, ratePerHour: v, steadyStateProbability: undefined } }))} /></Field>
+                                <Field label={t('scenario.shDuration')}><NumberInput value={c.subhealth.durationHours} min={0.001} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, durationHours: v } }))} /></Field>
+                                <Field label={t('scenario.shPerformance')}><NumberInput value={c.subhealth.performance} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, performance: v } }))} /></Field>
+                                <Field label={t('scenario.shEscalation')}><NumberInput value={c.subhealth.escalationMultiplier} min={0} step={0.5} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, escalationMultiplier: v } }))} /></Field>
+                                <Field label={t('scenario.shPolicy')}><Select value={c.subhealth.policy} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, policy: v, detection: v === 'isolate' ? q.subhealth!.detection ?? { probability: 0.9, delayHours: 0.025 } : q.subhealth!.detection } }))} options={[{ value: 'tolerate', label: t('scenario.tolerate') }, { value: 'isolate', label: t('scenario.isolate') }]} /></Field>
+                                {c.subhealth.policy === 'isolate' && (
+                                  <>
+                                    <Field label={t('scenario.shDetectP')}><NumberInput value={c.subhealth.detection?.probability ?? 0.9} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, detection: { probability: v, delayHours: q.subhealth!.detection?.delayHours ?? 0.025 } } }))} /></Field>
+                                    <Field label={t('scenario.shDetectDelay')}><NumberInput value={c.subhealth.detection?.delayHours ?? 0.025} min={0} step={0.005} onChange={(v) => setComp(c.id, (q) => ({ ...q, subhealth: { ...q.subhealth!, detection: { probability: q.subhealth!.detection?.probability ?? 0.9, delayHours: v } } }))} /></Field>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <h4 style={{ margin: '0 0 6px', fontSize: 13 }}>{t('scenario.switchover')}</h4>
+                            {c.redundancy && c.redundancy.scheme !== 'series' ? (
+                              <div className="form-grid">
+                                <Field label={t('scenario.switchoverSuccess')}><NumberInput value={c.redundancy.switchover?.successProbability ?? c.redundancy.switchProbability ?? 1} min={0} max={1} step={0.01} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, switchover: { ...q.redundancy!.switchover, successProbability: v } } }))} /></Field>
+                                <Field label={t('scenario.switchoverOutage')}><NumberInput value={c.redundancy.switchover?.outageS ?? 0} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, switchover: { successProbability: q.redundancy!.switchover?.successProbability ?? 1, ...q.redundancy!.switchover, outageS: v } } }))} /></Field>
+                                <Field label={t('scenario.switchoverRecovery')}><NumberInput value={c.redundancy.switchover?.failureRecoveryHours ?? manualOf(c)} min={0.001} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, switchover: { successProbability: q.redundancy!.switchover?.successProbability ?? 1, ...q.redundancy!.switchover, failureRecoveryHours: v } } }))} /></Field>
+                              </div>
+                            ) : <div className="muted" style={{ fontSize: 12 }}>{t('scenario.redundancy')}: series</div>}
+                            <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.provenance')}</h4>
+                            <input value={c.failure.provenance?.source ?? ''} placeholder="source" onChange={(e) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, provenance: { ...(q.failure.provenance ?? { confidence: 'assumed' }), source: e.target.value } } }))} style={{ width: '100%' }} />
+                            {c.failure.koujing && <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>{t('common.koujing')}: {c.failure.koujing.event} / {c.failure.koujing.denominator} / {c.failure.koujing.level}</div>}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                </td>
-                <td>
-                  <Badge status={c.failure.provenance?.confidence ?? 'assumed'}>{c.failure.provenance?.confidence ?? 'none'}</Badge>
-                  {c.failure.provenance?.source && <div className="muted" style={{ fontSize: 10, maxWidth: 160 }}>{c.failure.provenance.source}</div>}
-                </td>
-                <td><button type="button" className="btn small" onClick={() => upd((x) => ({ ...x, components: x.components.filter((q) => q.id !== c.id) }))} disabled={s.components.length <= 1}>×</button></td>
-              </tr>
-            ))}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>

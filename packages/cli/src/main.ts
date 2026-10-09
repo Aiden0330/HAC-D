@@ -9,12 +9,18 @@
  *   hacd tornado <scenario.json> [--metric goodput] [--json]
  *   hacd simulate <scenario.json> [--reps 100] [--seed 1] [--hours 240] [--json]
  *   hacd schema                                     print the scenario JSON schema
+ *   hacd measures <scenario.json> [--json]          original vs compensated measures and the compensation waterfall (v2)
+ *   hacd methods <book.xlsx> [--json]               which availability methods a spreadsheet uses (formula fingerprints)
+ *   hacd import-excel <book.xlsx> [--sheet S] [--out scenario.json] [--json]   topology + parameters → scenario, reconciled
+ *   hacd export-excel <scenario.json> [out.xlsx]    workbook with live formulas (Inputs / Structure / Results / Formulas)
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
   type AllocationMethod, type TornadoMetric,
 } from '@hac-d/core';
+import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -224,6 +230,84 @@ switch (cmd) {
     ]);
     break;
   }
+  case 'measures': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd measures <scenario.json> [--json]');
+      process.exit(1);
+    }
+    const r = evaluateScenario(load(path));
+    const m = r.system.measures;
+    if (json) {
+      out({ measures: m, waterfall: r.system.waterfall, humanFraction: r.system.humanFraction, autoDowntimeShare: r.system.autoDowntimeShare, approximate: r.system.approximate });
+      break;
+    }
+    printTable([
+      ['measure', 'availability', 'unavailability', 'MTBF (h)', 'MTTR (h)'],
+      ['original (原始)', pct(m.original.availability, 4), m.original.unavailability.toExponential(3), m.original.mtbfHours.toFixed(1), m.original.equivalentMttrHours.toFixed(2)],
+      ['compensated (补偿后)', pct(m.compensated.availability, 4), m.compensated.unavailability.toExponential(3), m.compensated.mtbfHours.toFixed(1), m.compensated.equivalentMttrHours.toFixed(2)],
+      ['strict (sub-health = down)', pct(m.strict, 4), (1 - m.strict).toExponential(3), '', ''],
+      ['tolerant (sub-health = up)', pct(m.tolerant, 4), (1 - m.tolerant).toExponential(3), '', ''],
+      ['performance-weighted', pct(m.performability, 4), (1 - m.performability).toExponential(3), '', ''],
+    ]);
+    console.log(`switchover penalty ${m.switchoverPenalty.toExponential(3)} · human fraction ${pct(r.system.humanFraction, 1)}${r.system.autoDowntimeShare !== undefined ? ` · automatic share of downtime ${pct(r.system.autoDowntimeShare, 1)}` : ''}`);
+    printTable([['waterfall step', 'availability', 'Δ'], ...r.system.waterfall.map((w) => [w.id, pct(w.availability, 4), w.delta.toExponential(3)])]);
+    break;
+  }
+  case 'methods': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd methods <book.xlsx> [--json]');
+      process.exit(1);
+    }
+    const rep = methodReport(readWorkbook(new Uint8Array(readFileSync(path)), basename(path)));
+    if (json) {
+      out(rep);
+      break;
+    }
+    for (const s of rep.sheets) {
+      console.log(`sheet ${s.sheet}: header row ${s.headerRow === null ? 'none' : s.headerRow + 1}; columns ${s.columns.filter((c) => c.role).map((c) => `${c.header}→${c.role}`).join(', ') || '—'}`);
+      printTable([['method', 'cells', 'description'], ...rep.methods.filter((m) => s.summary[m.tag]).map((m) => [m.tag, String(s.summary[m.tag]), m.description.en])]);
+      for (const n of s.notes) console.log(`  note: ${n}`);
+    }
+    break;
+  }
+  case 'import-excel': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd import-excel <book.xlsx> [--sheet S] [--out scenario.json] [--json]');
+      process.exit(1);
+    }
+    const r = importSpreadsheet(new Uint8Array(readFileSync(path)), basename(path), { sheet: flag('sheet') });
+    const outPath = flag('out');
+    if (outPath) writeFileSync(outPath, JSON.stringify(r.conversion.input, null, 2));
+    if (json) {
+      out({ sheet: r.sheet, methods: r.report.methods, columns: r.draft.columns, notes: [...r.draft.notes, ...r.conversion.notes], confidence: r.draft.confidence, tree: r.draft.root, scenario: r.conversion.input, availability: r.result.system.availability, measures: r.result.system.measures, reconciliation: r.reconciliation });
+      break;
+    }
+    console.log(`sheet ${r.sheet} · confidence ${pct(r.draft.confidence, 0)} · ${r.draft.notes.join(' · ')}`);
+    printTable([['method', 'cells'], ...r.report.methods.map((m) => [m.tag, String(m.count)])]);
+    printTable([['node', 'kind', 'count', 'n/k', 'HAC-D A', 'sheet A', 'Δ'], ...r.reconciliation.rows.map((row) => {
+      const node = flattenDraft(r.draft.root).find((x) => x.node.id === row.nodeId)!.node;
+      return [`${'  '.repeat(row.depth)}${row.name}`, row.kind, String(node.count), node.n !== undefined ? `${node.k ?? '?'}/${node.n}` : '', row.engine !== undefined ? pct(row.engine, 4) : '—', row.excel !== null ? pct(row.excel, 4) : '—', row.delta !== null ? row.delta.toExponential(2) : '—'];
+    })]);
+    for (const n of [...r.conversion.notes, ...r.reconciliation.notes]) console.log(`  note: ${n}`);
+    console.log(`system availability ${pct(r.result.system.availability, 4)}${outPath ? ` · scenario written to ${outPath}` : ''}`);
+    break;
+  }
+  case 'export-excel': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd export-excel <scenario.json> [out.xlsx]');
+      process.exit(1);
+    }
+    const s = load(path);
+    const target = files[1] ?? path.replace(/\.json$/i, '') + '.xlsx';
+    const bytes = exportWorkbook(s, evaluateScenario(s));
+    writeFileSync(target, bytes);
+    console.log(`wrote ${target} (${bytes.byteLength} bytes; sheets Inputs, Structure, Results, Formulas)`);
+    break;
+  }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | schema> [--json]');
 }

@@ -1,6 +1,6 @@
 # HAC-D v2 — availability-model enhancements (Ascend topology, dual-path MTTR, sub-health, original vs compensated, switchover, Excel import)
 
-Status: proposal, 2026-10-09. Builds on `DEVELOPMENT_PLAN.md` (v1 complete, 242 tests). Decision points are marked **[Q]** and listed in §8.
+Status: implemented 2026-10-09 (see `DEVELOPMENT_PLAN.md` § v2 status). Decisions **[Q1–Q4]** were all taken as recommended: generic importer on synthetic fixtures, inherent-vs-fault-tolerance measures, CloudMatrix384 + parametrised Atlas 950, import and export.
 
 ## 1. Requests and how they map
 
