@@ -77,9 +77,10 @@ export function ScenarioPage() {
           {result.training && <Kpi label={t('common.goodput')} value={fmtPct(result.training.effectiveGoodput, 2)} note={`${t('common.mtbi')} ${fmtDuration(result.training.mtbiS, lang)} · R ${fmtDuration(result.training.recoveryS, lang)}`} tone={result.training.effectiveGoodput < 0.9 ? 'bad' : undefined} />}
           {result.inference && <Kpi label={t('inference.capacity')} value={fmtPct(result.inference.capacityAvailability, 4)} note={`k* = ${result.inference.kRequiredForTarget}`} />}
           <Kpi label={t('common.weakest')} value={result.system.weakestBlock?.name ?? '—'} />
-          <Kpi label="GPUs · nodes · racks" value={`${result.counts.gpus} · ${result.counts.nodes} · ${result.counts.racks}`} note={`NVLink domains ${result.counts.nvlinkDomains}`} />
+          <Kpi label="GPUs · nodes · racks" value={`${result.counts.gpus} · ${result.counts.nodes} · ${result.counts.racks}`} note={s.topology.superpod ? `supernodes ${result.counts.supernodes} · L1 ${result.counts.l1Switches} · L2 ${result.counts.l2Switches} · links ${result.counts.opticalLinks}` : `NVLink domains ${result.counts.nvlinkDomains}`} />
         </div>
       )}
+      {!active.error && result && <div className="muted" style={{ fontSize: 12, marginTop: -6 }}>{t('scenario.liveNote')}</div>}
       {active.error && <div className="callout crit">{active.error}</div>}
       <div className="grid cols-2">
         <Card title={s.meta.name} sub={s.meta.description}>
@@ -99,7 +100,7 @@ export function ScenarioPage() {
             {!s.topology.superpod && <Field label={t('scenario.gpusPerNode')}><NumberInput value={s.topology.gpusPerNode} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, gpusPerNode: Math.round(v) } }))} /></Field>}
             {!s.topology.superpod && <Field label={t('scenario.nodesPerRack')}><NumberInput value={s.topology.nodesPerRack} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nodesPerRack: Math.round(v) } }))} /></Field>}
             <Field label={t('scenario.racksPerZone')}><NumberInput value={s.topology.racksPerZone} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, racksPerZone: Math.round(v) } }))} /></Field>
-            <Field label={t('scenario.nvlinkDomain')}><NumberInput value={s.topology.nvlinkDomainGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nvlinkDomainGpus: Math.round(v) } }))} /></Field>
+            {!s.topology.superpod && <Field label={t('scenario.nvlinkDomain')}><NumberInput value={s.topology.nvlinkDomainGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nvlinkDomainGpus: Math.round(v) } }))} /></Field>}
             {!s.topology.superpod && <Field label={t('scenario.planes')}><NumberInput value={s.topology.networkPlanes} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, networkPlanes: Math.round(v) } }))} /></Field>}
           </div>
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.superpod')}</h3>
@@ -113,7 +114,7 @@ export function ScenarioPage() {
                     topology: {
                       ...x.topology,
                       superpod: v === 'generic' ? undefined : v === 'custom' ? { ...(x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values), preset: 'custom' } : { ...SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values },
-                      ...(v !== 'generic' ? (() => { const sp = v === 'custom' ? (x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values) : SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values; return { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes }; })() : {}),
+                      ...(v !== 'generic' ? (() => { const sp = v === 'custom' ? (x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values) : SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values; return { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks }; })() : {}),
                     },
                   }))
                 }
@@ -122,7 +123,7 @@ export function ScenarioPage() {
             </Field>
             {s.topology.superpod && SUPERPOD_FIELDS.map((f) => (
               <Field key={f} label={t(`scenario.${f}`)}>
-                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => { const sp = { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' as const }; return { ...x, topology: { ...x.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes } }; })} />
+                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => { const sp = { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' as const }; return { ...x, topology: { ...x.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks } }; })} />
               </Field>
             ))}
           </div>
@@ -155,7 +156,7 @@ export function ScenarioPage() {
             </Field>
             {s.workload.type === 'training' ? (
               <>
-                <Field label={t('scenario.nGpus')}><NumberInput value={s.workload.nGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), nGpus: Math.round(v) } }))} /></Field>
+                <Field label={t('scenario.nGpus')} hint={s.topology.superpod ? t('scenario.nGpusHint') : undefined}><NumberInput value={s.workload.nGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), nGpus: Math.round(v) } }))} /></Field>
                 <Field label={t('scenario.durationDays')}><NumberInput value={s.workload.durationDays} min={0.1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), durationDays: v } }))} /></Field>
                 <Field label={t('scenario.deltaS')}><NumberInput value={s.workload.deltaS} min={0} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), deltaS: v } }))} /></Field>
                 <Field label={t('scenario.intervalModel')}><Select value={s.workload.intervalModel} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), intervalModel: v } }))} options={[{ value: 'young', label: 'Young √(2δM)' }, { value: 'daly3', label: 'Daly three-term' }, { value: 'dalyExact', label: 'Daly exact' }, { value: 'saxena', label: 'Saxena (availability)' }]} /></Field>
