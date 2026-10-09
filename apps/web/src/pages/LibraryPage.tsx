@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { filterLibrary, recordToFailureRate, LIBRARY_CLASSES, type Library, type LibraryRecord } from '@hac-d/core';
 import { useStore } from '../state/store.js';
@@ -13,22 +13,30 @@ export function LibraryPage() {
   const active = useActive();
   const updateActive = useStore((s) => s.updateActive);
   const [lib, setLib] = useState<Library | null>(cached);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [cls, setCls] = useState('');
   const [conf, setConf] = useState('');
   const [stage, setStage] = useState('');
   const [query, setQuery] = useState('');
   const [ratesOnly, setRatesOnly] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
-  const [target, setTarget] = useState<string>(active?.scenario.components[0]?.id ?? '');
+  const [targetState, setTarget] = useState<string>('');
   const [msg, setMsg] = useState<string | null>(null);
+  // the target component must belong to the active scenario (it changes when the user switches scenarios)
+  const componentIds = active?.scenario.components.map((c) => c.id) ?? [];
+  const target = componentIds.includes(targetState) ? targetState : componentIds[0] ?? '';
 
   useEffect(() => {
     if (cached) return;
-    import('@hac-d/core/library.json').then((m) => {
-      cached = (m.default ?? m) as unknown as Library;
-      setLib(cached);
-    });
-  }, []);
+    setLoadError(null);
+    import('@hac-d/core/library.json')
+      .then((m) => {
+        cached = (m.default ?? m) as unknown as Library;
+        setLib(cached);
+      })
+      .catch((e: unknown) => setLoadError(`${(e as Error).message ?? String(e)} — reload the page (a stale build can no longer find its library chunk)`));
+  }, [attempt]);
 
   const rows = useMemo(() => (lib ? filterLibrary(lib, { class: cls || undefined, confidence: conf || undefined, stage: stage || undefined, query, ratesOnly }) : []), [lib, cls, conf, stage, query, ratesOnly]);
 
@@ -52,7 +60,7 @@ export function LibraryPage() {
           : c,
       ),
     }));
-    setMsg(`${target} ← ${r.id}`);
+    setMsg(`${target} ← ${r.id}: ${fr.value} ${fr.unit}`);
   };
 
   return (
@@ -75,8 +83,14 @@ export function LibraryPage() {
           )}
         </div>
       </Card>
-      <Card title={`${rows.length} ${t('library.records')}`}>
-        {!lib && <div className="muted">{t('library.loading')}</div>}
+      <Card title={`${rows.length} ${t('library.records')}${lib ? ` / ${lib.records.length}` : ''}`}>
+        {!lib && !loadError && <div className="muted">{t('library.loading')}</div>}
+        {loadError && (
+          <div className="callout crit">
+            {loadError} <button type="button" className="btn small" onClick={() => setAttempt((a) => a + 1)}>{t('common.reset')}</button>
+          </div>
+        )}
+        {msg && <div className="callout" style={{ marginBottom: 8 }}>{t('library.applied')}: {msg}</div>}
         <div className="table-wrap">
           <table className="data">
             <thead>
@@ -84,8 +98,8 @@ export function LibraryPage() {
             </thead>
             <tbody>
               {rows.slice(0, 200).map((r) => (
-                <>
-                  <tr key={r.id} onClick={() => setOpen(open === r.id ? null : r.id)} style={{ cursor: 'pointer' }}>
+                <Fragment key={r.id}>
+                  <tr onClick={() => setOpen(open === r.id ? null : r.id)} style={{ cursor: 'pointer' }}>
                     <td>{lang === 'zh' ? r.name.zh ?? r.name.en : r.name.en ?? r.name.zh}</td>
                     <td className="mono">{r.class}{r.applicability.stage ? ` · ${r.applicability.stage}` : ''}</td>
                     <td className="num">{r.value === null ? '—' : Math.abs(r.value) < 0.001 ? r.value.toExponential(3) : Number(r.value.toPrecision(6)).toLocaleString('en-US')}</td>
@@ -96,7 +110,7 @@ export function LibraryPage() {
                     <td>{recordToFailureRate(r) && active ? <button type="button" className="btn small" onClick={(e) => { e.stopPropagation(); useAsRate(r); }}>{t('library.use')}</button> : null}</td>
                   </tr>
                   {open === r.id && (
-                    <tr key={`${r.id}-d`}>
+                    <tr>
                       <td colSpan={8} style={{ background: 'var(--surface-3)' }}>
                         <div className="grid cols-2" style={{ fontSize: 12 }}>
                           <div>
@@ -113,7 +127,7 @@ export function LibraryPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

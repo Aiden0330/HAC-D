@@ -28,6 +28,7 @@ export const strings = {
       repairPaths: 'Repair paths', dualRepair: 'Dual-path repair (automatic → manual)', autoCoverage: 'Automatic coverage c', autoSuccess: 'Automatic success s', autoMttr: 'Automatic MTTR (h)', manualMttr: 'Manual MTTR (h)', meanRepair: 'E[R]',
       switchover: 'Switchover', switchoverSuccess: 'Success probability', switchoverOutage: 'Outage per switchover (s)', switchoverRecovery: 'Failed-switch recovery (h)',
       subhealth: 'Sub-health', shRate: 'Entry rate (/h)', shDuration: 'Duration (h)', shPerformance: 'Performance φ', shEscalation: 'Escalation ×', shPolicy: 'Policy', shDetectP: 'Detection probability', shDetectDelay: 'Detection delay (h)', tolerate: 'tolerate (run slow)', isolate: 'isolate (switch out)', legacyFailslow: 'legacy fail-slow (v1) in use', convert: 'Convert to sub-health',
+      mtbfUnit: 'MTBF per unit', meanRepair_: 'E[R]', lambdaAgg: 'λ aggregate', fromSuperpod: 'GPUs per node, nodes per rack and network planes are taken from the supernode geometry below.',
       details: 'Details', ladder: 'Recovery ladder', rung: 'Rung', kind: 'Kind', success: 'Success', reach: 'Reach', timeS: 'Time (s)', ladderNote: 'Rungs are tried in order; the last (manual) rung always succeeds. MindCluster preset values are assumptions until measured.', customise: 'Customise rungs', pipelineMode: 'pipeline', ladderMode: 'ladder', provenance: 'Provenance',
     },
     training: {
@@ -75,7 +76,7 @@ export const strings = {
       title: 'Import spreadsheet', sub: 'Load an availability workbook: detect the methods it uses, extract the topology, convert it into a scenario and reconcile with the sheet’s own numbers.',
       choose: 'Choose .xlsx / .xls / .csv', sheet: 'Sheet', methods: 'Methods detected', hits: 'Formula fingerprints', columns: 'Column roles', role: 'Role', header: 'Header', tree: 'Extracted topology', confidence: 'Confidence', importBtn: 'Import as scenario', imported: 'Imported scenario', reconcile: 'Reconciliation (spreadsheet vs HAC-D)', excelValue: 'Spreadsheet', engineValue: 'HAC-D', delta: 'Δ', noCached: 'The file carries no cached results (saved without calculation): only structure and parameters were compared.', evidence: 'Evidence', noHeader: 'No header row recognised on this sheet: pick another sheet or set the column roles.', futureImage: 'Diagram / image import will feed the same topology draft.', exportXlsx: 'Export the active scenario to Excel', node: 'Node', cell: 'Cell', formula: 'Formula', method: 'Method', none: '—',
     },
-    library: { title: 'Parameter library', sub: 'Survey-sourced parameters with 口径 and provenance. Filter, inspect, and use as component rates.', query: 'Search', class: 'Class', confidence: 'Confidence', stage: 'Stage', ratesOnly: 'Rates only', records: 'records', use: 'Use as rate', applicability: 'Applicability', caveat: 'Caveat', derivation: 'Derivation', loading: 'Loading library…' },
+    library: { title: 'Parameter library', sub: 'Survey-sourced parameters with 口径 and provenance. Filter, inspect, and use as component rates.', query: 'Search', class: 'Class', confidence: 'Confidence', stage: 'Stage', ratesOnly: 'Rates only', records: 'records', use: 'Use as rate', applicability: 'Applicability', caveat: 'Caveat', derivation: 'Derivation', loading: 'Loading library…', applied: 'Applied to the active scenario', target: 'Target component (active scenario)' },
     rbd: { title: 'Reliability block diagram', sub: 'Auto-laid out from the structure; red outline marks the block with the highest failure frequency.' },
   },
   zh: {
@@ -106,6 +107,7 @@ export const strings = {
       repairPaths: '修复路径', dualRepair: '双路径修复（自动 → 人工）', autoCoverage: '自动恢复覆盖率 c', autoSuccess: '自动恢复成功率 s', autoMttr: '自动恢复 MTTR（小时）', manualMttr: '人工修复 MTTR（小时）', meanRepair: 'E[R]',
       switchover: '倒换', switchoverSuccess: '倒换成功率', switchoverOutage: '每次倒换中断（秒）', switchoverRecovery: '倒换失败恢复时间（小时）',
       subhealth: '亚健康', shRate: '进入率（/小时）', shDuration: '持续时间（小时）', shPerformance: '性能 φ', shEscalation: '恶化倍数', shPolicy: '策略', shDetectP: '检测概率', shDetectDelay: '检测时延（小时）', tolerate: '容忍（降速运行）', isolate: '隔离（倒换出去）', legacyFailslow: '当前使用 v1 的 fail-slow 字段', convert: '转换为亚健康',
+      mtbfUnit: '单元 MTBF', meanRepair_: 'E[R]', lambdaAgg: 'λ 合计', fromSuperpod: '每节点 GPU 数、每机柜节点数与网络平面数由下方的超节点几何决定。',
       details: '详情', ladder: '分级恢复', rung: '级', kind: '类型', success: '成功率', reach: '到达概率', timeS: '时间（秒）', ladderNote: '各级按顺序尝试，最后一级（人工）必成功。MindCluster 预设取值为假设，待实测替换。', customise: '自定义各级', pipelineMode: '流水线', ladderMode: '分级恢复', provenance: '出处',
     },
     training: {
@@ -153,7 +155,7 @@ export const strings = {
       title: '导入表格', sub: '加载可用性计算表：识别所用方法、提取拓扑、转换为方案并与表内数值对账。',
       choose: '选择 .xlsx / .xls / .csv', sheet: '工作表', methods: '识别到的方法', hits: '公式指纹', columns: '列角色', role: '角色', header: '表头', tree: '提取的拓扑', confidence: '置信度', importBtn: '导入为方案', imported: '已导入方案', reconcile: '对账（表格 vs HAC-D）', excelValue: '表格', engineValue: 'HAC-D', delta: 'Δ', noCached: '文件没有缓存计算结果（保存时未计算）：仅比较了结构与参数。', evidence: '依据', noHeader: '该工作表未识别到表头：请换一个工作表或手动设置列角色。', futureImage: '图片 / 框图导入将复用同一拓扑草稿。', exportXlsx: '将当前方案导出为 Excel', node: '节点', cell: '单元格', formula: '公式', method: '方法', none: '—',
     },
-    library: { title: '参数库', sub: '来自综述、带口径与出处的参数。筛选、查看并用作部件故障率。', query: '搜索', class: '类别', confidence: '置信', stage: '阶段', ratesOnly: '仅故障率', records: '条记录', use: '用作故障率', applicability: '适用范围', caveat: '注意', derivation: '算式', loading: '正在加载参数库…' },
+    library: { title: '参数库', sub: '来自综述、带口径与出处的参数。筛选、查看并用作部件故障率。', query: '搜索', class: '类别', confidence: '置信', stage: '阶段', ratesOnly: '仅故障率', records: '条记录', use: '用作故障率', applicability: '适用范围', caveat: '注意', derivation: '算式', loading: '正在加载参数库…', applied: '已应用到当前方案', target: '目标部件（当前方案）' },
     rbd: { title: '可靠性框图', sub: '由结构自动布局；红色边框为故障频率最高的块。' },
   },
 } as const;

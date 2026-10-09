@@ -116,5 +116,5 @@ export function recordToSeconds(r: LibraryRecord): number | null {
 
 export const LIBRARY_CLASSES = [
   'gpu', 'hbm', 'nvlink_nvswitch', 'nic_optics', 'switch', 'host', 'node', 'psu_power', 'cooling', 'storage', 'software', 'tpu_machine', 'ici_cable', 'ocs',
-  'job', 'cluster', 'recovery_stage', 'checkpoint', 'spares', 'sdc', 'failslow', 'ccf', 'prediction', 'screening', 'composition',
+  'job', 'cluster', 'recovery_stage', 'checkpoint', 'spares', 'sdc', 'failslow', 'ccf', 'prediction', 'screening', 'composition', 'ascend',
 ] as const;

@@ -1,12 +1,12 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, type Scenario, type Component, type Superpod } from '@hac-d/core';
+import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, type Scenario, type Component, type Superpod, type ComponentRow } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
 import { RbdDiagram } from '../diagrams/RbdDiagram.js';
 import { download, scenarioFilename } from '../lib/export.js';
-import { fmtPct, fmtDuration, fmtHours } from '../lib/format.js';
+import { fmtPct, fmtDuration, fmtHours, fmtNum } from '../lib/format.js';
 
 const RATE_UNITS = ['per_h', 'per_1e6_h', 'FIT', 'per_year', 'per_day', 'per_1000_node_day', 'per_month', 'per_week', 'mtbf_h', 'gpu_h_per_event', 'gpu_day_per_event'] as const;
 const DOMAINS = ['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack'] as const;
@@ -70,8 +70,10 @@ export function ScenarioPage() {
       </Card>
       {!active.error && result && (
         <div className="kpi-row">
-          <Kpi label={`${t('common.availability')} (${t('measures.compensated')})`} value={fmtPct(result.system.availability, 4)} note={`${t('common.mtbf')} ${fmtHours(result.system.mtbfHours, lang)}`} />
-          <Kpi label={`${t('common.availability')} (${t('measures.original')})`} value={fmtPct(result.system.measures.original.availability, 4)} note={`${t('measures.performability')} ${fmtPct(result.system.measures.performability, 4)}`} />
+          <Kpi label={`${t('common.availability')} (${t('measures.compensated')})`} value={fmtPct(result.system.availability, 4)} note={`${t('measures.performability')} ${fmtPct(result.system.measures.performability, 4)}`} />
+          <Kpi label={`${t('common.availability')} (${t('measures.original')})`} value={fmtPct(result.system.measures.original.availability, 4)} note={`${t('common.mtbf')} ${fmtHours(result.system.measures.original.mtbfHours, lang)} · ${t('common.mttr_eq')} ${fmtHours(result.system.measures.original.equivalentMttrHours, lang)}`} />
+          <Kpi label={`${t('common.mtbf')} (${t('measures.compensated')})`} value={fmtHours(result.system.mtbfHours, lang)} note={`${fmtNum(result.system.failuresPerYear, 1)} ${t('common.failures_per_year')}`} />
+          <Kpi label={`${t('common.mttr_eq')} (${t('measures.compensated')})`} value={fmtHours(result.system.equivalentMttrHours, lang)} note={result.system.autoDowntimeShare !== undefined ? `${t('measures.autoShare')} ${fmtPct(result.system.autoDowntimeShare, 0)}` : undefined} />
           {result.training && <Kpi label={t('common.goodput')} value={fmtPct(result.training.effectiveGoodput, 2)} note={`${t('common.mtbi')} ${fmtDuration(result.training.mtbiS, lang)} · R ${fmtDuration(result.training.recoveryS, lang)}`} tone={result.training.effectiveGoodput < 0.9 ? 'bad' : undefined} />}
           {result.inference && <Kpi label={t('inference.capacity')} value={fmtPct(result.inference.capacityAvailability, 4)} note={`k* = ${result.inference.kRequiredForTarget}`} />}
           <Kpi label={t('common.weakest')} value={result.system.weakestBlock?.name ?? '—'} />
@@ -92,12 +94,13 @@ export function ScenarioPage() {
             </Field>
           </div>
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.topology')}</h3>
+          {s.topology.superpod && <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>{t('scenario.fromSuperpod')}</div>}
           <div className="form-grid">
-            <Field label={t('scenario.gpusPerNode')}><NumberInput value={s.topology.gpusPerNode} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, gpusPerNode: Math.round(v) } }))} /></Field>
-            <Field label={t('scenario.nodesPerRack')}><NumberInput value={s.topology.nodesPerRack} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nodesPerRack: Math.round(v) } }))} /></Field>
+            {!s.topology.superpod && <Field label={t('scenario.gpusPerNode')}><NumberInput value={s.topology.gpusPerNode} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, gpusPerNode: Math.round(v) } }))} /></Field>}
+            {!s.topology.superpod && <Field label={t('scenario.nodesPerRack')}><NumberInput value={s.topology.nodesPerRack} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nodesPerRack: Math.round(v) } }))} /></Field>}
             <Field label={t('scenario.racksPerZone')}><NumberInput value={s.topology.racksPerZone} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, racksPerZone: Math.round(v) } }))} /></Field>
             <Field label={t('scenario.nvlinkDomain')}><NumberInput value={s.topology.nvlinkDomainGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, nvlinkDomainGpus: Math.round(v) } }))} /></Field>
-            <Field label={t('scenario.planes')}><NumberInput value={s.topology.networkPlanes} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, networkPlanes: Math.round(v) } }))} /></Field>
+            {!s.topology.superpod && <Field label={t('scenario.planes')}><NumberInput value={s.topology.networkPlanes} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, networkPlanes: Math.round(v) } }))} /></Field>}
           </div>
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.superpod')}</h3>
           <div className="form-grid">
@@ -110,6 +113,7 @@ export function ScenarioPage() {
                     topology: {
                       ...x.topology,
                       superpod: v === 'generic' ? undefined : v === 'custom' ? { ...(x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values), preset: 'custom' } : { ...SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values },
+                      ...(v !== 'generic' ? (() => { const sp = v === 'custom' ? (x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values) : SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values; return { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes }; })() : {}),
                     },
                   }))
                 }
@@ -118,7 +122,7 @@ export function ScenarioPage() {
             </Field>
             {s.topology.superpod && SUPERPOD_FIELDS.map((f) => (
               <Field key={f} label={t(`scenario.${f}`)}>
-                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => ({ ...x, topology: { ...x.topology, superpod: { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' } } }))} />
+                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => { const sp = { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' as const }; return { ...x, topology: { ...x.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes } }; })} />
               </Field>
             ))}
           </div>
@@ -183,7 +187,7 @@ export function ScenarioPage() {
         </Card>
         <RecoveryEditor s={s} upd={upd} />
       </div>
-      <ComponentsEditor s={s} upd={upd} />
+      <ComponentsEditor s={s} upd={upd} rows={!active.error && result ? result.components : undefined} />
       {!active.error && result && (
         <Card title={t('rbd.title')} sub={t('rbd.sub')}>
           <RbdDiagram root={result.structure.root} result={result.structure.result} lang={lang} weakestId={result.system.weakestBlock?.id} />
@@ -307,8 +311,9 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
   );
 }
 
-function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
+function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: ComponentRow[] }) {
   const { t } = useTranslation();
+  const lang = useLang();
   const [open, setOpen] = useState<Set<string>>(new Set());
   const toggle = (id: string) => setOpen((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const setComp = (id: string, fn: (c: Component) => Component) => upd((x) => ({ ...x, components: x.components.map((c) => (c.id === id ? fn(c) : c)) }));
@@ -335,6 +340,7 @@ function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
             {s.components.map((c) => {
               const isOpen = open.has(c.id);
               const dual = !!c.repair.auto && c.repair.auto.coverage > 0;
+              const row = rows?.find((x) => x.id === c.id);
               return (
                 <Fragment key={c.id}>
                   <tr>
@@ -350,9 +356,15 @@ function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
                         <NumberInput value={units(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: q.countRule.per === 'fixed' ? { per: 'fixed', count: v } : { per: q.countRule.per, factor: v } }))} />
                       </div>
                     </td>
-                    <td className="num" style={{ minWidth: 90 }}><NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} /></td>
+                    <td className="num" style={{ minWidth: 90 }}>
+                      <NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} />
+                      {row && <div className="muted" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('scenario.mtbfUnit')} {row.lambdaPerUnitPerHour > 0 ? fmtHours(1 / row.lambdaPerUnitPerHour, lang) : '∞'} · {t('scenario.lambdaAgg')} {row.lambdaAggregatePerHour.toExponential(2)}/h</div>}
+                    </td>
                     <td><Select value={c.failure.unit} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, unit: v } }))} options={RATE_UNITS.map((u) => ({ value: u, label: u }))} /></td>
-                    <td className="num" style={{ minWidth: 80 }}><NumberInput value={manualOf(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} /></td>
+                    <td className="num" style={{ minWidth: 80 }}>
+                      <NumberInput value={manualOf(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} />
+                      {row && <div className="muted" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('scenario.meanRepair_')} {fmtHours(row.mttrHours, lang)}</div>}
+                    </td>
                     <td style={{ minWidth: 170 }}>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <Select value={c.redundancy?.scheme ?? 'series'} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: v === 'series' ? undefined : { ...q.redundancy, scheme: v as 'parallel', n: units(q), k: v === 'kofn' ? Math.max(1, units(q) - 1) : undefined } }))} options={['series', 'parallel', 'kofn', 'standby'].map((x) => ({ value: x, label: x }))} />
