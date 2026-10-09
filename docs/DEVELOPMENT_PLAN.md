@@ -1,0 +1,333 @@
+# HAC-D — AI Cluster Availability / MTBF / MTTR Modeling Tool
+
+**Development plan v0.1 · 2026-10-08**
+Grounded in the companion chapter *AI 集群可靠性建模：MTBF、MTTR 与可靠性框图* (`../survey/ai-cluster-reliability-modeling.html`, §2–§7) and the main survey's §11 / §16 estimator.
+
+---
+
+## 0. What we are building (one paragraph)
+
+A browser-based reliability-engineering workbench for AI (LLM) training and inference clusters. The user describes a cluster design (hierarchy of zones / racks / nodes / GPUs plus shared domains such as NVLink domain, ToR, power zone, CDU and network planes), attaches failure and repair parameters whose **口径** (event definition, denominator, level) is typed and carries provenance, describes the workload (synchronous training job or N+k inference service) and the recovery pipeline (the six MTTR stages), and the tool returns **availability, MTBF / MTBI / MTTF, MTTR (composite and per stage), goodput / ETTR / CETT, spare counts, capacity-availability curves and the dollar cost of unavailability**. It then **allocates** a top-level target (goodput or availability) down to subsystem budgets (allowed λ per component class, allowed MTTR per stage, required spares) and **compares design options** side by side with sensitivity and importance ranking. Methods: hierarchical capacity-aware RBD with a fault-tree view and common-cause factors; CTMC for repairable blocks and spare pools; the Young / Daly / Saxena / Meta-RSC checkpoint-goodput family; quantile-based sparing; Monte Carlo discrete-event simulation for non-exponential, heterogeneous and correlated failures; allocation by AGREE / ARINC / minimum-effort plus an AI-specific "goodput budget" allocation.
+
+What makes it state of the art relative to classical RBD tools (BlockSim-style) and to the survey's own three-tab calculator is listed in §3.4.
+
+---
+
+## 1. What the survey fixes as requirements
+
+| Survey finding | Tool requirement |
+|---|---|
+| §2: the same "MTBF ≈ 3 h" can be job, node or GPU·h; numbers are only comparable after aligning event definition, denominator and level (Fig. 2-1, Tables 2-1/2-2). | Every parameter is stored with a **口径 type** `{event, denominator unit, level, includes_planned, dedup rule}`; the engine converts (per GPU·h ↔ per node·day ↔ FIT ↔ AFR ↔ GPU·day/failure) explicitly and refuses to add numbers of different event classes (interruption vs error vs ticket). |
+| §2: 1/N law empirically holds (Meta RSC) but fails under correlated failures, lemon nodes and elastic/degraded operation. | Scale extrapolation is a first-class operation with validity flags; lemon-node heterogeneity (two-population mixture) and CCF are modelable. |
+| §2/§4: exponential and independence assumptions fail (Weibull k = 0.7–0.8 at LANL, wear-out k ≈ 5–7 on Titan, lognormal MTTR mean 355 min vs median 54 min, rack-level correlation ρ = 0.92). | Distributions are first class: exponential, Weibull (shape), lognormal, mixtures; closed forms are the default, Monte Carlo is the fallback whenever a non-exponential or correlated input is present. |
+| §4: three canonical RBDs (Fig. 4-1): series training job, k-of-n job with hot spares, N+k inference replicas; plus NVL72 domain vs 8-GPU node, power 2N / N+1, multi-plane network, k-of-144 cubes (Table 4-1, five worked diagrams). | Templates for all five, nestable (a k-of-n block can be a leaf of a series chain). |
+| §4: Markov birth–death chain for spares (Fig. 4-3), Meta Sparing CTMCs, Poisson blocked-probability closed form, degraded (fail-slow) states with capacity coefficient c_s, SDC "latent" state. | CTMC engine with steady-state, first-passage (MTTF) and transient solvers; performability output A_cap = Σ π_s·c_s. |
+| §4: CCF has clear hardware anchors (NVL72 busbar/manifold, CDU, OCS, ToR, shared storage) but no published β. | β-factor CCF per domain is an explicit, sweepable assumption; never a hidden default. |
+| §5: MTTR = detection + localization + remediation + restart + load + recompute (+ warm-up/slow-down), with measured ranges per stage (Table 5-1) and restart/localization growing with N. | MTTR is a **pipeline model**, each stage with a value or distribution and a scale law; the composite MTTR is derived, not typed. |
+| §6: Young / Daly (3-term, Lambert W) / Saxena availability-optimal / Meta E[ETTR] / SCR multilevel / replica recovery; one-order formulas break when τ+δ ≪ M or R ≪ M fails (Fig. 6-2; 100K-GPU "restart-dominated" regime). | Implement the full family; always check and display the validity conditions; switch to the full Daly model or simulation automatically when violated. |
+| §6: spares are a quantile problem (Binomial P99, Poisson blocked), not a ratio; block size trades spare fraction vs stranding vs TP gain (Meta Table 6-3). | Spare sizing by quantile with configurable confidence and repair turnaround; block-size comparison with stranding and performance factors. |
+| §6: reliability enters TCO (TrainMover $/day, SemiAnalysis goodput share of TCO). | Cost module: wasted GPU·h → $/day, spare capex, option deltas. |
+| §6: design-review checklist (11 items). | Built-in "design review" report that evaluates a scenario against the checklist. |
+| §7: SDC is a latent state; prediction buys little on timing but ranks lemon nodes; screening changes infant-mortality λ. | Latent-SDC state and screening/lemon-removal parameters in the model; prediction as (recall, precision, lead time) effect on λ_unplanned. |
+| Open problems: CCF parameters, non-exponential, fail-slow, 10⁵–10⁶ extrapolation, data scarcity, 口径 standardization, NVL72 / liquid cooling / CPO. | Where the survey has no data the tool exposes the assumption, offers ranges and runs sweeps; it never silently fills a number. |
+
+---
+
+## 2. Use cases
+
+| # | Use case | Primary output |
+|---|---|---|
+| UC1 | Evaluate a cluster design: steady-state availability, MTBF, MTTR, failures/year, weakest block | KPI panel + per-block table + RBD diagram |
+| UC2 | Training job: MTBI, optimal checkpoint interval, goodput/ETTR, loss decomposition (δ/τ, τ/2, R), wasted GPU·h and $/day, scale extrapolation 1K → 1M GPUs with validity flags | Goodput page + scale table + regime warnings |
+| UC3 | Inference service: N+k replicas for a capacity-availability target; "service up" vs "capacity sufficient"; degradable EP instances | N+k curve, capacity availability curve P(X ≥ k) |
+| UC4 | Spares: hot/warm/cold counts at P99/P99.9 given repair turnaround; blocked probability; block-size trade-off | Spare table, decision map in the MTBF–MTTR plane |
+| UC5 | Allocation: from a goodput or availability target to subsystem budgets (λ per component class, MTTR per stage, spares, CCF ceiling) | Allocation table with derived engineering requirements |
+| UC6 | Compare design options (NVL72 vs HGX8; 2N vs N+1; detection by timeout vs probe; checkpoint tier; hot spares 0/4/8; dual ToR) | Side-by-side KPIs, deltas, Pareto (goodput vs cost), tornado |
+| UC7 | Sensitivity and importance: which parameter moves the result; Birnbaum / Fussell-Vesely / RAW importance per block | Ranked tables, tornado and 2-D sweeps |
+| UC8 | Monte Carlo check: Weibull lifetimes, lognormal repairs, finite repair crews, CCF shocks, lemon-node mixture; confidence intervals; closed-form vs simulation delta | Distributions, CIs, comparison badge |
+| UC9 | Parameter library: survey-sourced defaults with provenance and 口径; user parameters; unit conversion | Library browser |
+| UC10 | Fit parameters from an incident log (CSV): exponential/Weibull MLE, lognormal MTTR, per-GPU·h conversion, infant-mortality segmentation | Fitted parameters with CIs (v2) |
+| UC11 | Report: self-contained HTML (survey visual style), JSON scenario, CSV tables, SVG/PNG charts; design-review checklist verdicts | Export |
+
+---
+
+## 3. Modeling methods
+
+### 3.1 Modeling stack (what the engine computes, bottom-up)
+
+```
+L4 Decision     compare options · cost/TCO · allocation (top-down) · design-review checklist
+L3 Workload     training goodput (checkpoint + recovery) · inference capacity N+k · job-duration risk
+L2 Structure    hierarchical RBD / fault tree (series, parallel, k-of-n, standby, capacity states,
+                CCF β, failure domains) · CTMC for repairable blocks & spare pools
+L1 Components   failure distributions (exp / Weibull / lognormal / mixture) · MTTR pipeline (6 stages,
+                scale laws) · fail-slow degraded state · SDC latent state · screening & prediction effects
+L0 Data         口径-typed parameter library with provenance · unit conversion · (v2) log fitting
+```
+
+### 3.2 Method table
+
+| Method | Answers | Inputs | Outputs | Survey anchor / validation |
+|---|---|---|---|---|
+| **Hierarchical capacity-aware RBD** (series, parallel, k-of-n, standby with switch probability, nested blocks; each block has an optional capacity coefficient) | static availability and failure rate of a structure | per-block λ (or MTBF), MTTR, n, k, c_s | A_sys, λ_sys, MTBF_sys, equivalent MTTR, A_cap, weakest block, block contributions | Fig. 4-1, Table 4-1, five worked diagrams; textbook results (two hot units MTTF = 3/(2λ), ideal cold standby 2/λ, (1+p_s)/λ with switch) |
+| **Fault-tree view + minimal cut sets** (dual of the RBD; OR = series, AND = parallel, voting = k-of-n) | which single events or event pairs take the job down; where CCF enters | same structure + CCF events | minimal cut sets, top-event probability, importance measures (Birnbaum, Fussell-Vesely, RAW/RRW) | §4 "故障树是对偶视图"; CCF anchors (ToR, OCS, busbar, CDU, Lustre) |
+| **Common-cause β-factor** (λ_i = (1−β)λ_i independent + β·λ as a shared series event per domain) | effect of shared power / cooling / switch / storage domains | β per domain (swept), domain membership | corrected A, cut sets, sensitivity to β | §4.3; LANL 5–10× hardware failure after power events; Minder 32/600 per switch event |
+| **CTMC repairable models** (birth–death spare chain, k-of-n with c repair crews, degraded states, SDC latent state, post-repair high-risk state) | blocked probability, MTTF to spare exhaustion, steady-state availability, performability | λ, μ = 1/MTTR, N, k, crews, c_s, λ_SDC, T_expose | π, A, A_cap, MTTF (first passage), transient A(t) | Fig. 4-3 (the current calculator's `mttfKofN` tridiagonal solve), Meta Sparing eq. 3/4/7, Poisson approximation, SCR hierarchical chain |
+| **Checkpoint / goodput family** — Young √(2δM); Daly 3-term and exact Lambert-W; Saxena availability-optimal T_c* = T_s + √(2(T_f+T_r)T_s + T_s²); Meta RSC E[ETTR] with queue q; SCR multilevel efficiency; replica/in-memory recovery (R → seconds, recompute → 1 step); SPARe / replication (MTTI ≈ √(πb)·μ) as optional | optimal interval, goodput, wasted GPU·h, regime (checkpoint- vs restart-dominated) | δ (exposed save), M = 1/(Nλ), R, levels, q | τ*, goodput, loss decomposition, ETTR(N) | §6 Tables 6-1/6-2, worked examples 1–2, TrainMover ETTR(N), Epoch 2.1% |
+| **Sparing** — Binomial P-quantile (ByteRobust), Poisson blocked probability (Meta), Erlang-type pipeline with turnaround L, hot/warm/cold, block-size trade-off with stranding and performance factor | how many spares, where, at what granularity | N, p_daily or λ, MTTR/turnaround, quantile, block K, placement group P | k_hot, pool size, Pr(blocked), CETT-style accounting | Table 6-3/6-4, worked example 3, 1/H scaling law |
+| **MTTR pipeline** — six stages, each a constant or distribution with a scale law: constant, a + b·log N, linear, max-order-statistic (slowest-node), bandwidth-bound (size / BW(N)) | composite MTTR and its growth with N | stage parameters, N | R(N), stage shares, which stage dominates | §5 Fig. 5-1 and Table 5-1 (TrainMover 0.52+1.5+4.45 min; Holmes 15.5→30.3 s; FlashRecovery 231→1,115 s; BootSeer slowest-node) |
+| **Scale extrapolation** with validity guards | what happens at 64K / 128K / 1M GPUs | λ, N, R(N), δ | MTBI(N), goodput(N), flags: τ+δ ≪ M ?, R ≪ M ?, δ ≥ 2M ? | §2 1/N law, Table 6-6, Daly Fig. 6-2 |
+| **Non-exponential & heterogeneity** — Weibull series (scale shrinks as N^(−1/k)), mean-matched Weibull α = (1/λ)/Γ(1+1/k), two-population lemon mixture, infant-mortality segment, lognormal repair | when the exponential answer is wrong and by how much | k, mixture fraction, multiplier | MTTF(N) from-new vs steady renewal, quantile MTTR | §4.3 formulas; AIReSim good/bad servers (15 % at 5×); SPARe k = 0.78 flipping r* |
+| **Monte Carlo DES** (TypeScript, seeded, Web Worker) — units with age-tracked lifetimes, repair with finite crews, hot/warm/cold spares with replenishment, CCF shocks per domain, synchronous-job semantics (any failure stops the job), checkpoint interval and recovery draws, degraded states, screening | distributions and CIs for everything above when closed forms do not apply; cross-check of closed forms | full scenario + replications + seed | goodput / MTBI / spare usage distributions, P50/P99, CI, closed-form delta | AIReSim design; Meta Sparing vs Arcadia < 1 %; SPARe vs MC MAPE 1.13 % |
+| **Allocation** — equal apportionment; ARINC (∝ current λ_i); AGREE (complexity n_i, importance w_i, duty time t_i); feasibility-of-improvement (Karmiol weights); minimum-effort / cost-optimal (Albert's algorithm, convex cost G_i(λ_i)); **goodput-budget allocation** (split 1−goodput into δ/τ, λ·τ/2, λ·R, then λ across component classes weighted by n_i and MTTR across the six stages) | what each subsystem must achieve for the top-level target | target (A*, goodput*, SLO), structure, weights / cost curves, fixed items | allowed λ_i (per unit and aggregate), allowed MTTR per stage, required k spares, CCF ceiling; feasibility vs library ranges | Checklist "先压 R 与 δ，再谈备件与间隔"; Meta RSC "r_f 6.50 → 1 or w_cp → 10 s to keep ETTR 0.9" |
+| **Importance & sensitivity** — Birnbaum, Fussell-Vesely, RAW/RRW; ∂goodput/∂x; one-at-a-time tornado; 2-D sweeps (MTBF–MTTR decision maps); optional Sobol via MC | where to spend engineering effort | scenario, ranges | ranked lists, tornado, heat maps | §4 "敏感性可从公式读出" (n_i weighting; R linear vs √λ) |
+| **Cost / TCO** | monetary value of reliability options | $/GPU·h, N, spare capex, option deltas | $/day lost, spare cost, option NPV-style deltas | TrainMover $0.95M/$3.63M per day; SemiAnalysis 92 % goodput share |
+| **Prediction & screening effects** | λ_unplanned = (1−R)·λ, λ_alarm = R·λ/P; λ_eff = λ_steady + (1−y)·λ_infant | recall, precision, lead time, interception y | adjusted λ, net benefit | §7 formulas |
+
+### 3.3 Three system templates (instantiate the hierarchy; all editable)
+
+1. **Synchronous training job** — series chain of {GPU×N, NVSwitch, NIC/optics, switches, checkpoint storage, power feed, cooling, software}; optional hot-spare pool turning the GPU/node block into k-of-n; failure domains: node (8 GPU), NVL72 rack (72 GPU), ToR, power zone, CDU, network planes (lose one plane = capacity (P−1)/P). Outputs MTBI, goodput, spares.
+2. **Inference service** — N+k replicas (k-of-n with capacity), replica = series of TP/EP ranks (or degradable k-of-n under EEP-style elasticity), PD split as series of pools; "service up" (A_any) vs "capacity sufficient" (A_cap); SLO window risk.
+3. **Infrastructure** — power 2N (1-of-2) / N+1 / 4N/3 catcher; cooling N+1 mCDU (5-of-6); dual-ToR vs single ToR; multi-plane network; storage mirroring; CCF between them.
+
+### 3.4 What is new versus the survey's calculator and classical RBD tools
+
+- Arbitrary nested structures with **capacity (performability) states**, not two-state blocks only.
+- **口径-typed** parameters with provenance and refusal to mix event classes.
+- **MTTR as a six-stage pipeline with scale laws**, so MTTR grows with N instead of being a constant.
+- **CCF β per failure domain** and **non-exponential / lemon-node** inputs with automatic fallback to Monte Carlo.
+- **Validity guards** on every first-order formula, with the restart-dominated regime detected.
+- **Top-down allocation** from goodput or availability targets to procurement-grade requirements.
+- **Option comparison with cost**, tornado and MTBF–MTTR decision maps.
+- Headless **CLI / MCP** access so agents can run analyses, and reproducible scenario files.
+
+---
+
+## 4. Architecture options
+
+| | A. Client-only static app | **C. Hybrid, client-first (recommended)** | B. Web frontend + Python backend |
+|---|---|---|---|
+| Compute | TypeScript in Web Workers | TS core package shared by browser, Node CLI and MCP server; Web Workers in the browser; optional compute service later | FastAPI + numpy/scipy + SimPy in Docker |
+| Persistence | scenario JSON download/upload, localStorage autosave, URL state | same in v1; optional SQLite service in v2 for team libraries | database from day one |
+| Deployment | static hosting or a single self-contained HTML file (matches your survey deliverables) | same as A; `packages/cli` and `packages/mcp` run from Node | docker compose; needs ops |
+| Monte Carlo capacity | 4,096 servers × months × 200 replications ≈ seconds in a worker | same; batch sweeps via CLI | best for very large sweeps |
+| Agent access | none | CLI + MCP tools (`evaluate`, `allocate`, `compare`, `simulate`) | REST API |
+| Cost of ownership | lowest | low | highest; two languages |
+
+**Recommendation: C.** One numerics core in TypeScript with golden tests, consumed by a static web app; CLI and MCP wrappers come almost for free. The Python backend is deferred to a v2 decision (only if sweeps outgrow the browser or a shared team library is required).
+
+**Stack (if C):** TypeScript 5 · Vite · React 18 · Zustand · zod (schema + validation + generated JSON Schema) · Comlink Web Workers · Observable Plot / D3 for charts (per the `dataviz` skill) · custom SVG auto-layout for RBD / fault tree / Markov diagrams (ELK.js or dagre for chains) · i18next for zh/en · Vitest for unit and golden tests · Playwright for browser checks at 1280 px and 375 px, light and dark (your existing convention) · npm workspaces monorepo (`packages/core`, `apps/web`, `packages/cli`, `packages/mcp`) · design tokens taken from the survey page (IBM Plex Sans/Mono/Serif, the `--accent #3B3FB6` palette, light/dark via `data-theme`). Node 20 is installed; no extra runtime needed.
+
+**Core API sketch**
+
+```ts
+evaluate(scenario: Scenario): Result                 // RBD + CTMC + goodput + spares + cost
+allocate(scenario, target: Target, policy: AllocationPolicy): Allocation
+compare(scenarios: Scenario[]): Comparison           // KPIs, deltas, Pareto
+sensitivity(scenario, ranges: ParamRange[]): Tornado
+simulate(scenario, opts: {replications, seed, horizon}): McResult   // runs in a worker
+convert(value: Quantity, to: Unit): Quantity         // 口径-aware
+```
+
+---
+
+## 5. Data model (scenario file, JSON, zod-validated)
+
+```
+Scenario
+├─ meta            name, version, author, notes, created, basis (survey refs)
+├─ library[]       ParameterRecord { id, component class, value, unit, distribution{type, shape},
+│                   口径{event, denominator, level, includes_planned, dedup}, provenance{source, venue,
+│                   year, url, confidence: measured|vendor|derived|assumed, caveat} }
+├─ topology        Hierarchy: zone > rack > node > device; domains: nvlink_domain, tor, power_zone,
+│                   cdu, plane; counts and membership
+├─ components[]    { class, count_rule (per GPU | per node | per rack | fixed), λ_ref → library,
+│                   mttr_ref → pipeline or value, β_ccf per domain, failslow{p, slowdown, duration},
+│                   infant{multiplier, duration}, lemon{fraction, multiplier} }
+├─ structure       Block tree: series | parallel | kofn{n,k} | standby{n, p_switch} | leaf → component,
+│                   capacity_rule (min | sum/required | plane (P−1)/P), nestable
+├─ workload        training{N, gpus_per_node, duration_days, δ_exposed, checkpoint tiers[],
+│                   parallel groups DP/TP/PP/EP, elasticity: none|replica|slice}
+│                   | inference{n_required, g_per_replica, k, capacity_target, window_h, degradable}
+├─ recovery        pipeline{detect, localize, remediate, restart, load, recompute, warmup}: each
+│                   {value or distribution, scale_law{type, params}}
+├─ spares          {hot, warm, cold, turnaround_days, replenish_policy, quantile, block_size K,
+│                   placement_group P}
+├─ targets         {availability, goodput, capacity_availability, slo_window}
+├─ costs           {$ per GPU·h, spare unit cost, $ per interruption, horizon}
+└─ assumptions     explicit list rendered in reports (independence, exponential, β values, ...)
+```
+
+Comparison sets are arrays of scenarios sharing a base and listing overrides, so an option is "base + patch" and diffs are explicit.
+
+---
+
+## 6. Inputs and outputs
+
+### 6.1 Inputs
+
+| Group | Fields | Default source (all with provenance) |
+|---|---|---|
+| Cluster | GPUs, GPUs/node, nodes/rack, racks/zone, NVLink domain size (8 / 72), network planes, ToR mode (single / dual), power (2N / N+1 / catcher), cooling (N+1 mCDU) | templates: HGX-8 node cluster, GB200 NVL72, TPU cube/OCS, Ascend CloudMatrix (structure only) |
+| Component failure | λ or MTBF with unit; distribution and shape; infant / wear-out; lemon mixture; β per domain | Table 3-2 / 4-2: 1/50,000 GPU·h (Llama 3), r_f 6.50 / 2.34 per 1,000 node·day (RSC), 1/9.0e4–9.9e4 GPU·h (CoreWeave, Nebius), TPU 0.08 % / 0.005 % / 0.04 % per day, HBM UE MTBE 88,768 h (H100) / 283,271 h (A100); missing classes (NVLink, optics, NIC, PSU, CDU) marked `assumed` |
+| Recovery pipeline | six stage values or distributions, scale laws, automation level | Table 5-1 presets: timeout 10–30 min vs probe 2–60 s; TrainMover 0.52 + 1.5 + 4.45 min; FlashRecovery 78–116 s; warm standby ≈ 20 s; node repair 12 min (Nebius) to days (SIGMA) |
+| Checkpoint | exposed save δ, end-to-end save, load bandwidth, tiers (GPU/host memory, peer replica, remote) | Table 6-2: 2.43 s / 0.32 s (Epoch), ByteCheckpoint 0.59 s block / 51 s save / 129 s load, Lablup 18–32 s |
+| Workload | N, duration, parallel groups, elasticity mode; inference n, g, k, capacity target, window | worked examples 1–4 |
+| Spares | hot/warm/cold counts, turnaround, quantile, block size, placement group | ByteRobust P99; Meta tray 20K h / rack 10K h / MTTR 24 h |
+| Targets & costs | goodput*, A*, capacity availability*, $/GPU·h | AWS Capacity Blocks $1.44M per 16K GPU·day (TrainMover) |
+| Import formats | UI forms, scenario JSON, CSV component list, (v2) incident-log CSV | — |
+
+### 6.2 Outputs
+
+| Output | Definition shown next to the number |
+|---|---|
+| A_sys, A_cap | ΠA_i over series blocks; k-of-n binomial; Σ π_s c_s for degraded states |
+| MTBF / MTBI / MTTF | 1/Σ n_i λ_i; job MTBI = 1/(Nλ); spare-exhaustion MTTF from the birth–death chain |
+| MTTR composite and per stage; equivalent MTTR (1−A)·MTBF | pipeline sum with scale laws |
+| Optimal checkpoint interval (Young, Daly 3-term, Saxena) and regime flags | τ+δ ≪ M, R ≪ M, δ ≥ 2M |
+| Goodput / ETTR, loss decomposition (δ/τ, τ/2·λ, R·λ), wasted GPU·h/day, $/day | first-order goodput ≈ 1 − δ/τ − (τ/2 + R)/M |
+| Scale table 1K → 1M GPUs | MTBI(N), τ(N), goodput(N), interruptions/day |
+| Spares: hot count at P99/P99.9, pool size, Pr(blocked), block-size table | Binomial / Poisson / CTMC |
+| Capacity availability curve P(X ≥ k) | binomial tail; MC when correlated |
+| Minimal cut sets, importance measures, tornado, 2-D decision map | fault-tree and derivative analysis |
+| Allocation table: per subsystem allowed λ (unit and aggregate), per stage allowed time, spares, β ceiling, feasibility flag vs library range | chosen policy |
+| Comparison: KPI matrix, deltas, Pareto plot, ranking | — |
+| Monte Carlo: distributions, P50/P99, CI, closed-form delta | — |
+| Design-review verdicts (11 checklist items) and assumption list | — |
+| Exports: HTML report, JSON scenario, CSV, SVG/PNG | — |
+
+---
+
+## 7. UI (pages)
+
+1. **Scenario** — topology form + structure outline editor; auto-rendered RBD and fault-tree diagrams (SVG, light/dark); assumption banner.
+2. **Library** — parameter records with 口径 and provenance; filters by confidence; unit converter; "use in scenario".
+3. **Training job** — goodput, interval, loss decomposition, scale table, regime flags (the survey's tab 1, extended).
+4. **Inference** — N+k, capacity availability curve, degradable replicas (tab 3, extended).
+5. **Spares & domains** — quantile sizing, block-size trade-off, MTBF–MTTR decision map.
+6. **Allocation** — pick target and policy, see budgets and feasibility.
+7. **Compare** — option matrix, Pareto, tornado.
+8. **Simulate** — Monte Carlo runs with progress, CIs and closed-form comparison.
+9. **Report** — design-review checklist, exports.
+
+Bilingual zh/en toggle (as in your build notes), light/dark/auto theme, keyboard-navigable forms, WCAG AA contrast (checked with the `design:accessibility-review` skill), mobile layout at 375 px.
+
+---
+
+## 8. Validation plan (golden vectors from the survey)
+
+Unit tests in `packages/core` must reproduce these to stated tolerances before any UI work:
+
+| Case | Expected |
+|---|---|
+| Unit conversion (Table 2-2) | 54×24×16,384/419 ≈ 50,680 GPU·h; 1000×24×8/6.50 ≈ 2.95e4; 3,748.25×24 ≈ 9.0e4; 33.0×3,000 ≈ 9.9e4 |
+| 1/N law | r_f = 6.50, 8 GPU/node: 16,384 GPU → 1.8 h; 131,072 GPU → 0.23 h; CoreWeave 3,748.25 GPU·day → 1,024 GPU 3.66 days |
+| Worked example 1 (Table 6-5) | λ_job 0.323/h; MTBI 185.6 min; τ_YD 232.6 s; Daly lowest-order 230.2 s, 3-term 231.0 s; goodput 97.9 % (R=0), 95.5 % (R=4.45 min), 94.4 % (R=6.47 min); availability-optimal interval 237.8 s |
+| Worked example 2 (Table 6-6) | N = 65,536: M 46.4 min, τ 116.3 s, loss 4.2 %, goodput 86.2 % / 74.3 % (R = 4.45 / 10 min); N = 131,072: 23.2 min, 82.2 s, 5.9 %, 74.9 % / 51.0 % plus a regime warning (R/M = 0.43) |
+| Worked example 3 (Table 6-7) | 1,024 nodes, r_f 2.3: Binomial P99 = 7, P99.9 = 8; Poisson MTTR 8 h → 3, 2.2 h → 2. r_f 6.50: P99 13, P99.9 16; Poisson 6 and 3 |
+| Worked example 4 (Table 6-8) | n = 64, p = 0.993: k = 0 → 63.8 %; k = 1/2/3 → 92.4 / 98.87 / 99.87 %; k = 4 → 99.988 %; k = 5 → 99.999 %; p = 0.99: k = 4 → 99.94 %; mirrored pairs (1−0.007²)^64 ≈ 99.69 % |
+| Daly 2006 | M = 24 h / 6 h / 15 min with δ = 5 min → τ_opt 117 / 57 / 9.1 min |
+| Saxena 2024 | T_f = 1 h, T_s = 30 s, T_r = 16 min → 9.23 min vs Young 7.74 min; T_s = 1 s, T_r = 4 min → 1.477 vs 1.414 min |
+| TrainMover ETTR(N) | D = 4.45 min, MTTF 216/108/54/27/14 min → 97.94 / 95.88 / 91.76 / 83.52 / 68.21 % |
+| Lablup | M = 56.2 h, δ = 18 s → Young 44.9 min |
+| Google Ironwood k-of-n | n = 144, k = 130 at 95 % ⇒ p ∈ [0.935, 0.940]; k99 = 127–128 at the same p |
+| ByteRobust | Binomial P99 = 4 at N = 1,024 ⇒ p_daily ≈ 0.08–0.125 %; 3 at 512; 2 at 128/256 |
+| Meta Sparing | tray MTBF 20K h, rack 10K h, MTTR 24 h: inter-block spare fraction 8.6 / 4.7 / 2.6 % for 72 / 36 / 18-GPU blocks (tolerance to be set once L and the blocked-probability target are reverse-engineered); 1/H scaling law exact |
+| Textbook CTMC | two hot units MTTF 3/(2λ); ideal cold standby 2/λ; two units, one repairman (3λ+μ)/(2λ²); k = 0 chain reduces to 1/(Nλ) |
+| Replication (Benoit SC'19) | n_fail(2b) = 1 + 4^b / C(2b,b) ≈ √(πb); b = 1e5 → 561 |
+| NTP amplification | p = 0.001, T = 64 → 1 − (1−p)^T ≈ 0.062 |
+| Monte Carlo vs closed form | exponential inputs: goodput, MTBI, Pr(blocked) within 1–2 % of closed forms (Meta/SPARe precedent); Weibull k = 0.78 reproduces the SPARe-style flip in optimal redundancy direction |
+| Property tests | monotonicity in λ, MTTR, N, k; A ≤ A_cap bounds; allocation budgets sum to target |
+
+Browser checks: Playwright at 1280 px and 375 px, light and dark; no horizontal scroll; every KPI shows its formula; exports round-trip (JSON → load → same KPIs).
+
+---
+
+## 9. Skills, agents and workflows
+
+### 9.1 Claude skills to use during development
+
+| Skill | Where |
+|---|---|
+| `engineering:architecture` | three ADRs: client-first hybrid; TypeScript numerics core; scenario schema |
+| `engineering:system-design` | module boundaries, worker protocol, export pipeline |
+| `engineering:testing-strategy` | golden-vector plan above, property tests, browser checks |
+| `dataviz` | every chart, KPI tile, tornado, heat map, decision map |
+| `artifact-design` | if a hosted preview artifact is wanted during review |
+| `design:accessibility-review`, `design:ux-copy` | forms, bilingual microcopy, error and validity messages |
+| `code-review`, `security-review`, `simplify` | before each phase gate |
+| `engineering:documentation` | user guide, model reference (formula per output), CLAUDE.md via `init` |
+| `claude-api` | only if the optional copilot is built |
+
+### 9.2 Project skills to create (`.claude/skills/`)
+
+- `model-check` — re-derive a formula independently and compare against the golden vectors; run on every change to `packages/core`.
+- `add-parameter` — add a library record with all 口径 and provenance fields filled, validated against the schema.
+- `scenario-review` — apply the survey's 11-item design-review checklist to a scenario JSON and emit the verdict table.
+- `release-check` — build, run goldens, Playwright at 1280/375 light/dark, export round-trip.
+
+### 9.3 Development agents (Claude Code subagents, orchestrated from this session)
+
+| Role | Deliverable | Gate |
+|---|---|---|
+| Spec writer | PRD, model spec (every formula with source), schema, UI spec | you review |
+| Independent math verifier (fresh context, Python/mpmath) | numeric golden vectors from the formulas and survey tables; discrepancies filed | goldens agreed |
+| Core implementer | `packages/core` with tests | goldens pass |
+| UI implementer | `apps/web` pages against a fixed core API | Playwright green |
+| Library curator | parameter records from survey Tables 3-2 / 4-2 / 5-1 / 6-2 / 6-4 (optionally cross-checked against `cluster-modeling-build/corpus.json`) | provenance complete |
+| Reviewers (correctness, a11y/i18n, security) | patch lists | applied |
+| Docs writer | user guide + model reference | — |
+
+Default: I orchestrate and implement directly, delegating only the independent verification, the library curation and the reviews (independent eyes are where delegation pays). A full fan-out `Workflow` is available if you prefer the survey-style pipeline; it costs several times more tokens.
+
+### 9.4 Runtime agents (optional, later phases)
+
+- **MCP server** (`packages/mcp`) exposing `evaluate`, `allocate`, `compare`, `simulate`, `convert` so Claude Code sessions and other agents can run analyses headlessly on scenario files.
+- **Copilot panel** (Claude API): explain a result and its assumptions; propose an allocation under constraints; turn a BOM / topology description into a scenario; fit an incident log; draft the design-review memo. Needs an API key path (user-held key in browser, or a tiny proxy) — a decision for you.
+
+---
+
+## 10. Roadmap
+
+| Phase | Scope | Exit criteria | Rough size |
+|---|---|---|---|
+| **P0 Specs** | PRD, model spec, scenario schema, golden-vector file, ADRs, repo skeleton (git, workspaces, CI) | you approve specs; goldens computed independently | 1 session |
+| **P1 Core** | RBD/FT + cut sets, CTMC solvers, goodput family, sparing, MTTR pipeline, scale guards, unit conversion, importance; CLI | all goldens and property tests pass | 2–3 sessions |
+| **P2 Web app v1** | Scenario, Library, Training, Inference, Spares pages; diagrams; bilingual; themes; JSON import/export | Playwright checks; worked examples 1–4 reproducible in the UI | 2–3 sessions |
+| **P3 Decision layer** | Allocation (all policies), Compare, Sensitivity/tornado/decision maps, cost module | allocation goldens; option comparison on the five worked diagrams | 2 sessions |
+| **P4 Simulation** | Monte Carlo DES in workers, Weibull/lognormal/mixture/CCF/finite crews, CI, closed-form delta badge | MC vs closed form within tolerance on exponential inputs | 2 sessions |
+| **P5 Report & polish** | HTML report in survey style, design-review checklist, a11y pass, docs, release-check skill | release-check green | 1–2 sessions |
+| **P6 Optional** | MCP server, incident-log fitting, copilot, Python compute service / team library | per decision | — |
+
+Sizes are rough and assume the recommended architecture.
+
+---
+
+## 11. Risks and standing assumptions
+
+- **No published β for CCF, no NVLink/optics/PSU/CDU failure rates.** The tool ships these as `assumed` ranges and forces a sweep; reports list them under "assumptions".
+- **Exponential defaults can be wrong in both directions** (k ≈ 0.7 infant vs k ≈ 5 wear-out). Monte Carlo is the fallback, with a visible badge when it disagrees with the closed form by more than a threshold.
+- **口径 mixing is the most likely user error.** Typed units and refusal to add errors to interruptions mitigate it; conversions are shown step by step.
+- **First-order formulas silently break at 10⁵ GPUs.** Guards are mandatory; the UI switches models rather than printing a number.
+- **Monetization depends on a price assumption.** Prices are inputs with provenance, never hard-coded.
+- **Vendor-reported recovery times (Huawei, CoreWeave, Databricks) are not measurements.** Confidence tags propagate into reports.
+
+---
+
+## 12. Questions for you (decisions that change the build)
+
+Asked interactively:
+
+1. Architecture — hybrid client-first (recommended) vs client-only vs frontend + Python backend.
+2. UI language — bilingual zh/en toggle (recommended) vs Chinese only vs English only.
+3. v1 scope — full (analytical + Monte Carlo + allocation + comparison) vs analytical first vs minimal.
+4. Build approach — I build directly with targeted subagents (recommended) vs survey-style multi-agent workflow vs detailed specs for review before code.
+
+Defaults I will take unless you say otherwise:
+
+- Hardware structure presets in this order: HGX-8 H100/B200 node clusters, GB200 NVL72, TPU cube + OCS, Ascend CloudMatrix (structure only; no vendor numbers beyond what the survey tags as vendor-reported).
+- Parameter provenance comes from the companion chapter's tables; I will read `../survey/cluster-modeling-build/corpus.json` read-only to cross-check citations.
+- Visual style follows the survey page (IBM Plex, the indigo accent, light/dark); the tool is named HAC-D until you choose a name.
+- Repository initialised with git in this folder; static deployment target left open (GitHub Pages or a single HTML file both supported).
+- No Claude-API copilot in v1; MCP server is in P6.
+- English code and docs; bilingual UI strings.

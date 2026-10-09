@@ -1,0 +1,19 @@
+{
+  "name": "hac-d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "HAC-D: availability / MTBF / MTTR modeling, allocation and design comparison for AI clusters",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "test": "npm run test -w @hac-d/core",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev -w @hac-d/web"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "engines": { "node": ">=20" }
+}
