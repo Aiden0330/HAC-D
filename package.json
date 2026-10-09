@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "description": "HAC-D: availability / MTBF / MTTR modeling, allocation and design comparison for AI clusters",
-  "workspaces": ["packages/*", "apps/*"],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "test": "npm run test -w @hac-d/core",
     "typecheck": "npm run typecheck --workspaces --if-present",
@@ -13,7 +16,10 @@
   },
   "devDependencies": {
     "typescript": "~5.9.3",
+    "vite": "^8.3.4",
     "vitest": "^5.0.3"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

@@ -1,0 +1,3454 @@
+{
+ "version": "0.1",
+ "generated": "2026-10-08",
+ "tool": "python/mpmath (mp.dps=60)",
+ "survey_source": "/private/tmp/claude-501/-Users-liqingchuan-Documents-projects-HAC-D/617f1a19-ec28-4034-8f9f-a12fcba9e7f4/scratchpad/survey_text.txt",
+ "match_legend": {
+  "ok": "within half a unit of the survey's last printed digit",
+  "rounding": "within one unit (truncation/intermediate rounding)",
+  "discrepancy": "beyond one unit of the last printed digit",
+  "n/a": "no survey value (regression golden)"
+ },
+ "cases": [
+  {
+   "id": "units.llama3_gpu_h_per_interruption",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_event = days*24*N_gpu/events",
+   "inputs": {
+    "days": 54,
+    "N_gpu": 16384,
+    "events": 419
+   },
+   "expected": {
+    "gpu_h_per_event": 50677.00238663484
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈5.07×10^4 GPU·h/次",
+    "ref": "Table 2-2, survey_text.txt line 279",
+    "computed": "50677"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.rsc1_gpu_h_per_failure",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_event = 1000*24*gpu_per_node/r_f",
+   "inputs": {
+    "r_f_per_1000_node_day": 6.5,
+    "gpu_per_node": 8
+   },
+   "expected": {
+    "gpu_h_per_event": 29538.46153846154
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈2.95×10^4 GPU·h/次",
+    "ref": "Table 2-2, survey_text.txt line 284",
+    "computed": "29538.5"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.rsc2_gpu_h_per_failure",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_event = 1000*24*gpu_per_node/r_f",
+   "inputs": {
+    "r_f_per_1000_node_day": 2.34,
+    "gpu_per_node": 8
+   },
+   "expected": {
+    "gpu_h_per_event": 82051.28205128205
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈8.2×10^4 GPU·h/次",
+    "ref": "Table 2-2, survey_text.txt line 284",
+    "computed": "82051.3"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.coreweave_gpu_h_per_interruption",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_event = gpu_days_per_event*24",
+   "inputs": {
+    "gpu_days_per_event": 3748.25
+   },
+   "expected": {
+    "gpu_h_per_event": 89958.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈9.0×10^4 GPU·h/次",
+    "ref": "Table 2-2, survey_text.txt line 289",
+    "computed": "89958"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.nebius_gpu_h_per_failure",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_event = MTBF_h*N_gpu",
+   "inputs": {
+    "MTBF_h": 33.0,
+    "N_gpu": 3000
+   },
+   "expected": {
+    "gpu_h_per_event": 99000.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈9.9×10^4 GPU·h/次",
+    "ref": "Table 2-2, survey_text.txt line 294",
+    "computed": "99000"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.delta_a100_gpu_h_per_error",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_error = MTBE_h*N_gpu",
+   "inputs": {
+    "MTBE_h": 1.4,
+    "N_gpu": 448
+   },
+   "expected": {
+    "gpu_h_per_error": 627.2
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈6.3×10^2 GPU·h/错误",
+    "ref": "Table 2-2, survey_text.txt line 299",
+    "computed": "627.2"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.delta_h100_gpu_h_per_error",
+   "group": "unit-conversion",
+   "formula": "gpu_h_per_error = MTBE_h*N_gpu",
+   "inputs": {
+    "MTBE_h": 1.9,
+    "N_gpu": 608
+   },
+   "expected": {
+    "gpu_h_per_error": 1155.2
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈1.2×10^3 GPU·h/错误",
+    "ref": "Table 2-2, survey_text.txt line 299",
+    "computed": "1155.2"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.lanl_sys7_proc_h_per_failure",
+   "group": "unit-conversion",
+   "formula": "proc_h_per_event = N_proc*8760/failures_per_year",
+   "inputs": {
+    "N_proc": 4096,
+    "failures_per_year": 1159,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "proc_h_per_event": 30958.550474547024
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈3.1×10^4 处理器·h/次",
+    "ref": "Table 2-2, survey_text.txt line 304",
+    "computed": "30958.6"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.lanl_sys7_system_mtbf_h",
+   "group": "unit-conversion",
+   "formula": "MTBF_h = 8760/failures_per_year",
+   "inputs": {
+    "failures_per_year": 1159,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "MTBF_h": 7.558239861949957
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "系统 MTBF 约 7.6 h",
+    "ref": "Table 2-2, survey_text.txt line 304",
+    "computed": "7.55824"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.titan_node_h_per_crash",
+   "group": "unit-conversion",
+   "formula": "node_h_per_event = MTBF_h*N_nodes",
+   "inputs": {
+    "MTBF_h": 14.51,
+    "N_nodes": 18688
+   },
+   "expected": {
+    "node_h_per_event": 271162.88
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈2.7×10^5 节点·h/次",
+    "ref": "Table 2-2, survey_text.txt line 309",
+    "computed": "271163"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "units.petascale_socket_h_per_interruption",
+   "group": "unit-conversion",
+   "formula": "socket_h_per_event = 8760/failures_per_socket_year",
+   "inputs": {
+    "failures_per_socket_year": 0.1,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "socket_h_per_event": 87600.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "8.76×10^4 socket·h/次",
+    "ref": "Table 2-2, survey_text.txt line 314",
+    "computed": "87600"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "one-over-n.rsc_rf6.50_16384gpu",
+   "group": "one-over-n-law",
+   "formula": "MTTF_h = 24 / ((N_gpu/gpu_per_node) * r_f/1000)",
+   "inputs": {
+    "N_gpu": 16384,
+    "gpu_per_node": 8,
+    "r_f_per_1000_node_day": 6.5
+   },
+   "expected": {
+    "MTTF_h": 1.8028846153846154
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "1.8 h",
+    "ref": "survey_text.txt line 326",
+    "computed": "1.8029 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "one-over-n.rsc_rf6.50_131072gpu",
+   "group": "one-over-n-law",
+   "formula": "MTTF_h = 24 / ((N_gpu/gpu_per_node) * r_f/1000)",
+   "inputs": {
+    "N_gpu": 131072,
+    "gpu_per_node": 8,
+    "r_f_per_1000_node_day": 6.5
+   },
+   "expected": {
+    "MTTF_h": 0.22536057692307693
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.23 h",
+    "ref": "survey_text.txt line 326",
+    "computed": "0.2254 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "one-over-n.coreweave_1024gpu_days",
+   "group": "one-over-n-law",
+   "formula": "MTTF_days = gpu_days_per_event / N_gpu",
+   "inputs": {
+    "gpu_days_per_event": 3748.25,
+    "N_gpu": 1024
+   },
+   "expected": {
+    "MTTF_days": 3.660400390625,
+    "MTTF_h": 87.849609375
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "3.66 天",
+    "ref": "survey_text.txt line 269",
+    "computed": "3.6604 days"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "one-over-n.coreweave_16384gpu_days",
+   "group": "one-over-n-law",
+   "formula": "MTTF_days = gpu_days_per_event / N_gpu",
+   "inputs": {
+    "gpu_days_per_event": 3748.25,
+    "N_gpu": 16384
+   },
+   "expected": {
+    "MTTF_days": 0.2287750244140625,
+    "MTTF_h": 5.4906005859375
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Regression golden; the survey prints no value for this size."
+  },
+  {
+   "id": "one-over-n.epoch_1e-5_16384gpu",
+   "group": "one-over-n-law",
+   "formula": "M = 1/(N_gpu*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 16384,
+    "lambda_per_gpu_h": 2e-05
+   },
+   "expected": {
+    "M_h": 3.0517578125,
+    "M_min": 183.10546875
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 3 小时",
+    "ref": "survey_text.txt line 963",
+    "computed": "3.052 h"
+   },
+   "match": "ok",
+   "note": "Epoch AI / SPARe scale-out statements, lambda_gpu = 1/50,000 per GPU·h; printed values are '约' (approximate)."
+  },
+  {
+   "id": "one-over-n.epoch_1e-5_100k_gpu",
+   "group": "one-over-n-law",
+   "formula": "M = 1/(N_gpu*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 100000,
+    "lambda_per_gpu_h": 2e-05
+   },
+   "expected": {
+    "M_h": 0.5,
+    "M_min": 30.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约每 30 分钟一次",
+    "ref": "survey_text.txt line 326",
+    "computed": "30 min"
+   },
+   "match": "ok",
+   "note": "Epoch AI / SPARe scale-out statements, lambda_gpu = 1/50,000 per GPU·h; printed values are '约' (approximate)."
+  },
+  {
+   "id": "one-over-n.epoch_1e-5_1m_gpu",
+   "group": "one-over-n-law",
+   "formula": "M = 1/(N_gpu*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 1000000,
+    "lambda_per_gpu_h": 2e-05
+   },
+   "expected": {
+    "M_h": 0.05,
+    "M_min": 3.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约每 3 分钟一次",
+    "ref": "survey_text.txt line 326",
+    "computed": "3 min"
+   },
+   "match": "ok",
+   "note": "Epoch AI / SPARe scale-out statements, lambda_gpu = 1/50,000 per GPU·h; printed values are '约' (approximate)."
+  },
+  {
+   "id": "one-over-n.spare_96k_gpu",
+   "group": "one-over-n-law",
+   "formula": "M = 1/(N_gpu*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 96000,
+    "lambda_per_gpu_h": 2e-05
+   },
+   "expected": {
+    "M_h": 0.5208333333333334,
+    "M_min": 31.25
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "96k 卡约 30 分钟",
+    "ref": "survey_text.txt line 326",
+    "computed": "31.25 min"
+   },
+   "match": "ok",
+   "note": "Epoch AI / SPARe scale-out statements, lambda_gpu = 1/50,000 per GPU·h; printed values are '约' (approximate)."
+  },
+  {
+   "id": "one-over-n.spare_600k_gpu",
+   "group": "one-over-n-law",
+   "formula": "M = 1/(N_gpu*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 600000,
+    "lambda_per_gpu_h": 2e-05
+   },
+   "expected": {
+    "M_h": 0.08333333333333333,
+    "M_min": 5.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "600k 卡约 5 分钟",
+    "ref": "survey_text.txt line 326",
+    "computed": "5 min"
+   },
+   "match": "ok",
+   "note": "Epoch AI / SPARe scale-out statements, lambda_gpu = 1/50,000 per GPU·h; printed values are '约' (approximate)."
+  },
+  {
+   "id": "ex1.lambda_job",
+   "group": "worked-example-1",
+   "formula": "lambda_job = events/(days*24)",
+   "inputs": {
+    "events": 419,
+    "days": 54
+   },
+   "expected": {
+    "lambda_job_per_h": 0.32330246913580246
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.323 次/h",
+    "ref": "Table 6-5, survey_text.txt line 1820",
+    "computed": "0.323302 /h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.mtbi",
+   "group": "worked-example-1",
+   "formula": "MTBI = 1/lambda_job",
+   "inputs": {
+    "lambda_job_per_h": 0.32330246913580246
+   },
+   "expected": {
+    "MTBI_h": 3.0930787589498805,
+    "MTBI_min": 185.58472553699283,
+    "MTBI_s": 11135.08353221957
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "3.09 h（185.6 min）; M = 11,135 s",
+    "ref": "Table 6-5, survey_text.txt line 1823 and survey_text.txt line 1832",
+    "computed": "3.09308 h = 185.585 min = 11135.08 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.lambda_gpu",
+   "group": "worked-example-1",
+   "formula": "lambda_gpu = lambda_job/N_gpu",
+   "inputs": {
+    "lambda_job_per_h": 0.32330246913580246,
+    "N_gpu": 16384
+   },
+   "expected": {
+    "lambda_per_gpu_h": 1.9732816719714506e-05,
+    "gpu_h_per_interruption": 50677.00238663484
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "1 / 50,680 GPU·h",
+    "ref": "Table 6-5, survey_text.txt line 1826",
+    "computed": "1/50677.0 GPU·h"
+   },
+   "match": "ok",
+   "note": "Survey rounds 50,677 to four significant figures."
+  },
+  {
+   "id": "ex1.tau_yd",
+   "group": "worked-example-1",
+   "formula": "tau = sqrt(2*delta*M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "tau_s": 232.62954663281084
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "232.6 s",
+    "ref": "Table 6-5, survey_text.txt line 1832",
+    "computed": "232.630 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.daly_lowest_order",
+   "group": "worked-example-1",
+   "formula": "tau = sqrt(2*delta*M) - delta",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "tau_s": 230.19954663281084
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "230.2 s",
+    "ref": "Table 6-5, survey_text.txt line 1833",
+    "computed": "230.200 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.daly_three_term",
+   "group": "worked-example-1",
+   "formula": "tau = sqrt(2*delta*M)*(1 + xi/3 + xi^2/9) - delta, xi = sqrt(delta/(2M))",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "tau_s": 231.0123669968166,
+    "xi": 0.010445792613934728
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "231.0 s",
+    "ref": "Table 6-5, survey_text.txt line 1833",
+    "computed": "231.012 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.daly_exact_lambert_w",
+   "group": "worked-example-1",
+   "formula": "eta = 2*xi^2 + 1 + W0(-exp(-2*xi^2 - 1)); tau = eta*M - delta; xi^2 = delta/(2M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "tau_s": 231.01237486326977,
+    "eta": 0.020964582276172417
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "231.0 s（三项式）",
+    "ref": "Table 6-5, survey_text.txt line 1833",
+    "computed": "231.012 s"
+   },
+   "match": "ok",
+   "note": "Survey prints only the three-term value; the exact root of (1 - tau/M) e^((tau+delta)/M) = 1 agrees to 0.01 s. Principal branch W0 is required (W_-1 gives tau < 0)."
+  },
+  {
+   "id": "ex1.goodput_r0",
+   "group": "worked-example-1",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.62954663281084,
+    "R_s": 0,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "goodput_frac": 0.9791084147721305,
+    "loss_frac": 0.020891585227869457,
+    "delta_over_tau": 0.010445792613934728,
+    "half_tau_s": 116.31477331640542
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "97.9%（损失 2.1%）; delta/tau = 0.0104; tau/2 = 116.3 s",
+    "ref": "Table 6-5, survey_text.txt line 1835",
+    "computed": "97.911 %"
+   },
+   "match": "ok",
+   "note": "At the Young optimum the two loss terms are equal and loss = sqrt(2*delta/M)."
+  },
+  {
+   "id": "ex1.goodput_r4.45min",
+   "group": "worked-example-1",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.62954663281084,
+    "R_s": 267.0,
+    "R_min": 4.45,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "goodput_frac": 0.9551301483112252,
+    "recovery_term_frac": 0.03442405907484008
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "95.5%",
+    "ref": "Table 6-5, survey_text.txt line 1838",
+    "computed": "95.513 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.goodput_r6.47min",
+   "group": "worked-example-1",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.62954663281084,
+    "R_s": 388.2,
+    "R_min": 6.47,
+    "M_s": 11135.08353221957
+   },
+   "expected": {
+    "goodput_frac": 0.9442456318503198,
+    "recovery_term_frac": 0.04530857553574543
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "94.4%",
+    "ref": "Table 6-5, survey_text.txt line 1841",
+    "computed": "94.425 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex1.availability_optimal_interval",
+   "group": "worked-example-1",
+   "formula": "Tc* = Ts + sqrt(2*(Tf + Tr)*Ts + Ts^2)",
+   "inputs": {
+    "Ts_s": 2.43,
+    "Tf_s": 11135.08353221957,
+    "Tr_s": 267.0
+   },
+   "expected": {
+    "Tc_s": 237.84459357182408,
+    "ratio_to_young": 1.0224178184349249
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "237.8 s（比 Young 式长 2%）",
+    "ref": "Table 6-5, survey_text.txt line 1844",
+    "computed": "237.845 s; ratio 1.0224"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n16384.m",
+   "group": "worked-example-2",
+   "formula": "M = 1/(N*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 16384,
+    "lambda_per_gpu_h": 1.9731649565903708e-05
+   },
+   "expected": {
+    "M_min": 185.595703125,
+    "M_s": 11135.7421875
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "185.6 min",
+    "ref": "Table 6-6, survey_text.txt line 1855",
+    "computed": "185.596 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n16384.tau_yd",
+   "group": "worked-example-2",
+   "formula": "tau = sqrt(2*delta*M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 11135.7421875
+   },
+   "expected": {
+    "tau_s": 232.63642670753435
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "232.6 s",
+    "ref": "Table 6-6, survey_text.txt line 1855",
+    "computed": "232.636 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n16384.loss_r0",
+   "group": "worked-example-2",
+   "formula": "loss = delta/tau + tau/(2M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.63642670753435,
+    "M_s": 11135.7421875
+   },
+   "expected": {
+    "loss_frac": 0.020890967372491027
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "2.1%",
+    "ref": "Table 6-6, survey_text.txt line 1855",
+    "computed": "2.089 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n16384.goodput_r4.45min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.63642670753435,
+    "R_s": 267,
+    "M_s": 11135.7421875
+   },
+   "expected": {
+    "goodput_frac": 0.9551321844296663
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "95.5%",
+    "ref": "Table 6-6, survey_text.txt line 1855",
+    "computed": "95.513 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n16384.goodput_r10min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 232.63642670753435,
+    "R_s": 600,
+    "M_s": 11135.7421875
+   },
+   "expected": {
+    "goodput_frac": 0.925228474879548
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "92.5%",
+    "ref": "Table 6-6, survey_text.txt line 1855",
+    "computed": "92.523 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n65536.m",
+   "group": "worked-example-2",
+   "formula": "M = 1/(N*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 65536,
+    "lambda_per_gpu_h": 1.9731649565903708e-05
+   },
+   "expected": {
+    "M_min": 46.39892578125,
+    "M_s": 2783.935546875
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "46.4 min",
+    "ref": "Table 6-6, survey_text.txt line 1862",
+    "computed": "46.399 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n65536.tau_yd",
+   "group": "worked-example-2",
+   "formula": "tau = sqrt(2*delta*M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 2783.935546875
+   },
+   "expected": {
+    "tau_s": 116.31821335376718
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "116.3 s",
+    "ref": "Table 6-6, survey_text.txt line 1862",
+    "computed": "116.318 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n65536.loss_r0",
+   "group": "worked-example-2",
+   "formula": "loss = delta/tau + tau/(2M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 116.31821335376718,
+    "M_s": 2783.935546875
+   },
+   "expected": {
+    "loss_frac": 0.041781934744982055
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "4.2%",
+    "ref": "Table 6-6, survey_text.txt line 1862",
+    "computed": "4.178 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n65536.goodput_r4.45min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 116.31821335376718,
+    "R_s": 267,
+    "M_s": 2783.935546875
+   },
+   "expected": {
+    "goodput_frac": 0.8623106724636472
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "86.2%",
+    "ref": "Table 6-6, survey_text.txt line 1862",
+    "computed": "86.231 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n65536.goodput_r10min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 116.31821335376718,
+    "R_s": 600,
+    "M_s": 2783.935546875
+   },
+   "expected": {
+    "goodput_frac": 0.7426958342631736
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "74.3%",
+    "ref": "Table 6-6, survey_text.txt line 1862",
+    "computed": "74.270 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.m",
+   "group": "worked-example-2",
+   "formula": "M = 1/(N*lambda_gpu)",
+   "inputs": {
+    "N_gpu": 131072,
+    "lambda_per_gpu_h": 1.9731649565903708e-05
+   },
+   "expected": {
+    "M_min": 23.199462890625,
+    "M_s": 1391.9677734375
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "23.2 min",
+    "ref": "Table 6-6, survey_text.txt line 1869",
+    "computed": "23.199 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.tau_yd",
+   "group": "worked-example-2",
+   "formula": "tau = sqrt(2*delta*M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 1391.9677734375
+   },
+   "expected": {
+    "tau_s": 82.2493974379524
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "82.2 s",
+    "ref": "Table 6-6, survey_text.txt line 1869",
+    "computed": "82.249 s"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.loss_r0",
+   "group": "worked-example-2",
+   "formula": "loss = delta/tau + tau/(2M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 82.2493974379524,
+    "M_s": 1391.9677734375
+   },
+   "expected": {
+    "loss_frac": 0.05908857877854126
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "5.9%",
+    "ref": "Table 6-6, survey_text.txt line 1869",
+    "computed": "5.909 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.goodput_r4.45min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 82.2493974379524,
+    "R_s": 267,
+    "M_s": 1391.9677734375
+   },
+   "expected": {
+    "goodput_frac": 0.7490966356387173
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "74.9%",
+    "ref": "Table 6-6, survey_text.txt line 1869",
+    "computed": "74.910 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.goodput_r10min",
+   "group": "worked-example-2",
+   "formula": "goodput = 1 - delta/tau - (tau/2 + R)/M",
+   "inputs": {
+    "delta_s": 2.43,
+    "tau_s": 82.2493974379524,
+    "R_s": 600,
+    "M_s": 1391.9677734375
+   },
+   "expected": {
+    "goodput_frac": 0.5098669592377703
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "51.0%",
+    "ref": "Table 6-6, survey_text.txt line 1869",
+    "computed": "50.987 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex2.n131072.r_over_m",
+   "group": "worked-example-2",
+   "formula": "R/M and exp(R/M)",
+   "inputs": {
+    "R_s": 600,
+    "M_s": 1391.9677734375
+   },
+   "expected": {
+    "R_over_M": 0.4310444619836885,
+    "exp_R_over_M": 1.5388639693805277
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "R/M = 0.43、e^(R/M) = 1.54",
+    "ref": "Table 6-6, survey_text.txt line 1873",
+    "computed": "0.4310; e^x = 1.5389"
+   },
+   "match": "ok",
+   "note": "Regime warning: first-order formula requires R << M."
+  },
+  {
+   "id": "ex3.r_f2.3.mean_daily_failures",
+   "group": "worked-example-3",
+   "formula": "mean = N*p, p = r_f/1000",
+   "inputs": {
+    "N_nodes": 1024,
+    "r_f_per_1000_node_day": 2.3
+   },
+   "expected": {
+    "mean": 2.3552,
+    "p_frac": 0.0023
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "2.36",
+    "ref": "Table 6-7, survey_text.txt line 1883",
+    "computed": "2.3552"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f2.3.binomial_quantile_0.99",
+   "group": "worked-example-3",
+   "formula": "k = min{k : P(Binomial(N,p) <= k) >= q}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0023,
+    "q": 0.99
+   },
+   "expected": {
+    "k": 7,
+    "cdf_at_k": 0.9970559518812334,
+    "cdf_at_k_minus_1": 0.989543003175688,
+    "k_over_N_frac": 0.0068359375
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "7",
+    "ref": "Table 6-7, survey_text.txt line 1886",
+    "computed": "7"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f2.3.binomial_quantile_0.999",
+   "group": "worked-example-3",
+   "formula": "k = min{k : P(Binomial(N,p) <= k) >= q}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0023,
+    "q": 0.999
+   },
+   "expected": {
+    "k": 8,
+    "cdf_at_k": 0.9992577082104334,
+    "cdf_at_k_minus_1": 0.9970559518812334,
+    "k_over_N_frac": 0.0078125
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "8",
+    "ref": "Table 6-7, survey_text.txt line 1888",
+    "computed": "8"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f2.3.poisson_quantile_0.99_mttr8h",
+   "group": "worked-example-3",
+   "formula": "m = N*lambda_node*MTTR, lambda_node = p/24 per h; k = min{k : P(Poisson(m) <= k) >= 0.99}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0023,
+    "MTTR_h": 8.0
+   },
+   "expected": {
+    "k": 3,
+    "m": 0.7850666666666667,
+    "cdf_at_k": 0.991481031687224,
+    "cdf_at_k_minus_1": 0.9547004797416524
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "3",
+    "ref": "Table 6-7, survey_text.txt line 1891",
+    "computed": "3 (m = 0.78507)"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f2.3.poisson_quantile_0.99_mttr2.2h",
+   "group": "worked-example-3",
+   "formula": "m = N*lambda_node*MTTR, lambda_node = p/24 per h; k = min{k : P(Poisson(m) <= k) >= 0.99}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0023,
+    "MTTR_h": 2.2
+   },
+   "expected": {
+    "k": 2,
+    "m": 0.21589333333333333,
+    "cdf_at_k": 0.9985723242444604,
+    "cdf_at_k_minus_1": 0.9797926876255646
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "2",
+    "ref": "Table 6-7, survey_text.txt line 1893",
+    "computed": "2 (m = 0.21589)"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f6.50.mean_daily_failures",
+   "group": "worked-example-3",
+   "formula": "mean = N*p, p = r_f/1000",
+   "inputs": {
+    "N_nodes": 1024,
+    "r_f_per_1000_node_day": 6.5
+   },
+   "expected": {
+    "mean": 6.656,
+    "p_frac": 0.0065
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "6.66",
+    "ref": "Table 6-7, survey_text.txt line 1884",
+    "computed": "6.6560"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f6.50.binomial_quantile_0.99",
+   "group": "worked-example-3",
+   "formula": "k = min{k : P(Binomial(N,p) <= k) >= q}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0065,
+    "q": 0.99
+   },
+   "expected": {
+    "k": 13,
+    "cdf_at_k": 0.9916081657607143,
+    "cdf_at_k_minus_1": 0.9813517804101626,
+    "k_over_N_frac": 0.0126953125
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "13",
+    "ref": "Table 6-7, survey_text.txt line 1886",
+    "computed": "13"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f6.50.binomial_quantile_0.999",
+   "group": "worked-example-3",
+   "formula": "k = min{k : P(Binomial(N,p) <= k) >= q}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0065,
+    "q": 0.999
+   },
+   "expected": {
+    "k": 16,
+    "cdf_at_k": 0.9994694007547148,
+    "cdf_at_k_minus_1": 0.9985886455799443,
+    "k_over_N_frac": 0.015625
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "16",
+    "ref": "Table 6-7, survey_text.txt line 1888",
+    "computed": "16"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f6.50.poisson_quantile_0.99_mttr8h",
+   "group": "worked-example-3",
+   "formula": "m = N*lambda_node*MTTR, lambda_node = p/24 per h; k = min{k : P(Poisson(m) <= k) >= 0.99}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0065,
+    "MTTR_h": 8.0
+   },
+   "expected": {
+    "k": 6,
+    "m": 2.2186666666666666,
+    "cdf_at_k": 0.9922076672352402,
+    "cdf_at_k_minus_1": 0.9741913855086866
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "6",
+    "ref": "Table 6-7, survey_text.txt line 1891",
+    "computed": "6 (m = 2.21867)"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex3.r_f6.50.poisson_quantile_0.99_mttr2.2h",
+   "group": "worked-example-3",
+   "formula": "m = N*lambda_node*MTTR, lambda_node = p/24 per h; k = min{k : P(Poisson(m) <= k) >= 0.99}",
+   "inputs": {
+    "N_nodes": 1024,
+    "p_frac": 0.0065,
+    "MTTR_h": 2.2
+   },
+   "expected": {
+    "k": 3,
+    "m": 0.6101333333333333,
+    "cdf_at_k": 0.9964376409470346,
+    "cdf_at_k_minus_1": 0.9758718476297829
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "3",
+    "ref": "Table 6-7, survey_text.txt line 1893",
+    "computed": "3 (m = 0.61013)"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k0",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 0,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.6378989741099523,
+    "redundancy_frac": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "63.8%",
+    "ref": "Table 6-8, survey_text.txt line 1907",
+    "computed": "63.7899 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k1",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 1,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.9236777145112111,
+    "redundancy_frac": 0.015625
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "92.4%",
+    "ref": "Table 6-8, survey_text.txt line 1909",
+    "computed": "92.3678 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k2",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 2,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.9886923779524973,
+    "redundancy_frac": 0.03125
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "98.87%",
+    "ref": "Table 6-8, survey_text.txt line 1909",
+    "computed": "98.8692 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k3",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 3,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.9987046361224554,
+    "redundancy_frac": 0.046875
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.87%",
+    "ref": "Table 6-8, survey_text.txt line 1909",
+    "computed": "99.8705 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k4",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 4,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.999878573392883,
+    "redundancy_frac": 0.0625
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.988%",
+    "ref": "Table 6-8, survey_text.txt line 1911",
+    "computed": "99.9879 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.993.k5",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 5,
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.9999903322210277,
+    "redundancy_frac": 0.078125
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.999%",
+    "ref": "Table 6-8, survey_text.txt line 1911",
+    "computed": "99.9990 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.99.k4",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 4,
+    "p_replica_frac": 0.99
+   },
+   "expected": {
+    "availability_frac": 0.9993821961739948,
+    "redundancy_frac": 0.0625
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.94%",
+    "ref": "Table 6-8, survey_text.txt line 1913",
+    "computed": "99.9382 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.p0.99.k5",
+   "group": "worked-example-4",
+   "formula": "A = sum_{i=N..N+k} C(N+k,i) p^i (1-p)^(N+k-i)",
+   "inputs": {
+    "N_required": 64,
+    "k_spares": 5,
+    "p_replica_frac": 0.99
+   },
+   "expected": {
+    "availability_frac": 0.9999300846802266,
+    "redundancy_frac": 0.078125
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.993%",
+    "ref": "Table 6-8, survey_text.txt line 1913",
+    "computed": "99.9930 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.mirrored_pair_single",
+   "group": "worked-example-4",
+   "formula": "A_pair = 1 - (1-p)^2",
+   "inputs": {
+    "p_replica_frac": 0.993
+   },
+   "expected": {
+    "availability_frac": 0.999951
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "99.995%",
+    "ref": "Table 6-8, survey_text.txt line 1916",
+    "computed": "99.9951 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ex4.mirrored_pairs_64",
+   "group": "worked-example-4",
+   "formula": "A = (1 - (1-p)^2)^64",
+   "inputs": {
+    "p_replica_frac": 0.993,
+    "pairs": 64
+   },
+   "expected": {
+    "availability_frac": 0.9968688355179327
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈99.69%",
+    "ref": "Table 6-8, survey_text.txt line 1916",
+    "computed": "99.6869 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "daly.m1440min.three_term",
+   "group": "daly-2006",
+   "formula": "tau = sqrt(2*delta*M)*(1 + xi/3 + xi^2/9) - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 1440
+   },
+   "expected": {
+    "tau_min": 116.68981481481481,
+    "xi2_delta_over_2M": 0.001736111111111111,
+    "tau_lowest_order_min": 115.0,
+    "exp_R_over_M": 1.006968613012133
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "117 min",
+    "ref": "Daly card, survey_text.txt line 1672; Fig 6-1/6-2 captions survey_text.txt line 1605, survey_text.txt line 1607",
+    "computed": "116.690 min"
+   },
+   "match": "ok",
+   "note": "Survey value is Daly's Monte-Carlo optimum (<=10,000 runs per case). R does not enter the optimum; it only scales total time by exp(R/M)."
+  },
+  {
+   "id": "daly.m1440min.exact_lambert_w",
+   "group": "daly-2006",
+   "formula": "eta = 2*xi^2 + 1 + W0(-exp(-2*xi^2-1)); tau = eta*M - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 1440
+   },
+   "expected": {
+    "tau_min": 116.69007332665893
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "117 min",
+    "ref": "Daly card, survey_text.txt line 1672",
+    "computed": "116.690 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "daly.m360min.three_term",
+   "group": "daly-2006",
+   "formula": "tau = sqrt(2*delta*M)*(1 + xi/3 + xi^2/9) - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 360
+   },
+   "expected": {
+    "tau_min": 56.71296296296296,
+    "xi2_delta_over_2M": 0.006944444444444444,
+    "tau_lowest_order_min": 55.0,
+    "exp_R_over_M": 1.0281671774377144
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "57 min",
+    "ref": "Daly card, survey_text.txt line 1672; Fig 6-1/6-2 captions survey_text.txt line 1605, survey_text.txt line 1607",
+    "computed": "56.713 min"
+   },
+   "match": "ok",
+   "note": "Survey value is Daly's Monte-Carlo optimum (<=10,000 runs per case). R does not enter the optimum; it only scales total time by exp(R/M)."
+  },
+  {
+   "id": "daly.m360min.exact_lambert_w",
+   "group": "daly-2006",
+   "formula": "eta = 2*xi^2 + 1 + W0(-exp(-2*xi^2-1)); tau = eta*M - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 360
+   },
+   "expected": {
+    "tau_min": 56.714001998766534
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "57 min",
+    "ref": "Daly card, survey_text.txt line 1672",
+    "computed": "56.714 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "daly.m15min.three_term",
+   "group": "daly-2006",
+   "formula": "tau = sqrt(2*delta*M)*(1 + xi/3 + xi^2/9) - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 15
+   },
+   "expected": {
+    "tau_min": 9.140919986395815,
+    "xi2_delta_over_2M": 0.16666666666666666,
+    "tau_lowest_order_min": 7.24744871391589,
+    "exp_R_over_M": 1.947734041054676
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "9.1 min",
+    "ref": "Daly card, survey_text.txt line 1672; Fig 6-1/6-2 captions survey_text.txt line 1605, survey_text.txt line 1607",
+    "computed": "9.141 min"
+   },
+   "match": "ok",
+   "note": "Survey value is Daly's Monte-Carlo optimum (<=10,000 runs per case). R does not enter the optimum; it only scales total time by exp(R/M)."
+  },
+  {
+   "id": "daly.m15min.exact_lambert_w",
+   "group": "daly-2006",
+   "formula": "eta = 2*xi^2 + 1 + W0(-exp(-2*xi^2-1)); tau = eta*M - delta",
+   "inputs": {
+    "delta_min": 5,
+    "R_min": 10,
+    "M_min": 15
+   },
+   "expected": {
+    "tau_min": 9.166502820935703
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "9.1 min",
+    "ref": "Daly card, survey_text.txt line 1672",
+    "computed": "9.167 min"
+   },
+   "match": "rounding"
+  },
+  {
+   "id": "saxena.casea.tc_star",
+   "group": "saxena-2024",
+   "formula": "Tc* = Ts + sqrt(2*(Tf + Tr)*Ts + Ts^2)",
+   "inputs": {
+    "Tf_s": 3600,
+    "Ts_s": 30.0,
+    "Tr_s": 960.0
+   },
+   "expected": {
+    "Tc_s": 553.9274758971894,
+    "Tc_min": 9.23212459828649
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "9.23 min",
+    "ref": "Saxena paragraph, survey_text.txt line 1608",
+    "computed": "9.2321 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "saxena.casea.young",
+   "group": "saxena-2024",
+   "formula": "Tc = sqrt(2*Ts*Tf)",
+   "inputs": {
+    "Tf_s": 3600,
+    "Ts_s": 30.0
+   },
+   "expected": {
+    "Tc_s": 464.75800154489,
+    "Tc_min": 7.745966692414834,
+    "ratio_Tc_star_over_young": 1.191862160642514
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "7.74 min",
+    "ref": "Saxena paragraph, survey_text.txt line 1608",
+    "computed": "7.7460 min"
+   },
+   "match": "rounding",
+   "note": "7.746 min rounds to 7.75; the paper/survey print 7.74 (truncation)."
+  },
+  {
+   "id": "saxena.casea.availability_at_both_intervals",
+   "group": "saxena-2024",
+   "formula": "A(Tc) = (Tf - Tf*Ts/Tc)/(Tf + Tc/2 + Tr)",
+   "inputs": {
+    "Tf_s": 3600,
+    "Ts_s": 30,
+    "Tr_s": 960,
+    "Tc_star_s": 553.9274758971894,
+    "Tc_young_s": 464.75800154489
+   },
+   "expected": {
+    "A_at_Tc_star_frac": 0.703959924533035,
+    "A_at_young_frac": 0.7027033960971691,
+    "difference_frac": 0.0012565284358659523
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.7040 对 0.7027（约 0.13 个百分点）",
+    "ref": "survey_text.txt line 1608",
+    "computed": "0.70396 vs 0.70270; diff 0.126 pp"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "saxena.caseb.tc_star",
+   "group": "saxena-2024",
+   "formula": "Tc* = Ts + sqrt(2*(Tf + Tr)*Ts + Ts^2)",
+   "inputs": {
+    "Tf_s": 3600,
+    "Ts_s": 1.0,
+    "Tr_s": 240.0
+   },
+   "expected": {
+    "Tc_s": 88.64131445842195,
+    "Tc_min": 1.4773552409736992
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "1.477 min",
+    "ref": "Saxena paragraph, survey_text.txt line 1608",
+    "computed": "1.4774 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "saxena.caseb.young",
+   "group": "saxena-2024",
+   "formula": "Tc = sqrt(2*Ts*Tf)",
+   "inputs": {
+    "Tf_s": 3600,
+    "Ts_s": 1.0
+   },
+   "expected": {
+    "Tc_s": 84.8528137423857,
+    "Tc_min": 1.4142135623730951,
+    "ratio_Tc_star_over_young": 1.0446479091139886
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "1.414 min",
+    "ref": "Saxena paragraph, survey_text.txt line 1608",
+    "computed": "1.4142 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "trainmover.n8192",
+   "group": "trainmover",
+   "formula": "ETTR = 1 - D/MTTF; wasted_gpus = N*D/MTTF",
+   "inputs": {
+    "N_gpu": 8192,
+    "D_min": 4.45,
+    "MTTF_min": 216
+   },
+   "expected": {
+    "ETTR_frac": 0.9793981481481482,
+    "wasted_gpus": 168.77037037037036
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "ETTR 97.94%; wasted ≈169 GPU",
+    "ref": "survey_text.txt line 1507",
+    "computed": "97.940 %; wasted 168.8"
+   },
+   "match": "ok",
+   "note": "N taken as powers of two (8K = 8,192 ...); 169 wasted GPUs is reproduced only with N = 8,192."
+  },
+  {
+   "id": "trainmover.n16384",
+   "group": "trainmover",
+   "formula": "ETTR = 1 - D/MTTF; wasted_gpus = N*D/MTTF",
+   "inputs": {
+    "N_gpu": 16384,
+    "D_min": 4.45,
+    "MTTF_min": 108
+   },
+   "expected": {
+    "ETTR_frac": 0.9587962962962963,
+    "wasted_gpus": 675.0814814814814
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "ETTR 95.88%",
+    "ref": "survey_text.txt line 1507",
+    "computed": "95.880 %; wasted 675.1"
+   },
+   "match": "ok",
+   "note": "N taken as powers of two (8K = 8,192 ...); 169 wasted GPUs is reproduced only with N = 8,192."
+  },
+  {
+   "id": "trainmover.n32768",
+   "group": "trainmover",
+   "formula": "ETTR = 1 - D/MTTF; wasted_gpus = N*D/MTTF",
+   "inputs": {
+    "N_gpu": 32768,
+    "D_min": 4.45,
+    "MTTF_min": 54
+   },
+   "expected": {
+    "ETTR_frac": 0.9175925925925926,
+    "wasted_gpus": 2700.3259259259257
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "ETTR 91.76%",
+    "ref": "survey_text.txt line 1507",
+    "computed": "91.759 %; wasted 2700.3"
+   },
+   "match": "ok",
+   "note": "N taken as powers of two (8K = 8,192 ...); 169 wasted GPUs is reproduced only with N = 8,192."
+  },
+  {
+   "id": "trainmover.n65536",
+   "group": "trainmover",
+   "formula": "ETTR = 1 - D/MTTF; wasted_gpus = N*D/MTTF",
+   "inputs": {
+    "N_gpu": 65536,
+    "D_min": 4.45,
+    "MTTF_min": 27
+   },
+   "expected": {
+    "ETTR_frac": 0.8351851851851851,
+    "wasted_gpus": 10801.303703703703
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "ETTR 83.52%",
+    "ref": "survey_text.txt line 1507",
+    "computed": "83.519 %; wasted 10801.3"
+   },
+   "match": "ok",
+   "note": "N taken as powers of two (8K = 8,192 ...); 169 wasted GPUs is reproduced only with N = 8,192."
+  },
+  {
+   "id": "trainmover.n131072",
+   "group": "trainmover",
+   "formula": "ETTR = 1 - D/MTTF; wasted_gpus = N*D/MTTF",
+   "inputs": {
+    "N_gpu": 131072,
+    "D_min": 4.45,
+    "MTTF_min": 14
+   },
+   "expected": {
+    "ETTR_frac": 0.6821428571428572,
+    "wasted_gpus": 41662.171428571426
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "ETTR 68.21%; wasted ≈41.7k GPU",
+    "ref": "survey_text.txt line 1507",
+    "computed": "68.214 %; wasted 41662.2"
+   },
+   "match": "ok",
+   "note": "N taken as powers of two (8K = 8,192 ...); 169 wasted GPUs is reproduced only with N = 8,192."
+  },
+  {
+   "id": "lablup.young_interval",
+   "group": "lablup",
+   "formula": "T = sqrt(2*delta*M)",
+   "inputs": {
+    "M_h": 56.2,
+    "delta_s": 18
+   },
+   "expected": {
+    "T_s": 2698.799733214749,
+    "T_min": 44.97999555357915,
+    "loss_at_optimum_frac": 0.013339263212805205
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "44.9 min",
+    "ref": "Young card, survey_text.txt line 1661",
+    "computed": "44.980 min"
+   },
+   "match": "rounding",
+   "note": "44.98 min rounds to 45.0; the printed 44.9 is a truncation (or the paper's own rounding of M)."
+  },
+  {
+   "id": "lablup.loss_at_actual_133.5min",
+   "group": "lablup",
+   "formula": "loss = delta/T + T/(2M)",
+   "inputs": {
+    "M_h": 56.2,
+    "delta_s": 18,
+    "T_min": 133.5
+   },
+   "expected": {
+    "loss_frac": 0.02204256467671638,
+    "save_term_frac": 0.0022471910112359553,
+    "redo_term_frac": 0.019795373665480426
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "实际 133.5 min，故障损失占主导",
+    "ref": "Young card, survey_text.txt line 1661",
+    "computed": "loss 2.204 % (save 0.225 %, redo 1.980 %)"
+   },
+   "match": "ok",
+   "note": "Qualitative statement only; 'ok' means the redo term dominates as stated."
+  },
+  {
+   "id": "ironwood.p_from_k95_130",
+   "group": "ironwood-k-of-n",
+   "formula": "solve P(Binomial(144,p) >= 130) = 0.95 for p",
+   "inputs": {
+    "n_cubes": 144,
+    "k95": 130,
+    "confidence": 0.95
+   },
+   "expected": {
+    "p_frac": 0.9346861267032041,
+    "check_P_ge_130": 0.95
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "p 约 0.935–0.940",
+    "ref": "survey_text.txt line 966; card survey_text.txt line 1003",
+    "computed": "0.93469"
+   },
+   "match": "ok",
+   "note": "Root of the exact binomial tail; 0.9347 rounds to 0.935, the lower end of the survey's inferred band 0.935–0.940."
+  },
+  {
+   "id": "ironwood.k99_at_p_star",
+   "group": "ironwood-k-of-n",
+   "formula": "k99 = max{k : P(Binomial(144,p*) >= k) >= 0.99}",
+   "inputs": {
+    "n_cubes": 144,
+    "p_frac": 0.9346861267032041,
+    "confidence": 0.99
+   },
+   "expected": {
+    "k99": 127,
+    "P_ge_k99": 0.9938031127382292,
+    "P_ge_k99_plus_1": 0.9868216571920202
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "k99 = 127–128",
+    "ref": "survey_text.txt line 966; card survey_text.txt line 1003",
+    "computed": "127"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ironwood.k_at_p0.935",
+   "group": "ironwood-k-of-n",
+   "formula": "k_q = max{k : P(Binomial(144,p) >= k) >= q}",
+   "inputs": {
+    "n_cubes": 144,
+    "p_frac": 0.935
+   },
+   "expected": {
+    "k95": 130,
+    "k99": 127,
+    "P_ge_130": 0.9516774877730619
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "k95 = 130, k99 = 127–128（同一 p）",
+    "ref": "survey_text.txt line 966",
+    "computed": "k95 = 130, k99 = 127"
+   },
+   "match": "ok",
+   "note": "End points of the survey's inferred p band."
+  },
+  {
+   "id": "ironwood.k_at_p0.940",
+   "group": "ironwood-k-of-n",
+   "formula": "k_q = max{k : P(Binomial(144,p) >= k) >= q}",
+   "inputs": {
+    "n_cubes": 144,
+    "p_frac": 0.94
+   },
+   "expected": {
+    "k95": 130,
+    "k99": 128,
+    "P_ge_130": 0.9732759957057914
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "k95 = 130, k99 = 127–128（同一 p）",
+    "ref": "survey_text.txt line 966",
+    "computed": "k95 = 130, k99 = 128"
+   },
+   "match": "ok",
+   "note": "End points of the survey's inferred p band."
+  },
+  {
+   "id": "ironwood.p_from_k99_125",
+   "group": "ironwood-k-of-n",
+   "formula": "solve P(Binomial(144,p) >= 125) = 0.99 for p",
+   "inputs": {
+    "n_cubes": 144,
+    "k99": 125,
+    "confidence": 0.99
+   },
+   "expected": {
+    "p_frac": 0.9208012927091169
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "原文 99% 时取 125；两点在同一 p 下不完全自洽",
+    "ref": "survey_text.txt line 966; survey_text.txt line 1784",
+    "computed": "0.92080 (vs 0.93469 from the 95 % point)"
+   },
+   "match": "ok",
+   "note": "Confirms the survey's remark: the blog's two points imply different p (0.918 vs 0.934)."
+  },
+  {
+   "id": "ironwood.redundancy_fractions",
+   "group": "ironwood-k-of-n",
+   "formula": "frac = (n - k)/n",
+   "inputs": {
+    "n_cubes": 144,
+    "k95": 130,
+    "k99_blog": 125
+   },
+   "expected": {
+    "frac_k95": 0.09722222222222222,
+    "frac_k99": 0.13194444444444445
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 10%（14/144）到 13%（19/144）",
+    "ref": "survey_text.txt line 1004",
+    "computed": "9.72 % / 13.19 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "byterobust.n1024.p_interval_for_p99_eq_4",
+   "group": "byterobust",
+   "formula": "P99(Binomial(N,p)) = q  <=>  F(q-1;p) < 0.99 <= F(q;p); p_lo: F(q-1;p)=0.99, p_hi: F(q;p)=0.99",
+   "inputs": {
+    "N_machines": 1024,
+    "P99_quantile": 4,
+    "confidence": 0.99
+   },
+   "expected": {
+    "p_lo_frac_exclusive": 0.0008048097169247022,
+    "p_hi_frac_inclusive": 0.0012507900698750945,
+    "check_quantile_at_midpoint": 4
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 0.08%–0.125%",
+    "ref": "Table 6-7 对照, survey_text.txt line 1898",
+    "computed": "(0.0805 %, 0.1251 %]"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "byterobust.n512.p_interval_for_p99_eq_3",
+   "group": "byterobust",
+   "formula": "P99(Binomial(N,p)) = q  <=>  F(q-1;p) < 0.99 <= F(q;p); p_lo: F(q-1;p)=0.99, p_hi: F(q;p)=0.99",
+   "inputs": {
+    "N_machines": 512,
+    "P99_quantile": 3,
+    "confidence": 0.99
+   },
+   "expected": {
+    "p_lo_frac_exclusive": 0.000852954583795241,
+    "p_hi_frac_inclusive": 0.0016113370031416916,
+    "check_quantile_at_midpoint": 3
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "byterobust.n256.p_interval_for_p99_eq_2",
+   "group": "byterobust",
+   "formula": "P99(Binomial(N,p)) = q  <=>  F(q-1;p) < 0.99 <= F(q;p); p_lo: F(q-1;p)=0.99, p_hi: F(q;p)=0.99",
+   "inputs": {
+    "N_machines": 256,
+    "P99_quantile": 2,
+    "confidence": 0.99
+   },
+   "expected": {
+    "p_lo_frac_exclusive": 0.0005812597263453431,
+    "p_hi_frac_inclusive": 0.0017085295597547205,
+    "check_quantile_at_midpoint": 2
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "byterobust.n128.p_interval_for_p99_eq_2",
+   "group": "byterobust",
+   "formula": "P99(Binomial(N,p)) = q  <=>  F(q-1;p) < 0.99 <= F(q;p); p_lo: F(q-1;p)=0.99, p_hi: F(q;p)=0.99",
+   "inputs": {
+    "N_machines": 128,
+    "P99_quantile": 2,
+    "confidence": 0.99
+   },
+   "expected": {
+    "p_lo_frac_exclusive": 0.0011644661031138545,
+    "p_hi_frac_inclusive": 0.003427617454420346,
+    "check_quantile_at_midpoint": 2
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "byterobust.intersection_all_sizes",
+   "group": "byterobust",
+   "formula": "intersection of the four p-intervals (1024->4, 512->3, 256->2, 128->2)",
+   "inputs": {
+    "sizes": [
+     1024,
+     512,
+     256,
+     128
+    ],
+    "quantiles": [
+     4,
+     3,
+     2,
+     2
+    ]
+   },
+   "expected": {
+    "p_lo_frac_exclusive": 0.0011644661031138545,
+    "p_hi_frac_inclusive": 0.0012507900698750945,
+    "nonempty": true
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 0.12%–0.125%",
+    "ref": "Table 6-7 对照, survey_text.txt line 1898",
+    "computed": "(0.1164 %, 0.1251 %]"
+   },
+   "match": "ok",
+   "note": "Lower bound comes from N = 128 (quantile 2), upper bound from N = 1024 (quantile 4)."
+  },
+  {
+   "id": "ctmc.two_hot_units_no_repair",
+   "group": "ctmc-first-passage",
+   "formula": "birth-death recurrence, N=1, k=1, mu=0  ->  T0 = 3/(2*lambda)",
+   "inputs": {
+    "N": 1,
+    "k": 1,
+    "lambda_per_h": 0.0001,
+    "mu_per_h": 0
+   },
+   "expected": {
+    "T0_h": 15000.0,
+    "T0_times_lambda": 1.5
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "MTTF = 3/(2λ)",
+    "ref": "survey_text.txt line 968; plan §8",
+    "computed": "15000.0 h = 1.500000/λ"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ctmc.two_units_one_repairman",
+   "group": "ctmc-first-passage",
+   "formula": "birth-death recurrence, N=1, k=1, mu>0  ->  T0 = (3*lambda + mu)/(2*lambda^2)",
+   "inputs": {
+    "N": 1,
+    "k": 1,
+    "lambda_per_h": 0.0001,
+    "mu_per_h": 0.041666666666666664,
+    "MTTR_h": 24
+   },
+   "expected": {
+    "T0_h": 2098333.3333333335,
+    "closed_form_h": 2098333.3333333335
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "MTTF = (3λ + μ)/(2λ²)",
+    "ref": "survey_text.txt line 1033",
+    "computed": "2098333.3333 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ctmc.k0_series_reduces_to_1_over_n_lambda",
+   "group": "ctmc-first-passage",
+   "formula": "k = 0  ->  T0 = 1/(N*lambda)",
+   "inputs": {
+    "N": 1024,
+    "k": 0,
+    "lambda_per_h": 0.0001,
+    "mu_per_h": 0.041666666666666664
+   },
+   "expected": {
+    "T0_h": 9.765625,
+    "closed_form_h": 9.765625
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "T_0 = 1/(Nλ)",
+    "ref": "survey_text.txt line 1030",
+    "computed": "9.765625 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ctmc.n1024_k4_numeric",
+   "group": "ctmc-first-passage",
+   "formula": "birth-death recurrence solved as a tridiagonal linear system (states 0..k, T_{k+1}=0)",
+   "inputs": {
+    "N": 1024,
+    "k": 4,
+    "lambda_per_h": 1.16e-05,
+    "mu_per_h": 0.041666666666666664,
+    "MTTR_h": 24
+   },
+   "expected": {
+    "T0_h": 435207.56745957443,
+    "T0_years": 49.64722421396012
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Regression golden (no survey value): mean time until the 5th simultaneous failure exhausts 4 hot spares."
+  },
+  {
+   "id": "ctmc.n1024_k4_steady_state_availability",
+   "group": "ctmc-first-passage",
+   "formula": "A = sum_{j<=k} C(N+k,j) u^j (1-u)^(N+k-j), u = lambda*MTTR/(1 + lambda*MTTR)",
+   "inputs": {
+    "N": 1024,
+    "k": 4,
+    "lambda_per_h": 1.16e-05,
+    "MTTR_h": 24
+   },
+   "expected": {
+    "u_frac": 0.0002783225150118207,
+    "A_frac": 0.9999875091243957,
+    "unavailability_frac": 1.2490875604290382e-05
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Fig. 4-1(b) formula; regression golden. Implementations computing 1 - A must keep ~1e-5 absolute resolution."
+  },
+  {
+   "id": "ctmc.ideal_cold_standby",
+   "group": "ctmc-first-passage",
+   "formula": "MTTF = 2/lambda (ideal cold standby); (1 + p_s)/lambda with switch success p_s",
+   "inputs": {
+    "lambda_per_h": 0.0001,
+    "p_s_frac": 0.9
+   },
+   "expected": {
+    "MTTF_ideal_h": 20000.0,
+    "MTTF_ps0.9_h": 19000.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "理想冷备 2/λ；切换成功概率 p_s 时 (1 + p_s)/λ",
+    "ref": "survey_text.txt line 968",
+    "computed": "20000.0 h; 19000.0 h"
+   },
+   "match": "ok",
+   "note": "Closed forms; 'ok' is an identity check."
+  },
+  {
+   "id": "rbd.parallel_1_of_2",
+   "group": "rbd-basic",
+   "formula": "A = 1 - (1 - A_t)^2",
+   "inputs": {
+    "A_t_frac": 0.99
+   },
+   "expected": {
+    "A_frac": 0.9999
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Fig. 4-1 / 算例五 formula (line 1136); regression golden."
+  },
+  {
+   "id": "rbd.n_plus_1_5_of_6",
+   "group": "rbd-basic",
+   "formula": "A = A_m^n + n*A_m^(n-1)*(1 - A_m), n = 6",
+   "inputs": {
+    "A_m_frac": 0.99,
+    "n": 6
+   },
+   "expected": {
+    "A_frac": 0.998539552395,
+    "check_binomial_tail": 0.998539552395
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "N+1 cooling (5-of-6 mCDU); regression golden."
+  },
+  {
+   "id": "rbd.series_unavailability",
+   "group": "rbd-basic",
+   "formula": "A_job = prod (1 + lambda_i*MTTR_i)^(-n_i); 1 - A ≈ lambda_job*MTTR",
+   "inputs": {
+    "n_gpu": 16384,
+    "lambda_per_gpu_h": 1.9732816719714506e-05,
+    "MTTR_h": 1.0
+   },
+   "expected": {
+    "A_frac": 0.7237572163672669,
+    "first_order_unavailability_frac": 0.32330246913580246
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Fig. 4-1(a) series availability with one component class; regression golden."
+  },
+  {
+   "id": "meta.blocked_poisson_l256_r22",
+   "group": "meta-poisson-sparing",
+   "formula": "Pr(blocked) ≈ 1 - sum_{n<=R} m^n/n! e^-m, m = L*MTTR/MTBF",
+   "inputs": {
+    "L_blocks": 256,
+    "MTTR_h": 24,
+    "MTBF_block_h": 1000,
+    "R_spares": 22
+   },
+   "expected": {
+    "m": 6.144,
+    "Pr_blocked": 1.5137985942510168e-07
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Regression golden; formula at line 1031 / 1733. Tail is ~1e-7, so implementations should sum the upper tail or keep double precision in 1 - CDF."
+  },
+  {
+   "id": "meta.blocked_binomial_exact_l256_r22",
+   "group": "meta-poisson-sparing",
+   "formula": "Pr(blocked) = 1 - (1 + rho)^-L * sum_{n<=R} C(L,n) rho^n, rho = MTTR/MTBF  (= Binomial(L, rho/(1+rho)) upper tail)",
+   "inputs": {
+    "L_blocks": 256,
+    "MTTR_h": 24,
+    "MTBF_block_h": 1000,
+    "R_spares": 22
+   },
+   "expected": {
+    "rho": 0.024,
+    "Pr_blocked": 5.705098959894405e-08,
+    "ratio_poisson_over_exact": 2.6534133849258166
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Regression golden; exact stationary distribution of the finite birth-death chain (line 1031)."
+  },
+  {
+   "id": "meta.one_over_h_scaling_fixed_m",
+   "group": "meta-poisson-sparing",
+   "formula": "with m = L*MTTR/MTBF held fixed, R is unchanged and R/L scales as 1/H",
+   "inputs": {
+    "m": 6.144,
+    "target_Pr_blocked": 1.5137985942510168e-07,
+    "L_blocks": [
+     256,
+     512,
+     1024
+    ]
+   },
+   "expected": {
+    "R_spares": [
+     22,
+     22,
+     22
+    ],
+    "spare_frac": [
+     0.0859375,
+     0.04296875,
+     0.021484375
+    ]
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "块缩小 H 倍 … 备件比例降为 1/H",
+    "ref": "survey_text.txt line 1031",
+    "computed": "R = 22/22/22"
+   },
+   "match": "ok",
+   "note": "Exact only when the block MTBF scales with 1/H (tray-dominated); the rack term breaks it slightly (see Table 6-3 attempt)."
+  },
+  {
+   "id": "meta.table6-3.block72gpu",
+   "group": "meta-poisson-sparing",
+   "formula": "MTBF_block = 1/(K_trays/MTBF_tray + 1/MTBF_rack); L = 18432/gpu_per_block; R from printed spare fraction; stranded = (L-R - floor((L-R)/P)*P)/L",
+   "inputs": {
+    "gpu_per_block": 72,
+    "K_trays": 18.0,
+    "MTBF_tray_h": 20000,
+    "MTBF_rack_h": 10000,
+    "MTTR_h": 24,
+    "zone_gpu": 18432,
+    "placement_group_gpu": 2304
+   },
+   "expected": {
+    "MTBF_block_h": 1000.0,
+    "L_blocks": 256,
+    "m": 6.144,
+    "R_spares_from_printed_frac": 22,
+    "R_candidates": [
+     22
+    ],
+    "spare_frac": 0.0859375,
+    "stranded_frac": 0.0390625,
+    "Pr_blocked_poisson_at_R": 1.5137985942510168e-07,
+    "Pr_blocked_poisson_at_R_minus_1": 5.748810789447592e-07,
+    "Pr_blocked_binomial_at_R": 5.705098959894405e-08,
+    "Pr_blocked_binomial_at_R_minus_1": 2.369515316968934e-07
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "块间备件 8.6%，stranded 3.9%",
+    "ref": "Table 6-3 rows, survey_text.txt line 1734–survey_text.txt line 1749",
+    "computed": "R = 22 (8.59 %), stranded 3.91 %"
+   },
+   "match": "ok",
+   "note": "The stranding term reproduces the printed 3.9/7.8/9.9 % exactly with R = 22/24/27, confirming those R. The blocked-probability target is reverse-engineered below."
+  },
+  {
+   "id": "meta.table6-3.block36gpu",
+   "group": "meta-poisson-sparing",
+   "formula": "MTBF_block = 1/(K_trays/MTBF_tray + 1/MTBF_rack); L = 18432/gpu_per_block; R from printed spare fraction; stranded = (L-R - floor((L-R)/P)*P)/L",
+   "inputs": {
+    "gpu_per_block": 36,
+    "K_trays": 9.0,
+    "MTBF_tray_h": 20000,
+    "MTBF_rack_h": 10000,
+    "MTTR_h": 24,
+    "zone_gpu": 18432,
+    "placement_group_gpu": 2304
+   },
+   "expected": {
+    "MTBF_block_h": 1818.1818181818182,
+    "L_blocks": 512,
+    "m": 6.7584,
+    "R_spares_from_printed_frac": 24,
+    "R_candidates": [
+     24
+    ],
+    "spare_frac": 0.046875,
+    "stranded_frac": 0.078125,
+    "Pr_blocked_poisson_at_R": 5.6127274161034335e-08,
+    "Pr_blocked_poisson_at_R_minus_1": 2.1044361463360648e-07,
+    "Pr_blocked_binomial_at_R": 3.180584854413381e-08,
+    "Pr_blocked_binomial_at_R_minus_1": 1.250962272041129e-07
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "块间备件 4.7%，stranded 7.8%",
+    "ref": "Table 6-3 rows, survey_text.txt line 1734–survey_text.txt line 1749",
+    "computed": "R = 24 (4.69 %), stranded 7.81 %"
+   },
+   "match": "ok",
+   "note": "The stranding term reproduces the printed 3.9/7.8/9.9 % exactly with R = 22/24/27, confirming those R. The blocked-probability target is reverse-engineered below."
+  },
+  {
+   "id": "meta.table6-3.block18gpu",
+   "group": "meta-poisson-sparing",
+   "formula": "MTBF_block = 1/(K_trays/MTBF_tray + 1/MTBF_rack); L = 18432/gpu_per_block; R from printed spare fraction; stranded = (L-R - floor((L-R)/P)*P)/L",
+   "inputs": {
+    "gpu_per_block": 18,
+    "K_trays": 4.5,
+    "MTBF_tray_h": 20000,
+    "MTBF_rack_h": 10000,
+    "MTTR_h": 24,
+    "zone_gpu": 18432,
+    "placement_group_gpu": 2304
+   },
+   "expected": {
+    "MTBF_block_h": 3076.923076923077,
+    "L_blocks": 1024,
+    "m": 7.9872,
+    "R_spares_from_printed_frac": 27,
+    "R_candidates": [
+     27
+    ],
+    "spare_frac": 0.0263671875,
+    "stranded_frac": 0.0986328125,
+    "Pr_blocked_poisson_at_R": 2.831703872601631e-08,
+    "Pr_blocked_poisson_at_R_minus_1": 1.0057295706667817e-07,
+    "Pr_blocked_binomial_at_R": 1.9922044529311867e-08,
+    "Pr_blocked_binomial_at_R_minus_1": 7.266520603901341e-08
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "块间备件 2.6%，stranded 9.9%",
+    "ref": "Table 6-3 rows, survey_text.txt line 1734–survey_text.txt line 1749",
+    "computed": "R = 27 (2.64 %), stranded 9.86 %"
+   },
+   "match": "ok",
+   "note": "The stranding term reproduces the printed 3.9/7.8/9.9 % exactly with R = 22/24/27, confirming those R. The blocked-probability target is reverse-engineered below."
+  },
+  {
+   "id": "meta.table6-3.common_target_band",
+   "group": "meta-poisson-sparing",
+   "formula": "R(target) = min{R : Pr_blocked(R) <= target}; band of targets reproducing R = 22/24/27 is [max Pr(R), min Pr(R-1))",
+   "inputs": {
+    "R_spares": [
+     22,
+     24,
+     27
+    ],
+    "m": [
+     6.144,
+     6.7584,
+     7.9872
+    ]
+   },
+   "expected": {
+    "poisson_band_lo": 1.5137985942510168e-07,
+    "poisson_band_hi": 1.0057295706667817e-07,
+    "poisson_band_nonempty": false,
+    "binomial_band_lo": 5.705098959894405e-08,
+    "binomial_band_hi": 7.266520603901341e-08,
+    "binomial_band_nonempty": true
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "8.6% / 4.7% / 2.6%",
+    "ref": "Table 6-3, survey_text.txt line 1733",
+    "computed": "Poisson band empty (needs ≥ 1.51e-07 and < 1.01e-07); exact-binomial band [5.71e-08, 7.27e-08)"
+   },
+   "match": "ok",
+   "note": "R = 22/24/27 is certain (printed fractions and stranding). Under the Poisson approximation NO single target yields all three; with the exact binomial stationary distribution a common target exists only in a narrow band (~6-7e-8). Low confidence that the paper chose R from a probability target; see report."
+  },
+  {
+   "id": "meta.table6-3.round_target_scan",
+   "group": "meta-poisson-sparing",
+   "formula": "R(target) = min{R : Pr_blocked(R) <= target} for round targets, Poisson and exact binomial",
+   "inputs": {
+    "targets": [
+     1e-06,
+     5e-07,
+     2e-07,
+     1e-07,
+     5e-08,
+     2e-08,
+     1e-08
+    ],
+    "R_printed": [
+     22,
+     24,
+     27
+    ]
+   },
+   "expected": {
+    "R_poisson": [
+     [
+      21,
+      22,
+      25
+     ],
+     [
+      22,
+      23,
+      25
+     ],
+     [
+      22,
+      24,
+      26
+     ],
+     [
+      23,
+      24,
+      27
+     ],
+     [
+      23,
+      25,
+      27
+     ],
+     [
+      24,
+      25,
+      28
+     ],
+     [
+      24,
+      26,
+      28
+     ]
+    ],
+    "R_binomial": [
+     [
+      20,
+      22,
+      24
+     ],
+     [
+      21,
+      22,
+      25
+     ],
+     [
+      22,
+      23,
+      26
+     ],
+     [
+      22,
+      24,
+      26
+     ],
+     [
+      23,
+      24,
+      27
+     ],
+     [
+      23,
+      25,
+      27
+     ],
+     [
+      24,
+      25,
+      28
+     ]
+    ],
+    "targets_reproducing_printed_poisson": [],
+    "targets_reproducing_printed_binomial": []
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "8.6% / 4.7% / 2.6%（R = 22/24/27）",
+    "ref": "Table 6-3, survey_text.txt line 1733",
+    "computed": "1e-6: P 21/22/25 B 20/22/24; 5e-7: P 22/23/25 B 21/22/25; 2e-7: P 22/24/26 B 22/23/26; 1e-7: P 23/24/27 B 22/24/26; 5e-8: P 23/25/27 B 23/24/27; 2e-8: P 24/25/28 B 23/25/27; 1e-8: P 24/26/28 B 24/25/28"
+   },
+   "match": "discrepancy",
+   "note": "No round target reproduces 22/24/27 under either distribution unless listed in targets_reproducing_*; informational."
+  },
+  {
+   "id": "benoit.n_fail_b10",
+   "group": "benoit-replication",
+   "formula": "n_fail(2b) = 1 + 4^b / C(2b,b)  (via log-gamma)",
+   "inputs": {
+    "b_pairs": 10
+   },
+   "expected": {
+    "n_fail": 6.675463855030419,
+    "sqrt_pi_b": 5.604991216397929,
+    "ratio_to_sqrt_pi_b_over_2": 1.684307995219732,
+    "ratio_to_sqrt_pi_b": 1.1909856050265915
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "benoit.n_fail_b100",
+   "group": "benoit-replication",
+   "formula": "n_fail(2b) = 1 + 4^b / C(2b,b)  (via log-gamma)",
+   "inputs": {
+    "b_pairs": 100
+   },
+   "expected": {
+    "n_fail": 18.746707942830703,
+    "sqrt_pi_b": 17.72453850905516,
+    "ratio_to_sqrt_pi_b_over_2": 1.4957708833465062,
+    "ratio_to_sqrt_pi_b": 1.057669734715707
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "benoit.n_fail_b100000",
+   "group": "benoit-replication",
+   "formula": "n_fail(2b) = 1 + 4^b / C(2b,b)  (via log-gamma)",
+   "inputs": {
+    "b_pairs": 100000
+   },
+   "expected": {
+    "n_fail": 561.4998222641328,
+    "sqrt_pi_b": 560.4991216397929,
+    "ratio_to_sqrt_pi_b_over_2": 1.416738462663173,
+    "ratio_to_sqrt_pi_b": 1.001785374116934
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "561",
+    "ref": "survey_text.txt line 965",
+    "computed": "561.4998"
+   },
+   "match": "ok",
+   "note": "For large b, n_fail → sqrt(pi*b) + 1 ≈ 1.414 × sqrt(pi*b/2) ('40 % larger than the birthday estimate')."
+  },
+  {
+   "id": "ntp.affected_fraction_p0.001_t64",
+   "group": "ntp-amplification",
+   "formula": "f = 1 - (1 - p)^T",
+   "inputs": {
+    "p_frac": 0.001,
+    "T": 64
+   },
+   "expected": {
+    "affected_frac": 0.062025036174154446
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 0.062",
+    "ref": "survey_text.txt line 1132",
+    "computed": "0.06203"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "ntp.nvl72_block_vs_8gpu_node",
+   "group": "ntp-amplification",
+   "formula": "p_block = 1 - (1 - p_gpu)^72 ≈ 72 p_gpu; ratio to 8-GPU node",
+   "inputs": {
+    "p_gpu_frac": 0.001
+   },
+   "expected": {
+    "p_block_72_frac": 0.06950262504676631,
+    "p_node_8_frac": 0.007972055930055972,
+    "ratio": 8.718281163172716
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈72 p_GPU，是 8 GPU 节点的 9 倍",
+    "ref": "survey_text.txt line 1132",
+    "computed": "0.06950 vs 0.00797; ratio 8.718 (→ 9 as p → 0)"
+   },
+   "match": "ok",
+   "note": "'9×' is the small-p limit; at p = 0.001 the exact ratio is 8.72."
+  },
+  {
+   "id": "avail.delta_h100_node",
+   "group": "availability-afr",
+   "formula": "A = MTTF/(MTTF + MTTR)",
+   "inputs": {
+    "MTTF_h": 292.0,
+    "MTTR_h": 2.2
+   },
+   "expected": {
+    "A_frac": 0.9925220938137321,
+    "downtime_min_per_day": 10.768184908225697
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 99.3%",
+    "ref": "survey_text.txt line 378",
+    "computed": "99.252 %; 10.77 min/day"
+   },
+   "match": "ok",
+   "note": "Survey's '每天停机 9–10 分钟' (line 1133/1905) corresponds to A = 99.3–99.4 % rounded; unrounded inputs give 10.8 / 8.2 min/day."
+  },
+  {
+   "id": "avail.delta_a100_node",
+   "group": "availability-afr",
+   "formula": "A = MTTF/(MTTF + MTTR)",
+   "inputs": {
+    "MTTF_h": 154.0,
+    "MTTR_h": 0.88
+   },
+   "expected": {
+    "A_frac": 0.9943181818181818,
+    "downtime_min_per_day": 8.181818181818182
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 99.4%",
+    "ref": "survey_text.txt line 378",
+    "computed": "99.432 %; 8.18 min/day"
+   },
+   "match": "ok",
+   "note": "Survey's '每天停机 9–10 分钟' (line 1133/1905) corresponds to A = 99.3–99.4 % rounded; unrounded inputs give 10.8 / 8.2 min/day."
+  },
+  {
+   "id": "avail.afr_from_mttf_1000000h",
+   "group": "availability-afr",
+   "formula": "AFR ≈ 8760/MTTF",
+   "inputs": {
+    "MTTF_h": 1000000.0,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "AFR_frac": 0.00876,
+    "FIT": 1000.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.88%",
+    "ref": "survey_text.txt line 110",
+    "computed": "0.876 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "avail.afr_from_mttf_1500000h",
+   "group": "availability-afr",
+   "formula": "AFR ≈ 8760/MTTF",
+   "inputs": {
+    "MTTF_h": 1500000.0,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "AFR_frac": 0.00584,
+    "FIT": 666.6666666666666
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.58%",
+    "ref": "survey_text.txt line 110",
+    "computed": "0.584 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "avail.calce_downtime_a0.9932",
+   "group": "availability-afr",
+   "formula": "downtime_h_per_year = (1 - A)*8760",
+   "inputs": {
+    "A_frac": 0.9932,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "downtime_h_per_year": 59.568
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "59.6 h",
+    "ref": "survey_text.txt line 1135",
+    "computed": "59.568 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "avail.calce_downtime_a0.9997",
+   "group": "availability-afr",
+   "formula": "downtime_h_per_year = (1 - A)*8760",
+   "inputs": {
+    "A_frac": 0.9997,
+    "hours_per_year": 8760
+   },
+   "expected": {
+    "downtime_h_per_year": 2.628
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "2.6 h",
+    "ref": "survey_text.txt line 1135",
+    "computed": "2.628 h"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "weibull.median_over_mean_k0.7",
+   "group": "weibull",
+   "formula": "median/mean = (ln 2)^(1/k) / Gamma(1 + 1/k)",
+   "inputs": {
+    "k_shape": 0.7
+   },
+   "expected": {
+    "median_over_mean": 0.46798792257956845,
+    "gamma_1_plus_1_over_k": 1.2658235060572833
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "≈0.47（SIGMA 2.67/5.74）",
+    "ref": "survey_text.txt line 742",
+    "computed": "0.4680 (SIGMA observed 2.67/5.74 = 0.4652)"
+   },
+   "match": "ok",
+   "note": "Survey infers k ≈ 0.7 from SIGMA's median/mean 2.67 h / 5.74 h."
+  },
+  {
+   "id": "weibull.median_over_mean_k0.78",
+   "group": "weibull",
+   "formula": "median/mean = (ln 2)^(1/k) / Gamma(1 + 1/k)",
+   "inputs": {
+    "k_shape": 0.78
+   },
+   "expected": {
+    "median_over_mean": 0.5415090293022904,
+    "gamma_1_plus_1_over_k": 1.1543150968530973
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a"
+  },
+  {
+   "id": "weibull.mean_matched_scale_k0.78",
+   "group": "weibull",
+   "formula": "alpha = (1/lambda)/Gamma(1 + 1/k)",
+   "inputs": {
+    "lambda_per_h": 1e-05,
+    "k_shape": 0.78
+   },
+   "expected": {
+    "alpha_h": 86631.45814571842,
+    "check_mean_h": 100000.0
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "α = (1/λ)/Γ(1 + 1/k)（AIReSim 均值匹配）",
+    "ref": "survey_text.txt line 1057",
+    "computed": "86631.458 h"
+   },
+   "match": "ok",
+   "note": "'ok' = identity check: the Weibull mean equals 1/lambda = 1e5 h."
+  },
+  {
+   "id": "weibull.series_n1000_k0.78",
+   "group": "weibull",
+   "formula": "alpha_N = alpha*N^(-1/k); MTTF_from_new = alpha_N*Gamma(1 + 1/k); exponential reference 1/(N*lambda)",
+   "inputs": {
+    "lambda_per_h": 1e-05,
+    "k_shape": 0.78,
+    "N_units": 1000,
+    "alpha_h": 86631.45814571842
+   },
+   "expected": {
+    "alpha_N_h": 12.345872233570574,
+    "MTTF_from_new_h": 14.25102670302998,
+    "MTTF_exponential_h": 100.0,
+    "ratio_weibull_over_exponential": 0.14251026703029981
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "尺度按 N^(−1/k) 缩小，从新起算的系统 MTTF 按 N^(−1/k) 而非 1/N 下降",
+    "ref": "survey_text.txt line 1057",
+    "computed": "14.251 h vs 100.0 h"
+   },
+   "match": "ok",
+   "note": "Qualitative statement in the survey; numeric values are regression goldens."
+  },
+  {
+   "id": "lognormal.lanl_repair_fit",
+   "group": "lognormal-repair",
+   "formula": "sigma = sqrt(2 ln(mean/median)); mu = ln(median); P_q = exp(mu + z_q sigma)",
+   "inputs": {
+    "mean_min": 355,
+    "median_min": 54
+   },
+   "expected": {
+    "sigma": 1.9406873745717734,
+    "mu": 3.9889840465642745,
+    "P90_min": 649.4169690506,
+    "P99_min": 4932.977275415742,
+    "check_mean_min": 355.0,
+    "mean_over_median": 6.574074074074074,
+    "C2": 42.21844993141289
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "均值 355 min 是中位数 54 min 的 6.6 倍",
+    "ref": "survey_text.txt line 318",
+    "computed": "ratio 6.574; P90 649.4 min, P99 4933.0 min"
+   },
+   "match": "ok",
+   "note": "Lognormal parameters are not printed in DSN'06; these are the method-of-moments values from mean and median."
+  },
+  {
+   "id": "prediction.rates",
+   "group": "prediction",
+   "formula": "lambda_unplanned = (1-R)*lambda; lambda_alarm = R*lambda/P",
+   "inputs": {
+    "lambda_per_h": 0.323,
+    "recall_frac": 0.17,
+    "precision_frac": 0.84
+   },
+   "expected": {
+    "lambda_unplanned_per_h": 0.26809,
+    "lambda_alarm_per_h": 0.06536904761904762,
+    "breakeven_C_unplanned_over_C_planned": 1.1904761904761905
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "λ_unplanned = (1 − R)·λ; λ_alarm = R·λ/P",
+    "ref": "survey_text.txt line 1962",
+    "computed": "0.268090 /h; 0.065369 /h"
+   },
+   "match": "ok",
+   "note": "Formula case; the survey prints no numeric instance. Prediction pays off only when C_unplanned > C_planned/P."
+  },
+  {
+   "id": "epoch.replica_m2_tstep10s",
+   "group": "epoch-replica",
+   "formula": "F = (t_train/t_step)*(N_gpu/M)*(lambda_node*t_step)^M",
+   "inputs": {
+    "t_train_days": 60,
+    "N_gpu": 1000,
+    "gpu_per_node": 8,
+    "lambda_per_gpu_h": 2e-05,
+    "lambda_node_per_s": 4.444444444444445e-08,
+    "t_step_s": 10,
+    "M_replicas": 2
+   },
+   "expected": {
+    "F_expected_unrecoverable_per_training": 5.12e-05,
+    "trainings_per_event": 19531.25,
+    "t_step_s_needed_to_reproduce_survey": 366.43996247654786
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "M = 2: 每 533 次 训练出一次",
+    "ref": "survey_text.txt line 1033; card survey_text.txt line 1213",
+    "computed": "1 per 1.953e+04 trainings"
+   },
+   "match": "discrepancy",
+   "note": "Assumption: t_step = 10 s, lambda_node = 8 × 1/50,000 per GPU·h. The printed formula with these inputs does not reproduce Epoch's quoted numbers; the t_step that would (366 s for M=2, 54 s for M=3) differ from each other, so no single t_step works. See report."
+  },
+  {
+   "id": "epoch.replica_m3_tstep10s",
+   "group": "epoch-replica",
+   "formula": "F = (t_train/t_step)*(N_gpu/M)*(lambda_node*t_step)^M",
+   "inputs": {
+    "t_train_days": 60,
+    "N_gpu": 1000,
+    "gpu_per_node": 8,
+    "lambda_per_gpu_h": 2e-05,
+    "lambda_node_per_s": 4.444444444444445e-08,
+    "t_step_s": 10,
+    "M_replicas": 3
+   },
+   "expected": {
+    "F_expected_unrecoverable_per_training": 1.517037037037037e-11,
+    "trainings_per_event": 65917968750.0,
+    "t_step_s_needed_to_reproduce_survey": 53.53502256751507
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "M = 3: 每 约 23 亿次 训练出一次",
+    "ref": "survey_text.txt line 1033; card survey_text.txt line 1213",
+    "computed": "1 per 6.592e+10 trainings"
+   },
+   "match": "discrepancy",
+   "note": "Assumption: t_step = 10 s, lambda_node = 8 × 1/50,000 per GPU·h. The printed formula with these inputs does not reproduce Epoch's quoted numbers; the t_step that would (366 s for M=2, 54 s for M=3) differ from each other, so no single t_step works. See report."
+  },
+  {
+   "id": "epoch.fo.optimal_interval",
+   "group": "epoch-first-order",
+   "formula": "tau = sqrt(2*delta*M), M = 50000/N h",
+   "inputs": {
+    "N_gpu": 16384,
+    "lambda_per_gpu_h": 2e-05,
+    "delta_s": 2.43
+   },
+   "expected": {
+    "M_s": 10986.328125,
+    "tau_s": 231.07045394749196,
+    "tau_min": 3.8511742324581992
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "最优间隔约 4 min",
+    "ref": "survey_text.txt line 1129",
+    "computed": "3.851 min"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "epoch.fo.checkpoint_plus_redo_loss",
+   "group": "epoch-first-order",
+   "formula": "loss = sqrt(2*delta/M)",
+   "inputs": {
+    "delta_s": 2.43,
+    "M_s": 10986.328125
+   },
+   "expected": {
+    "loss_frac": 0.021032546208198378
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 2.1%",
+    "ref": "survey_text.txt line 1129; survey_text.txt line 1072",
+    "computed": "2.103 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "epoch.fo.recovery_term",
+   "group": "epoch-first-order",
+   "formula": "recovery_loss = lambda_job*R = (N*lambda_gpu)*R",
+   "inputs": {
+    "N_gpu": 16384,
+    "lambda_per_gpu_h": 2e-05,
+    "R_min": 5.1
+   },
+   "expected": {
+    "recovery_loss_frac": 0.0278528,
+    "total_loss_frac": 0.04888534620819838
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 2.8%（合计约 5%）",
+    "ref": "survey_text.txt line 1129; survey_text.txt line 1072",
+    "computed": "2.785 %; total 4.889 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "meta_hpca.n12000_rf6.50_w300s",
+   "group": "meta-hpca-ettr",
+   "formula": "ETTR ≈ 1 - w_cp/dt - (dt/2 + u0)/M, dt = sqrt(2*w_cp*M), M = 1/(N_nodes*r_f)",
+   "inputs": {
+    "N_gpu": 12000,
+    "gpu_per_node": 8,
+    "r_f_per_1000_node_day": 6.5,
+    "w_cp_s": 300,
+    "u0_s": 300
+   },
+   "expected": {
+    "M_s": 8861.538461538461,
+    "dt_s": 2305.845414793255,
+    "ETTR_frac": 0.7059375834000667
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": null,
+   "match": "n/a",
+   "note": "Baseline before either lever is pulled; regression golden."
+  },
+  {
+   "id": "meta_hpca.n12000_rf1.0_w300s",
+   "group": "meta-hpca-ettr",
+   "formula": "ETTR ≈ 1 - w_cp/dt - (dt/2 + u0)/M, dt = sqrt(2*w_cp*M), M = 1/(N_nodes*r_f)",
+   "inputs": {
+    "N_gpu": 12000,
+    "gpu_per_node": 8,
+    "r_f_per_1000_node_day": 1.0,
+    "w_cp_s": 300,
+    "u0_s": 300
+   },
+   "expected": {
+    "M_s": 57600.0,
+    "dt_s": 5878.775382679627,
+    "ETTR_frac": 0.892729594050701
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 0.9",
+    "ref": "survey_text.txt line 1610",
+    "computed": "0.8927"
+   },
+   "match": "ok",
+   "note": "First-order reproduction of the HPCA'25 planning statement; the paper's E[ETTR] also has a queueing term q (not modelled), so only '约 0.9' is checked."
+  },
+  {
+   "id": "meta_hpca.n12000_rf6.50_w10s",
+   "group": "meta-hpca-ettr",
+   "formula": "ETTR ≈ 1 - w_cp/dt - (dt/2 + u0)/M, dt = sqrt(2*w_cp*M), M = 1/(N_nodes*r_f)",
+   "inputs": {
+    "N_gpu": 12000,
+    "gpu_per_node": 8,
+    "r_f_per_1000_node_day": 6.5,
+    "w_cp_s": 10,
+    "u0_s": 300
+   },
+   "expected": {
+    "M_s": 8861.538461538461,
+    "dt_s": 420.98784926737403,
+    "ETTR_frac": 0.9186385239542025
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "约 0.9",
+    "ref": "survey_text.txt line 1610",
+    "computed": "0.9186"
+   },
+   "match": "ok",
+   "note": "First-order reproduction of the HPCA'25 planning statement; the paper's E[ETTR] also has a queueing term q (not modelled), so only '约 0.9' is checked."
+  },
+  {
+   "id": "misc.flashrecovery_no_failure_probabilities",
+   "group": "misc-trivial",
+   "formula": "(1-p)^n",
+   "inputs": {
+    "p1_frac": 0.001,
+    "n1": 100,
+    "p2_frac": 0.0001,
+    "n2": 1000
+   },
+   "expected": {
+    "p_no_failure_1": 0.904792147113709,
+    "p_no_failure_2": 0.9048328935585462
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "0.90479 对 0.90483",
+    "ref": "survey_text.txt line 1508",
+    "computed": "0.904792 vs 0.904833"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "misc.spare_optimal_redundancy_r_star",
+   "group": "misc-trivial",
+   "formula": "r* = floor(log2(N) + 0.833)",
+   "inputs": {
+    "N": [
+     200,
+     600,
+     1000
+    ]
+   },
+   "expected": {
+    "r_star": [
+     8,
+     10,
+     10
+    ]
+   },
+   "tolerance": {
+    "rel": 1e-09
+   },
+   "survey": {
+    "value": "8/10/10",
+    "ref": "survey_text.txt line 1057",
+    "computed": "8/10/10"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "misc.meta_in_block_spare_fraction",
+   "group": "misc-trivial",
+   "formula": "8/72",
+   "inputs": {
+    "spare_trays_gpu": 8,
+    "block_gpu": 72
+   },
+   "expected": {
+    "frac": 0.1111111111111111
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "块内备份 11.1%",
+    "ref": "survey_text.txt line 1748",
+    "computed": "11.11 %"
+   },
+   "match": "ok"
+  },
+  {
+   "id": "misc.meta_goodput_ratio",
+   "group": "misc-trivial",
+   "formula": "61,134 / 59,821",
+   "inputs": {
+    "goodput_best_eq_gpu": 61134,
+    "goodput_second_eq_gpu": 59821
+   },
+   "expected": {
+    "ratio": 1.0219488139616522
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "1.024×",
+    "ref": "survey_text.txt line 1748",
+    "computed": "1.0219"
+   },
+   "match": "discrepancy",
+   "note": "The two printed goodput values give 1.022, not 1.024; the paper's ratio presumably used unrounded values or different operands."
+  },
+  {
+   "id": "misc.hot_spare_fractions",
+   "group": "misc-trivial",
+   "formula": "k/N",
+   "inputs": {
+    "byterobust_spares": 8,
+    "byterobust_nodes": 2048,
+    "epoch_spares": 480,
+    "epoch_nodes": 125000
+   },
+   "expected": {
+    "byterobust_frac": 0.00390625,
+    "epoch_frac": 0.00384
+   },
+   "tolerance": {
+    "rel": 1e-06
+   },
+   "survey": {
+    "value": "8 台约占 0.4%；480 个节点（约 0.3%）",
+    "ref": "survey_text.txt line 1131",
+    "computed": "0.391 %; 0.384 %"
+   },
+   "match": "rounding"
+  }
+ ]
+}
