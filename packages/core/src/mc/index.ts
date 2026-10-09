@@ -177,6 +177,8 @@ export function withMultiplier(d: Distribution, m: number): Distribution {
       return { type: 'lognormal', mu: d.mu - Math.log(m), sigma: d.sigma };
     case 'point':
       return { type: 'point', value: d.value / m };
+    case 'dual-repair':
+      return { ...d, autoMean: d.autoMean / m, manualMean: d.manualMean / m };
   }
 }
 

@@ -1,8 +1,8 @@
 /** Build a Monte Carlo job specification from a scenario and run it, with the closed-form comparison. */
 import type { Scenario } from '../scenario/schema.js';
 import { computeCounts, componentInstances } from '../scenario/build.js';
-import { evaluateScenario, resolvePipeline } from '../scenario/evaluate.js';
-import { recoverySampler } from '../mttr/index.js';
+import { evaluateScenario, resolveRecovery } from '../scenario/evaluate.js';
+import { isDual } from '../ctmc/repair.js';
 import { exponentialFromMean, type Distribution } from '../math/distributions.js';
 import { simulateJob, lifetimeFromRate, type McJobSpec, type McUnitClass, type McSummary, type BlastRadius } from './index.js';
 
@@ -51,8 +51,10 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
   const classes: McUnitClass[] = s.components
     .filter((c) => c.enabled)
     .map((c) => {
-      const ci = componentInstances(c, counts);
-      const repair: Distribution = c.repair.distribution ?? exponentialFromMean(Math.max(c.repair.mttrHours, 1e-6));
+      const ci = componentInstances(c, counts, s.measures.subhealthThreshold);
+      const repair: Distribution = isDual(ci.repair)
+        ? { type: 'dual-repair', coverage: ci.repair.coverage, successProbability: ci.repair.successProbability, autoMean: Math.max(ci.repair.autoMttrH, 1e-6), manualMean: Math.max(ci.repair.manualMttrH, 1e-6) }
+        : c.repair.distribution ?? exponentialFromMean(Math.max(ci.repair.manualMttrH, 1e-6));
       const cls: McUnitClass = {
         id: c.id,
         count: ci.total,
@@ -68,10 +70,10 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
       if (c.ccf && c.ccf.beta > 0) cls.ccf = { beta: c.ccf.beta, radius: radiusFor(c.ccf.domain, s) };
       if (c.lemon) cls.lemon = { fraction: c.lemon.fraction, multiplier: c.lemon.multiplier };
       if (c.infant) cls.infant = { multiplier: c.infant.multiplier, durationHours: c.infant.durationHours };
-      if (c.failslow) cls.failslow = { ratePerHour: c.failslow.ratePerHour, durationHours: c.failslow.durationHours, capacity: c.failslow.capacity };
+      if (ci.subhealth) cls.failslow = { ratePerHour: ci.subhealth.ratePerHour, durationHours: ci.subhealth.durationH, capacity: ci.subhealth.performance };
       return cls;
     });
-  const pipeline = resolvePipeline(s);
+  const recoveryModel = resolveRecovery(s);
   return {
     nGpus: w.nGpus,
     gpusPerNode: s.topology.gpusPerNode,
@@ -80,7 +82,7 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
     workHours: workHours ?? w.durationDays * 24,
     intervalS,
     deltaS: w.deltaS,
-    recoverySampler: (rng, n) => recoverySampler(pipeline, n, rng)(),
+    recoverySampler: (rng, n) => recoveryModel.sampler(n, rng)(),
     spares: {
       policy: w.hotSpareNodes > 0 ? 'hot-pool' : 'cluster-requeue',
       hotSpareNodes: w.hotSpareNodes,

@@ -47,13 +47,52 @@ export const RateSchema = z.object({
   provenance: ProvenanceSchema.optional(),
 });
 
-export const RepairSchema = z.object({
-  /** mean repair / replacement time in hours */
-  mttrHours: z.number().nonnegative(),
-  /** optional distribution of the repair time (hours) for simulation */
-  distribution: DistributionSchema.optional(),
-  provenance: ProvenanceSchema.optional(),
+export const RepairSchema = z
+  .object({
+    /** legacy single mean repair / replacement time in hours (= the manual path) */
+    mttrHours: z.number().nonnegative().optional(),
+    /** v2 automatic path (自动恢复): share of failures covered, success probability, mean time */
+    auto: z
+      .object({
+        coverage: z.number().min(0).max(1),
+        successProbability: z.number().min(0).max(1).default(1),
+        mttrHours: z.number().nonnegative(),
+      })
+      .optional(),
+    /** v2 manual path (人工修复) */
+    manual: z.object({ mttrHours: z.number().nonnegative() }).optional(),
+    /** optional distribution of the repair time (hours) for simulation (manual path when dual) */
+    distribution: DistributionSchema.optional(),
+    provenance: ProvenanceSchema.optional(),
+  })
+  .refine((r) => r.mttrHours !== undefined || r.manual !== undefined, { message: 'repair needs mttrHours or manual.mttrHours' });
+
+/** v2 switchover (倒换) of a redundant group */
+export const SwitchoverSchema = z.object({
+  successProbability: z.number().min(0).max(1),
+  /** outage of a successful switchover, seconds */
+  outageS: z.number().nonnegative().optional(),
+  /** time to clear a failed switchover, hours (default: the unit's manual MTTR) */
+  failureRecoveryHours: z.number().positive().optional(),
 });
+
+/** v2 sub-health (亚健康) of a component class */
+export const SubhealthSchema = z
+  .object({
+    ratePerHour: z.number().nonnegative().optional(),
+    /** alternative input: steady-state probability of being sub-healthy */
+    steadyStateProbability: z.number().min(0).lt(1).optional(),
+    durationHours: z.number().positive(),
+    /** delivered performance while sub-healthy */
+    performance: z.number().min(0).max(1),
+    /** failure-rate multiplier while sub-healthy */
+    escalationMultiplier: z.number().positive().default(1),
+    policy: z.enum(['tolerate', 'isolate']).default('tolerate'),
+    detection: z.object({ probability: z.number().min(0).max(1), delayHours: z.number().nonnegative() }).optional(),
+    /** per-class override of the scenario's sub-health threshold */
+    threshold: z.number().min(0).max(1).optional(),
+  })
+  .refine((s) => s.ratePerHour !== undefined || s.steadyStateProbability !== undefined, { message: 'subhealth needs ratePerHour or steadyStateProbability' });
 
 export const CountRuleSchema = z.discriminatedUnion('per', [
   z.object({ per: z.literal('gpu'), factor: z.number().positive().default(1) }),
@@ -77,8 +116,10 @@ export const ComponentSchema = z.object({
   blastRadius: DomainSchema.optional(),
   /** common-cause: share β of the class's failures that hit the whole domain at once */
   ccf: z.object({ domain: DomainSchema, beta: z.number().min(0).max(1) }).optional(),
-  /** fail-slow degraded state */
+  /** fail-slow degraded state (v1; counted as up with reduced capacity) */
   failslow: z.object({ ratePerHour: z.number().nonnegative(), durationHours: z.number().positive(), capacity: z.number().min(0).max(1) }).optional(),
+  /** v2 sub-health with threshold rule, escalation and tolerate / isolate policy (takes precedence over failslow) */
+  subhealth: SubhealthSchema.optional(),
   /** infant mortality: rate multiplier for the first `durationHours` of life (simulation) */
   infant: z.object({ multiplier: z.number().positive(), durationHours: z.number().positive() }).optional(),
   /** lemon units: fraction of units with a higher rate (simulation) */
@@ -92,6 +133,8 @@ export const ComponentSchema = z.object({
       capacityMode: z.enum(['binary', 'proportional', 'fractional']).optional(),
       standbyFactor: z.number().min(0).max(1).optional(),
       switchProbability: z.number().min(0).max(1).optional(),
+      /** v2 switchover details (success probability overrides switchProbability) */
+      switchover: SwitchoverSchema.optional(),
     })
     .optional(),
   /** exclude from the analysis without deleting */
@@ -114,17 +157,17 @@ const BlockBaseSchema = z.object({ id: z.string(), name: z.string().optional() }
 export type BlockInput =
   | (z.infer<typeof BlockBaseSchema> & { kind: 'component'; componentId: string; count?: number })
   | (z.infer<typeof BlockBaseSchema> & { kind: 'series'; children: BlockInput[] })
-  | (z.infer<typeof BlockBaseSchema> & { kind: 'parallel'; children: BlockInput[] })
-  | (z.infer<typeof BlockBaseSchema> & { kind: 'kofn'; n: number; k: number; unit: BlockInput; crews?: number; capacityMode?: 'binary' | 'proportional' | 'fractional' })
-  | (z.infer<typeof BlockBaseSchema> & { kind: 'standby'; n: number; unit: BlockInput; standbyFactor?: number; switchProbability?: number; crews?: number });
+  | (z.infer<typeof BlockBaseSchema> & { kind: 'parallel'; children: BlockInput[]; switchover?: z.infer<typeof SwitchoverSchema> })
+  | (z.infer<typeof BlockBaseSchema> & { kind: 'kofn'; n: number; k: number; unit: BlockInput; crews?: number; capacityMode?: 'binary' | 'proportional' | 'fractional'; switchover?: z.infer<typeof SwitchoverSchema> })
+  | (z.infer<typeof BlockBaseSchema> & { kind: 'standby'; n: number; unit: BlockInput; standbyFactor?: number; switchProbability?: number; crews?: number; switchover?: z.infer<typeof SwitchoverSchema> });
 
 export const BlockInputSchema: z.ZodType<BlockInput> = z.lazy(() =>
   z.discriminatedUnion('kind', [
     BlockBaseSchema.extend({ kind: z.literal('component'), componentId: z.string(), count: z.number().positive().optional() }),
     BlockBaseSchema.extend({ kind: z.literal('series'), children: z.array(BlockInputSchema) }),
-    BlockBaseSchema.extend({ kind: z.literal('parallel'), children: z.array(BlockInputSchema) }),
-    BlockBaseSchema.extend({ kind: z.literal('kofn'), n: z.number().int().positive(), k: z.number().int().positive(), unit: BlockInputSchema, crews: z.number().positive().optional(), capacityMode: z.enum(['binary', 'proportional', 'fractional']).optional() }),
-    BlockBaseSchema.extend({ kind: z.literal('standby'), n: z.number().int().positive(), unit: BlockInputSchema, standbyFactor: z.number().min(0).max(1).optional(), switchProbability: z.number().min(0).max(1).optional(), crews: z.number().positive().optional() }),
+    BlockBaseSchema.extend({ kind: z.literal('parallel'), children: z.array(BlockInputSchema), switchover: SwitchoverSchema.optional() }),
+    BlockBaseSchema.extend({ kind: z.literal('kofn'), n: z.number().int().positive(), k: z.number().int().positive(), unit: BlockInputSchema, crews: z.number().positive().optional(), capacityMode: z.enum(['binary', 'proportional', 'fractional']).optional(), switchover: SwitchoverSchema.optional() }),
+    BlockBaseSchema.extend({ kind: z.literal('standby'), n: z.number().int().positive(), unit: BlockInputSchema, standbyFactor: z.number().min(0).max(1).optional(), switchProbability: z.number().min(0).max(1).optional(), crews: z.number().positive().optional(), switchover: SwitchoverSchema.optional() }),
   ]) as unknown as z.ZodType<BlockInput>,
 );
 
@@ -181,10 +224,33 @@ export const StageSchema = z.object({
   note: z.string().optional(),
 });
 
+export const RungSchema = z.object({
+  id: z.string(),
+  name: z.object({ zh: z.string().optional(), en: z.string().optional() }).optional(),
+  kind: z.enum(['auto', 'manual']),
+  successProbability: z.number().min(0).max(1),
+  timeS: z.union([z.number().nonnegative(), DistributionSchema]),
+  scale: ScaleLawSchema.optional(),
+  note: z.string().optional(),
+  confidence: z.enum(['measured', 'paper-reported', 'vendor', 'derived', 'assumed']).optional(),
+});
+
 export const RecoverySchema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('preset'), preset: z.string() }),
   z.object({ mode: z.literal('pipeline'), stages: z.array(StageSchema).min(1) }),
+  /** v2 recovery ladder: a preset id (e.g. 'mindcluster-a3') or explicit rungs */
+  z.object({ mode: z.literal('ladder'), preset: z.string().optional(), rungs: z.array(RungSchema).min(1).optional() }),
 ]);
+
+/** v2 measure settings */
+export const MeasuresSchema = z.object({
+  /** sub-health counts as down when its performance is below this threshold */
+  subhealthThreshold: z.number().min(0).max(1).default(0.7),
+  /** which measure the report headlines */
+  primary: z.enum(['compensated', 'original']).default('compensated'),
+  /** communication share of the step time used for fabric-plane degradation */
+  commShare: z.number().min(0).max(1).default(0.3),
+});
 
 export const SparesSchema = z.object({
   /** fraction of interruptions that need a hardware replacement */
@@ -208,7 +274,7 @@ export const CostsSchema = z.object({
 });
 
 export const ScenarioSchema = z.object({
-  version: z.literal('0.1').default('0.1'),
+  version: z.enum(['0.1', '0.2']).default('0.2'),
   meta: z.object({
     id: z.string().optional(),
     name: z.string(),
@@ -225,6 +291,7 @@ export const ScenarioSchema = z.object({
   spares: SparesSchema.prefault({}),
   targets: TargetsSchema.prefault({}),
   costs: CostsSchema.prefault({}),
+  measures: MeasuresSchema.prefault({}),
   assumptions: z.array(z.string()).default([]),
 });
 
@@ -235,6 +302,10 @@ export type Topology = z.infer<typeof TopologySchema>;
 export type TrainingWorkload = z.infer<typeof TrainingWorkloadSchema>;
 export type InferenceWorkload = z.infer<typeof InferenceWorkloadSchema>;
 export type Provenance = z.infer<typeof ProvenanceSchema>;
+export type Repair = z.infer<typeof RepairSchema>;
+export type SubhealthInput = z.infer<typeof SubhealthSchema>;
+export type SwitchoverInput = z.infer<typeof SwitchoverSchema>;
+export type Recovery = z.infer<typeof RecoverySchema>;
 
 export function parseScenario(input: unknown): Scenario {
   return ScenarioSchema.parse(input);

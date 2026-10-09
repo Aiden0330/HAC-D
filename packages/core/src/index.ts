@@ -3,6 +3,8 @@ export * from './math/distributions.js';
 export { Rng } from './math/rng.js';
 export * from './units/index.js';
 export * from './ctmc/index.js';
+export * from './ctmc/repair.js';
+export * from './recovery/ladder.js';
 export * from './rbd/index.js';
 export * from './checkpoint/index.js';
 export * from './sparing/index.js';

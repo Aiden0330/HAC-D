@@ -11,7 +11,7 @@ import {
   type Subsystem, type AllocationResult, type GoodputBudgetResult, type UnavailabilityRow,
 } from '../allocation/index.js';
 import { composeMttr } from '../mttr/index.js';
-import { resolvePipeline } from './evaluate.js';
+import { resolveRecovery, resolvePipeline } from './evaluate.js';
 
 /* ------------------------------ comparison ------------------------------ */
 
@@ -32,6 +32,12 @@ export interface CompareRow {
   capacityAvailabilityInference?: number;
   kRequired?: number;
   checklistWarnings: number;
+  /** v2 measures */
+  originalAvailability: number;
+  strictAvailability: number;
+  performability: number;
+  humanFraction: number;
+  switchoverPenalty: number;
   result: EvaluationResult;
 }
 
@@ -61,6 +67,11 @@ export function compareScenarios(scenarios: Scenario[]): Comparison {
       capacityAvailabilityInference: r.inference?.capacityAvailability,
       kRequired: r.inference?.kRequiredForTarget,
       checklistWarnings: r.checklist.filter((c) => c.status === 'warn' || c.status === 'fail').length,
+      originalAvailability: r.system.measures.original.availability,
+      strictAvailability: r.system.measures.strict,
+      performability: r.system.measures.performability,
+      humanFraction: r.system.humanFraction,
+      switchoverPenalty: r.system.measures.switchoverPenalty,
       result: r,
     };
   });
@@ -99,9 +110,14 @@ export function scaleAllRates(s: Scenario, factor: number): Scenario {
   return c;
 }
 
-/** Multiply every recovery stage value (seconds) by `factor` (resolves a preset into an explicit pipeline). */
+/** Multiply every recovery stage (or ladder rung) value (seconds) by `factor` (resolves a preset into an explicit pipeline / ladder). */
 export function scaleRecovery(s: Scenario, factor: number): Scenario {
   const c = cloneScenario(s);
+  if (c.recovery.mode === 'ladder') {
+    const l = resolveRecovery(c).ladder!;
+    c.recovery = { mode: 'ladder', preset: l.id, rungs: l.rungs.map((r) => ({ ...r, timeS: typeof r.timeS === 'number' ? r.timeS * factor : r.timeS })) as Extract<Scenario['recovery'], { mode: 'ladder' }>['rungs'] };
+    return c;
+  }
   const p = resolvePipeline(c);
   c.recovery = {
     mode: 'pipeline',
@@ -262,8 +278,7 @@ export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; av
         notes.push(`rate allocation (${method}) failed: ${(e as Error).message}`);
       }
     } else notes.push('current interruption rate already meets the goodput target at the current recovery time');
-    const pipeline = resolvePipeline(s);
-    const composed = composeMttr(pipeline, s.workload.nGpus);
+    const composed = resolveRecovery(s).compose(s.workload.nGpus);
     const stages = composed.stages.filter((st) => st.name !== 'recompute').map((st) => ({ name: st.name, currentS: st.meanS, floorS: Math.min(st.meanS, st.name === 'detect' ? 5 : st.name === 'localize' ? 5 : 0) }));
     if (gb.fixRate.requiredRecoveryS > 0 && gb.fixRate.requiredRecoveryS < r.training.recoveryS) {
       out.stageAllocation = allocateRecoveryStages(stages, gb.fixRate.requiredRecoveryS).map((b, i) => ({ name: b.name, currentS: stages[i].currentS, budgetS: b.budgetS, improvementFactor: b.improvementFactor }));

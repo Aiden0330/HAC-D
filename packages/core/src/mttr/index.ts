@@ -38,7 +38,8 @@ export interface Pipeline {
 }
 
 export interface StageTime {
-  name: StageName;
+  /** a pipeline stage name, or a recovery-ladder rung id */
+  name: StageName | (string & {});
   meanS: number;
   share: number;
   note?: string;
@@ -47,7 +48,7 @@ export interface StageTime {
 export interface ComposedMttr {
   totalS: number;
   stages: StageTime[];
-  dominant: StageName | null;
+  dominant: StageName | (string & {}) | null;
   /** stages usually counted in MTTR (①–⑤) vs the loss-only stages (recompute, warm-up) */
   mttrS: number;
   lossOnlyS: number;
@@ -86,7 +87,7 @@ const MTTR_STAGES: StageName[] = ['detect', 'localize', 'remediate', 'restart', 
 export function composeMttr(pipeline: Pipeline, n: number): ComposedMttr {
   const stages: StageTime[] = pipeline.stages.map((s) => ({ name: s.name, meanS: stageMeanS(s, n), share: 0, note: s.note }));
   const totalS = stages.reduce((a, s) => a + s.meanS, 0);
-  let dominant: StageName | null = null;
+  let dominant: StageName | (string & {}) | null = null;
   let best = -1;
   for (const s of stages) {
     s.share = totalS > 0 ? s.meanS / totalS : 0;
@@ -95,7 +96,7 @@ export function composeMttr(pipeline: Pipeline, n: number): ComposedMttr {
       dominant = s.name;
     }
   }
-  const mttrS = stages.filter((s) => MTTR_STAGES.includes(s.name)).reduce((a, s) => a + s.meanS, 0);
+  const mttrS = stages.filter((s) => MTTR_STAGES.includes(s.name as StageName)).reduce((a, s) => a + s.meanS, 0);
   return { totalS, stages, dominant, mttrS, lossOnlyS: totalS - mttrS };
 }
 

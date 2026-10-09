@@ -256,6 +256,10 @@ export interface StandbyResult {
   availability: number;
   failureFrequency: number;
   mttfFromNew: number;
+  /** successful switchovers per hour (active failure while a standby exists) */
+  switchFrequency: number;
+  /** probability of sitting in a switch-failed state */
+  switchFailedProbability: number;
 }
 
 /**
@@ -271,6 +275,8 @@ export function standby(
   standbyFactor = 0,
   pSwitch = 1,
   crews: number = Infinity,
+  /** rate at which a failed switchover is cleared (v2: 1/T_sf); default μ (v1 behaviour) */
+  switchRepairRate?: number,
 ): StandbyResult {
   if (!(n >= 1)) throw new RangeError('standby: n ≥ 1');
   // States: j = failed units (0..n) → index j; switch-down states SW_j (j = 0..n−1) → index n+1+j
@@ -285,14 +291,19 @@ export function standby(
     if (pSwitch < 1) tr.push({ from: j, to: n + 1 + j, rate: lambda * (1 - pSwitch) });
   }
   for (let j = 1; j <= n; j++) tr.push({ from: j, to: j - 1, rate: Math.min(j, crews) * mu });
-  for (let j = 0; j < n; j++) tr.push({ from: n + 1 + j, to: j + 1, rate: mu }); // switch repaired; the failed unit is now counted
+  const swRate = switchRepairRate ?? mu;
+  for (let j = 0; j < n; j++) tr.push({ from: n + 1 + j, to: j + 1, rate: swRate }); // switch repaired; the failed unit is now counted
   const chain = new Ctmc(states, tr);
   let availability = 1;
   let failureFrequency = 0;
+  let switchFrequency = 0;
+  let switchFailedProbability = 0;
   if (mu > 0) {
     const pi = chain.steadyState();
     availability = chain.availability(pi);
     failureFrequency = chain.failureFrequency(pi);
+    for (let j = 0; j <= n - 2; j++) switchFrequency += pi[j] * lambda * pSwitch;
+    for (let j = 0; j < n; j++) switchFailedProbability += pi[n + 1 + j];
   } else {
     availability = 0;
   }
@@ -300,7 +311,7 @@ export function standby(
   absorbing.add(n);
   for (let j = 0; j < n; j++) absorbing.add(n + 1 + j);
   const mttfFromNew = lambda > 0 ? chain.meanTimeToAbsorption(absorbing, 0) : Infinity;
-  return { availability, failureFrequency, mttfFromNew };
+  return { availability, failureFrequency, mttfFromNew, switchFrequency, switchFailedProbability };
 }
 
 export interface DegradedUnitResult {

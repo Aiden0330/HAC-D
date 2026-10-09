@@ -5,8 +5,45 @@
  * and infrastructure redundancy (worked example 5).
  */
 import type { Block, LeafBlock } from '../rbd/index.js';
+import { manualOnly, meanRepairH, isDual, subhealthRateFromProbability, SUBHEALTH_THRESHOLD_DEFAULT, type DualRepair, type Subhealth, type Switchover } from '../ctmc/repair.js';
 import { toPerHour } from '../units/index.js';
-import type { Scenario, Component, BlockInput } from './schema.js';
+import type { Scenario, Component, BlockInput, SwitchoverInput } from './schema.js';
+
+/** Resolve a component's repair input (legacy `mttrHours` or v2 auto/manual paths) into a DualRepair. */
+export function repairOf(c: Component): DualRepair {
+  const manual = c.repair.manual?.mttrHours ?? c.repair.mttrHours ?? 0;
+  if (c.repair.auto && c.repair.auto.coverage > 0) {
+    return { coverage: c.repair.auto.coverage, successProbability: c.repair.auto.successProbability, autoMttrH: c.repair.auto.mttrHours, manualMttrH: manual };
+  }
+  return manualOnly(manual);
+}
+
+/** Resolve a component's sub-health input (v2 `subhealth`, else the v1 `failslow` alias) into a Subhealth spec. */
+export function componentSubhealth(c: Component, threshold = SUBHEALTH_THRESHOLD_DEFAULT): Subhealth | undefined {
+  if (c.subhealth) {
+    const sh = c.subhealth;
+    const rate = sh.ratePerHour ?? subhealthRateFromProbability(sh.steadyStateProbability ?? 0, sh.durationHours).ratePerHour;
+    return {
+      ratePerHour: rate,
+      durationH: sh.durationHours,
+      performance: sh.performance,
+      escalationMultiplier: sh.escalationMultiplier,
+      policy: sh.policy,
+      detection: sh.detection ? { probability: sh.detection.probability, delayH: sh.detection.delayHours } : undefined,
+      threshold: sh.threshold ?? threshold,
+    };
+  }
+  if (c.failslow && c.failslow.ratePerHour > 0) {
+    return { ratePerHour: c.failslow.ratePerHour, durationH: c.failslow.durationHours, performance: c.failslow.capacity, escalationMultiplier: 1, policy: 'tolerate', threshold: 0 };
+  }
+  return undefined;
+}
+
+function switchoverOf(sw: SwitchoverInput | undefined, fallbackP?: number): Switchover | undefined {
+  if (sw) return { successProbability: sw.successProbability, outageS: sw.outageS, failureRecoveryHours: sw.failureRecoveryHours };
+  if (fallbackP !== undefined && fallbackP < 1) return { successProbability: fallbackP };
+  return undefined;
+}
 
 export interface Counts {
   gpus: number;
@@ -48,10 +85,15 @@ export interface ComponentInstances {
   lambda: number;
   /** independent part (1 − β) λ */
   lambdaIndependent: number;
+  /** mean repair time E[R] over both paths, hours */
   mttr: number;
+  /** v2 repair paths */
+  repair: DualRepair;
+  /** v2 sub-health (or the v1 fail-slow alias) */
+  subhealth?: Subhealth;
 }
 
-export function componentInstances(c: Component, counts: Counts): ComponentInstances {
+export function componentInstances(c: Component, counts: Counts, subhealthThreshold = SUBHEALTH_THRESHOLD_DEFAULT): ComponentInstances {
   let instances = 1;
   let unitsPerInstance = 1;
   switch (c.countRule.per) {
@@ -78,6 +120,7 @@ export function componentInstances(c: Component, counts: Counts): ComponentInsta
   }
   const lambda = toPerHour(c.failure.value, c.failure.unit);
   const beta = c.ccf?.beta ?? 0;
+  const repair = repairOf(c);
   return {
     component: c,
     instances,
@@ -85,7 +128,9 @@ export function componentInstances(c: Component, counts: Counts): ComponentInsta
     total: instances * unitsPerInstance,
     lambda,
     lambdaIndependent: lambda * (1 - beta),
-    mttr: c.repair.mttrHours,
+    mttr: meanRepairH(repair),
+    repair,
+    subhealth: componentSubhealth(c, subhealthThreshold),
   };
 }
 
@@ -97,9 +142,10 @@ function leafFor(ci: ComponentInstances, count: number, idSuffix = ''): LeafBloc
     name: c.name?.en ?? c.name?.zh ?? c.id,
     count,
     lambda: ci.lambdaIndependent,
-    mttr: ci.mttr,
+    mttr: ci.repair.manualMttrH,
   };
-  if (c.failslow) leaf.degraded = { lambda: c.failslow.ratePerHour, durationH: c.failslow.durationHours, capacity: c.failslow.capacity };
+  if (isDual(ci.repair)) leaf.repair = ci.repair;
+  if (ci.subhealth) leaf.subhealth = ci.subhealth;
   if (c.failure.koujing) leaf.koujing = c.failure.koujing;
   return leaf;
 }
@@ -113,13 +159,14 @@ export function componentBlock(ci: ComponentInstances): Block {
   let group: Block;
   switch (red.scheme) {
     case 'parallel':
-      group = { kind: 'parallel', id: c.id + ':group', name: `${unit.name} (1-of-${ci.unitsPerInstance})`, children: Array.from({ length: ci.unitsPerInstance }, (_, i) => ({ ...unit, id: `${c.id}:u${i}` })) };
+      // identical units: use the exact k-of-n chain (k = 1) so dual repair and switchover are modelled exactly
+      group = { kind: 'kofn', id: c.id + ':group', name: `${unit.name} (1-of-${ci.unitsPerInstance})`, n: red.n ?? ci.unitsPerInstance, k: 1, unit, capacityMode: red.capacityMode ?? 'binary', switchover: switchoverOf(red.switchover) };
       break;
     case 'kofn':
-      group = { kind: 'kofn', id: c.id + ':group', name: `${unit.name} (${red.k ?? ci.unitsPerInstance - 1}-of-${red.n ?? ci.unitsPerInstance})`, n: red.n ?? ci.unitsPerInstance, k: red.k ?? ci.unitsPerInstance - 1, unit, capacityMode: red.capacityMode ?? 'binary' };
+      group = { kind: 'kofn', id: c.id + ':group', name: `${unit.name} (${red.k ?? ci.unitsPerInstance - 1}-of-${red.n ?? ci.unitsPerInstance})`, n: red.n ?? ci.unitsPerInstance, k: red.k ?? ci.unitsPerInstance - 1, unit, capacityMode: red.capacityMode ?? 'binary', switchover: switchoverOf(red.switchover) };
       break;
     case 'standby':
-      group = { kind: 'standby', id: c.id + ':group', name: `${unit.name} (standby ×${ci.unitsPerInstance})`, n: red.n ?? ci.unitsPerInstance, unit, standbyFactor: red.standbyFactor ?? 0, switchProbability: red.switchProbability ?? 1 };
+      group = { kind: 'standby', id: c.id + ':group', name: `${unit.name} (standby ×${ci.unitsPerInstance})`, n: red.n ?? ci.unitsPerInstance, unit, standbyFactor: red.standbyFactor ?? 0, switchProbability: red.switchover?.successProbability ?? red.switchProbability ?? 1, switchover: switchoverOf(red.switchover) };
       break;
   }
   return ci.instances > 1 ? { kind: 'repeat', id: c.id, name: unit.name, count: ci.instances, unit: group } : { ...group, id: c.id };
@@ -132,6 +179,7 @@ export interface Redundancy {
   capacityMode?: 'binary' | 'proportional' | 'fractional';
   standbyFactor?: number;
   switchProbability?: number;
+  switchover?: SwitchoverInput;
 }
 
 /** Common-cause leaves: one per domain, rate β·Σ(λ·count) of the members, repair = longest member MTTR. */
@@ -160,7 +208,7 @@ const PER_UNIT_SCOPES = new Set(['gpu', 'node']);
 
 /** Build the block tree for the scenario's structure mode. */
 export function buildStructure(s: Scenario, counts: Counts): { root: Block; items: ComponentInstances[]; notes: string[] } {
-  const items = s.components.filter((c) => c.enabled).map((c) => componentInstances(c, counts));
+  const items = s.components.filter((c) => c.enabled).map((c) => componentInstances(c, counts, s.measures.subhealthThreshold));
   const notes: string[] = [];
   if (s.structure.mode === 'custom') {
     return { root: resolveCustom(s.structure.root, items), items, notes };
@@ -213,11 +261,11 @@ function resolveCustom(b: BlockInput, items: ComponentInstances[]): Block {
     case 'series':
       return { kind: 'series', id: b.id, name: b.name, children: b.children.map((c) => resolveCustom(c, items)) };
     case 'parallel':
-      return { kind: 'parallel', id: b.id, name: b.name, children: b.children.map((c) => resolveCustom(c, items)) };
+      return { kind: 'parallel', id: b.id, name: b.name, children: b.children.map((c) => resolveCustom(c, items)), switchover: switchoverOf(b.switchover) };
     case 'kofn':
-      return { kind: 'kofn', id: b.id, name: b.name, n: b.n, k: b.k, unit: resolveCustom(b.unit, items), crews: b.crews, capacityMode: b.capacityMode };
+      return { kind: 'kofn', id: b.id, name: b.name, n: b.n, k: b.k, unit: resolveCustom(b.unit, items), crews: b.crews, capacityMode: b.capacityMode, switchover: switchoverOf(b.switchover) };
     case 'standby':
-      return { kind: 'standby', id: b.id, name: b.name, n: b.n, unit: resolveCustom(b.unit, items), standbyFactor: b.standbyFactor, switchProbability: b.switchProbability, crews: b.crews };
+      return { kind: 'standby', id: b.id, name: b.name, n: b.n, unit: resolveCustom(b.unit, items), standbyFactor: b.standbyFactor, switchProbability: b.switchover?.successProbability ?? b.switchProbability, crews: b.crews, switchover: switchoverOf(b.switchover) };
   }
 }
 

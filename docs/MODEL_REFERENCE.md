@@ -66,3 +66,89 @@ Event-driven simulation of one synchronous job: units with exponential or mean-m
 ## 9. Validation
 
 `packages/core/test/golden/golden.json` holds 143 cases computed independently in Python (mpmath/scipy) from the formulas above and the survey's worked examples (Tables 6-5 to 6-8, Daly 2006, Saxena 2024, TrainMover, Ironwood k-of-n, ByteRobust P99, textbook CTMC results, Benoit replication, Weibull/lognormal fits). 120 match the survey's printed numbers exactly, 4 at rounding level; the 4 discrepancies (Epoch replica model inputs, Meta Table 6-3 selection criterion, a goodput ratio) are documented in `golden-report.md` and are not engine issues.
+
+---
+
+# v2 additions (plan `PLAN_V2_AVAILABILITY_ENHANCEMENTS.md`)
+
+Rates are per hour, times in hours unless marked (s). Every quantity below is implemented in `packages/core` and covered by the v2 golden vectors (`test/golden/golden_v2.json`, computed independently in Python).
+
+## 10. Dual-path repair: automatic vs manual (自动恢复 / 人工修复)
+
+Unit parameters: failure rate λ; automatic coverage `c ∈ [0,1]` (share of failures that take the automatic path); automatic success probability `s ∈ [0,1]`; mean automatic recovery time `T_a`; mean manual repair time `T_m`. Legacy input `mttrHours` means `c = 0, T_m = mttrHours`.
+
+CTMC states `U` (up), `D_a` (down, automatic path), `D_m` (down, manual path):
+
+| from → to | rate |
+|---|---|
+| U → D_a | λ·c |
+| U → D_m | λ·(1−c) |
+| D_a → U | s / T_a |
+| D_a → D_m | (1−s) / T_a |
+| D_m → U | 1 / T_m |
+
+Mean repair time `E[R] = c·T_a + (1 − c·s)·T_m`; availability `A = π_U = 1/(1 + λ·E[R])` (alternating renewal; exact for any repair distribution with this mean); failure frequency `ν = λ·π_U`; automatic share of downtime `π_Da/(π_Da+π_Dm) = c·T_a/E[R]`; human fraction (events that reach a person) `1 − c·s`.
+
+## 11. k-of-n group with dual repair and switchover (倒换成功率)
+
+`n` identical active units (λ each), `k` required, repair parameters as §10, manual repair crews `r` (automatic recoveries are not crew-limited), switchover success probability `p_sw`, successful-switchover outage `t_sw` (s), switch-failure recovery time `T_sf`.
+
+States `(a, m)`: `a` units in automatic recovery, `m` in manual repair, `w = n − a − m` working; up iff `w ≥ k`. Switch-failed states `S(a, m)` (down) exist for every `(a, m)` with `w − 1 ≥ k`.
+
+| from → to | rate | condition |
+|---|---|---|
+| (a,m) → (a+1,m) | w·λ·c·p_sw | w−1 ≥ k (survivable failure) |
+| (a,m) → (a,m+1) | w·λ·(1−c)·p_sw | w−1 ≥ k |
+| (a,m) → S(a,m) | w·λ·(1−p_sw) | w−1 ≥ k |
+| (a,m) → (a+1,m) | w·λ·c | w−1 < k (group goes down regardless) |
+| (a,m) → (a,m+1) | w·λ·(1−c) | w−1 < k |
+| (a,m) → (a−1,m) | a·s / T_a | a ≥ 1 |
+| (a,m) → (a−1,m+1) | a·(1−s) / T_a | a ≥ 1 |
+| (a,m) → (a,m−1) | min(m, r) / T_m | m ≥ 1 |
+| S(a,m) → (a,m+1) | 1 / T_sf | |
+
+Outputs: `A = Σ_up π`; `ν` = probability flux from up to down states; capacity `binary` (1 if up), `proportional` (w/n), `fractional` (min(1, w/k)); successful-switchover micro-outage `U_sw = Σ_{(a,m) up, w−1≥k} π(a,m)·w·λ·p_sw·t_sw/3600`, reported separately and subtracted first-order (`A_eff = A − U_sw`, flagged if `U_sw > 0.1·(1−A)`); every successful switchover with `t_sw > 0` is counted as an interruption in `ν_eff`; MTTF from new = mean first passage from (0,0) to any down state. With `c = 0` and `p_sw = 1` the chain reduces to the v1 `kOfNRepairable(n, k, λ, 1/T_m, r)`. Groups with more than 700 states fall back to the v1 one-dimensional chain with `E[R]` from §10 and no switch states; the result is flagged `approximate repair mixture`.
+
+## 12. Parallel (1-of-n, heterogeneous children) with switchover — first order
+
+`U_perfect = Π_i U_i` (v1). With switchover `(p_sw, t_sw, T_sf)`: `U ≈ U_perfect + Σ_i ν_i·(1−p_sw)·T_sf + Σ_i ν_i·p_sw·t_sw/3600`, where `ν_i` is child i's failure frequency. Flagged `first-order` when the added term exceeds `0.1·(1 − U_perfect)` or `U_perfect > 0.01`.
+
+## 13. Standby with switchover (v1 extension)
+
+v1 `standby(n, λ, μ, f, p_sw, crews)` is kept; v2 adds `T_sf` (switch-failed state cleared at `1/T_sf` instead of `μ`) and the micro-outage `U_sw = Σ_{j ≤ n−2} π_j·λ·p_sw·t_sw/3600` (a switch happens only while a standby exists).
+
+## 14. Sub-health unit (亚健康)
+
+Parameters: λ and repair (§10); sub-health entry rate `λ_sh` or steady-state probability `p_sh` (converted `λ_sh = p_sh/((1−p_sh)·D)`, flagged when `m·λ·D > 0.1`); mean sub-health duration `D`; performance `φ ∈ (0,1)` while sub-healthy; escalation multiplier `m` (failure rate `m·λ` while sub-healthy); policy `tolerate` or `isolate` with detection probability `p_d` and mean detection delay `T_d`; threshold `φ_min` (default 0.7, MindCluster's 30 % degradation rule).
+
+States: `U`, `H` (sub-healthy, not yet decided), `H'` (sub-healthy, undetected / tolerated), `I` (isolated: handled by the automatic path, down), `D_a`, `D_m`.
+
+| from → to | rate | policy |
+|---|---|---|
+| U → H | λ_sh | both |
+| U → D_a / D_m | λ·c / λ·(1−c) | both |
+| H → U | 1/D | both |
+| H → D_a / D_m | m·λ·c / m·λ·(1−c) | both |
+| H → I | p_d / T_d | isolate |
+| H → H' | (1−p_d) / T_d | isolate |
+| H' → U | 1/D | isolate |
+| H' → D_a / D_m | m·λ·c / m·λ·(1−c) | isolate |
+| I → U | s / T_a | isolate |
+| I → D_m | (1−s) / T_a | isolate |
+| D_a → U, D_a → D_m, D_m → U | as §10 | both |
+
+Measures: `A_strict = π_U`; `A_tolerant = π_U + π_H + π_H'`; `A_perf = π_U + φ·(π_H + π_H')` (performability); `A_threshold = π_U + [φ ≥ φ_min]·(π_H + π_H')` is the block's reported availability. `I`, `D_a`, `D_m` are down in every measure. Failure frequency = flux from the up set (threshold rule) into the down set. Detected-isolation frequency `ν_iso = π_H·p_d/T_d` per unit. With `m = 1`, `c = 0`, policy tolerate and `φ_min ≤ φ` the unit reduces to the v1 `degradedUnit`.
+
+Synchronous job of `N` units (straggler law, tolerate): `p_H = (π_H + π_H')/(π_U + π_H + π_H')` (sub-healthy given not down); `P(job slowed) = 1 − (1 − p_H)^N`; job performance factor `E[φ_job] = 1 − P(job slowed)·(1 − φ)` (exact under independence since any slow unit slows the step to φ). Policy isolate adds `N·ν_iso` to the job interruption rate and the undetected share keeps slowing the job.
+
+## 15. Fabric plane loss as performance degradation
+
+`P` equal planes, communication share `f_comm` of the step time: losing one plane multiplies the step time by `1 + f_comm/(P−1)`, so `φ_plane = 1/(1 + f_comm/(P−1))` (CloudMatrix384: P = 7, f_comm = 0.3 → φ ≈ 0.952).
+
+## 16. Recovery ladder (MindCluster-style, 分级恢复)
+
+Rungs `i = 1..L` with kind (`auto`/`manual`), success probability `s_i` (last rung `s_L = 1`) and time `t_i(N)` (a v1 stage with scale law). `P_i = Π_{j<i}(1 − s_j)`, `E[T] = Σ_i P_i·t_i`, share of rung i = `P_i·t_i/E[T]`, probability of needing a person = `P_{first manual rung}`. The ladder replaces the v1 pipeline as `R(N)` in the goodput formulas.
+
+## 17. Original and compensated measures (原始 / 补偿后)
+
+Original transform of a block tree: leaf → two-state unit with `λ_o = λ + λ_sh` and `E[R_o] = (λ·T_m + λ_sh·D)/(λ + λ_sh)` (every fault is an outage, manual repair, sub-health counted as an outage of duration D); `kofn(n, k, unit)` → `n` copies of the unit in series; `parallel(children)` → series of the children; `standby(n, unit)` → the primary unit alone; `repeat` unchanged. Waterfall steps, each evaluated on the whole tree: 0 original; 1 + redundancy (structure restored, configured switchover, manual-only repair `c = 0`, sub-health strict); 2 + automatic recovery (`c, s, T_a` as configured); 3 + sub-health policy (threshold/tolerant measure and isolation as configured) = compensated. Also reported: switchover penalty `A(p_sw = 1, t_sw = 0) − A(configured)` at step 3, and performability at step 3. Compensation gain = ΔA, MTBF ratio, MTTR ratio between steps 0 and 3.
