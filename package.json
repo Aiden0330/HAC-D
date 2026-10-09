@@ -12,7 +12,8 @@
     "test": "npm run test -w @hac-d/core && npm run test -w @hac-d/importers",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "dev": "npm run dev -w @hac-d/web"
+    "dev": "npm run dev -w @hac-d/web",
+    "shots": "node scripts/screenshots.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

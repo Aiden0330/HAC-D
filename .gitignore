@@ -7,3 +7,4 @@ data-staging/
 .vite/
 playwright-report/
 test-results/
+shots/

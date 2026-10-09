@@ -29,11 +29,20 @@ function sheetFromRows(rows: Row[]): XLSX.WorkSheet {
 
 const col = (c: number) => XLSX.utils.encode_col(c);
 
+/** plain decimal literal for a formula (no exponent notation: some evaluators mis-parse `1e-5`) */
+function lit(x: number): string {
+  if (!Number.isFinite(x)) return '0';
+  if (x === 0) return '0';
+  const mag = Math.floor(Math.log10(Math.abs(x)));
+  const decimals = Math.min(30, Math.max(0, 15 - mag));
+  return x.toFixed(decimals).replace(/\.?0+$/, '');
+}
+
 export function exportWorkbook(s: Scenario, r: EvaluationResult): Uint8Array {
   const wb = XLSX.utils.book_new();
 
   // ---- Inputs ----
-  const inputsHeader: Row = ['id', 'name', 'count', 'λ (/h)', 'auto coverage c', 'auto success s', 'T_auto (h)', 'T_manual (h)', 'E[R] (h) = c·T_a + (1 − c·s)·T_m', 'A_unit = 1/(1 + λ·E[R])', 'A_class = A_unit^count', 'HAC-D λ_aggregate (/h)', 'confidence', '口径'];
+  const inputsHeader: Row = ['id', 'name', 'count', 'λ (/h)', 'β (CCF share)', 'λ_indep = λ·(1 − β)', 'auto coverage c', 'auto success s', 'T_auto (h)', 'T_manual (h)', 'E[R] (h) = c·T_a + (1 − c·s)·T_m', 'A_unit = 1/(1 + λ_indep·E[R])', 'A_class = A_unit^count', 'HAC-D λ_aggregate (/h)', 'confidence', '口径'];
   const inputs: Row[] = [inputsHeader];
   const inputRow = new Map<string, number>(); // component id → 1-based row
   for (const c of r.components) {
@@ -47,13 +56,15 @@ export function exportWorkbook(s: Scenario, r: EvaluationResult): Uint8Array {
       c.name,
       c.count,
       c.lambdaPerUnitPerHour,
+      comp.ccf?.beta ?? 0,
+      { f: `D${rr}*(1-E${rr})` },
       cov,
       suc,
       c.mttrAutoHours ?? 0,
       c.mttrManualHours ?? c.mttrHours,
-      { f: `E${rr}*G${rr}+(1-E${rr}*F${rr})*H${rr}` },
-      { f: `1/(1+D${rr}*I${rr})` },
-      { f: `J${rr}^C${rr}` },
+      { f: `G${rr}*I${rr}+(1-G${rr}*H${rr})*J${rr}` },
+      { f: `1/(1+F${rr}*K${rr})` },
+      { f: `L${rr}^C${rr}` },
       c.lambdaAggregatePerHour,
       c.confidence ?? comp.failure.provenance?.confidence ?? '',
       c.koujing ?? '',
@@ -86,9 +97,18 @@ export function exportWorkbook(s: Scenario, r: EvaluationResult): Uint8Array {
   walk(r.structure.root, 0);
   order.forEach(({ b }, i) => rowOfBlock.set(b.id, i + 2));
   const refA = (id: string) => `H${rowOfBlock.get(id)}`;
-  const compOf = (leafId: string) => {
-    const base = leafId.split('#')[0].split(':')[0];
-    return inputRow.get(base);
+  /** Inputs row of the component class a leaf was built from — only when the leaf carries the class's own λ and E[R] (template-derived units such as the hot-spare node pool reuse an id with other parameters) */
+  const compOf = (b: Extract<Block, { kind: 'leaf' }>) => {
+    const base = b.id.split('#')[0].split(':')[0];
+    const rr = inputRow.get(base);
+    if (!rr) return undefined;
+    const c = r.components.find((x) => x.id === base);
+    const comp = s.components.find((x) => x.id === base);
+    if (!c || !comp) return undefined;
+    const lamInd = c.lambdaPerUnitPerHour * (1 - (comp.ccf?.beta ?? 0));
+    const er = b.repair ? b.repair.coverage * b.repair.autoMttrH + (1 - b.repair.coverage * b.repair.successProbability) * b.repair.manualMttrH : b.mttr;
+    const close = (x: number, y: number) => Math.abs(x - y) <= 1e-9 * Math.max(1, Math.abs(x), Math.abs(y));
+    return close(b.lambda, lamInd) && close(er, c.mttrHours) ? rr : undefined;
   };
   for (const { b, depth } of order) {
     const res = byId.get(b.id);
@@ -97,10 +117,16 @@ export function exportWorkbook(s: Scenario, r: EvaluationResult): Uint8Array {
     let note = '';
     switch (b.kind) {
       case 'leaf': {
-        const ir = compOf(b.id);
+        const ir = compOf(b);
         const count = Math.max(1, Math.round(b.count ?? 1));
-        formula = ir ? { f: `Inputs!J${ir}^${count}` } : null;
-        if (b.subhealth) note = 'sub-health modelled by HAC-D (not expressible as a cell formula)';
+        if (ir) formula = { f: `Inputs!L${ir}^${count}` };
+        else {
+          // synthetic unit built by a template (node pool, replica, common cause): embed its λ and E[R]
+          const er = b.repair ? b.repair.coverage * b.repair.autoMttrH + (1 - b.repair.coverage * b.repair.successProbability) * b.repair.manualMttrH : b.mttr;
+          formula = { f: `(1/(1+${lit(b.lambda)}*${lit(er)}))^${count}` };
+          note = `synthetic unit: λ = ${b.lambda.toPrecision(6)} /h and E[R] = ${er.toPrecision(6)} h embedded`;
+        }
+        if (b.subhealth) note = (note ? note + '; ' : '') + 'sub-health modelled by HAC-D (not expressible as a cell formula)';
         if (b.repair && b.repair.coverage > 0) note = (note ? note + '; ' : '') + 'dual-path repair via E[R]';
         break;
       }
@@ -112,11 +138,11 @@ export function exportWorkbook(s: Scenario, r: EvaluationResult): Uint8Array {
         if (b.switchover) note = `switchover success ${b.switchover.successProbability} modelled by HAC-D (§11/§12), not in the cell formula`;
         break;
       case 'kofn':
-        formula = { f: `BINOM.DIST(${b.n - b.k},${b.n},1-${refA(b.unit.id)},TRUE)` };
+        formula = { f: `_xlfn.BINOM.DIST(${b.n - b.k},${b.n},1-${refA(b.unit.id)},TRUE)` };
         note = 'binomial with independent units (unlimited repair crews)' + (b.switchover ? `; switchover success ${b.switchover.successProbability} only in HAC-D` : '') + (b.crews ? '; crew limit only in HAC-D' : '');
         break;
       case 'standby':
-        formula = { f: `BINOM.DIST(${b.n - 1},${b.n},1-${refA(b.unit.id)},TRUE)` };
+        formula = { f: `_xlfn.BINOM.DIST(${b.n - 1},${b.n},1-${refA(b.unit.id)},TRUE)` };
         note = 'hot-standby approximation of the standby chain (standby factor and switch probability only in HAC-D)';
         break;
       case 'repeat':
