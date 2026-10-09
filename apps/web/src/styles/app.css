@@ -24,7 +24,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topbar .brand { display: flex; flex-direction: column; line-height: 1.15; }
 .topbar .brand .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .topbar .spacer { flex: 1; }
-.topbar .scenario-select { max-width: 320px; }
+.topbar .scenario-select { max-width: 320px; min-width: 0; }
+.topbar .scenario-select select { max-width: 100%; }
+@media (max-width: 760px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
+  .topbar .brand { flex: 1 1 auto; }
+  .topbar .scenario-select { order: 3; flex: 1 1 100%; max-width: none; }
+  .topbar .scenario-select label { display: none; }
+  .topbar .spacer { display: none; }
+}
 .nav { display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; background: var(--surface); border-bottom: 1px solid var(--rule); }
 .nav button {
   background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 12px; color: var(--ink-2); cursor: pointer; white-space: nowrap;

@@ -331,3 +331,26 @@ Defaults I will take unless you say otherwise:
 - Repository initialised with git in this folder; static deployment target left open (GitHub Pages or a single HTML file both supported).
 - No Claude-API copilot in v1; MCP server is in P6.
 - English code and docs; bilingual UI strings.
+
+---
+
+## 13. Status (2026-10-09)
+
+Decisions taken: hybrid client-first architecture; bilingual zh/en UI; full v1 scope; direct build with subagents for independent verification and library curation.
+
+| Phase | Status | Evidence |
+|---|---|---|
+| P0 Specs | done | this plan; `docs/MODEL_REFERENCE.md`; zod schema with JSON-Schema export; 143 golden vectors computed independently (`packages/core/test/golden`) |
+| P1 Core | done | `packages/core`: 245 tests green (goldens, textbook CTMC identities, worked examples 1–4, Daly/Saxena/TrainMover/Ironwood/ByteRobust, allocation methods, MC chunking); CLI `eval/compare/allocate/tornado/simulate` |
+| P2 Web app | done | Scenario editor (forms, component table, recovery pipeline editor, JSON editor, RBD diagram), Training, Inference, Spares, Library pages; bilingual; light/dark; checked at 1280×900 and 375×812 |
+| P3 Decision layer | done | Allocation page (6 methods + goodput budget + stage budgets + availability split), Compare page (KPI matrix, bars, tornado), cost module |
+| P4 Simulation | done | Monte Carlo DES in a Web Worker with progress; agreement badge vs closed form (worked example 1: 95.65 % ± 0.06 vs 95.51 %) |
+| P5 Report & polish | done (initial) | Report page: checklist, importance, cut sets, exports (HTML report, CSV, JSON); README, model reference, user guide; project skills `model-check`, `add-parameter`, `scenario-review`, `release-check` |
+| P6 Optional | partly | MCP server (`packages/mcp`, 9 tools) done; incident-log fitting, copilot and Python compute service not started |
+
+Known gaps and next steps:
+- Playwright automation of the browser checks is not set up (checks were done manually in the built-in browser); `release-check` documents the manual procedure.
+- Fault-tree and Markov-chain diagrams are not drawn (the RBD diagram and cut-set table cover the structure).
+- Inference workloads are not simulated by the Monte Carlo module (training only).
+- The CCF treatment in the closed forms is conservative (β·Σλ over all domain instances); the simulator uses blast radii.
+- Library records are not yet editable from the UI beyond "use as rate"; adding records goes through the `add-parameter` skill.
