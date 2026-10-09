@@ -1,0 +1,3014 @@
+{
+  "version": "1.0",
+  "generated": "2026-10-09",
+  "generator": "packages/importers/test/fixtures/make_fixtures.py",
+  "command": "uv run --with openpyxl python packages/importers/test/fixtures/make_fixtures.py",
+  "data_disclaimer": "All parameter values are synthetic round numbers chosen to exercise the importer; none are vendor, paper or measured data.",
+  "conventions": {
+    "cell_address": "'Sheet!A1' (sheet name without quotes, 1-based rows)",
+    "formulas": "exact strings stored in the file; openpyxl writes no cached values, so a reader must evaluate them (post-2007 functions carry the _xlfn. prefix, which SheetJS strips by default)",
+    "expected_values": "one number per formula cell, computed in Python with IEEE-754 doubles following the formula's own operation order; compare with the per-workbook tolerance (rel OR abs)",
+    "expected_methods": "list of {tag, cells, optional_cells?, note?}; a cell may carry several tags (e.g. switchover_weighted and parallel_product_complement on the same cell). Tests should assert cells ⊆ detected ⊆ cells ∪ optional_cells per tag",
+    "untagged_formula_cells": "formula cells that match no catalogue tag (complements, pass-throughs, differences, 1/MTBF); listed so a fingerprinter can be checked for false positives",
+    "columns": "role -> column letter; base roles: name, level, count, mtbf_h, mttr_h, fit, lambda_per_h, availability, unavailability, redundancy, switchover_success, auto_fraction, mttr_auto_h, mttr_manual_h, mttr_effective_h, notes; extension roles used here: unit_availability (F2, F3), afr_pct_per_year and availability_pct (F9)",
+    "tree_node": {
+      "name": "trimmed display name",
+      "kind": "leaf | series | parallel | kofn",
+      "count": "number of identical copies of the node in series that the engine must apply (A_node = A^count); 1 when the sheet does not apply the quantity",
+      "qty_cell": "raw value of the quantity column (informational; equals n on homogeneous redundancy rows, may be ignored by the sheet as in F4)",
+      "k, n": "voting parameters; parallel means k = 1; null for leaf and series",
+      "homogeneous": "true when the row describes n identical units whose parameters are in params and children is empty",
+      "params": "input values exactly as stored (numbers; redundancy text)",
+      "derived": "values of formula cells belonging to the row (λ from FIT, MTTR_eff, μ, MTBF from AFR)",
+      "cells": "role -> cell address for every parameter and result cell (provenance)",
+      "source_row": "1-based row of the node",
+      "alt_cells": "other cells computing the same node's availability with another method",
+      "children": "ordered list of nodes"
+    },
+    "evaluation": {
+      "leaf": "A_unit = mtbf/(mtbf+mttr), or 1/(1+λ·mttr) when λ is given, or the percent/100; A = A_unit^count",
+      "series": "Π A_child",
+      "parallel": "homogeneous: 1-(1-A_unit)^n, with switchover success c: c·(1-(1-A_unit)^n) + (1-c)·A_unit; heterogeneous (F6/F7): 1-Π(1-A_child)",
+      "kofn": "Σ_{i=k..n} C(n,i)·A_unit^i·(1-A_unit)^(n-i)",
+      "ctmc (F5)": "3-state chain with one repair crew; availability = π(2 up)+π(1 up)"
+    }
+  },
+  "method_tags": [
+    "availability_mtbf_mttr",
+    "availability_lambda_mttr",
+    "unavailability_lambda_mttr",
+    "fit_to_lambda",
+    "afr_to_mtbf",
+    "series_product",
+    "series_rare_event_sum",
+    "parallel_product_complement",
+    "kofn_explicit_sum",
+    "kofn_combin",
+    "kofn_binom_dist",
+    "standby_exp",
+    "switchover_weighted",
+    "mttr_mixture_auto_manual",
+    "markov_mmult_minverse",
+    "percent_to_fraction"
+  ],
+  "method_coverage": {
+    "availability_mtbf_mttr": [
+      "F1",
+      "F3",
+      "F6",
+      "F7",
+      "F8",
+      "F9"
+    ],
+    "availability_lambda_mttr": [
+      "F2",
+      "F4",
+      "F5"
+    ],
+    "unavailability_lambda_mttr": [
+      "F8"
+    ],
+    "fit_to_lambda": [
+      "F2"
+    ],
+    "afr_to_mtbf": [
+      "F9"
+    ],
+    "series_product": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F6",
+      "F7",
+      "F8",
+      "F9"
+    ],
+    "series_rare_event_sum": [
+      "F1",
+      "F8"
+    ],
+    "parallel_product_complement": [
+      "F2",
+      "F5",
+      "F6",
+      "F7"
+    ],
+    "kofn_explicit_sum": [
+      "F3"
+    ],
+    "kofn_combin": [
+      "F3"
+    ],
+    "kofn_binom_dist": [
+      "F3"
+    ],
+    "standby_exp": [
+      "F5"
+    ],
+    "switchover_weighted": [
+      "F2"
+    ],
+    "mttr_mixture_auto_manual": [
+      "F4"
+    ],
+    "markov_mmult_minverse": [
+      "F5"
+    ],
+    "percent_to_fraction": [
+      "F9"
+    ]
+  },
+  "workbooks": [
+    {
+      "id": "F1",
+      "file": "series_basic_en.xlsx",
+      "title": "Series system, English headers, per-unit availability raised to the quantity",
+      "language": "en",
+      "sheets": [
+        "Series"
+      ],
+      "sheet": "Series",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        9
+      ],
+      "headers": {
+        "A": "Component",
+        "B": "Qty",
+        "C": "MTBF (h)",
+        "D": "MTTR (h)",
+        "E": "Availability",
+        "F": "Unavailability"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "mtbf_h": "C",
+        "mttr_h": "D",
+        "availability": "E",
+        "unavailability": "F"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "System (series)",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "Series!E8",
+          "unavailability": "Series!F8"
+        },
+        "source_row": 8,
+        "alt_cells": {
+          "series_rare_event_sum": "Series!E9"
+        },
+        "children": [
+          {
+            "name": "GPU node",
+            "kind": "leaf",
+            "count": 8,
+            "qty_cell": 8,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 50000,
+              "mttr_h": 6
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A2",
+              "count": "Series!B2",
+              "mtbf_h": "Series!C2",
+              "mttr_h": "Series!D2",
+              "availability": "Series!E2",
+              "unavailability": "Series!F2"
+            },
+            "source_row": 2,
+            "children": []
+          },
+          {
+            "name": "Leaf switch",
+            "kind": "leaf",
+            "count": 4,
+            "qty_cell": 4,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 200000,
+              "mttr_h": 4
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A3",
+              "count": "Series!B3",
+              "mtbf_h": "Series!C3",
+              "mttr_h": "Series!D3",
+              "availability": "Series!E3",
+              "unavailability": "Series!F3"
+            },
+            "source_row": 3,
+            "children": []
+          },
+          {
+            "name": "Spine switch",
+            "kind": "leaf",
+            "count": 2,
+            "qty_cell": 2,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 300000,
+              "mttr_h": 4
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A4",
+              "count": "Series!B4",
+              "mtbf_h": "Series!C4",
+              "mttr_h": "Series!D4",
+              "availability": "Series!E4",
+              "unavailability": "Series!F4"
+            },
+            "source_row": 4,
+            "children": []
+          },
+          {
+            "name": "Storage array",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 100000,
+              "mttr_h": 12
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A5",
+              "count": "Series!B5",
+              "mtbf_h": "Series!C5",
+              "mttr_h": "Series!D5",
+              "availability": "Series!E5",
+              "unavailability": "Series!F5"
+            },
+            "source_row": 5,
+            "children": []
+          },
+          {
+            "name": "Power feed",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 500000,
+              "mttr_h": 8
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A6",
+              "count": "Series!B6",
+              "mtbf_h": "Series!C6",
+              "mttr_h": "Series!D6",
+              "availability": "Series!E6",
+              "unavailability": "Series!F6"
+            },
+            "source_row": 6,
+            "children": []
+          },
+          {
+            "name": "Cooling loop",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 150000,
+              "mttr_h": 24
+            },
+            "derived": {},
+            "cells": {
+              "name": "Series!A7",
+              "count": "Series!B7",
+              "mtbf_h": "Series!C7",
+              "mttr_h": "Series!D7",
+              "availability": "Series!E7",
+              "unavailability": "Series!F7"
+            },
+            "source_row": 7,
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "Series!E2",
+            "Series!E3",
+            "Series!E4",
+            "Series!E5",
+            "Series!E6",
+            "Series!E7"
+          ],
+          "note": "per-unit A = C/(C+D) raised to Qty: (C/(C+D))^B; the exponent is the series multiplicity"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "Series!E8"
+          ]
+        },
+        {
+          "tag": "series_rare_event_sum",
+          "cells": [
+            "Series!E9"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "1-<availability cell>",
+          "cells": [
+            "Series!F2",
+            "Series!F3",
+            "Series!F4",
+            "Series!F5",
+            "Series!F6",
+            "Series!F7",
+            "Series!F8",
+            "Series!F9"
+          ],
+          "why": "complement U = 1 - A; no catalogue tag"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "Qty is applied as an exponent inside the Availability formula ((C/(C+D))^B), so the leaf parameters are per unit and count = Qty.",
+        "Two system rows: row 8 (exact PRODUCT) and row 9 (1 - SUM(U) rare-event approximation) describe the same system; the tree root is row 8 and row 9 is an alternative-method cell."
+      ],
+      "extra": {
+        "rare_event_vs_exact_abs_difference": 4.436246580086234e-07
+      },
+      "formulas": {
+        "Series!E2": "=(C2/(C2+D2))^B2",
+        "Series!E3": "=(C3/(C3+D3))^B3",
+        "Series!E4": "=(C4/(C4+D4))^B4",
+        "Series!E5": "=(C5/(C5+D5))^B5",
+        "Series!E6": "=(C6/(C6+D6))^B6",
+        "Series!E7": "=(C7/(C7+D7))^B7",
+        "Series!E8": "=PRODUCT(E2:E7)",
+        "Series!E9": "=1-SUM(F2:F7)",
+        "Series!F2": "=1-E2",
+        "Series!F3": "=1-E3",
+        "Series!F4": "=1-E4",
+        "Series!F5": "=1-E5",
+        "Series!F6": "=1-E6",
+        "Series!F7": "=1-E7",
+        "Series!F8": "=1-E8",
+        "Series!F9": "=1-E9"
+      },
+      "expected_values": {
+        "Series!E2": 0.9990405181927086,
+        "Series!E3": 0.99992000399984,
+        "Series!E4": 0.9999733338666571,
+        "Series!E5": 0.9998800143982722,
+        "Series!E6": 0.9999840002559959,
+        "Series!E7": 0.9998400255959047,
+        "Series!E8": 0.9986383399340365,
+        "Series!E9": 0.9986378963093785,
+        "Series!F2": 0.0009594818072914402,
+        "Series!F3": 7.999600015995423e-05,
+        "Series!F4": 2.66661333429008e-05,
+        "Series!F5": 0.00011998560172776784,
+        "Series!F6": 1.599974400412485e-05,
+        "Series!F7": 0.00015997440409531993,
+        "Series!F8": 0.0013616600659634992,
+        "Series!F9": 0.0013621036906215078
+      }
+    },
+    {
+      "id": "F2",
+      "file": "parallel_switchover_zh.xlsx",
+      "title": "FIT to lambda, 1+1 redundancy with switchover success, Chinese headers",
+      "language": "zh",
+      "sheets": [
+        "可用度"
+      ],
+      "sheet": "可用度",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        5
+      ],
+      "headers": {
+        "A": "部件",
+        "B": "数量",
+        "C": "失效率(FIT)",
+        "D": "失效率(/h)",
+        "E": "MTTR(h)",
+        "F": "单机可用度",
+        "G": "冗余方式",
+        "H": "倒换成功率",
+        "I": "组可用度"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "fit": "C",
+        "lambda_per_h": "D",
+        "mttr_h": "E",
+        "unit_availability": "F",
+        "redundancy": "G",
+        "switchover_success": "H",
+        "availability": "I"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "系统可用度",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "可用度!I5"
+        },
+        "source_row": 5,
+        "children": [
+          {
+            "name": "参数面交换机",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": 2,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "fit": 5000,
+              "mttr_h": 4,
+              "switchover_success": 0.98,
+              "redundancy": "1+1"
+            },
+            "derived": {
+              "lambda_per_h": 5e-06,
+              "unit_availability": 0.9999800003999921
+            },
+            "cells": {
+              "name": "可用度!A2",
+              "count": "可用度!B2",
+              "fit": "可用度!C2",
+              "lambda_per_h": "可用度!D2",
+              "mttr_h": "可用度!E2",
+              "unit_availability": "可用度!F2",
+              "redundancy": "可用度!G2",
+              "availability": "可用度!I2",
+              "switchover_success": "可用度!H2"
+            },
+            "source_row": 2,
+            "homogeneous": true,
+            "children": []
+          },
+          {
+            "name": "管理服务器",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": 2,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "fit": 8000,
+              "mttr_h": 8,
+              "switchover_success": 0.95,
+              "redundancy": "1+1"
+            },
+            "derived": {
+              "lambda_per_h": 8.000000000000001e-06,
+              "unit_availability": 0.9999360040957378
+            },
+            "cells": {
+              "name": "可用度!A3",
+              "count": "可用度!B3",
+              "fit": "可用度!C3",
+              "lambda_per_h": "可用度!D3",
+              "mttr_h": "可用度!E3",
+              "unit_availability": "可用度!F3",
+              "redundancy": "可用度!G3",
+              "availability": "可用度!I3",
+              "switchover_success": "可用度!H3"
+            },
+            "source_row": 3,
+            "homogeneous": true,
+            "children": []
+          },
+          {
+            "name": "存储控制器",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "fit": 20000,
+              "mttr_h": 6,
+              "redundancy": "无"
+            },
+            "derived": {
+              "lambda_per_h": 2e-05,
+              "unit_availability": 0.9998800143982723
+            },
+            "cells": {
+              "name": "可用度!A4",
+              "count": "可用度!B4",
+              "fit": "可用度!C4",
+              "lambda_per_h": "可用度!D4",
+              "mttr_h": "可用度!E4",
+              "unit_availability": "可用度!F4",
+              "redundancy": "可用度!G4",
+              "availability": "可用度!I4"
+            },
+            "source_row": 4,
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "fit_to_lambda",
+          "cells": [
+            "可用度!D2",
+            "可用度!D3",
+            "可用度!D4"
+          ],
+          "note": "λ = FIT * 1E-9"
+        },
+        {
+          "tag": "availability_lambda_mttr",
+          "cells": [
+            "可用度!F2",
+            "可用度!F3",
+            "可用度!F4"
+          ]
+        },
+        {
+          "tag": "parallel_product_complement",
+          "cells": [
+            "可用度!I2",
+            "可用度!I3"
+          ],
+          "note": "sub-expression 1-(1-F)^2 inside the switchover weighting; the exponent 2 gives n"
+        },
+        {
+          "tag": "switchover_weighted",
+          "cells": [
+            "可用度!I2",
+            "可用度!I3"
+          ],
+          "note": "H*(A_parallel) + (1-H)*(A_unit) with H = 倒换成功率"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "可用度!I5"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "=<unit availability cell>",
+          "cells": [
+            "可用度!I4"
+          ],
+          "why": "no redundancy (冗余方式 = 无): the group availability is a pass-through of the unit availability"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "数量 = 2 on a 1+1 row counts the two units of the pair (n = 2), not two groups in series; the exponent 2 in the group formula confirms it. The tree therefore has count = 1, n = 2 for those rows.",
+        "倒换成功率 is blank on the row without redundancy.",
+        "Two availability-like columns: F (单机可用度, per unit) and I (组可用度, what the parent consumes). The tree's availability cell is column I."
+      ],
+      "extra": {},
+      "formulas": {
+        "可用度!D2": "=C2*1E-9",
+        "可用度!D3": "=C3*1E-9",
+        "可用度!D4": "=C4*1E-9",
+        "可用度!F2": "=1/(1+D2*E2)",
+        "可用度!F3": "=1/(1+D3*E3)",
+        "可用度!F4": "=1/(1+D4*E4)",
+        "可用度!I2": "=H2*(1-(1-F2)^2)+(1-H2)*F2",
+        "可用度!I3": "=H3*(1-(1-F3)^2)+(1-H3)*F3",
+        "可用度!I4": "=F4",
+        "可用度!I5": "=PRODUCT(I2:I4)"
+      },
+      "expected_values": {
+        "可用度!D2": 5e-06,
+        "可用度!D3": 8.000000000000001e-06,
+        "可用度!D4": 2e-05,
+        "可用度!F2": 0.9999800003999921,
+        "可用度!F3": 0.9999360040957378,
+        "可用度!F4": 0.9998800143982723,
+        "可用度!I2": 0.9999995996160155,
+        "可用度!I3": 0.9999967963140849,
+        "可用度!I4": 0.9998800143982723,
+        "可用度!I5": 0.9998764107620918
+      }
+    },
+    {
+      "id": "F3",
+      "file": "kofn_combin.xlsx",
+      "title": "2-of-3 and 3-of-4 groups in explicit-sum, COMBIN and BINOM.DIST form",
+      "language": "en",
+      "sheets": [
+        "kofn"
+      ],
+      "sheet": "kofn",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        5
+      ],
+      "headers": {
+        "A": "Component",
+        "B": "Qty (n)",
+        "C": "MTBF (h)",
+        "D": "MTTR (h)",
+        "E": "Unit availability",
+        "F": "Redundancy (k/n)",
+        "G": "Group availability (explicit sum)",
+        "H": "Group availability (COMBIN)",
+        "I": "Group availability (BINOM.DIST)"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "mtbf_h": "C",
+        "mttr_h": "D",
+        "unit_availability": "E",
+        "redundancy": "F",
+        "availability": "G"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "System (series)",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "kofn!G5",
+          "availability_alt": [
+            "kofn!H5",
+            "kofn!I5"
+          ]
+        },
+        "source_row": 5,
+        "children": [
+          {
+            "name": "Power shelf PSU",
+            "kind": "kofn",
+            "count": 1,
+            "qty_cell": 3,
+            "k": 2,
+            "n": 3,
+            "params": {
+              "mtbf_h": 20000,
+              "mttr_h": 48,
+              "redundancy": "2/3"
+            },
+            "derived": {
+              "unit_availability": 0.9976057462090981
+            },
+            "cells": {
+              "name": "kofn!A2",
+              "count": "kofn!B2",
+              "mtbf_h": "kofn!C2",
+              "mttr_h": "kofn!D2",
+              "unit_availability": "kofn!E2",
+              "redundancy": "kofn!F2",
+              "availability": "kofn!G2",
+              "availability_alt": [
+                "kofn!H2",
+                "kofn!I2"
+              ]
+            },
+            "source_row": 2,
+            "homogeneous": true,
+            "children": []
+          },
+          {
+            "name": "CDU pump",
+            "kind": "kofn",
+            "count": 1,
+            "qty_cell": 4,
+            "k": 3,
+            "n": 4,
+            "params": {
+              "mtbf_h": 30000,
+              "mttr_h": 72,
+              "redundancy": "3/4"
+            },
+            "derived": {
+              "unit_availability": 0.9976057462090981
+            },
+            "cells": {
+              "name": "kofn!A3",
+              "count": "kofn!B3",
+              "mtbf_h": "kofn!C3",
+              "mttr_h": "kofn!D3",
+              "unit_availability": "kofn!E3",
+              "redundancy": "kofn!F3",
+              "availability": "kofn!G3",
+              "availability_alt": [
+                "kofn!H3",
+                "kofn!I3"
+              ]
+            },
+            "source_row": 3,
+            "homogeneous": true,
+            "children": []
+          },
+          {
+            "name": "Management switch",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 200000,
+              "mttr_h": 4,
+              "redundancy": "1/1"
+            },
+            "derived": {
+              "unit_availability": 0.999980000399992
+            },
+            "cells": {
+              "name": "kofn!A4",
+              "count": "kofn!B4",
+              "mtbf_h": "kofn!C4",
+              "mttr_h": "kofn!D4",
+              "unit_availability": "kofn!E4",
+              "redundancy": "kofn!F4",
+              "availability": "kofn!G4",
+              "availability_alt": [
+                "kofn!H4",
+                "kofn!I4"
+              ]
+            },
+            "source_row": 4,
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "kofn!E2",
+            "kofn!E3",
+            "kofn!E4"
+          ]
+        },
+        {
+          "tag": "kofn_explicit_sum",
+          "cells": [
+            "kofn!G2",
+            "kofn!G3"
+          ],
+          "note": "A^n + n*A^(n-1)*(1-A): the terms i = n and i = n-1 of the k-of-n sum"
+        },
+        {
+          "tag": "kofn_combin",
+          "cells": [
+            "kofn!H2",
+            "kofn!H3"
+          ]
+        },
+        {
+          "tag": "kofn_binom_dist",
+          "cells": [
+            "kofn!I2",
+            "kofn!I3"
+          ],
+          "note": "1-BINOM.DIST(k-1, n, A, TRUE) = P(at least k of n up); stored as _xlfn.BINOM.DIST"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "kofn!G5",
+            "kofn!H5",
+            "kofn!I5"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "=<unit availability cell>",
+          "cells": [
+            "kofn!G4",
+            "kofn!H4",
+            "kofn!I4"
+          ],
+          "why": "1/1 row: group availability is a pass-through of the unit availability"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "Columns G, H and I compute the same group availability three ways (they agree to ~1e-16); the tree's availability cell is G, H and I are listed under availability_alt. An importer should pick one and report the others as cross-checks, not create three groups.",
+        "Qty (n) holds the number of units in the voting group; k and n also appear as text 'k/n' in column F. count = 1 in the tree.",
+        "BINOM.DIST is stored as _xlfn.BINOM.DIST in the file (required for post-2007 functions); SheetJS strips the prefix by default.",
+        "Three system cells (G5, H5, I5) are all PRODUCT of their own column."
+      ],
+      "extra": {
+        "availability_variants": [
+          "G",
+          "H",
+          "I"
+        ]
+      },
+      "formulas": {
+        "kofn!E2": "=C2/(C2+D2)",
+        "kofn!E3": "=C3/(C3+D3)",
+        "kofn!E4": "=C4/(C4+D4)",
+        "kofn!G2": "=E2^3+3*E2^2*(1-E2)",
+        "kofn!G3": "=E3^4+4*E3^3*(1-E3)",
+        "kofn!G4": "=E4",
+        "kofn!G5": "=PRODUCT(G2:G4)",
+        "kofn!H2": "=COMBIN(3,3)*E2^3*(1-E2)^0+COMBIN(3,2)*E2^2*(1-E2)^1",
+        "kofn!H3": "=COMBIN(4,4)*E3^4*(1-E3)^0+COMBIN(4,3)*E3^3*(1-E3)^1",
+        "kofn!H4": "=E4",
+        "kofn!H5": "=PRODUCT(H2:H4)",
+        "kofn!I2": "=1-_xlfn.BINOM.DIST(1,3,E2,TRUE)",
+        "kofn!I3": "=1-_xlfn.BINOM.DIST(2,4,E3,TRUE)",
+        "kofn!I4": "=E4",
+        "kofn!I5": "=PRODUCT(I2:I4)"
+      },
+      "expected_values": {
+        "kofn!E2": 0.9976057462090981,
+        "kofn!E3": 0.9976057462090981,
+        "kofn!E4": 0.999980000399992,
+        "kofn!G2": 0.9999828300962404,
+        "kofn!G3": 0.9999657149936699,
+        "kofn!G4": 0.999980000399992,
+        "kofn!G5": 0.9999285471076385,
+        "kofn!H2": 0.9999828300962404,
+        "kofn!H3": 0.9999657149936699,
+        "kofn!H4": 0.999980000399992,
+        "kofn!H5": 0.9999285471076385,
+        "kofn!I2": 0.9999828300962403,
+        "kofn!I3": 0.9999657149936699,
+        "kofn!I4": 0.999980000399992,
+        "kofn!I5": 0.9999285471076383
+      }
+    },
+    {
+      "id": "F4",
+      "file": "mttr_auto_manual.xlsx",
+      "title": "Effective MTTR as a mixture of automatic and manual recovery",
+      "language": "zh/en",
+      "sheets": [
+        "MTTR"
+      ],
+      "sheet": "MTTR",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        6
+      ],
+      "headers": {
+        "A": "Component",
+        "B": "Qty",
+        "C": "λ (/h)",
+        "D": "自动恢复比例 p",
+        "E": "MTTR自动(h)",
+        "F": "MTTR人工(h)",
+        "G": "MTTR有效(h)",
+        "H": "可用度",
+        "I": "备注"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "lambda_per_h": "C",
+        "auto_fraction": "D",
+        "mttr_auto_h": "E",
+        "mttr_manual_h": "F",
+        "mttr_effective_h": "G",
+        "availability": "H",
+        "notes": "I"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "系统 (System)",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "MTTR!H6"
+        },
+        "source_row": 6,
+        "children": [
+          {
+            "name": "GPU 节点 (XID/HBM 故障)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 32,
+            "k": null,
+            "n": null,
+            "params": {
+              "lambda_per_h": 0.00064,
+              "auto_fraction": 0.7,
+              "mttr_auto_h": 0.25,
+              "mttr_manual_h": 6
+            },
+            "derived": {
+              "mttr_effective_h": 1.9750000000000003
+            },
+            "cells": {
+              "name": "MTTR!A2",
+              "count": "MTTR!B2",
+              "lambda_per_h": "MTTR!C2",
+              "auto_fraction": "MTTR!D2",
+              "mttr_auto_h": "MTTR!E2",
+              "mttr_manual_h": "MTTR!F2",
+              "mttr_effective_h": "MTTR!G2",
+              "availability": "MTTR!H2",
+              "notes": "MTTR!I2"
+            },
+            "source_row": 2,
+            "lambda_scope": "row_aggregate",
+            "children": []
+          },
+          {
+            "name": "参数面交换机",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 2,
+            "k": null,
+            "n": null,
+            "params": {
+              "lambda_per_h": 1e-05,
+              "auto_fraction": 0.9,
+              "mttr_auto_h": 0.1,
+              "mttr_manual_h": 4
+            },
+            "derived": {
+              "mttr_effective_h": 0.48999999999999994
+            },
+            "cells": {
+              "name": "MTTR!A3",
+              "count": "MTTR!B3",
+              "lambda_per_h": "MTTR!C3",
+              "auto_fraction": "MTTR!D3",
+              "mttr_auto_h": "MTTR!E3",
+              "mttr_manual_h": "MTTR!F3",
+              "mttr_effective_h": "MTTR!G3",
+              "availability": "MTTR!H3",
+              "notes": "MTTR!I3"
+            },
+            "source_row": 3,
+            "lambda_scope": "row_aggregate",
+            "children": []
+          },
+          {
+            "name": "并行文件系统",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 4,
+            "k": null,
+            "n": null,
+            "params": {
+              "lambda_per_h": 4e-05,
+              "auto_fraction": 0.5,
+              "mttr_auto_h": 0.5,
+              "mttr_manual_h": 12
+            },
+            "derived": {
+              "mttr_effective_h": 6.25
+            },
+            "cells": {
+              "name": "MTTR!A4",
+              "count": "MTTR!B4",
+              "lambda_per_h": "MTTR!C4",
+              "auto_fraction": "MTTR!D4",
+              "mttr_auto_h": "MTTR!E4",
+              "mttr_manual_h": "MTTR!F4",
+              "mttr_effective_h": "MTTR!G4",
+              "availability": "MTTR!H4",
+              "notes": "MTTR!I4"
+            },
+            "source_row": 4,
+            "lambda_scope": "row_aggregate",
+            "children": []
+          },
+          {
+            "name": "调度/管理面",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "lambda_per_h": 5e-06,
+              "auto_fraction": 0.8,
+              "mttr_auto_h": 0.05,
+              "mttr_manual_h": 8
+            },
+            "derived": {
+              "mttr_effective_h": 1.6399999999999997
+            },
+            "cells": {
+              "name": "MTTR!A5",
+              "count": "MTTR!B5",
+              "lambda_per_h": "MTTR!C5",
+              "auto_fraction": "MTTR!D5",
+              "mttr_auto_h": "MTTR!E5",
+              "mttr_manual_h": "MTTR!F5",
+              "mttr_effective_h": "MTTR!G5",
+              "availability": "MTTR!H5"
+            },
+            "source_row": 5,
+            "lambda_scope": "row_aggregate",
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "mttr_mixture_auto_manual",
+          "cells": [
+            "MTTR!G2",
+            "MTTR!G3",
+            "MTTR!G4",
+            "MTTR!G5"
+          ],
+          "note": "D*E + (1-D)*F with D = 自动恢复比例"
+        },
+        {
+          "tag": "availability_lambda_mttr",
+          "cells": [
+            "MTTR!H2",
+            "MTTR!H3",
+            "MTTR!H4",
+            "MTTR!H5"
+          ],
+          "note": "1/(1+λ·MTTR_eff) using the mixture MTTR"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "MTTR!H6"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "Qty (column B) is not referenced by any formula: the λ column is the aggregate failure rate of the whole row (see the 备注 column), so the tree uses count = 1 and lambda_scope = row_aggregate. Contrast F1, where Qty is an exponent.",
+        "Mixed zh/en headers on one row."
+      ],
+      "extra": {},
+      "formulas": {
+        "MTTR!G2": "=D2*E2+(1-D2)*F2",
+        "MTTR!G3": "=D3*E3+(1-D3)*F3",
+        "MTTR!G4": "=D4*E4+(1-D4)*F4",
+        "MTTR!G5": "=D5*E5+(1-D5)*F5",
+        "MTTR!H2": "=1/(1+C2*G2)",
+        "MTTR!H3": "=1/(1+C3*G3)",
+        "MTTR!H4": "=1/(1+C4*G4)",
+        "MTTR!H5": "=1/(1+C5*G5)",
+        "MTTR!H6": "=PRODUCT(H2:H5)"
+      },
+      "expected_values": {
+        "MTTR!G2": 1.9750000000000003,
+        "MTTR!G3": 0.48999999999999994,
+        "MTTR!G4": 6.25,
+        "MTTR!G5": 1.6399999999999997,
+        "MTTR!H2": 0.9987375956790617,
+        "MTTR!H3": 0.9999951000240099,
+        "MTTR!H4": 0.9997500624843788,
+        "MTTR!H5": 0.9999918000672395,
+        "MTTR!H6": 0.9984748936244152
+      }
+    },
+    {
+      "id": "F5",
+      "file": "markov_1plus1.xlsx",
+      "title": "1+1 hot standby solved as a 3-state Markov chain with MMULT/MINVERSE/TRANSPOSE",
+      "language": "en",
+      "sheets": [
+        "Markov"
+      ],
+      "sheet": "Markov",
+      "header_row": null,
+      "layout": "block",
+      "data_rows": [
+        3,
+        31
+      ],
+      "headers": {},
+      "columns": {
+        "name": "A"
+      },
+      "merged_cells": [
+        "A1:F1"
+      ],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "Head-node pair (1+1 hot standby)",
+        "kind": "parallel",
+        "count": 1,
+        "qty_cell": null,
+        "k": 1,
+        "n": 2,
+        "params": {
+          "lambda_per_h": 2e-05,
+          "mttr_h": 4
+        },
+        "derived": {
+          "mu_per_h": 0.25,
+          "unit_availability": 0.999920006399488
+        },
+        "cells": {
+          "lambda_per_h": "Markov!B3",
+          "mttr_h": "Markov!B4",
+          "mu_per_h": "Markov!B5",
+          "availability": "Markov!B22",
+          "unavailability": "Markov!B23",
+          "state_probabilities": [
+            "Markov!B18",
+            "Markov!B19",
+            "Markov!B20"
+          ]
+        },
+        "source_row": 22,
+        "homogeneous": true,
+        "evaluation": {
+          "method": "ctmc",
+          "states": [
+            "2 up",
+            "1 up",
+            "0 up"
+          ],
+          "generator_cells": "Markov!B8:D10",
+          "repair_policy": "single repair crew: '0 up' -> '1 up' at μ (not 2μ); this is why B22 differs from the independent-units value B27 by B28",
+          "closed_form": "π(2 up) = 1/(1+2ρ+2ρ²), π(1 up) = 2ρ·π(2 up), π(0 up) = 2ρ²·π(2 up), ρ = λ/μ"
+        },
+        "children": []
+      },
+      "expected_methods": [
+        {
+          "tag": "markov_mmult_minverse",
+          "cells": [
+            "Markov!B18",
+            "Markov!B19",
+            "Markov!B20"
+          ],
+          "optional_cells": [
+            "Markov!B13",
+            "Markov!C13",
+            "Markov!D13",
+            "Markov!B14",
+            "Markov!C14",
+            "Markov!D14",
+            "Markov!B22"
+          ],
+          "note": "INDEX(MMULT(MINVERSE(M), b), r, 1) per cell, no CSE arrays; M is built in B13:D15 with INDEX(TRANSPOSE(Q), r, c) and a row of ones, b in F13:F15"
+        },
+        {
+          "tag": "availability_lambda_mttr",
+          "cells": [
+            "Markov!B26"
+          ]
+        },
+        {
+          "tag": "parallel_product_complement",
+          "cells": [
+            "Markov!B27"
+          ]
+        },
+        {
+          "tag": "standby_exp",
+          "cells": [
+            "Markov!B31"
+          ],
+          "note": "EXP(-λt)*(1+λt): cold-standby mission reliability without repair; a different 口径 (reliability over t, not availability) and NOT part of the tree"
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "generator matrix entries from λ and μ",
+          "cells": [
+            "Markov!B8",
+            "Markov!C8",
+            "Markov!B9",
+            "Markov!C9",
+            "Markov!D9",
+            "Markov!C10",
+            "Markov!D10"
+          ],
+          "why": "Q entries (−2λ, 2λ, μ, −(λ+μ), λ, μ, −μ)"
+        },
+        {
+          "pattern": "μ = 1/MTTR",
+          "cells": [
+            "Markov!B5"
+          ],
+          "why": "rate from MTTR; no catalogue tag"
+        },
+        {
+          "pattern": "sum / passthrough / difference",
+          "cells": [
+            "Markov!B21",
+            "Markov!B22",
+            "Markov!B23",
+            "Markov!B28"
+          ],
+          "why": "Σπ check, availability = π(2 up)+π(1 up), unavailability = π(0 up), Δ vs independent units"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-09,
+        "abs": 1e-13,
+        "note": "π(0 up) ≈ 1.28e-8 is obtained from an O(1) matrix solve, so Excel and any other solver agree with it only to ~1e-16 absolute (~1e-8 relative); compare the small cells (B20, B23, B28) absolutely"
+      },
+      "ambiguities": [
+        "Block layout, no header row and no component table: the model is a single 1+1 group whose parameters are label/value pairs (A3:B5).",
+        "Availability is the sum of two state probabilities (B22 = B18+B19), not a formula over component availabilities; the importer should recognise the MMULT/MINVERSE block and treat the chain as one node solved by CTMC.",
+        "The chain uses one repair crew (0 up -> 1 up at μ). An engine that models the pair as two independent repairable units (2μ) reproduces B27, not B22; the difference B28 = B27 - B22 ≈ +6.4e-9 (independent units are more available than the single-crew chain) is intended.",
+        "B31 is a mission-reliability formula (EXP) sitting on the same sheet; it must be tagged standby_exp but kept out of the availability tree."
+      ],
+      "extra": {
+        "state_probabilities_closed_form": [
+          0.9998400127999999,
+          0.000159974402048,
+          1.2797952163840001e-08
+        ]
+      },
+      "formulas": {
+        "Markov!B13": "=INDEX(TRANSPOSE($B$8:$D$10),1,1)",
+        "Markov!B14": "=INDEX(TRANSPOSE($B$8:$D$10),2,1)",
+        "Markov!B18": "=INDEX(MMULT(MINVERSE($B$13:$D$15),$F$13:$F$15),1,1)",
+        "Markov!B19": "=INDEX(MMULT(MINVERSE($B$13:$D$15),$F$13:$F$15),2,1)",
+        "Markov!B20": "=INDEX(MMULT(MINVERSE($B$13:$D$15),$F$13:$F$15),3,1)",
+        "Markov!B21": "=SUM(B18:B20)",
+        "Markov!B22": "=B18+B19",
+        "Markov!B23": "=B20",
+        "Markov!B26": "=1/(1+B3*B4)",
+        "Markov!B27": "=1-(1-B26)^2",
+        "Markov!B28": "=B27-B22",
+        "Markov!B31": "=EXP(-B3*B30)*(1+B3*B30)",
+        "Markov!B5": "=1/B4",
+        "Markov!B8": "=-2*$B$3",
+        "Markov!B9": "=$B$5",
+        "Markov!C10": "=$B$5",
+        "Markov!C13": "=INDEX(TRANSPOSE($B$8:$D$10),1,2)",
+        "Markov!C14": "=INDEX(TRANSPOSE($B$8:$D$10),2,2)",
+        "Markov!C8": "=2*$B$3",
+        "Markov!C9": "=-($B$3+$B$5)",
+        "Markov!D10": "=-$B$5",
+        "Markov!D13": "=INDEX(TRANSPOSE($B$8:$D$10),1,3)",
+        "Markov!D14": "=INDEX(TRANSPOSE($B$8:$D$10),2,3)",
+        "Markov!D9": "=$B$3"
+      },
+      "expected_values": {
+        "Markov!B13": -4e-05,
+        "Markov!B14": 4e-05,
+        "Markov!B18": 0.9998400127999998,
+        "Markov!B19": 0.000159974402048,
+        "Markov!B20": 1.2797952163848675e-08,
+        "Markov!B21": 0.9999999999999999,
+        "Markov!B22": 0.9999999872020477,
+        "Markov!B23": 1.2797952163848675e-08,
+        "Markov!B26": 0.999920006399488,
+        "Markov!B27": 0.9999999936010239,
+        "Markov!B28": 6.398976126753553e-09,
+        "Markov!B31": 0.9863326045590934,
+        "Markov!B5": 0.25,
+        "Markov!B8": -4e-05,
+        "Markov!B9": 0.25,
+        "Markov!C10": 0.25,
+        "Markov!C13": 0.25,
+        "Markov!C14": -0.25002,
+        "Markov!C8": 4e-05,
+        "Markov!C9": -0.25002,
+        "Markov!D10": -0.25,
+        "Markov!D13": 0.0,
+        "Markov!D14": 0.25,
+        "Markov!D9": 2e-05
+      }
+    },
+    {
+      "id": "F6",
+      "file": "hierarchy_levels_zh.xlsx",
+      "title": "Tree given by a 层级 (level) column, Chinese headers",
+      "language": "zh",
+      "sheets": [
+        "拓扑"
+      ],
+      "sheet": "拓扑",
+      "header_row": 2,
+      "data_rows": [
+        3,
+        15
+      ],
+      "headers": {
+        "A": "层级",
+        "B": "名称",
+        "C": "数量",
+        "D": "MTBF(h)",
+        "E": "MTTR(h)",
+        "F": "可用度",
+        "G": "不可用度",
+        "H": "冗余方式",
+        "I": "备注"
+      },
+      "columns": {
+        "level": "A",
+        "name": "B",
+        "count": "C",
+        "mtbf_h": "D",
+        "mttr_h": "E",
+        "availability": "F",
+        "unavailability": "G",
+        "redundancy": "H",
+        "notes": "I"
+      },
+      "merged_cells": [
+        "A1:I1"
+      ],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "系统",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {
+          "redundancy": "串联"
+        },
+        "derived": {},
+        "cells": {
+          "name": "拓扑!B3",
+          "availability": "拓扑!F3",
+          "unavailability": "拓扑!G3",
+          "redundancy": "拓扑!H3",
+          "level": "拓扑!A3"
+        },
+        "source_row": 3,
+        "combine_formula_form": "product_list",
+        "level": "0",
+        "level_cell_type": "n",
+        "children": [
+          {
+            "name": "计算子系统",
+            "kind": "series",
+            "count": 1,
+            "qty_cell": null,
+            "k": null,
+            "n": null,
+            "params": {
+              "redundancy": "串联"
+            },
+            "derived": {},
+            "cells": {
+              "name": "拓扑!B4",
+              "availability": "拓扑!F4",
+              "unavailability": "拓扑!G4",
+              "redundancy": "拓扑!H4",
+              "level": "拓扑!A4"
+            },
+            "source_row": 4,
+            "combine_formula_form": "chain",
+            "level": "1",
+            "level_cell_type": "n",
+            "children": [
+              {
+                "name": "计算机柜",
+                "kind": "series",
+                "count": 1,
+                "qty_cell": null,
+                "k": null,
+                "n": null,
+                "params": {
+                  "redundancy": "串联"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B5",
+                  "availability": "拓扑!F5",
+                  "unavailability": "拓扑!G5",
+                  "redundancy": "拓扑!H5",
+                  "level": "拓扑!A5"
+                },
+                "source_row": 5,
+                "combine_formula_form": "product_range",
+                "level": "1.1",
+                "level_cell_type": "s",
+                "children": [
+                  {
+                    "name": "GPU 节点",
+                    "kind": "leaf",
+                    "count": 8,
+                    "qty_cell": 8,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 50000,
+                      "mttr_h": 6,
+                      "redundancy": "无"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "拓扑!B6",
+                      "availability": "拓扑!F6",
+                      "unavailability": "拓扑!G6",
+                      "redundancy": "拓扑!H6",
+                      "level": "拓扑!A6",
+                      "count": "拓扑!C6",
+                      "mtbf_h": "拓扑!D6",
+                      "mttr_h": "拓扑!E6"
+                    },
+                    "source_row": 6,
+                    "level": "1.1.1",
+                    "level_cell_type": "s",
+                    "children": []
+                  },
+                  {
+                    "name": "机柜 ToR 交换机",
+                    "kind": "leaf",
+                    "count": 2,
+                    "qty_cell": 2,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 200000,
+                      "mttr_h": 4,
+                      "redundancy": "无"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "拓扑!B7",
+                      "availability": "拓扑!F7",
+                      "unavailability": "拓扑!G7",
+                      "redundancy": "拓扑!H7",
+                      "level": "拓扑!A7",
+                      "count": "拓扑!C7",
+                      "mtbf_h": "拓扑!D7",
+                      "mttr_h": "拓扑!E7"
+                    },
+                    "source_row": 7,
+                    "level": "1.1.2",
+                    "level_cell_type": "s",
+                    "children": []
+                  },
+                  {
+                    "name": "机柜 PDU",
+                    "kind": "leaf",
+                    "count": 1,
+                    "qty_cell": 1,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 400000,
+                      "mttr_h": 8,
+                      "redundancy": "无"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "拓扑!B8",
+                      "availability": "拓扑!F8",
+                      "unavailability": "拓扑!G8",
+                      "redundancy": "拓扑!H8",
+                      "level": "拓扑!A8",
+                      "count": "拓扑!C8",
+                      "mtbf_h": "拓扑!D8",
+                      "mttr_h": "拓扑!E8"
+                    },
+                    "source_row": 8,
+                    "level": "1.1.3",
+                    "level_cell_type": "s",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "管理节点",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 100000,
+                  "mttr_h": 8,
+                  "redundancy": "无"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B9",
+                  "availability": "拓扑!F9",
+                  "unavailability": "拓扑!G9",
+                  "redundancy": "拓扑!H9",
+                  "level": "拓扑!A9",
+                  "count": "拓扑!C9",
+                  "mtbf_h": "拓扑!D9",
+                  "mttr_h": "拓扑!E9"
+                },
+                "source_row": 9,
+                "level": "1.2",
+                "level_cell_type": "s",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "网络子系统",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": null,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "redundancy": "1+1 (双平面)"
+            },
+            "derived": {},
+            "cells": {
+              "name": "拓扑!B10",
+              "availability": "拓扑!F10",
+              "unavailability": "拓扑!G10",
+              "redundancy": "拓扑!H10",
+              "level": "拓扑!A10"
+            },
+            "source_row": 10,
+            "combine_formula_form": "parallel_pairwise",
+            "level": "2",
+            "level_cell_type": "n",
+            "children": [
+              {
+                "name": "网络平面 A",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 150000,
+                  "mttr_h": 4,
+                  "redundancy": "无"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B11",
+                  "availability": "拓扑!F11",
+                  "unavailability": "拓扑!G11",
+                  "redundancy": "拓扑!H11",
+                  "level": "拓扑!A11",
+                  "count": "拓扑!C11",
+                  "mtbf_h": "拓扑!D11",
+                  "mttr_h": "拓扑!E11"
+                },
+                "source_row": 11,
+                "level": "2.1",
+                "level_cell_type": "s",
+                "children": []
+              },
+              {
+                "name": "网络平面 B",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 150000,
+                  "mttr_h": 4,
+                  "redundancy": "无"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B12",
+                  "availability": "拓扑!F12",
+                  "unavailability": "拓扑!G12",
+                  "redundancy": "拓扑!H12",
+                  "level": "拓扑!A12",
+                  "count": "拓扑!C12",
+                  "mtbf_h": "拓扑!D12",
+                  "mttr_h": "拓扑!E12"
+                },
+                "source_row": 12,
+                "level": "2.2",
+                "level_cell_type": "s",
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "供电子系统",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": null,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "redundancy": "2N"
+            },
+            "derived": {},
+            "cells": {
+              "name": "拓扑!B13",
+              "availability": "拓扑!F13",
+              "unavailability": "拓扑!G13",
+              "redundancy": "拓扑!H13",
+              "level": "拓扑!A13"
+            },
+            "source_row": 13,
+            "combine_formula_form": "parallel_product_u_range",
+            "level": "3",
+            "level_cell_type": "n",
+            "children": [
+              {
+                "name": "A 路供电 (市电+UPS)",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 80000,
+                  "mttr_h": 12,
+                  "redundancy": "无"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B14",
+                  "availability": "拓扑!F14",
+                  "unavailability": "拓扑!G14",
+                  "redundancy": "拓扑!H14",
+                  "level": "拓扑!A14",
+                  "count": "拓扑!C14",
+                  "mtbf_h": "拓扑!D14",
+                  "mttr_h": "拓扑!E14"
+                },
+                "source_row": 14,
+                "level": "3.1",
+                "level_cell_type": "s",
+                "children": []
+              },
+              {
+                "name": "B 路供电 (市电+UPS)",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 80000,
+                  "mttr_h": 12,
+                  "redundancy": "无"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "拓扑!B15",
+                  "availability": "拓扑!F15",
+                  "unavailability": "拓扑!G15",
+                  "redundancy": "拓扑!H15",
+                  "level": "拓扑!A15",
+                  "count": "拓扑!C15",
+                  "mtbf_h": "拓扑!D15",
+                  "mttr_h": "拓扑!E15"
+                },
+                "source_row": 15,
+                "level": "3.2",
+                "level_cell_type": "s",
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "拓扑!F6",
+            "拓扑!F7",
+            "拓扑!F8",
+            "拓扑!F9",
+            "拓扑!F11",
+            "拓扑!F12",
+            "拓扑!F14",
+            "拓扑!F15"
+          ],
+          "note": "rows 6-9 use (D/(D+E))^C (Qty as exponent), rows 11, 12, 14, 15 use D/(D+E)"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "拓扑!F3",
+            "拓扑!F4",
+            "拓扑!F5"
+          ],
+          "note": "F3 = PRODUCT(F4,F10,F13) non-contiguous list; F4 = F5*F9 chained; F5 = PRODUCT(F6:F8) range"
+        },
+        {
+          "tag": "parallel_product_complement",
+          "cells": [
+            "拓扑!F10",
+            "拓扑!F13"
+          ],
+          "note": "F10 = 1-(1-F11)*(1-F12); F13 = 1-PRODUCT(G14:G15) over the 不可用度 column"
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "1-<availability cell>",
+          "cells": [
+            "拓扑!G3",
+            "拓扑!G4",
+            "拓扑!G5",
+            "拓扑!G6",
+            "拓扑!G7",
+            "拓扑!G8",
+            "拓扑!G9",
+            "拓扑!G10",
+            "拓扑!G11",
+            "拓扑!G12",
+            "拓扑!G13",
+            "拓扑!G14",
+            "拓扑!G15"
+          ],
+          "why": "complement U = 1 - A; no catalogue tag (but F6/F7 parallel 2N formulas reference these cells)"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "Row 1 is a merged title (A1:I1); the header is row 2.",
+        "The root row has 层级 = 0, which is not a dotted prefix of '1', '2', '3': rows whose level has no dot are children of the single level-0 row. The formula F3 = PRODUCT(F4,F10,F13) confirms it.",
+        "Level cells are mixed types: 0, 1, 2, 3 are stored as numbers, dotted levels ('1.1', '1.1.1') as text. Real sheets also store 1.1 as the number 1.1 (and then '1.10' collides with '1.1'); the fixture avoids that collision but an importer must coerce numeric levels to strings.",
+        "F13 (供电子系统 2N) references the 不可用度 column G14:G15 rather than the 可用度 column, so the formula graph must map G -> 1-F to identify the children rows 14 and 15.",
+        "Mixed depth: 1.2 管理节点 is a leaf directly under 计算子系统 while 1.1 计算机柜 is a group.",
+        "Redundancy text '2N' and '1+1 (双平面)' both mean k=1 of n=2."
+      ],
+      "extra": {
+        "row_of_level": {
+          "0": 3,
+          "1": 4,
+          "1.1": 5,
+          "1.1.1": 6,
+          "1.1.2": 7,
+          "1.1.3": 8,
+          "1.2": 9,
+          "2": 10,
+          "2.1": 11,
+          "2.2": 12,
+          "3": 13,
+          "3.1": 14,
+          "3.2": 15
+        }
+      },
+      "formulas": {
+        "拓扑!F10": "=1-(1-F11)*(1-F12)",
+        "拓扑!F11": "=D11/(D11+E11)",
+        "拓扑!F12": "=D12/(D12+E12)",
+        "拓扑!F13": "=1-PRODUCT(G14:G15)",
+        "拓扑!F14": "=D14/(D14+E14)",
+        "拓扑!F15": "=D15/(D15+E15)",
+        "拓扑!F3": "=PRODUCT(F4,F10,F13)",
+        "拓扑!F4": "=F5*F9",
+        "拓扑!F5": "=PRODUCT(F6:F8)",
+        "拓扑!F6": "=(D6/(D6+E6))^C6",
+        "拓扑!F7": "=(D7/(D7+E7))^C7",
+        "拓扑!F8": "=(D8/(D8+E8))^C8",
+        "拓扑!F9": "=(D9/(D9+E9))^C9",
+        "拓扑!G10": "=1-F10",
+        "拓扑!G11": "=1-F11",
+        "拓扑!G12": "=1-F12",
+        "拓扑!G13": "=1-F13",
+        "拓扑!G14": "=1-F14",
+        "拓扑!G15": "=1-F15",
+        "拓扑!G3": "=1-F3",
+        "拓扑!G4": "=1-F4",
+        "拓扑!G5": "=1-F5",
+        "拓扑!G6": "=1-F6",
+        "拓扑!G7": "=1-F7",
+        "拓扑!G8": "=1-F8",
+        "拓扑!G9": "=1-F9"
+      },
+      "expected_values": {
+        "拓扑!F10": 0.9999999992889268,
+        "拓扑!F11": 0.9999733340444255,
+        "拓扑!F12": 0.9999733340444255,
+        "拓扑!F13": 0.9999999775067485,
+        "拓扑!F14": 0.9998500224966255,
+        "拓扑!F15": 0.9998500224966255,
+        "拓扑!F3": 0.9989006429271307,
+        "拓扑!F4": 0.998900666105946,
+        "拓扑!F5": 0.9989805781592344,
+        "拓扑!F6": 0.9990405181927086,
+        "拓扑!F7": 0.9999600011999681,
+        "拓扑!F8": 0.999980000399992,
+        "拓扑!F9": 0.9999200063994881,
+        "拓扑!G10": 7.110732003212661e-10,
+        "拓扑!G11": 2.6665955574545208e-05,
+        "拓扑!G12": 2.6665955574545208e-05,
+        "拓扑!G13": 2.249325148362402e-08,
+        "拓扑!G14": 0.00014997750337453208,
+        "拓扑!G15": 0.00014997750337453208,
+        "拓扑!G3": 0.0010993570728693447,
+        "拓扑!G4": 0.0010993338940540331,
+        "拓扑!G5": 0.0010194218407656441,
+        "拓扑!G6": 0.0009594818072914402,
+        "拓扑!G7": 3.999880003191514e-05,
+        "拓扑!G8": 1.999960000798051e-05,
+        "拓扑!G9": 7.99936005119184e-05
+      }
+    },
+    {
+      "id": "F7",
+      "file": "hierarchy_indent_en.xlsx",
+      "title": "Same tree as F6, hierarchy given by leading spaces in the name and row outline levels",
+      "language": "en",
+      "sheets": [
+        "Topology"
+      ],
+      "sheet": "Topology",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        14
+      ],
+      "headers": {
+        "A": "Component",
+        "B": "Qty",
+        "C": "MTBF (h)",
+        "D": "MTTR (h)",
+        "E": "Availability",
+        "F": "Unavailability",
+        "G": "Redundancy",
+        "H": "Notes"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "mtbf_h": "C",
+        "mttr_h": "D",
+        "availability": "E",
+        "unavailability": "F",
+        "redundancy": "G",
+        "notes": "H"
+      },
+      "merged_cells": [],
+      "outline_levels": {
+        "3": 1,
+        "4": 2,
+        "5": 3,
+        "6": 3,
+        "7": 3,
+        "8": 2,
+        "9": 1,
+        "10": 2,
+        "11": 2,
+        "12": 1,
+        "13": 2,
+        "14": 2
+      },
+      "outline_summary_below": false,
+      "indent": {
+        "unit": "2 leading spaces per depth level in the Component cell",
+        "max_depth": 3
+      },
+      "expected_tree": {
+        "name": "System",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {
+          "redundancy": "series"
+        },
+        "derived": {},
+        "cells": {
+          "name": "Topology!A2",
+          "availability": "Topology!E2",
+          "unavailability": "Topology!F2",
+          "redundancy": "Topology!G2"
+        },
+        "source_row": 2,
+        "combine_formula_form": "product_list",
+        "name_cell_raw": "System",
+        "indent_depth": 0,
+        "outline_level": 0,
+        "children": [
+          {
+            "name": "Compute subsystem",
+            "kind": "series",
+            "count": 1,
+            "qty_cell": null,
+            "k": null,
+            "n": null,
+            "params": {
+              "redundancy": "series"
+            },
+            "derived": {},
+            "cells": {
+              "name": "Topology!A3",
+              "availability": "Topology!E3",
+              "unavailability": "Topology!F3",
+              "redundancy": "Topology!G3"
+            },
+            "source_row": 3,
+            "combine_formula_form": "chain",
+            "name_cell_raw": "  Compute subsystem",
+            "indent_depth": 1,
+            "outline_level": 1,
+            "children": [
+              {
+                "name": "Compute rack",
+                "kind": "series",
+                "count": 1,
+                "qty_cell": null,
+                "k": null,
+                "n": null,
+                "params": {
+                  "redundancy": "series"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A4",
+                  "availability": "Topology!E4",
+                  "unavailability": "Topology!F4",
+                  "redundancy": "Topology!G4"
+                },
+                "source_row": 4,
+                "combine_formula_form": "product_range",
+                "name_cell_raw": "    Compute rack",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": [
+                  {
+                    "name": "GPU node",
+                    "kind": "leaf",
+                    "count": 8,
+                    "qty_cell": 8,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 50000,
+                      "mttr_h": 6,
+                      "redundancy": "none"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "Topology!A5",
+                      "availability": "Topology!E5",
+                      "unavailability": "Topology!F5",
+                      "redundancy": "Topology!G5",
+                      "count": "Topology!B5",
+                      "mtbf_h": "Topology!C5",
+                      "mttr_h": "Topology!D5"
+                    },
+                    "source_row": 5,
+                    "name_cell_raw": "      GPU node",
+                    "indent_depth": 3,
+                    "outline_level": 3,
+                    "children": []
+                  },
+                  {
+                    "name": "Rack ToR switch",
+                    "kind": "leaf",
+                    "count": 2,
+                    "qty_cell": 2,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 200000,
+                      "mttr_h": 4,
+                      "redundancy": "none"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "Topology!A6",
+                      "availability": "Topology!E6",
+                      "unavailability": "Topology!F6",
+                      "redundancy": "Topology!G6",
+                      "count": "Topology!B6",
+                      "mtbf_h": "Topology!C6",
+                      "mttr_h": "Topology!D6"
+                    },
+                    "source_row": 6,
+                    "name_cell_raw": "      Rack ToR switch",
+                    "indent_depth": 3,
+                    "outline_level": 3,
+                    "children": []
+                  },
+                  {
+                    "name": "Rack PDU",
+                    "kind": "leaf",
+                    "count": 1,
+                    "qty_cell": 1,
+                    "k": null,
+                    "n": null,
+                    "params": {
+                      "mtbf_h": 400000,
+                      "mttr_h": 8,
+                      "redundancy": "none"
+                    },
+                    "derived": {},
+                    "cells": {
+                      "name": "Topology!A7",
+                      "availability": "Topology!E7",
+                      "unavailability": "Topology!F7",
+                      "redundancy": "Topology!G7",
+                      "count": "Topology!B7",
+                      "mtbf_h": "Topology!C7",
+                      "mttr_h": "Topology!D7"
+                    },
+                    "source_row": 7,
+                    "name_cell_raw": "      Rack PDU",
+                    "indent_depth": 3,
+                    "outline_level": 3,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "Management node",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 100000,
+                  "mttr_h": 8,
+                  "redundancy": "none"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A8",
+                  "availability": "Topology!E8",
+                  "unavailability": "Topology!F8",
+                  "redundancy": "Topology!G8",
+                  "count": "Topology!B8",
+                  "mtbf_h": "Topology!C8",
+                  "mttr_h": "Topology!D8"
+                },
+                "source_row": 8,
+                "name_cell_raw": "    Management node",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Network subsystem",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": null,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "redundancy": "1+1 (dual plane)"
+            },
+            "derived": {},
+            "cells": {
+              "name": "Topology!A9",
+              "availability": "Topology!E9",
+              "unavailability": "Topology!F9",
+              "redundancy": "Topology!G9"
+            },
+            "source_row": 9,
+            "combine_formula_form": "parallel_pairwise",
+            "name_cell_raw": "  Network subsystem",
+            "indent_depth": 1,
+            "outline_level": 1,
+            "children": [
+              {
+                "name": "Network plane A",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 150000,
+                  "mttr_h": 4,
+                  "redundancy": "none"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A10",
+                  "availability": "Topology!E10",
+                  "unavailability": "Topology!F10",
+                  "redundancy": "Topology!G10",
+                  "count": "Topology!B10",
+                  "mtbf_h": "Topology!C10",
+                  "mttr_h": "Topology!D10"
+                },
+                "source_row": 10,
+                "name_cell_raw": "    Network plane A",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": []
+              },
+              {
+                "name": "Network plane B",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 150000,
+                  "mttr_h": 4,
+                  "redundancy": "none"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A11",
+                  "availability": "Topology!E11",
+                  "unavailability": "Topology!F11",
+                  "redundancy": "Topology!G11",
+                  "count": "Topology!B11",
+                  "mtbf_h": "Topology!C11",
+                  "mttr_h": "Topology!D11"
+                },
+                "source_row": 11,
+                "name_cell_raw": "    Network plane B",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "Power subsystem",
+            "kind": "parallel",
+            "count": 1,
+            "qty_cell": null,
+            "k": 1,
+            "n": 2,
+            "params": {
+              "redundancy": "2N"
+            },
+            "derived": {},
+            "cells": {
+              "name": "Topology!A12",
+              "availability": "Topology!E12",
+              "unavailability": "Topology!F12",
+              "redundancy": "Topology!G12"
+            },
+            "source_row": 12,
+            "combine_formula_form": "parallel_product_u_range",
+            "name_cell_raw": "  Power subsystem",
+            "indent_depth": 1,
+            "outline_level": 1,
+            "children": [
+              {
+                "name": "Power path A (utility + UPS)",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 80000,
+                  "mttr_h": 12,
+                  "redundancy": "none"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A13",
+                  "availability": "Topology!E13",
+                  "unavailability": "Topology!F13",
+                  "redundancy": "Topology!G13",
+                  "count": "Topology!B13",
+                  "mtbf_h": "Topology!C13",
+                  "mttr_h": "Topology!D13"
+                },
+                "source_row": 13,
+                "name_cell_raw": "    Power path A (utility + UPS)",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": []
+              },
+              {
+                "name": "Power path B (utility + UPS)",
+                "kind": "leaf",
+                "count": 1,
+                "qty_cell": 1,
+                "k": null,
+                "n": null,
+                "params": {
+                  "mtbf_h": 80000,
+                  "mttr_h": 12,
+                  "redundancy": "none"
+                },
+                "derived": {},
+                "cells": {
+                  "name": "Topology!A14",
+                  "availability": "Topology!E14",
+                  "unavailability": "Topology!F14",
+                  "redundancy": "Topology!G14",
+                  "count": "Topology!B14",
+                  "mtbf_h": "Topology!C14",
+                  "mttr_h": "Topology!D14"
+                },
+                "source_row": 14,
+                "name_cell_raw": "    Power path B (utility + UPS)",
+                "indent_depth": 2,
+                "outline_level": 2,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "Topology!E5",
+            "Topology!E6",
+            "Topology!E7",
+            "Topology!E8",
+            "Topology!E10",
+            "Topology!E11",
+            "Topology!E13",
+            "Topology!E14"
+          ],
+          "note": "rows 5-8 use (C/(C+D))^B (Qty as exponent), rows 10, 11, 13, 14 use C/(C+D)"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "Topology!E2",
+            "Topology!E3",
+            "Topology!E4"
+          ],
+          "note": "E2 = PRODUCT(E3,E9,E12) non-contiguous list; E3 = E4*E8 chained; E4 = PRODUCT(E5:E7) range"
+        },
+        {
+          "tag": "parallel_product_complement",
+          "cells": [
+            "Topology!E9",
+            "Topology!E12"
+          ],
+          "note": "E9 = 1-(1-E10)*(1-E11); E12 = 1-PRODUCT(F13:F14) over the Unavailability column"
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "1-<availability cell>",
+          "cells": [
+            "Topology!F2",
+            "Topology!F3",
+            "Topology!F4",
+            "Topology!F5",
+            "Topology!F6",
+            "Topology!F7",
+            "Topology!F8",
+            "Topology!F9",
+            "Topology!F10",
+            "Topology!F11",
+            "Topology!F12",
+            "Topology!F13",
+            "Topology!F14"
+          ],
+          "why": "complement U = 1 - A; no catalogue tag (but F6/F7 parallel 2N formulas reference these cells)"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "No level column: depth = (leading spaces in Component) / 2 = Excel row outline level. Both cues agree; the root row has no outline level (0).",
+        "Excel's default outline convention is 'summary row below detail'; this sheet sets summaryBelow = false because parents sit above their children. SheetJS exposes row levels via ws['!rows'][i].level; check whether it exposes outlinePr before relying on it.",
+        "Leading spaces are stored in the shared string (xml:space='preserve'); the manifest's node.name is trimmed, node.name_cell_raw keeps the spaces.",
+        "E12 (Power subsystem 2N) references the Unavailability column F13:F14; map F -> 1-E to find the children."
+      ],
+      "extra": {
+        "row_of_level": {
+          "0": 2,
+          "1": 3,
+          "1.1": 4,
+          "1.1.1": 5,
+          "1.1.2": 6,
+          "1.1.3": 7,
+          "1.2": 8,
+          "2": 9,
+          "2.1": 10,
+          "2.2": 11,
+          "3": 12,
+          "3.1": 13,
+          "3.2": 14
+        }
+      },
+      "formulas": {
+        "Topology!E10": "=C10/(C10+D10)",
+        "Topology!E11": "=C11/(C11+D11)",
+        "Topology!E12": "=1-PRODUCT(F13:F14)",
+        "Topology!E13": "=C13/(C13+D13)",
+        "Topology!E14": "=C14/(C14+D14)",
+        "Topology!E2": "=PRODUCT(E3,E9,E12)",
+        "Topology!E3": "=E4*E8",
+        "Topology!E4": "=PRODUCT(E5:E7)",
+        "Topology!E5": "=(C5/(C5+D5))^B5",
+        "Topology!E6": "=(C6/(C6+D6))^B6",
+        "Topology!E7": "=(C7/(C7+D7))^B7",
+        "Topology!E8": "=(C8/(C8+D8))^B8",
+        "Topology!E9": "=1-(1-E10)*(1-E11)",
+        "Topology!F10": "=1-E10",
+        "Topology!F11": "=1-E11",
+        "Topology!F12": "=1-E12",
+        "Topology!F13": "=1-E13",
+        "Topology!F14": "=1-E14",
+        "Topology!F2": "=1-E2",
+        "Topology!F3": "=1-E3",
+        "Topology!F4": "=1-E4",
+        "Topology!F5": "=1-E5",
+        "Topology!F6": "=1-E6",
+        "Topology!F7": "=1-E7",
+        "Topology!F8": "=1-E8",
+        "Topology!F9": "=1-E9"
+      },
+      "expected_values": {
+        "Topology!E10": 0.9999733340444255,
+        "Topology!E11": 0.9999733340444255,
+        "Topology!E12": 0.9999999775067485,
+        "Topology!E13": 0.9998500224966255,
+        "Topology!E14": 0.9998500224966255,
+        "Topology!E2": 0.9989006429271307,
+        "Topology!E3": 0.998900666105946,
+        "Topology!E4": 0.9989805781592344,
+        "Topology!E5": 0.9990405181927086,
+        "Topology!E6": 0.9999600011999681,
+        "Topology!E7": 0.999980000399992,
+        "Topology!E8": 0.9999200063994881,
+        "Topology!E9": 0.9999999992889268,
+        "Topology!F10": 2.6665955574545208e-05,
+        "Topology!F11": 2.6665955574545208e-05,
+        "Topology!F12": 2.249325148362402e-08,
+        "Topology!F13": 0.00014997750337453208,
+        "Topology!F14": 0.00014997750337453208,
+        "Topology!F2": 0.0010993570728693447,
+        "Topology!F3": 0.0010993338940540331,
+        "Topology!F4": 0.0010194218407656441,
+        "Topology!F5": 0.0009594818072914402,
+        "Topology!F6": 3.999880003191514e-05,
+        "Topology!F7": 1.999960000798051e-05,
+        "Topology!F8": 7.99936005119184e-05,
+        "Topology!F9": 7.110732003212661e-10
+      }
+    },
+    {
+      "id": "F8",
+      "file": "inconsistent_rare_event.xlsx",
+      "title": "Series system whose headline uses 1 - sum(U) while an adjacent cell uses PRODUCT(A)",
+      "language": "en",
+      "sheets": [
+        "Series"
+      ],
+      "sheet": "Series",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        10
+      ],
+      "headers": {
+        "A": "Component",
+        "B": "Qty",
+        "C": "MTBF (h)",
+        "D": "MTTR (h)",
+        "E": "λ (/h)",
+        "F": "Unavailability (λ·MTTR)",
+        "G": "Availability (exact)"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "mtbf_h": "C",
+        "mttr_h": "D",
+        "lambda_per_h": "E",
+        "unavailability": "F",
+        "availability": "G"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "expected_tree": {
+        "name": "System",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "Series!G9",
+          "unavailability": "Series!F9"
+        },
+        "source_row": 9,
+        "alt_cells": {
+          "series_rare_event_sum": "Series!G8",
+          "headline": "Series!G8"
+        },
+        "children": [
+          {
+            "name": "GPU node pool (degraded-mode threshold)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 2000,
+              "mttr_h": 48
+            },
+            "derived": {
+              "lambda_per_h": 0.0005,
+              "unavailability_lambda_mttr": 0.024
+            },
+            "cells": {
+              "name": "Series!A2",
+              "count": "Series!B2",
+              "mtbf_h": "Series!C2",
+              "mttr_h": "Series!D2",
+              "lambda_per_h": "Series!E2",
+              "unavailability": "Series!F2",
+              "availability": "Series!G2"
+            },
+            "source_row": 2,
+            "children": []
+          },
+          {
+            "name": "Interconnect fabric",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 4000,
+              "mttr_h": 72
+            },
+            "derived": {
+              "lambda_per_h": 0.00025,
+              "unavailability_lambda_mttr": 0.018000000000000002
+            },
+            "cells": {
+              "name": "Series!A3",
+              "count": "Series!B3",
+              "mtbf_h": "Series!C3",
+              "mttr_h": "Series!D3",
+              "lambda_per_h": "Series!E3",
+              "unavailability": "Series!F3",
+              "availability": "Series!G3"
+            },
+            "source_row": 3,
+            "children": []
+          },
+          {
+            "name": "Parallel file system",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 3000,
+              "mttr_h": 96
+            },
+            "derived": {
+              "lambda_per_h": 0.0003333333333333333,
+              "unavailability_lambda_mttr": 0.032
+            },
+            "cells": {
+              "name": "Series!A4",
+              "count": "Series!B4",
+              "mtbf_h": "Series!C4",
+              "mttr_h": "Series!D4",
+              "lambda_per_h": "Series!E4",
+              "unavailability": "Series!F4",
+              "availability": "Series!G4"
+            },
+            "source_row": 4,
+            "children": []
+          },
+          {
+            "name": "Scheduler / control plane",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 5000,
+              "mttr_h": 120
+            },
+            "derived": {
+              "lambda_per_h": 0.0002,
+              "unavailability_lambda_mttr": 0.024
+            },
+            "cells": {
+              "name": "Series!A5",
+              "count": "Series!B5",
+              "mtbf_h": "Series!C5",
+              "mttr_h": "Series!D5",
+              "lambda_per_h": "Series!E5",
+              "unavailability": "Series!F5",
+              "availability": "Series!G5"
+            },
+            "source_row": 5,
+            "children": []
+          },
+          {
+            "name": "Facility (power + cooling)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "mtbf_h": 6000,
+              "mttr_h": 240
+            },
+            "derived": {
+              "lambda_per_h": 0.00016666666666666666,
+              "unavailability_lambda_mttr": 0.04
+            },
+            "cells": {
+              "name": "Series!A6",
+              "count": "Series!B6",
+              "mtbf_h": "Series!C6",
+              "mttr_h": "Series!D6",
+              "lambda_per_h": "Series!E6",
+              "unavailability": "Series!F6",
+              "availability": "Series!G6"
+            },
+            "source_row": 6,
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "Series!G2",
+            "Series!G3",
+            "Series!G4",
+            "Series!G5",
+            "Series!G6"
+          ]
+        },
+        {
+          "tag": "unavailability_lambda_mttr",
+          "cells": [
+            "Series!F2",
+            "Series!F3",
+            "Series!F4",
+            "Series!F5",
+            "Series!F6"
+          ],
+          "note": "U = λ·MTTR first-order approximation (λ·MTTR is 0.018-0.04 here, so it is visibly off)"
+        },
+        {
+          "tag": "series_rare_event_sum",
+          "cells": [
+            "Series!G8"
+          ],
+          "optional_cells": [
+            "Series!F8"
+          ],
+          "note": "the sheet's headline number"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "Series!G9"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "1/<MTBF cell>",
+          "cells": [
+            "Series!E2",
+            "Series!E3",
+            "Series!E4",
+            "Series!E5",
+            "Series!E6"
+          ],
+          "why": "λ = 1/MTBF; no tag in the catalogue (closest: fit_to_lambda / afr_to_mtbf are other conversions)"
+        },
+        {
+          "pattern": "SUM(U range)",
+          "cells": [
+            "Series!F8"
+          ],
+          "why": "ΣU helper next to the 1-ΣU cell"
+        },
+        {
+          "pattern": "1-<availability cell>",
+          "cells": [
+            "Series!F9"
+          ],
+          "why": "complement"
+        },
+        {
+          "pattern": "difference",
+          "cells": [
+            "Series!G10"
+          ],
+          "why": "exact minus rare-event"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "The sheet's headline 'System availability' (G8) is the rare-event approximation 1-ΣU built on first-order U = λ·MTTR; the exact PRODUCT sits one row below (G9). The tree root is G9; G8 is recorded under alt_cells and the reconciliation table must show the difference (G10).",
+        "Two stacked approximations: U = λ·MTTR per row (instead of MTTR/(MTBF+MTTR)) and 1-ΣU for the series.",
+        "MTBF values (2000-6000 h) are deliberately low so the approximations are visibly wrong (≥ 1e-3)."
+      ],
+      "extra": {
+        "inconsistency": {
+          "rare_event_cell": "Series!G8",
+          "exact_cell": "Series!G9",
+          "difference_cell": "Series!G10",
+          "rare_event_value": 0.862,
+          "exact_value": 0.8728493083851236,
+          "exact_minus_rare_event": 0.010849308385123657,
+          "sum_of_lambda_mttr": 0.138
+        }
+      },
+      "formulas": {
+        "Series!E2": "=1/C2",
+        "Series!E3": "=1/C3",
+        "Series!E4": "=1/C4",
+        "Series!E5": "=1/C5",
+        "Series!E6": "=1/C6",
+        "Series!F2": "=E2*D2",
+        "Series!F3": "=E3*D3",
+        "Series!F4": "=E4*D4",
+        "Series!F5": "=E5*D5",
+        "Series!F6": "=E6*D6",
+        "Series!F8": "=SUM(F2:F6)",
+        "Series!F9": "=1-G9",
+        "Series!G10": "=G9-G8",
+        "Series!G2": "=C2/(C2+D2)",
+        "Series!G3": "=C3/(C3+D3)",
+        "Series!G4": "=C4/(C4+D4)",
+        "Series!G5": "=C5/(C5+D5)",
+        "Series!G6": "=C6/(C6+D6)",
+        "Series!G8": "=1-SUM(F2:F6)",
+        "Series!G9": "=PRODUCT(G2:G6)"
+      },
+      "expected_values": {
+        "Series!E2": 0.0005,
+        "Series!E3": 0.00025,
+        "Series!E4": 0.0003333333333333333,
+        "Series!E5": 0.0002,
+        "Series!E6": 0.00016666666666666666,
+        "Series!F2": 0.024,
+        "Series!F3": 0.018000000000000002,
+        "Series!F4": 0.032,
+        "Series!F5": 0.024,
+        "Series!F6": 0.04,
+        "Series!F8": 0.138,
+        "Series!F9": 0.12715069161487635,
+        "Series!G10": 0.010849308385123657,
+        "Series!G2": 0.9765625,
+        "Series!G3": 0.9823182711198428,
+        "Series!G4": 0.9689922480620154,
+        "Series!G5": 0.9765625,
+        "Series!G6": 0.9615384615384616,
+        "Series!G8": 0.862,
+        "Series!G9": 0.8728493083851236
+      }
+    },
+    {
+      "id": "F9",
+      "file": "percent_units.xlsx",
+      "title": "Availability entered in percent, AFR in %/year",
+      "language": "zh",
+      "sheets": [
+        "单位"
+      ],
+      "sheet": "单位",
+      "header_row": 1,
+      "data_rows": [
+        2,
+        7
+      ],
+      "headers": {
+        "A": "部件",
+        "B": "数量",
+        "C": "AFR (%/年)",
+        "D": "MTBF (h)",
+        "E": "MTTR (h)",
+        "F": "可用度(%)",
+        "G": "可用度 (小数)",
+        "H": "备注"
+      },
+      "columns": {
+        "name": "A",
+        "count": "B",
+        "afr_pct_per_year": "C",
+        "mtbf_h": "D",
+        "mttr_h": "E",
+        "availability_pct": "F",
+        "availability": "G",
+        "notes": "H"
+      },
+      "merged_cells": [],
+      "outline_levels": {},
+      "cell_number_formats": {
+        "单位!F3": "0.00",
+        "单位!F4": "0.00",
+        "单位!F5": "0.00%",
+        "单位!F2": "0.0000",
+        "单位!F6": "0.0000",
+        "单位!F7": "0.0000"
+      },
+      "expected_tree": {
+        "name": "系统可用度",
+        "kind": "series",
+        "count": 1,
+        "qty_cell": null,
+        "k": null,
+        "n": null,
+        "params": {},
+        "derived": {},
+        "cells": {
+          "availability": "单位!G7",
+          "availability_pct": "单位!F7"
+        },
+        "source_row": 7,
+        "children": [
+          {
+            "name": "GPU 服务器",
+            "kind": "leaf",
+            "count": 64,
+            "qty_cell": 64,
+            "k": null,
+            "n": null,
+            "params": {
+              "afr_pct_per_year": 12,
+              "mttr_h": 8
+            },
+            "derived": {
+              "mtbf_h": 73000.0
+            },
+            "cells": {
+              "name": "单位!A2",
+              "count": "单位!B2",
+              "afr_pct_per_year": "单位!C2",
+              "mtbf_h": "单位!D2",
+              "mttr_h": "单位!E2",
+              "availability_pct": "单位!F2",
+              "availability": "单位!G2",
+              "notes": "单位!H2"
+            },
+            "source_row": 2,
+            "children": []
+          },
+          {
+            "name": "存储服务 (SLA)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "availability_pct": 99.95
+            },
+            "derived": {
+              "availability": 0.9995
+            },
+            "cells": {
+              "name": "单位!A3",
+              "count": "单位!B3",
+              "availability_pct": "单位!F3",
+              "availability": "单位!G3",
+              "notes": "单位!H3"
+            },
+            "source_row": 3,
+            "availability_cell_number_format": "0.00",
+            "children": []
+          },
+          {
+            "name": "网络服务 (SLA)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "availability_pct": 99.9
+            },
+            "derived": {
+              "availability": 0.9990000000000001
+            },
+            "cells": {
+              "name": "单位!A4",
+              "count": "单位!B4",
+              "availability_pct": "单位!F4",
+              "availability": "单位!G4",
+              "notes": "单位!H4"
+            },
+            "source_row": 4,
+            "availability_cell_number_format": "0.00",
+            "children": []
+          },
+          {
+            "name": "机房供电 (SLA)",
+            "kind": "leaf",
+            "count": 1,
+            "qty_cell": 1,
+            "k": null,
+            "n": null,
+            "params": {
+              "availability": 0.9999
+            },
+            "derived": {
+              "availability": 0.9999
+            },
+            "cells": {
+              "name": "单位!A5",
+              "count": "单位!B5",
+              "availability_pct": "单位!F5",
+              "availability": "单位!G5",
+              "notes": "单位!H5"
+            },
+            "source_row": 5,
+            "availability_cell_number_format": "0.00%",
+            "children": []
+          },
+          {
+            "name": "参数面交换机",
+            "kind": "leaf",
+            "count": 2,
+            "qty_cell": 2,
+            "k": null,
+            "n": null,
+            "params": {
+              "afr_pct_per_year": 3,
+              "mttr_h": 4
+            },
+            "derived": {
+              "mtbf_h": 292000.0
+            },
+            "cells": {
+              "name": "单位!A6",
+              "count": "单位!B6",
+              "afr_pct_per_year": "单位!C6",
+              "mtbf_h": "单位!D6",
+              "mttr_h": "单位!E6",
+              "availability_pct": "单位!F6",
+              "availability": "单位!G6",
+              "notes": "单位!H6"
+            },
+            "source_row": 6,
+            "children": []
+          }
+        ]
+      },
+      "expected_methods": [
+        {
+          "tag": "afr_to_mtbf",
+          "cells": [
+            "单位!D2",
+            "单位!D6"
+          ],
+          "note": "MTBF = 8760/(AFR/100) with AFR in %/year"
+        },
+        {
+          "tag": "percent_to_fraction",
+          "cells": [
+            "单位!G3",
+            "单位!G4"
+          ],
+          "optional_cells": [
+            "单位!D2",
+            "单位!D6"
+          ],
+          "note": "A = F/100 for percent entered as a number"
+        },
+        {
+          "tag": "availability_mtbf_mttr",
+          "cells": [
+            "单位!G2",
+            "单位!G6"
+          ],
+          "note": "(D/(D+E))^B with Qty as exponent"
+        },
+        {
+          "tag": "series_product",
+          "cells": [
+            "单位!G7"
+          ]
+        }
+      ],
+      "untagged_formula_cells": [
+        {
+          "pattern": "<availability cell>*100",
+          "cells": [
+            "单位!F2",
+            "单位!F6",
+            "单位!F7"
+          ],
+          "why": "fraction -> percent for display; the inverse of percent_to_fraction, no catalogue tag"
+        },
+        {
+          "pattern": "=<percent-formatted cell>",
+          "cells": [
+            "单位!G5"
+          ],
+          "why": "F5 stores 0.9999 with number format 0.00% (displays 99.99%), so no /100 is applied"
+        }
+      ],
+      "tolerance": {
+        "rel": 1e-12,
+        "abs": 1e-15
+      },
+      "ambiguities": [
+        "Column F (可用度(%)) mixes inputs and formulas: 99.95 and 99.9 are plain numbers (format 0.00) that the sheet divides by 100; 0.9999 in F5 has the percent number format and is used without /100; F2, F6, F7 are formulas (=G*100) for display.",
+        "The percent/fraction decision must come from the formula (or the number format), not from the '%' in the header alone.",
+        "D2 and D6 are formula cells (MTBF derived from AFR), so the leaf's mtbf_h is a computed value with provenance to the AFR cell.",
+        "The /100 inside 8760/(C/100) may or may not be reported as percent_to_fraction; D2 and D6 are listed as optional_cells for that tag.",
+        "Roles afr_pct_per_year and availability_pct are extensions beyond the base role list."
+      ],
+      "extra": {},
+      "formulas": {
+        "单位!D2": "=8760/(C2/100)",
+        "单位!D6": "=8760/(C6/100)",
+        "单位!F2": "=G2*100",
+        "单位!F6": "=G6*100",
+        "单位!F7": "=G7*100",
+        "单位!G2": "=(D2/(D2+E2))^B2",
+        "单位!G3": "=F3/100",
+        "单位!G4": "=F4/100",
+        "单位!G5": "=F5",
+        "单位!G6": "=(D6/(D6+E6))^B6",
+        "单位!G7": "=PRODUCT(G2:G6)"
+      },
+      "expected_values": {
+        "单位!D2": 73000.0,
+        "单位!D6": 292000.0,
+        "单位!F2": 99.30112215502768,
+        "单位!F6": 99.99726033026731,
+        "单位!F7": 99.13958872862436,
+        "单位!G2": 0.9930112215502769,
+        "单位!G3": 0.9995,
+        "单位!G4": 0.9990000000000001,
+        "单位!G5": 0.9999,
+        "单位!G6": 0.9999726033026731,
+        "单位!G7": 0.9913958872862436
+      }
+    }
+  ]
+}

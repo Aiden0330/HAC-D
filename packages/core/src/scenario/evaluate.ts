@@ -423,7 +423,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     // spares at node granularity
     const lamNode = nodeLambda(items, counts);
     const pDaily = 1 - Math.exp(-lamNode * 24);
-    const workingNodes = Math.ceil(N / s.topology.gpusPerNode);
+    const workingNodes = Math.ceil(N / counts.gpusPerNode);
     spares = {
       nodes: workingNodes,
       nodeLambdaPerHour: lamNode,

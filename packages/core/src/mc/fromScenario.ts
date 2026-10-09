@@ -38,7 +38,15 @@ function radiusFor(domain: string, s: Scenario): BlastRadius {
     case 'power_zone':
     case 'cdu':
     case 'zone':
+    case 'supernode':
+    case 'ub_subplane':
+    case 'comm_rack':
       return 'zone';
+    case 'l2_switch':
+      return 'zone';
+    case 'l1_switch':
+    case 'optical_link':
+      return 'node';
     default:
       return 'cluster';
   }
@@ -60,7 +68,8 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
         count: ci.total,
         lifetime: lifetimeFromRate(ci.lambda, c.failure.weibullShape),
         repair,
-        scope: c.countRule.per,
+        // superpod scopes (switch chips, links, planes) are cluster-wide independent units for the simulator
+        scope: c.countRule.per === 'gpu' || c.countRule.per === 'node' || c.countRule.per === 'rack' || c.countRule.per === 'zone' ? c.countRule.per : 'fixed',
       };
       if (c.redundancy && c.redundancy.scheme !== 'series') {
         const size = c.redundancy.n ?? ci.unitsPerInstance;
@@ -76,8 +85,8 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
   const recoveryModel = resolveRecovery(s);
   return {
     nGpus: w.nGpus,
-    gpusPerNode: s.topology.gpusPerNode,
-    nodesPerRack: s.topology.nodesPerRack,
+    gpusPerNode: counts.gpusPerNode,
+    nodesPerRack: counts.nodesPerRack,
     racksPerZone: s.topology.racksPerZone,
     workHours: workHours ?? w.durationDays * 24,
     intervalS,

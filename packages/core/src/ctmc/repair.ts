@@ -146,6 +146,8 @@ export interface KofNGroupResult {
   states: number;
   approximate: boolean;
   notes: string[];
+  /** steady-state distribution over (units in automatic repair, in manual repair, switch-failed) — exact chain only */
+  distribution?: { auto: number; manual: number; switchFailed: boolean; working: number; up: boolean; probability: number }[];
 }
 
 /** same convention as the v1 kOfNRepairable: proportional = min(1, up/k), fractional = up/n (while up) */
@@ -258,6 +260,7 @@ export function kOfNGroup(o: KofNGroupOptions): KofNGroupResult {
     states: states.length,
     approximate: false,
     notes,
+    distribution: meta.map((x, i) => ({ auto: x.a, manual: x.m, switchFailed: x.sw, working: n - x.a - x.m, up: states[i].up, probability: pi[i] })),
   };
 }
 
@@ -335,6 +338,10 @@ export interface SubhealthUnitResult {
   piUp: number;
   /** H + H′ */
   piSubhealth: number;
+  /** H: sub-healthy before the detection decision (all of the sub-health time under tolerate) */
+  piSubhealthPending: number;
+  /** H′: sub-healthy and undetected (isolate policy only) */
+  piSubhealthUndetected: number;
   piIsolated: number;
   piDownAuto: number;
   piDownManual: number;
@@ -409,6 +416,8 @@ export function subhealthUnit(lambda: number, repair: DualRepair, sh: Subhealth)
   return {
     piUp: at(U),
     piSubhealth: piSh,
+    piSubhealthPending: at(H),
+    piSubhealthUndetected: at(Hp),
     piIsolated: at(I),
     piDownAuto: at(Da),
     piDownManual: at(Dm),

@@ -4,15 +4,44 @@ Generated 2026-10-09 by `compute_golden_v2.py` from `docs/MODEL_REFERENCE.md, v2
 
 ## Method
 
-Every CTMC is assembled from the state/transition table of its section (positive rates only; states that cannot be reached from the initial state are removed), the generator Q is formed, and pi Q = 0 with sum pi = 1 is solved with mpmath at 40 significant digits (one balance equation replaced by the normalisation; the residual max_j |(pi Q)_j| is asserted below 1e-34). Failure frequency nu = sum_(i up, j down) pi_i Q_ij. Mean first passage from the initial state into the down set solves (-Q_TT) t = 1 over the transient (up) states. Each stationary system is re-solved in double precision with numpy's LU and, independently, as the null space of Q^T with scipy; each first-passage system is re-solved with numpy.
+Every CTMC is assembled from the state/transition table of its section (positive rates only; states that cannot be reached from the initial state are removed), the generator Q is formed, and pi Q = 0 with sum pi = 1 is solved with mpmath at 40 significant digits (one balance equation replaced by the normalisation; the residual max_j |(pi Q)_j| is asserted below 1e-34). Failure frequency nu = sum_(i up, j down) pi_i Q_ij. Mean first passage from the initial state into the down set solves (-Q_TT) t = 1 over the transient (up) states. The expected values are the mpmath results rounded to double.
 
 ### numpy / scipy vs mpmath agreement
 
-- 30 stationary solves, 11 first-passage solves.
-- stationary distribution, numpy LU: max relative difference 1.17e-08 (worst: §11 kofn n=4 k=2 crews=2 p_sw=1.0, state ('N', 4, 0), pi = 2.443e-11), max absolute 1.26e-16.
-- stationary distribution, scipy null space: max relative difference 3.50e-07.
-- mean first passage, numpy: max relative difference 1.63e-13 (worst: §11 kofn n=2 k=1 crews=inf p_sw=1.0).
-- All far below the 1e-9 tolerance used for CTMC quantities; the expected values in the JSON are the mpmath values rounded to double.
+Every case is computed twice: once from the mpmath solutions and once from numpy's double-precision LU solutions of the very same linear systems (stationary and first-passage); the table lists the largest relative difference over the case's expected values. Separately, each stationary vector is also recomputed as the null space of Q^T with scipy (SVD).
+
+- Over all 26 cases the double-precision recomputation agrees with the mpmath expected values to 1.6e-13 relative at worst (`kofn.group.n2k1_seta_crews_inf_psw1`, key `mttf_from_new`), about four orders of magnitude below the 1e-9 tolerance.
+- Component level (30 stationary solves): numpy LU max absolute difference 1.3e-16; the max relative difference 1.2e-08 occurs on a state with pi = 2e-11 (§11 kofn n=4 k=2 crews=2 p_sw=1.0, state ('N', 4, 0), pi = 2.443e-11), where double precision has only ~8 significant digits — no expected value is that small. scipy null space: max relative component difference 3.5e-07 (SVD, same tiny-component effect).
+- First passage (11 solves): numpy max relative difference 1.6e-13 (worst: §11 kofn n=2 k=1 crews=inf p_sw=1.0).
+
+| case | max rel diff (numpy vs mpmath) | worst key |
+|---|---|---|
+| `repair.unit.set_a` | 1.3e-16 | pi_Dm |
+| `repair.unit.set_b` | 1.4e-16 | pi_Dm |
+| `repair.unit.set_c` | 8.1e-17 | pi_Da |
+| `repair.unit.set_d` | 1.1e-16 | auto_downtime_share |
+| `kofn.group.n2k1_seta_crews_inf_psw1` | 1.6e-13 | mttf_from_new |
+| `kofn.group.n3k2_seta_crews1_psw1` | 4.4e-14 | mttf_from_new |
+| `kofn.group.n4k2_setd_crews2_psw1` | 1.2e-15 | mttf_from_new |
+| `kofn.group.n2k1_setb_crews_inf_switchover` | 1.1e-15 | pi_switch_failed |
+| `kofn.group.n3k2_seta_crews1_switchover` | 4.4e-15 | pi_switch_failed |
+| `kofn.group.n3k2_setb_crews1_reduction_to_v1` | 9.5e-15 | mttf_from_new |
+| `parallel.firstorder.two_children` | 0.0e+00 | — |
+| `standby.v2.n2_cold_crews_inf` | 8.5e-16 | mttf_from_new |
+| `standby.v2.n3_warm_crews1` | 2.9e-15 | mttf_from_new |
+| `subhealth.unit.tolerate_phi0.6` | 4.3e-16 | pi_Dm |
+| `subhealth.unit.tolerate_phi0.8` | 4.3e-16 | pi_Dm |
+| `subhealth.unit.isolate` | 1.1e-15 | pi_Hp |
+| `subhealth.unit.p_sh_conversion` | 0.0e+00 | — |
+| `subhealth.unit.reduction_to_degraded_unit` | 4.5e-17 | A_tolerant |
+| `straggler.n1000` | 0.0e+00 | — |
+| `straggler.n16384` | 0.0e+00 | — |
+| `plane.p7_f0.3` | 0.0e+00 | — |
+| `plane.p2_f0.5` | 0.0e+00 | — |
+| `plane.p4_f0.2` | 0.0e+00 | — |
+| `ladder.mindcluster_like` | 0.0e+00 | — |
+| `waterfall.small_tree` | 7.6e-17 | gain |
+| `cm384.counts` | 0.0e+00 | — |
 
 ## §10 Dual-path repair unit (`repair.unit.*`)
 
@@ -29,7 +58,7 @@ Built literally from the §10 table (three states, five rates). For c = 0 the st
 
 States N(a, m) for all a, m >= 0 with a + m <= n (w = n - a - m working; up iff w >= k). When p_sw < 1, a switch-failed state S(a, m) (down) is created for every (a, m) with w - 1 >= k. Rates exactly as the §11 table: survivable failures (w - 1 >= k) split into w*lambda*c*p_sw -> (a+1, m), w*lambda*(1-c)*p_sw -> (a, m+1), w*lambda*(1-p_sw) -> S(a, m); non-survivable failures (w - 1 < k) w*lambda*c -> (a+1, m), w*lambda*(1-c) -> (a, m+1) (no switchover); automatic recoveries a*s/T_a -> (a-1, m) and a*(1-s)/T_a -> (a-1, m+1) (not crew-limited); manual repairs min(m, r)/T_m -> (a, m-1); S(a, m) -> (a, m+1) at 1/T_sf. Unreachable states (a > 0 when c = 0) are pruned. Outputs as in the formula field; MTTF from new = mean first passage from (0, 0) into the down set (S states included).
 
-Cross-checks: (i) with unlimited crews and p_sw = 1 the n units are independent, so A must equal the binomial sum_(j<=n-k) C(n,j) u^j (1-u)^(n-j) with u = 1 - 1/(1 + lambda*E_R) (case 1 and the §17 G1 chains); (ii) case 6 reproduces the v1 birth-death chain (see the reduction table).
+Cross-checks: (i) with unlimited crews and p_sw = 1 the n units are independent, so A must equal the binomial sum_(j<=n-k) C(n,j) u^j (1-u)^(n-j) with u = 1 - 1/(1 + lambda*E_R) (case 1 and the §17 G1 chains); (ii) case 6 reproduces the v1 birth-death chain (see the reduction table). Columns U_sw / sw freq / pi_S are zero for the p_sw = 1 cases by construction; the capacity columns of the switchover cases are informational only.
 
 | case | states | A | nu | mttf_from_new | cap prop | cap frac | U_sw | sw freq | pi_S |
 |---|---|---|---|---|---|---|---|---|---|
@@ -113,7 +142,7 @@ Step 1 (+ redundancy): structure restored; X's §14 chain with c = 0 (manual onl
 Step 2 (+ automatic recovery): X's §14 chain with the configured dual repair, measured strict -> lambda_eq (= lambda + lambda_sh exactly, since under the strict measure every exit from U is a failure); G1 = §11 chain(3, 2, lambda_eq, c = 0.9, s = 0.95, T_a = 0.1, T_m = 6, crews = inf, p_sw = 1) as instructed ('lambda_eq from its own §14 chain and the configured dual repair parameters'). The alternative reading that keeps the equivalent two-state unit (c = 0, T_m = MTTR_eq) is tabulated as [alt].
 Step 3 (+ sub-health policy): X measured by the threshold rule; phi = 0.5 < phi_min = 0.7 so the up-set is {U} and step 3 = step 2. Switchover penalty = A(step 3, p_sw = 1, t_sw = 0) - A(step 3); gain = A_step3 - A_step0. Performability at step 3 is also listed.
 
-**step0**
+**step 0 (original)**
 
 | quantity | value |
 |---|---|
@@ -126,7 +155,7 @@ Step 3 (+ sub-health policy): X measured by the threshold rule; phi = 0.5 < phi_
 | A_G2 (series of C1, C2) | 0.9968076636487052 |
 | A_system | 0.972095496178499 |
 
-**step1**
+**step 1 (+ redundancy)**
 
 | quantity | value |
 |---|---|
@@ -142,8 +171,9 @@ Step 3 (+ sub-health policy): X measured by the threshold rule; phi = 0.5 < phi_
 | U_G2 (first order, p_sw = 0.95) | 4.248792985536241e-05 |
 | A_G2 | 0.9999575120701446 |
 | A_system | 0.9985708056879823 |
+| A_system [alt] | 0.9978332770665534 |
 
-**step2**
+**step 2 (+ automatic recovery)**
 
 | quantity | value |
 |---|---|
@@ -161,7 +191,7 @@ Step 3 (+ sub-health policy): X measured by the threshold rule; phi = 0.5 < phi_
 | A_system | 0.9987343387885135 |
 | A_system [alt] | 0.998732956561545 |
 
-**step3**
+**step 3 (+ sub-health policy) = compensated**
 
 | quantity | value |
 |---|---|
@@ -178,7 +208,7 @@ Step 3 (+ sub-health policy): X measured by the threshold rule; phi = 0.5 < phi_
 | A_system (p_sw = 1, t_sw = 0) | 0.9987742260399011 |
 | switchover_penalty | 3.9887251387622205e-05 |
 | gain = A_step3 - A_step0 | 0.026638842610014462 |
-| A_X (performability) | 0.9980448679536837 |
+| A_X (performability measure) | 0.9980448679536837 |
 | lambda_eq_X (perf) | 0.001000998003992016 |
 | MTTR_eq_X (perf) | 1.9570089730807578 |
 | A_G1 (perf) | 0.9999972367650123 |
@@ -221,17 +251,18 @@ npus = 384, l1_chips = 336, l2_chips = 112, l1_l2_links = 5376, links_per_subpla
 | §17 G1 chain (lambda_eq=0.003, c=0.9, T_m=6): product-form binomial | 1.1e-41 | 1.1e-41 |
 | §17 G1 chain (lambda_eq=0.001001, c=0.9, T_m=6): product-form binomial | 1.1e-41 | 1.1e-41 |
 | §17 step 3 = step 2 (phi < phi_min: threshold measure is strict) | 0.0e+00 | 0.0e+00 |
+| CM384: links_per_subplane = l2_ports_per_subplane | 0.0e+00 | 0.0e+00 |
 
-Largest relative difference over all checks: 4.6e-41 (40-digit arithmetic; anything below 1e-30 is roundoff).
+Largest relative difference over all checks: 4.6e-41 (40-digit arithmetic; anything below 1e-30 is roundoff). The two reduction cases (`kofn.group.n3k2_setb_crews1_reduction_to_v1`, `subhealth.unit.reduction_to_degraded_unit`) carry the classic chain's values in their notes (and, for k-of-n, as `*_classic` expected keys).
 
 ## Ambiguities in the specification and the reading used
 
-1. **§11 capacity of switch-failed states.** The spec defines w = n - a - m for (a, m) and says capacity `proportional` = w/n, `fractional` = min(1, w/k), but does not say what w is in S(a, m), where one more unit has failed and nothing has been repaired. I let S(a, m) inherit w = n - a - m (literal reading); the physically stricter choices would be w - 1 or 0 (group down). No expected value depends on this: the capacity keys are only requested for the p_sw = 1 cases, which have no S states.
+1. **§11 capacity of switch-failed states.** The spec defines w = n - a - m for (a, m) and says capacity `proportional` = w/n, `fractional` = min(1, w/k), but does not say what w is in S(a, m), where one more unit has failed and nothing has been repaired. I let S(a, m) inherit w = n - a - m (literal reading); the physically stricter choices would be w - 1 or 0 (group down). No expected value depends on this: the capacity keys are only requested for the p_sw = 1 cases, which have no S states (the switchover cases list their capacity under this reading in the notes, for information).
 2. **§11 behaviour inside S(a, m).** The table lists a single exit S(a, m) -> (a, m+1) at 1/T_sf. I followed it literally: while the switch failure is being recovered, the ongoing automatic/manual repairs of the other units and further failures are frozen. The failed unit then enters manual repair regardless of c.
-3. **§13 SW_(n-1).** The chain description given with the task defines SW_j for j = 0..n-1, i.e. an active failure with no standby left (j = n-1) can still 'fail to switch' and waits T_sf before the last repair starts; the spec's own U_sw sums only j <= n-2 ('a switch happens only while a standby exists'). I used the literal reading (SW_(n-1) present); the alternative values are in the notes of each standby case (MTTF is identical, A and nu differ in the 5th-7th digit).
+3. **§13 SW_(n-1).** The chain description given with the task defines SW_j for j = 0..n-1, i.e. an active failure with no standby left (j = n-1) can still 'fail to switch' and waits T_sf before the last repair starts; the spec's own U_sw sums only j <= n-2 ('a switch happens only while a standby exists'). I used the literal reading (SW_(n-1) present); the alternative values are in the notes of each standby case and in the §13 table (MTTF is identical; A and nu differ).
 4. **§14 failure frequency under the strict/threshold measure.** 'Flux from the up set (threshold rule) into the down set' makes every U -> H entry a failure when phi < phi_min. Used as written; nu_threshold for phi >= phi_min counts only transitions into I/D_a/D_m.
 5. **§16 manual_mean_s.** Taken as the unconditional contribution sum_(manual rungs) P_i t_i (161.28 s), so that auto_mean_s + manual_mean_s = E[T]; the conditional mean given a person is needed would be 14400 s.
-6. **§17 G1 at steps 2-3.** The task says to use the unit's lambda_eq (= nu/A from X's §14 chain) together with the *configured* dual repair (c, s, T_a, T_m) in the §11 chain, while step 1 uses the equivalent two-state unit (c = 0, T_m = MTTR_eq). Under the strict measure lambda_eq = lambda + lambda_sh exactly, but the configured E_R = 0.96 h differs from the unit's MTTR_eq = 0.98664 h (sub-health episodes last D = 1 h, not a dual repair), so the two readings give different A_step2/A_step3; both are in the waterfall table and the case notes. Primary = configured repair (as instructed).
+6. **§17 G1 at steps 2-3.** The task says to use the unit's lambda_eq (= nu/A from X's §14 chain) together with the *configured* dual repair (c, s, T_a, T_m) in the §11 chain, while step 1 uses the equivalent two-state unit (c = 0, T_m = MTTR_eq). Under the strict measure lambda_eq = lambda + lambda_sh exactly, but the configured E_R = 0.96 h differs from the unit's MTTR_eq = 0.98664 h (sub-health episodes last D = 1 h, not a dual repair), so the two readings give different A_step2/A_step3 (about 1.4e-6 relative, i.e. at the tolerance); both are in the waterfall table and the case notes. Primary = configured repair (as instructed).
 7. **§17 G1 crews.** Not configured for kofn(3, 2, X); I used unlimited repair (the v1 k-of-n default, §2 table). G1 has no switchover (p_sw = 1, t_sw = 0); only G2 does.
 8. **§17 MTBF/MTTR ratios between steps 0 and 3** (mentioned in §17) are not requested and not computed; only A per step, the switchover penalty and the availability gain are.
 9. **Legacy repair in the §11/§14 chains.** With c = 0 the states with a > 0 (resp. D_a) are unreachable; s and T_a are then irrelevant and are written as null in the JSON inputs. Structurally zero expected values (pi_Da for c = 0, pi_Dm for c = s = 1, U_sw for t_sw = 0) carry an additional `tolerance.abs = 1e-12` because a relative test cannot be applied to 0.

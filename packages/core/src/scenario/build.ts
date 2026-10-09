@@ -54,23 +54,72 @@ export interface Counts {
   planes: number;
   /** GPUs actually used by the workload (excluding hot spares) */
   workloadGpus: number;
+  /** v2 superpod counts (0 without topology.superpod) */
+  supernodes: number;
+  commRacks: number;
+  l1Switches: number;
+  l2Switches: number;
+  subPlanes: number;
+  opticalLinks: number;
+  transceivers: number;
+  gpusPerNode: number;
+  nodesPerRack: number;
+}
+
+/** GPUs per node and nodes per rack, from the superpod geometry when present. */
+export function nodeGeometry(s: Scenario): { gpusPerNode: number; nodesPerRack: number } {
+  const sp = s.topology.superpod;
+  return sp ? { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack } : { gpusPerNode: s.topology.gpusPerNode, nodesPerRack: s.topology.nodesPerRack };
 }
 
 export function computeCounts(s: Scenario): Counts {
   const t = s.topology;
+  const { gpusPerNode, nodesPerRack } = nodeGeometry(s);
   let workloadGpus: number;
   let gpus: number;
   if (s.workload.type === 'training') {
     workloadGpus = s.workload.nGpus;
-    gpus = workloadGpus + s.workload.hotSpareNodes * t.gpusPerNode;
+    gpus = workloadGpus + s.workload.hotSpareNodes * gpusPerNode;
   } else {
     workloadGpus = s.workload.replicasRequired * s.workload.gpusPerReplica;
     gpus = (s.workload.replicasRequired + s.workload.spareReplicas) * s.workload.gpusPerReplica;
   }
-  const nodes = Math.ceil(gpus / t.gpusPerNode);
-  const racks = Math.ceil(nodes / t.nodesPerRack);
+  const nodes = Math.ceil(gpus / gpusPerNode);
+  const racks = Math.ceil(nodes / nodesPerRack);
   const zones = Math.ceil(racks / t.racksPerZone);
-  return { gpus, nodes, racks, zones, nvlinkDomains: Math.ceil(gpus / t.nvlinkDomainGpus), planes: t.networkPlanes, workloadGpus };
+  const base: Counts = {
+    gpus,
+    nodes,
+    racks,
+    zones,
+    nvlinkDomains: Math.ceil(gpus / (t.superpod ? t.superpod.npusPerNode * t.superpod.nodesPerRack * t.superpod.computeRacks : t.nvlinkDomainGpus)),
+    planes: t.superpod ? t.superpod.subPlanes : t.networkPlanes,
+    workloadGpus,
+    supernodes: 0,
+    commRacks: 0,
+    l1Switches: 0,
+    l2Switches: 0,
+    subPlanes: 0,
+    opticalLinks: 0,
+    transceivers: 0,
+    gpusPerNode,
+    nodesPerRack,
+  };
+  const sp = t.superpod;
+  if (!sp) return base;
+  const nodesPerSupernode = sp.nodesPerRack * sp.computeRacks;
+  const supernodes = Math.max(1, Math.ceil(nodes / nodesPerSupernode));
+  const links = nodes * sp.l1PerNode * sp.linksPerL1;
+  return {
+    ...base,
+    supernodes,
+    commRacks: supernodes * sp.commRacks,
+    l1Switches: nodes * sp.l1PerNode,
+    l2Switches: supernodes * sp.subPlanes * sp.l2PerSubPlane,
+    subPlanes: supernodes * sp.subPlanes,
+    opticalLinks: links,
+    transceivers: links * sp.transceiversPerLink,
+  };
 }
 
 export interface ComponentInstances {
@@ -116,6 +165,34 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
     case 'fixed':
       instances = 1;
       unitsPerInstance = c.countRule.count;
+      break;
+    case 'supernode':
+      instances = counts.supernodes;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'comm_rack':
+      instances = counts.commRacks;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'l1_switch':
+      instances = counts.l1Switches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'l2_switch':
+      instances = counts.l2Switches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'subplane':
+      instances = counts.subPlanes;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'optical_link':
+      instances = counts.opticalLinks;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'transceiver':
+      instances = counts.transceivers;
+      unitsPerInstance = c.countRule.factor;
       break;
   }
   const lambda = toPerHour(c.failure.value, c.failure.unit);
@@ -226,7 +303,7 @@ export function buildStructure(s: Scenario, counts: Counts): { root: Block; item
     const nodeMembers = items.filter((ci) => PER_UNIT_SCOPES.has(ci.component.countRule.per) && !(ci.component as Component & { redundancy?: Redundancy }).redundancy);
     const others = items.filter((ci) => !nodeMembers.includes(ci));
     const perNode = nodeMembers.reduce((a, ci) => a + ci.lambdaIndependent * ci.total / counts.nodes, 0);
-    const workingNodes = Math.ceil(s.workload.nGpus / s.topology.gpusPerNode);
+    const workingNodes = Math.ceil(s.workload.nGpus / counts.gpusPerNode);
     const nodeUnit: LeafBlock = { kind: 'leaf', id: 'node', name: 'Node (GPUs, NICs, host)', count: 1, lambda: perNode, mttr: s.workload.spareReplenishHours };
     const pool: Block = { kind: 'kofn', id: 'node-pool', name: `Nodes ${workingNodes}-of-${workingNodes + s.workload.hotSpareNodes} with hot spares`, n: workingNodes + s.workload.hotSpareNodes, k: workingNodes, unit: nodeUnit };
     notes.push(`node unit aggregates ${nodeMembers.map((m) => m.component.id).join(', ')}; pool MTTR = spare replenishment ${s.workload.spareReplenishHours} h`);

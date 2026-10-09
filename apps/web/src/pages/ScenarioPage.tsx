@@ -184,7 +184,7 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
             <tr><th>{t('scenario.stage')}</th><th className="num">{t('scenario.valueS')}</th><th>{t('scenario.scaleLaw')}</th><th className="num">{t('scenario.refN')}</th><th className="num">{t('scenario.exponent')} / {t('scenario.slope')}</th><th>{t('common.notes')}</th><th></th></tr>
           </thead>
           <tbody>
-            {(mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset]?.stages ?? [] : s.recovery.stages).map((st, i) => {
+            {(s.recovery.mode === 'preset' ? PIPELINE_PRESETS[s.recovery.preset]?.stages ?? [] : s.recovery.mode === 'pipeline' ? s.recovery.stages : []).map((st, i) => {
               const ro = mode === 'preset';
               const setStage = (patch: Record<string, unknown>) =>
                 upd((x) => (x.recovery.mode === 'pipeline' ? { ...x, recovery: { ...x.recovery, stages: x.recovery.stages.map((q, j) => (j === i ? ({ ...q, ...patch } as typeof q) : q)) } } : x));
@@ -244,13 +244,13 @@ function ComponentsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
                 <td><Select value={c.subsystem} onChange={(v) => setComp(c.id, (q) => ({ ...q, subsystem: v }))} options={SUBSYSTEMS.map((x) => ({ value: x, label: x }))} /></td>
                 <td style={{ minWidth: 150 }}>
                   <div style={{ display: 'flex', gap: 4 }}>
-                    <Select value={c.countRule.per} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: v === 'fixed' ? { per: 'fixed', count: 1 } : { per: v as 'gpu', factor: 1 } }))} options={['gpu', 'node', 'rack', 'zone', 'fixed'].map((x) => ({ value: x, label: `per ${x}` }))} />
+                    <Select value={c.countRule.per} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: v === 'fixed' ? { per: 'fixed', count: 1 } : { per: v as 'gpu', factor: 1 } }))} options={['gpu', 'node', 'rack', 'zone', 'fixed', 'supernode', 'comm_rack', 'l1_switch', 'l2_switch', 'subplane', 'optical_link', 'transceiver'].map((x) => ({ value: x, label: `per ${x}` }))} />
                     <NumberInput value={c.countRule.per === 'fixed' ? c.countRule.count : c.countRule.factor} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: q.countRule.per === 'fixed' ? { per: 'fixed', count: v } : { per: q.countRule.per, factor: v } }))} />
                   </div>
                 </td>
                 <td className="num" style={{ minWidth: 90 }}><NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} /></td>
                 <td><Select value={c.failure.unit} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, unit: v } }))} options={RATE_UNITS.map((u) => ({ value: u, label: u }))} /></td>
-                <td className="num" style={{ minWidth: 80 }}><NumberInput value={c.repair.mttrHours} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v } }))} /></td>
+                <td className="num" style={{ minWidth: 80 }}><NumberInput value={c.repair.manual?.mttrHours ?? c.repair.mttrHours ?? 0} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} /></td>
                 <td style={{ minWidth: 170 }}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <Select value={c.redundancy?.scheme ?? 'series'} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: v === 'series' ? undefined : { scheme: v as 'parallel', n: q.countRule.per === 'fixed' ? q.countRule.count : q.countRule.factor, k: v === 'kofn' ? Math.max(1, (q.countRule.per === 'fixed' ? q.countRule.count : q.countRule.factor) - 1) : undefined } }))} options={['series', 'parallel', 'kofn', 'standby'].map((x) => ({ value: x, label: x }))} />

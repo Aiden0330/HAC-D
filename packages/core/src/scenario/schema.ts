@@ -100,9 +100,56 @@ export const CountRuleSchema = z.discriminatedUnion('per', [
   z.object({ per: z.literal('rack'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('zone'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('fixed'), count: z.number().nonnegative() }),
+  /** v2 superpod scopes (counts derived from topology.superpod) */
+  z.object({ per: z.literal('supernode'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('comm_rack'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('l1_switch'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('l2_switch'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('subplane'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('optical_link'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('transceiver'), factor: z.number().positive().default(1) }),
 ]);
 
-export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster']);
+export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack']);
+
+/**
+ * v2 supernode (SuperPoD) geometry. Defaults are the CloudMatrix384 facts from the Huawei paper
+ * (arXiv 2506.12708 §3.3): 48 nodes × (8 NPU + 4 CPU + 7 L1 UB chips), 12 compute + 4 communication racks,
+ * 7 L2 sub-planes × 16 chips × 48 ports, 16 links per L1 chip.
+ */
+export const SuperpodSchema = z.object({
+  preset: z.enum(['cloudmatrix384', 'atlas950', 'custom']).default('custom'),
+  npusPerNode: z.number().int().positive().default(8),
+  cpusPerNode: z.number().int().nonnegative().default(4),
+  l1PerNode: z.number().int().nonnegative().default(7),
+  nodesPerRack: z.number().int().positive().default(4),
+  computeRacks: z.number().int().positive().default(12),
+  commRacks: z.number().int().nonnegative().default(4),
+  subPlanes: z.number().int().positive().default(7),
+  l2PerSubPlane: z.number().int().nonnegative().default(16),
+  l2Ports: z.number().int().positive().default(48),
+  linksPerL1: z.number().int().nonnegative().default(16),
+  transceiversPerLink: z.number().int().nonnegative().default(2),
+  rdmaPortsPerNpu: z.number().int().nonnegative().default(2),
+  vpcNicsPerNode: z.number().int().nonnegative().default(1),
+});
+export type Superpod = z.infer<typeof SuperpodSchema>;
+
+/** Public presets; every field not stated by a public source is marked in `assumed`. */
+export const SUPERPOD_PRESETS: Record<'cloudmatrix384' | 'atlas950', { values: Superpod; assumed: (keyof Superpod)[]; source: string }> = {
+  cloudmatrix384: {
+    values: { preset: 'cloudmatrix384', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 4, computeRacks: 12, commRacks: 4, subPlanes: 7, l2PerSubPlane: 16, l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1 },
+    assumed: ['transceiversPerLink', 'vpcNicsPerNode'],
+    source: 'Huawei, Serving Large Language Models on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3.1–3.3.3; The Register 2025-07-29',
+  },
+  atlas950: {
+    // 8,192 NPUs in 160 cabinets (128 compute + 32 communication, secondary press): 1,024 nodes → 8 nodes per compute cabinet.
+    // Fabric tiers are not public: the same 7-plane / 16-link L1 radix is assumed and the L2 count scaled to keep the fabric non-blocking.
+    values: { preset: 'atlas950', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 8, computeRacks: 128, commRacks: 32, subPlanes: 7, l2PerSubPlane: Math.ceil((1024 * 16) / 48), l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1 },
+    assumed: ['npusPerNode', 'cpusPerNode', 'l1PerNode', 'nodesPerRack', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink', 'rdmaPortsPerNpu', 'vpcNicsPerNode'],
+    source: 'Huawei Connect 2025 press (8,192 NPUs; cabinet split from secondary coverage); fabric geometry assumed from CloudMatrix384',
+  },
+};
 
 export const ComponentSchema = z.object({
   id: z.string(),
@@ -151,6 +198,8 @@ export const TopologySchema = z.object({
   torMode: z.enum(['single', 'dual']).default('single'),
   power: z.enum(['none', 'N+1', '2N', 'catcher']).default('2N'),
   cooling: z.object({ modules: z.number().int().positive(), required: z.number().int().positive() }).prefault({ modules: 6, required: 5 }),
+  /** v2: supernode geometry; when present it defines gpusPerNode / nodesPerRack and the superpod count scopes */
+  superpod: SuperpodSchema.optional(),
 });
 
 const BlockBaseSchema = z.object({ id: z.string(), name: z.string().optional() });
