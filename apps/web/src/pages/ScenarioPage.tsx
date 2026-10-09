@@ -358,12 +358,12 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
                     </td>
                     <td className="num" style={{ minWidth: 90 }}>
                       <NumberInput value={c.failure.value} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: v } }))} />
-                      {row && <div className="muted" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('scenario.mtbfUnit')} {row.lambdaPerUnitPerHour > 0 ? fmtHours(1 / row.lambdaPerUnitPerHour, lang) : '∞'} · {t('scenario.lambdaAgg')} {row.lambdaAggregatePerHour.toExponential(2)}/h</div>}
+                      {row && <div className="muted" style={{ fontSize: 11, maxWidth: 150 }}>{t('scenario.mtbfUnit')} {row.lambdaPerUnitPerHour > 0 ? fmtHours(1 / row.lambdaPerUnitPerHour, lang) : '∞'}<br />{t('scenario.lambdaAgg')} {row.lambdaAggregatePerHour.toExponential(2)}/h</div>}
                     </td>
                     <td><Select value={c.failure.unit} onChange={(v) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, unit: v } }))} options={RATE_UNITS.map((u) => ({ value: u, label: u }))} /></td>
                     <td className="num" style={{ minWidth: 80 }}>
                       <NumberInput value={manualOf(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, repair: { ...q.repair, mttrHours: v, manual: q.repair.manual ? { mttrHours: v } : undefined } }))} />
-                      {row && <div className="muted" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{t('scenario.meanRepair_')} {fmtHours(row.mttrHours, lang)}</div>}
+                      {row && <div className="muted" style={{ fontSize: 11 }}>{t('scenario.meanRepair_')} {fmtHours(row.mttrHours, lang)}</div>}
                     </td>
                     <td style={{ minWidth: 170 }}>
                       <div style={{ display: 'flex', gap: 4 }}>
