@@ -1,0 +1,96 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { McComparison } from '@hac-d/core';
+import { useActive, useLang } from '../hooks.js';
+import { compute, progressCallback } from '../worker/client.js';
+import { Kpi, Card, DataTable, Field, NumberInput, Badge } from '../components/ui.js';
+import { Histogram } from '../charts/Histogram.js';
+import { BarChart } from '../charts/BarChart.js';
+import { fmtPct, fmtHours, fmtNum, fmtInt } from '../lib/format.js';
+
+export function SimulatePage() {
+  const { t } = useTranslation();
+  const lang = useLang();
+  const active = useActive();
+  const [reps, setReps] = useState(100);
+  const [seed, setSeed] = useState(1);
+  const [workHours, setWorkHours] = useState<number>(active?.scenario.workload.type === 'training' ? Math.min(active.scenario.workload.durationDays * 24, 240) : 240);
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [res, setRes] = useState<McComparison | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
+  if (active.scenario.workload.type !== 'training') return <div className="callout">{t('simulate.notTraining')}</div>;
+
+  const run = async () => {
+    setRunning(true);
+    setErr(null);
+    setProgress(0);
+    try {
+      const r = await compute().simulate(active.scenario, { replications: reps, seed, workHours }, progressCallback((d, n) => setProgress(d / n)));
+      setRes(r);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const s = res?.summary;
+  return (
+    <div className="grid" style={{ gap: 14 }}>
+      <div className="page-title">
+        <h1>{t('simulate.title')}</h1>
+        <span className="sub">{t('simulate.sub')}</span>
+      </div>
+      <Card>
+        <div className="form-grid">
+          <Field label={t('simulate.replications')}><NumberInput value={reps} min={5} max={2000} step={5} onChange={setReps} /></Field>
+          <Field label={t('simulate.seed')}><NumberInput value={seed} min={0} step={1} onChange={setSeed} /></Field>
+          <Field label={t('simulate.workHours')}><NumberInput value={workHours} min={1} step={24} onChange={setWorkHours} /></Field>
+          <div className="field" style={{ justifyContent: 'end' }}>
+            <button type="button" className="btn primary" disabled={running} onClick={run}>{running ? t('common.running') : t('simulate.run')}</button>
+          </div>
+        </div>
+        {running && <div className="progress" style={{ marginTop: 10 }}><div style={{ width: `${(progress * 100).toFixed(0)}%` }} /></div>}
+        {err && <div className="callout crit" style={{ marginTop: 8 }}>{err}</div>}
+      </Card>
+      {res && s && (
+        <>
+          <div className={`callout${res.disagrees ? ' warn' : ''}`}>
+            <Badge status={res.disagrees ? 'warn' : 'pass'}>{res.disagrees ? t('simulate.disagrees') : t('simulate.agrees')}</Badge>
+            {' '}{t('simulate.mc')} {fmtPct(s.goodput.mean, 2)} ± {fmtPct(s.goodput.ci95, 2)} vs {t('simulate.closedForm')} {fmtPct(res.closedForm.goodput, 2)} ({t('simulate.delta')} {fmtPct(res.delta.goodput, 2)})
+          </div>
+          <div className="kpi-row">
+            <Kpi label={`${t('common.goodput')} (${t('simulate.mc')})`} value={fmtPct(s.goodput.mean, 2)} note={`${t('simulate.ci')} ± ${fmtPct(s.goodput.ci95, 2)} · P5 ${fmtPct(s.goodput.p05, 1)} · P95 ${fmtPct(s.goodput.p95, 1)}`} hero />
+            <Kpi label={t('common.mtbi')} value={fmtHours(s.mtbiHours.mean, lang)} note={`${t('simulate.closedForm')} ${fmtHours(res.closedForm.mtbiHours, lang)}`} />
+            <Kpi label={t('common.interruptions_per_day')} value={fmtNum(s.interruptionsPerDay.mean, 2)} note={`${t('simulate.closedForm')} ${fmtNum(res.closedForm.interruptionsPerDay, 2)}`} />
+            <Kpi label={t('simulate.blocked')} value={fmtPct(s.blockedFraction.mean, 3)} note={`${t('simulate.closedForm')} ${fmtPct(res.closedForm.blockedProbability, 3)}`} />
+            <Kpi label={t('simulate.peakSpares')} value={String(s.peakSparesInUse.p99)} note={`mean ${fmtNum(s.peakSparesInUse.mean, 1)}`} />
+            <Kpi label="recovery / recompute / degraded" value={`${fmtPct(s.recoveryFraction.mean, 2)} · ${fmtPct(s.recomputeFraction.mean, 2)} · ${fmtPct(s.degradedLossFraction.mean, 2)}`} note={`CCF events / replication ${fmtNum(s.ccfEventsPerReplication.mean, 2)}`} />
+          </div>
+          <div className="grid cols-2">
+            <Card>
+              <Histogram title={t('simulate.goodputDist')} values={s.rows.map((r) => r.goodput)} format={(v) => fmtPct(v, 1)} refs={[{ value: res.closedForm.goodput, label: t('simulate.closedForm') }, { value: s.goodput.mean, label: t('simulate.mc'), color: 'var(--series-2)' }]} />
+            </Card>
+            <Card>
+              <BarChart title={t('simulate.failures')} data={Object.entries(s.failuresByClass).sort((a, b) => b[1] - a[1]).map(([k, v]) => ({ label: k, value: v / s.replications }))} format={(v) => fmtNum(v, 1)} unitLabel="failures / replication" />
+            </Card>
+          </div>
+          <Card title={t('common.table')}>
+            <DataTable
+              columns={['', 'mean', 'sd', 'P5', 'P50', 'P95']}
+              rows={[
+                [t('common.goodput'), fmtPct(s.goodput.mean, 3), fmtPct(s.goodput.sd, 3), fmtPct(s.goodput.p05, 3), fmtPct(s.goodput.p50, 3), fmtPct(s.goodput.p95, 3)],
+                [t('common.mtbi'), fmtHours(s.mtbiHours.mean, lang), fmtHours(s.mtbiHours.sd, lang), fmtHours(s.mtbiHours.p05, lang), fmtHours(s.mtbiHours.p50, lang), fmtHours(s.mtbiHours.p95, lang)],
+                [t('common.interruptions_per_day'), fmtNum(s.interruptionsPerDay.mean, 2), fmtNum(s.interruptionsPerDay.sd, 2), fmtNum(s.interruptionsPerDay.p05, 2), fmtNum(s.interruptionsPerDay.p50, 2), fmtNum(s.interruptionsPerDay.p95, 2)],
+                [t('simulate.blocked'), fmtPct(s.blockedFraction.mean, 3), fmtPct(s.blockedFraction.sd, 3), fmtPct(s.blockedFraction.p05, 3), fmtPct(s.blockedFraction.p50, 3), fmtPct(s.blockedFraction.p95, 3)],
+                [t('simulate.peakSpares'), fmtNum(s.peakSparesInUse.mean, 1), fmtNum(s.peakSparesInUse.sd, 1), fmtInt(s.peakSparesInUse.p05), fmtInt(s.peakSparesInUse.p50), fmtInt(s.peakSparesInUse.p95)],
+              ]}
+            />
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}

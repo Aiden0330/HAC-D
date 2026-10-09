@@ -211,15 +211,25 @@ export function lifetimeFromRate(ratePerHour: number, weibullShape?: number): Di
 
 /* ------------------------------ simulator ------------------------------ */
 
-export function simulateJob(spec: McJobSpec, replications: number, seed: number | string = 1): McSummary {
+/** Run replications [from, from+count) with the seed convention of simulateJob (lets a worker run in chunks). */
+export function simulateReplications(spec: McJobSpec, from: number, count: number, seed: number | string = 1): McReplication[] {
   const rows: McReplication[] = [];
-  const failuresByClass: Record<string, number> = {};
-  for (let r = 0; r < replications; r++) {
+  for (let r = from; r < from + count; r++) {
     const rng = new Rng(typeof seed === 'number' ? (seed + r * 7919) >>> 0 : `${seed}:${r}`);
-    const rep = runOnce(spec, rng);
-    rows.push(rep);
-    for (const [k, v] of Object.entries(rep.failuresByClass)) failuresByClass[k] = (failuresByClass[k] ?? 0) + v;
+    rows.push(runOnce(spec, rng));
   }
+  return rows;
+}
+
+export function simulateJob(spec: McJobSpec, replications: number, seed: number | string = 1): McSummary {
+  return summarize(simulateReplications(spec, 0, replications, seed), seed);
+}
+
+/** Aggregate replication rows into the summary statistics. */
+export function summarize(rows: McReplication[], seed: number | string = 1): McSummary {
+  const replications = rows.length;
+  const failuresByClass: Record<string, number> = {};
+  for (const rep of rows) for (const [k, v] of Object.entries(rep.failuresByClass)) failuresByClass[k] = (failuresByClass[k] ?? 0) + v;
   const peak = rows.map((x) => x.peakSparesInUse);
   const sortedPeak = [...peak].sort((a, b) => a - b);
   return {

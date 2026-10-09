@@ -13,3 +13,4 @@ export * from './cost/index.js';
 export * from './scenario/index.js';
 export * from './mc/index.js';
 export * from './mc/fromScenario.js';
+export * from './library/index.js';

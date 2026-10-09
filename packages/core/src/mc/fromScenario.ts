@@ -92,18 +92,35 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
   };
 }
 
-export function simulateScenario(s: Scenario, opts: McRunOptions = {}): McComparison {
+export interface McRun {
+  spec: McJobSpec;
+  closedForm: McComparison['closedForm'];
+  replications: number;
+  seed: number | string;
+}
+
+/** Prepare a run (spec + closed-form reference) so a worker can execute replications in chunks. */
+export function buildMcRun(s: Scenario, opts: McRunOptions = {}): McRun {
   const ev = evaluateScenario(s);
   if (!ev.training) throw new Error('Monte Carlo job simulation needs a training workload');
   const intervalS = opts.intervalS ?? ev.training.tauS;
   const spec = mcSpecFromScenario(s, intervalS, opts.workHours);
-  const summary = simulateJob(spec, opts.replications ?? 100, opts.seed ?? 1);
-  const closed = {
-    goodput: ev.training.effectiveGoodput,
-    mtbiHours: ev.training.mtbiHours,
-    interruptionsPerDay: ev.training.interruptionsPerDay,
-    blockedProbability: ev.training.blockedProbability,
+  return {
+    spec,
+    closedForm: {
+      goodput: ev.training.effectiveGoodput,
+      mtbiHours: ev.training.mtbiHours,
+      interruptionsPerDay: ev.training.interruptionsPerDay,
+      blockedProbability: ev.training.blockedProbability,
+    },
+    replications: opts.replications ?? 100,
+    seed: opts.seed ?? 1,
   };
+}
+
+/** Finish a run from its summary. */
+export function finishMcRun(run: McRun, summary: McSummary): McComparison {
+  const closed = run.closedForm;
   const dg = summary.goodput.mean - closed.goodput;
   const disagrees = Math.abs(dg) > Math.max(0.02, summary.goodput.ci95 * 2);
   return {
@@ -111,6 +128,11 @@ export function simulateScenario(s: Scenario, opts: McRunOptions = {}): McCompar
     closedForm: closed,
     delta: { goodput: dg, goodputRelative: dg / closed.goodput, mtbiRelative: summary.mtbiHours.mean / closed.mtbiHours - 1 },
     disagrees,
-    spec,
+    spec: run.spec,
   };
+}
+
+export function simulateScenario(s: Scenario, opts: McRunOptions = {}): McComparison {
+  const run = buildMcRun(s, opts);
+  return finishMcRun(run, simulateJob(run.spec, run.replications, run.seed));
 }
