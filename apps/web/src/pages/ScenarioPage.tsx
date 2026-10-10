@@ -130,7 +130,7 @@ export function ScenarioPage() {
           {s.topology.superpod && (
             <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
               {s.topology.superpod.preset !== 'custom' && <span>{t('scenario.assumedFields')}: {SUPERPOD_PRESETS[s.topology.superpod.preset].assumed.join(', ')} · {SUPERPOD_PRESETS[s.topology.superpod.preset].source}. </span>}
-              {!active.error && result && <span>{t('scenario.derivedCounts')}: {result.counts.nodes} nodes · {result.counts.supernodes} supernode(s) · {result.counts.l1Switches} L1 · {result.counts.l2Switches} L2 · {result.counts.opticalLinks} links · {result.counts.transceivers} transceivers · {result.counts.subPlanes} sub-planes</span>}
+              {!active.error && result && (() => { const sp = s.topology.superpod!; const perNode = `${sp.npusPerNode} NPU (${sp.npusPerNode * 2} dies, ${sp.npusPerNode * 8} HBM stacks) · ${sp.cpusPerNode} CPU · ${sp.l1PerNode} L1 UB chips · ${sp.l1PerNode * sp.linksPerL1} UB uplinks (= ${sp.npusPerNode} × ${sp.l1PerNode * sp.linksPerL1 / sp.npusPerNode} per NPU) · ${sp.rdmaPortsPerNpu * sp.npusPerNode} RDMA ports · ${sp.vpcNicsPerNode} Qingtian card`; return <span>{t('scenario.perNode')}: {perNode}. {t('scenario.derivedCounts')}: {result.counts.nodes} nodes · {result.counts.supernodes} supernode(s) · {result.counts.nodes * sp.cpusPerNode} CPU · {result.counts.l1Switches} L1 · {result.counts.l2Switches} L2 · {result.counts.opticalLinks} links · {result.counts.transceivers} transceivers · {result.counts.subPlanes} sub-planes</span>; })()}
             </div>
           )}
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.measures')}</h3>

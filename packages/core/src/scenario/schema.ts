@@ -139,8 +139,9 @@ export type Superpod = z.infer<typeof SuperpodSchema>;
 export const SUPERPOD_PRESETS: Record<'cloudmatrix384' | 'atlas950', { values: Superpod; assumed: (keyof Superpod)[]; source: string }> = {
   cloudmatrix384: {
     values: { preset: 'cloudmatrix384', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 4, computeRacks: 12, commRacks: 4, subPlanes: 7, l2PerSubPlane: 16, l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1 },
-    assumed: ['transceiversPerLink', 'vpcNicsPerNode'],
-    source: 'Huawei, Serving Large Language Models on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3.1–3.3.3; The Register 2025-07-29',
+    // §3.3.2 also states that one CPU per node hosts the Qingtian card (vpcNicsPerNode = 1); only the two transceiver ends per L1–L2 link are an assumption
+    assumed: ['transceiversPerLink'],
+    source: 'Huawei, Serving Large Language Models on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3.1–3.3.3 (8 NPU + 4 CPU + 7 L1 UB chips per node; 48 nodes in 12 compute + 4 communication racks; 7 sub-planes × 16 L2 chips × 48 ports; 16 links per L1 chip; 7 UB transceivers and 1 RDMA interface per die, 2 dies and 8 HBM stacks per NPU); The Register 2025-07-29 (14 × 28 GB/s UB links per NPU)',
   },
   atlas950: {
     // 8,192 NPUs in 160 cabinets (128 compute + 32 communication, secondary press): 1,024 nodes → 8 nodes per compute cabinet.
