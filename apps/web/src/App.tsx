@@ -38,7 +38,7 @@ export function App() {
             <label htmlFor="scenario-select" className="muted">{t('nav.scenario')}</label>
             <select id="scenario-select" value={activeId} onChange={(e) => setActive(e.target.value)}>
               {scenarios.map((s) => (
-                <option key={s.meta.id} value={s.meta.id}>{s.meta.name}</option>
+                <option key={s.meta.id} value={s.meta.id}>{scenarios.filter((x) => x.meta.name === s.meta.name).length > 1 ? `${s.meta.name} [${s.meta.id}]` : s.meta.name}</option>
               ))}
             </select>
           </div>

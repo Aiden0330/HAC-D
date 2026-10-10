@@ -41,15 +41,28 @@ function persist(scenarios: Scenario[]): void {
   }
 }
 
-function initialScenarios(): Scenario[] {
-  const persisted = loadPersisted();
-  if (persisted) return persisted;
+function builtInScenarios(): Scenario[] {
   const ids = new Set<string>();
   return Object.keys(EXAMPLES).map((k) => {
     const s = ensureId(EXAMPLES[k](), ids);
     ids.add(s.meta.id!);
     return s;
   });
+}
+
+/** Persisted scenarios are kept; built-in examples that are missing from them (added by a newer version) are appended. */
+function initialScenarios(): Scenario[] {
+  const builtIns = builtInScenarios();
+  const persisted = loadPersisted();
+  if (!persisted) return builtIns;
+  const have = new Set(persisted.map((s) => s.meta.id));
+  const missing = builtIns.filter((s) => !have.has(s.meta.id));
+  if (missing.length) {
+    const next = [...persisted, ...missing];
+    persist(next);
+    return next;
+  }
+  return persisted;
 }
 
 function initialTheme(): Theme {
@@ -75,7 +88,10 @@ interface AppState {
   replaceScenario: (id: string, s: Scenario) => void;
   removeScenario: (id: string) => void;
   duplicateActive: () => void;
+  /** select the built-in example if it is already in the list, otherwise add it */
   loadExample: (key: string) => void;
+  /** overwrite the scenario that carries the example's id with the pristine built-in definition */
+  restoreExample: (key: string) => void;
   toggleCompare: (id: string) => void;
   resetToExamples: () => void;
 }
@@ -138,7 +154,26 @@ export const useStore = create<AppState>((set, get) => {
     loadExample: (key) => {
       const f = EXAMPLES[key];
       if (!f) return;
-      get().addScenario(f(), true);
+      const fresh = f();
+      const existing = get().scenarios.find((s) => s.meta.id === fresh.meta.id);
+      if (existing) {
+        set({ activeId: existing.meta.id! });
+        return;
+      }
+      get().addScenario(fresh, true);
+    },
+    restoreExample: (key) => {
+      const f = EXAMPLES[key];
+      if (!f) return;
+      const fresh = f();
+      const existing = get().scenarios.find((s) => s.meta.id === fresh.meta.id);
+      if (!existing) {
+        get().addScenario(fresh, true);
+        return;
+      }
+      const next = get().scenarios.map((s) => (s.meta.id === fresh.meta.id ? fresh : s));
+      persist(next);
+      set({ scenarios: next, activeId: fresh.meta.id! });
     },
     toggleCompare: (id) => {
       const cur = get().compareIds;
@@ -150,12 +185,7 @@ export const useStore = create<AppState>((set, get) => {
       } catch {
         /* ignore */
       }
-      const ids = new Set<string>();
-      const fresh = Object.keys(EXAMPLES).map((k) => {
-        const s = ensureId(EXAMPLES[k](), ids);
-        ids.add(s.meta.id!);
-        return s;
-      });
+      const fresh = builtInScenarios();
       set({ scenarios: fresh, activeId: fresh[0].meta.id!, compareIds: fresh.slice(0, 3).map((s) => s.meta.id!) });
     },
   };

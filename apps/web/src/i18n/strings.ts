@@ -13,7 +13,7 @@ export const strings = {
     },
     scenario: {
       title: 'Scenario', sub: 'Topology, component classes with 口径-typed rates, workload, recovery pipeline, spares and targets.',
-      examples: 'Load example', importJson: 'Import JSON', exportJson: 'Export JSON', duplicate: 'Duplicate', deleteScenario: 'Delete', newBlank: 'New (blank)',
+      examples: 'Load example', examplesHint: 'Selects the example if it is already in your list; otherwise adds it. Use Duplicate for a working copy.', restoreExample: 'Restore built-in', restoreHint: 'Overwrite the scenario carrying this example id with the pristine built-in definition.', alwaysDown: 'in repair almost all the time (series of all units with manual repair); MTBF / MTTR not meaningful', importJson: 'Import JSON', exportJson: 'Export JSON', duplicate: 'Duplicate', deleteScenario: 'Delete', newBlank: 'New (blank)',
       topology: 'Topology', workload: 'Workload', recovery: 'Recovery pipeline', spares: 'Spares policy', targets: 'Targets', costs: 'Costs', components: 'Component classes', structure: 'Structure', json: 'Scenario JSON',
       gpusPerNode: 'GPUs per node', nodesPerRack: 'Nodes per rack', racksPerZone: 'Racks per zone', nvlinkDomain: 'NVLink domain (GPU)', planes: 'Network planes', torMode: 'ToR', power: 'Power', coolingModules: 'Cooling modules', coolingRequired: 'Cooling required',
       nGpus: 'Job GPUs / NPUs', durationDays: 'Job duration (days)', deltaS: 'Exposed checkpoint save δ (s)', intervalModel: 'Interval model', hotSpares: 'Hot-spare nodes', replenish: 'Spare replenishment (h)', recoveryPath: 'Recovery path', stepTime: 'Step time (s)',
@@ -99,7 +99,7 @@ export const strings = {
     },
     scenario: {
       title: '方案', sub: '拓扑、带口径的部件故障参数、负载、恢复流水线、备件策略与目标。',
-      examples: '加载示例', importJson: '导入 JSON', exportJson: '导出 JSON', duplicate: '复制方案', deleteScenario: '删除', newBlank: '新建（空白）',
+      examples: '加载示例', examplesHint: '若列表中已有该示例则直接选中，否则新增；需要副本请用「复制方案」。', restoreExample: '恢复内置版本', restoreHint: '用内置定义覆盖同 id 的方案。', alwaysDown: '几乎始终处于维修状态（全部单元串联、人工修复）；MTBF / MTTR 无意义', importJson: '导入 JSON', exportJson: '导出 JSON', duplicate: '复制方案', deleteScenario: '删除', newBlank: '新建（空白）',
       topology: '拓扑', workload: '负载', recovery: '恢复流水线', spares: '备件策略', targets: '目标', costs: '成本', components: '部件类', structure: '结构', json: '方案 JSON',
       gpusPerNode: '每节点 GPU 数', nodesPerRack: '每机柜节点数', racksPerZone: '每 zone 机柜数', nvlinkDomain: 'NVLink 域（GPU 数）', planes: '网络平面数', torMode: 'ToR', power: '供电', coolingModules: '冷却模块数', coolingRequired: '冷却所需模块数',
       nGpus: '作业 GPU/NPU 数', durationDays: '作业时长（天）', deltaS: 'checkpoint 阻塞写入 δ（秒）', intervalModel: '间隔模型', hotSpares: '热备节点数', replenish: '备机补充时间（小时）', recoveryPath: '恢复路径', stepTime: '单步时间（秒）',

@@ -60,7 +60,8 @@ export function ScenarioPage() {
       <Card>
         <div className="btn-row">
           <div className="select-fill"><Select value={exampleKey} onChange={setExampleKey} options={Object.keys(EXAMPLES).map((k) => ({ value: k, label: `${k} — ${EXAMPLES[k]().meta.name}` }))} /></div>
-          <button type="button" className="btn" onClick={() => store.loadExample(exampleKey)}>{t('scenario.examples')}</button>
+          <button type="button" className="btn" onClick={() => store.loadExample(exampleKey)} title={t('scenario.examplesHint')}>{t('scenario.examples')}</button>
+          <button type="button" className="btn" onClick={() => store.restoreExample(exampleKey)} title={t('scenario.restoreHint')}>{t('scenario.restoreExample')}</button>
           <button type="button" className="btn" onClick={() => fileRef.current?.click()}>{t('scenario.importJson')}</button>
           <input ref={fileRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importJson(f); e.currentTarget.value = ''; }} />
           <button type="button" className="btn" onClick={() => download(scenarioFilename(s, 'json'), JSON.stringify(s, null, 2))}>{t('scenario.exportJson')}</button>
@@ -73,7 +74,7 @@ export function ScenarioPage() {
       {!active.error && result && (
         <div className="kpi-row">
           <Kpi label={`${t('common.availability')} (${t('measures.compensated')})`} value={fmtPct(result.system.availability, 4)} note={`${t('measures.performability')} ${fmtPct(result.system.measures.performability, 4)}`} />
-          <Kpi label={`${t('common.availability')} (${t('measures.original')})`} value={fmtPct(result.system.measures.original.availability, 4)} note={`${t('common.mtbf')} ${fmtHours(result.system.measures.original.mtbfHours, lang)} · ${t('common.mttr_eq')} ${fmtHours(result.system.measures.original.equivalentMttrHours, lang)}`} />
+          <Kpi label={`${t('common.availability')} (${t('measures.original')})`} value={fmtPct(result.system.measures.original.availability, 4)} note={result.system.measures.original.availability < 1e-6 ? t('scenario.alwaysDown') : `${t('common.mtbf')} ${fmtHours(result.system.measures.original.mtbfHours, lang)} · ${t('common.mttr_eq')} ${fmtHours(result.system.measures.original.equivalentMttrHours, lang)}`} />
           <Kpi label={`${t('common.mtbf')} (${t('measures.compensated')})`} value={fmtHours(result.system.mtbfHours, lang)} note={`${fmtNum(result.system.failuresPerYear, 1)} ${t('common.failures_per_year')}`} />
           <Kpi label={`${t('common.mttr_eq')} (${t('measures.compensated')})`} value={fmtHours(result.system.equivalentMttrHours, lang)} note={result.system.autoDowntimeShare !== undefined ? `${t('measures.autoShare')} ${fmtPct(result.system.autoDowntimeShare, 0)}` : undefined} />
           {result.training && <Kpi label={t('common.goodput')} value={fmtPct(result.training.effectiveGoodput, 2)} note={`${t('common.mtbi')} ${fmtDuration(result.training.mtbiS, lang)} · R ${fmtDuration(result.training.recoveryS, lang)}`} tone={result.training.effectiveGoodput < 0.9 ? 'bad' : undefined} />}
