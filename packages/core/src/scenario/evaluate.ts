@@ -8,7 +8,7 @@ import { composeMttr, recoveryTimeS, recoverySampler as pipelineSampler, PIPELIN
 import { subhealthUnit, humanFraction as repairHumanFraction, isDual } from '../ctmc/repair.js';
 import { ladderExpectation, ladderSampler, LADDER_PRESETS, type Ladder, type LadderResult } from '../recovery/ladder.js';
 import type { Rng } from '../math/rng.js';
-import { youngInterval, dalyThreeTerm, dalyExact, saxenaOptimalPeriod, goodputFirstOrder, dalyGoodput, scaleTable, type GoodputFirstOrder, type ScaleRow } from '../checkpoint/index.js';
+import { youngInterval, dalyThreeTerm, dalyExact, saxenaOptimalPeriod, goodputFirstOrder, dalyGoodput, scaleTable, renewalGoodput, expectedRollbackS, operationalAvailability, productGoodput, headlineGoodput, type GoodputFirstOrder, type ScaleRow } from '../checkpoint/index.js';
 import { hotSparesBinomial, hotSparesPoisson, repairPipelineSpares, replacementsOverJob } from '../sparing/index.js';
 import { binomCdf } from '../math/special.js';
 import { lostDollarsPerDay, wastedGpuHoursPerDay } from '../cost/index.js';
@@ -84,7 +84,17 @@ export interface TrainingKpis {
   mtbiS: number;
   recoveryS: number;
   recovery: ComposedMttr;
-  recoveryKind: 'pipeline' | 'ladder';
+  recoveryKind: 'pipeline' | 'ladder' | 'mixture';
+  /** v2 goodput models (docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md): */
+  operationalAvailability: number;
+  renewalGoodput: number;
+  productGoodput: number;
+  /** E[min(X, τ) | X < τ+δ]: the rollback implied by the exact renewal model, seconds */
+  impliedRecomputeS: number;
+  /** headline goodput before blocked spares and sub-health: first order while valid, else exact renewal */
+  headlineGoodput: number;
+  headlineModel: 'first-order' | 'exact-renewal';
+  recomputeSource: 'tau/2' | 'measured' | 'step';
   recoveryId: string;
   ladder?: LadderResult;
   /** v2 sub-health at job level: straggler law and isolation interruptions */
@@ -178,13 +188,13 @@ export function resolvePipeline(s: Scenario): Pipeline {
     if (!p) throw new Error(`unknown recovery preset '${s.recovery.preset}'`);
     return p;
   }
-  if (s.recovery.mode === 'ladder') throw new Error('recovery is a ladder: use resolveRecovery()');
+  if (s.recovery.mode === 'ladder' || s.recovery.mode === 'mixture') throw new Error('recovery is a ladder / mixture: use resolveRecovery()');
   return { id: 'custom', name: 'Custom pipeline', stages: s.recovery.stages.map((st) => ({ ...st })) as Pipeline['stages'] };
 }
 
 /** Recovery model shared by the pipeline (v1) and the ladder (v2): R(N), stage/rung breakdown, sampler. */
 export interface RecoveryModel {
-  kind: 'pipeline' | 'ladder';
+  kind: 'pipeline' | 'ladder' | 'mixture';
   id: string;
   name?: string;
   pipeline?: Pipeline;
@@ -196,7 +206,22 @@ export interface RecoveryModel {
   sampler(n: number, rng: Rng): () => number;
 }
 
+/** The MTTR mixture expressed as a three-rung ladder: detection (never resolves), automatic attempt, manual. */
+export function mixtureLadder(r: Extract<Scenario['recovery'], { mode: 'mixture' }>): Ladder {
+  const tDet = r.detection.coverage * r.detection.autoSeconds + (1 - r.detection.coverage) * r.detection.timeoutSeconds;
+  return {
+    id: 'mixture',
+    name: { zh: 'MTTR 混合（检测 + 自动 + 人工）', en: 'MTTR mixture (detection + automatic + manual)' },
+    rungs: [
+      { id: 'detection', kind: 'auto', successProbability: 0, timeS: tDet, note: `coverage ${r.detection.coverage}: ${r.detection.autoSeconds} s automatic, else ${r.detection.timeoutSeconds} s timeout` },
+      { id: 'automatic', kind: 'auto', successProbability: r.automatic.successProbability, timeS: r.automatic.seconds, scale: r.automatic.scale, note: `automatic attempt, success ${r.automatic.successProbability}; a failed attempt still costs its time` },
+      { id: 'manual', kind: 'manual', successProbability: 1, timeS: r.manual.seconds, note: 'manual recovery after a failed automatic attempt' },
+    ],
+  };
+}
+
 export function resolveLadder(s: Scenario): Ladder | undefined {
+  if (s.recovery.mode === 'mixture') return mixtureLadder(s.recovery);
   if (s.recovery.mode !== 'ladder') return undefined;
   if (s.recovery.rungs) return { id: s.recovery.preset ?? 'custom-ladder', rungs: s.recovery.rungs as Ladder['rungs'] };
   const l = LADDER_PRESETS[s.recovery.preset ?? ''];
@@ -208,7 +233,7 @@ export function resolveRecovery(s: Scenario): RecoveryModel {
   const l = resolveLadder(s);
   if (l) {
     return {
-      kind: 'ladder',
+      kind: s.recovery.mode === 'mixture' ? 'mixture' : 'ladder',
       id: l.id,
       name: l.name?.en ?? l.id,
       ladder: l,
@@ -375,19 +400,26 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     else if (w.intervalModel === 'dalyExact') tauS = dalyExact(deltaS, mtbiS);
     else if (w.intervalModel === 'saxena') tauS = Math.max(1e-9, saxenaOptimalPeriod(mtbiS, deltaS, recoveryS) - deltaS);
     else tauS = youngInterval(deltaS, mtbiS);
-    const recompute = w.recovery === 'replica' ? (w.stepTimeS ?? 0) : tauS / 2;
+    const recomputeSource: 'tau/2' | 'measured' | 'step' = w.measuredRecomputeS !== undefined ? 'measured' : w.recovery === 'replica' ? 'step' : 'tau/2';
+    const recompute = recomputeSource === 'measured' ? w.measuredRecomputeS! : recomputeSource === 'step' ? (w.stepTimeS ?? 0) : tauS / 2;
     const fo = goodputFirstOrder(deltaS, tauS, mtbiS, recoveryS);
-    if (w.recovery === 'replica') {
-      // replica recovery: recompute is one step instead of τ/2; adjust the first-order terms
+    if (recomputeSource !== 'tau/2') {
+      // replica / measured recovery: recompute per interruption is one step or the measured loss instead of τ/2
       fo.terms.recompute = recompute / mtbiS;
       fo.terms.total = fo.terms.save + fo.terms.recompute + fo.terms.restart;
       fo.goodput = Math.max(0, 1 - fo.terms.total);
-      assumptions.push('replica recovery: recompute per interruption = one step (JIT / FlashRecovery), save term unchanged');
+      assumptions.push(recomputeSource === 'step' ? 'replica recovery: recompute per interruption = one step (JIT / FlashRecovery), save term unchanged' : `measured lost computation per failure (${recompute.toFixed(0)} s) replaces τ/2 in the first-order and product forms`);
     }
     const dg = dalyGoodput(tauS, deltaS, mtbiS, recoveryS);
+    const renewal = renewalGoodput(tauS, deltaS, mtbiS, recoveryS);
+    const implied = expectedRollbackS(tauS, deltaS, mtbiS);
+    const aOp = operationalAvailability(mtbiS, recoveryS);
+    const product = productGoodput(tauS, deltaS, mtbiS, recoveryS, recompute);
+    const head = headlineGoodput(fo, renewal);
+    if (head.model === 'exact-renewal') warnings.push(`first-order goodput flags ${fo.validity}: the headline uses the exact renewal model (${(renewal * 100).toFixed(2)} % vs first-order ${(fo.goodput * 100).toFixed(2)} %)`);
     const pool = findBlock(result, 'node-pool');
     const blocked = pool ? pool.unavailability : 0;
-    const effective = fo.goodput * (1 - blocked) * performanceFactor;
+    const effective = head.goodput * (1 - blocked) * performanceFactor;
     smallParameter = fo.smallParameter;
     restartRatio = fo.restartRatio;
     warnings.push(...fo.warnings);
@@ -402,6 +434,13 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       recoveryS,
       recovery,
       recoveryKind: recoveryModel.kind,
+      operationalAvailability: aOp,
+      renewalGoodput: renewal,
+      productGoodput: product,
+      impliedRecomputeS: implied,
+      headlineGoodput: head.goodput,
+      headlineModel: head.model,
+      recomputeSource,
       recoveryId: recoveryModel.id,
       ladder: recoveryModel.ladderResult?.(N),
       subhealth: anySubhealth ? { pSlowed, performanceFactor, minPerformance, isolationInterruptionsPerHour: isolationRate, hardwareInterruptionsPerHour: hardwareRate } : undefined,
@@ -423,7 +462,8 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     };
     formulas.mtbi = 'λ_job = Σ n_i λ_i (all components, synchronous job); MTBI = 1/λ_job';
     formulas.interval = w.intervalModel === 'young' ? 'τ = √(2δM) (Young / Daly-Young)' : w.intervalModel === 'daly3' ? 'τ = √(2δM)[1 + (1/3)(δ/2M)^{1/2} + (1/9)(δ/2M)] − δ (Daly three-term)' : w.intervalModel === 'dalyExact' ? '(1 − τ/M)e^{(τ+δ)/M} = 1 (Daly exact)' : 'T_c* = T_s + √(2(T_f+T_r)T_s + T_s²) (Saxena, availability objective)';
-    formulas.goodput = 'goodput ≈ 1 − δ/τ − (τ/2 + R)/M (first order); Daly full: τ / (M e^{R/M}(e^{(τ+δ)/M} − 1))';
+    formulas.goodput = 'first order: 1 − δ/τ − (W + R)/M with W = τ/2 (or one step / measured); exact renewal: λτ/[(e^{λ(τ+δ)} − 1)(1 + λR)], λ = 1/M; Daly full: τ/(M e^{R/M}(e^{(τ+δ)/M} − 1)); product: A_op·τ/(τ+δ)·(1 − W/M), A_op = M/(M+R); headline = first order while (τ+δ)/M and R/M are small, else exact renewal';
+    formulas.mttr = recoveryModel.kind === 'mixture' ? 'R = T_det + T_auto + (1 − p_s)·T_manual, T_det = p_d·t_auto + (1 − p_d)·t_timeout (detection by automation or timeout; a failed automatic attempt is charged before manual recovery)' : recoveryModel.kind === 'ladder' ? 'R = Σ_i P_i·t_i, P_i = Π_{j<i}(1 − s_j)' : 'R = Σ stages with scale laws';
     formulas.recovery = recoveryModel.kind === 'ladder' ? 'R(N) = E[T] = Σ_i P_i·t_i(N), P_i = Π_{j<i}(1 − s_j) (recovery ladder; last rung manual); recompute = τ/2 (periodic checkpoint) or one step (replica)' : 'R(N) = Σ stages ①–⑤ with scale laws; recompute = τ/2 (periodic checkpoint) or one step (replica)';
     if (anySubhealth) formulas.goodputSubhealth = 'effective goodput = goodput × (1 − P_blocked) × φ_job; isolation interruptions ν_iso enter λ_job';
     formulas.scale = 'MTBI(N) = 1/(N·λ_GPU-equivalent), λ_GPU-equivalent = λ_job/N at the configured size (fixed components scaled proportionally)';

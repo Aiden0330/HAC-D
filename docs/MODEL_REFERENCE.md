@@ -152,3 +152,15 @@ Rungs `i = 1..L` with kind (`auto`/`manual`), success probability `s_i` (last ru
 ## 17. Original and compensated measures (原始 / 补偿后)
 
 Original transform of a block tree: leaf → two-state unit with `λ_o = λ + λ_sh` and `E[R_o] = (λ·T_m + λ_sh·D)/(λ + λ_sh)` (every fault is an outage, manual repair, sub-health counted as an outage of duration D); `kofn(n, k, unit)` → `n` copies of the unit in series; `parallel(children)` → series of the children; `standby(n, unit)` → the primary unit alone; `repeat` unchanged. Waterfall steps, each evaluated on the whole tree: 0 original; 1 + redundancy (structure restored, configured switchover, manual-only repair `c = 0`, sub-health strict); 2 + automatic recovery (`c, s, T_a` as configured); 3 + sub-health policy (threshold/tolerant measure and isolation as configured) = compensated. Also reported: switchover penalty `A(p_sw = 1, t_sw = 0) − A(configured)` at step 3, and performability at step 3. Compensation gain = ΔA, MTBF ratio, MTTR ratio between steps 0 and 3.
+
+## 18. Training availability models and the MTTR mixture (v2.1, decisions of 2026-10-10)
+
+Full derivations and the comparison with the ai-cluster-reliability tool: `TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`.
+
+- **MTTR mixture** (`recovery.mode = 'mixture'`): `R = T_det + T_auto + (1 − p_s)·T_manual`, `T_det = p_d·t_auto + (1 − p_d)·t_timeout`. Undetected failures are found by the timeout and still try automatic recovery; a failed automatic attempt is charged before manual recovery. Implemented as a three-rung ladder (detection with success 0, automatic with success p_s, manual).
+- **Operational availability** `A_op = M/(M + R)`.
+- **First order** `A ≈ 1 − δ/τ − (W + R)/M`, `W = τ/2`, one step (replica) or the measured value `workload.measuredRecomputeS`.
+- **Product form** `A_op · τ/(τ + δ) · (1 − W/M)`.
+- **Exact renewal** `λτ/[(e^{λ(τ+δ)} − 1)(1 + λR)]`, `λ = 1/M`; implied rollback `E[min(X, τ) | X < τ+δ] = [(1 − e^{−λτ})/λ − τe^{−λ(τ+δ)}]/(1 − e^{−λ(τ+δ)})` (→ (τ²/2 + τδ)/(τ+δ) as λ → 0).
+- **Daly full** `τ/(M e^{R/M}(e^{(τ+δ)/M} − 1))` (failures also during recovery).
+- **Headline rule**: first order while its flags are `ok`, otherwise the exact renewal value; the scale table applies the rule per row; blocked spares and the sub-health factor multiply the headline.

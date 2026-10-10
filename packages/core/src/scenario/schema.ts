@@ -243,6 +243,8 @@ export const TrainingWorkloadSchema = z.object({
   /** recovery path changes the recompute term: 'checkpoint' = τ/2, 'replica' = one step */
   recovery: z.enum(['checkpoint', 'replica']).default('checkpoint'),
   stepTimeS: z.number().positive().optional(),
+  /** v2: measured lost computation per failure (seconds); overrides τ/2 in the first-order and product forms */
+  measuredRecomputeS: z.number().nonnegative().optional(),
 });
 
 export const InferenceWorkloadSchema = z.object({
@@ -290,6 +292,17 @@ export const RecoverySchema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('pipeline'), stages: z.array(StageSchema).min(1) }),
   /** v2 recovery ladder: a preset id (e.g. 'mindcluster-a3') or explicit rungs */
   z.object({ mode: z.literal('ladder'), preset: z.string().optional(), rungs: z.array(RungSchema).min(1).optional() }),
+  /**
+   * v2 MTTR mixture (docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md M2): detection by automation with
+   * coverage p_d in autoSeconds, otherwise a timeout; an automatic attempt that succeeds with p_s in `seconds`,
+   * otherwise manual recovery after the failed attempt. R = T_det + T_auto + (1 − p_s)·T_manual.
+   */
+  z.object({
+    mode: z.literal('mixture'),
+    detection: z.object({ coverage: z.number().min(0).max(1).default(0.95), autoSeconds: z.number().nonnegative().default(10), timeoutSeconds: z.number().nonnegative().default(60) }).prefault({}),
+    automatic: z.object({ successProbability: z.number().min(0).max(1).default(0.99), seconds: z.number().nonnegative().default(180), scale: ScaleLawSchema.optional() }).prefault({}),
+    manual: z.object({ seconds: z.number().nonnegative().default(7200) }).prefault({}),
+  }),
 ]);
 
 /** v2 measure settings */

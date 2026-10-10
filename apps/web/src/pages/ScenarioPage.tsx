@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, type Scenario, type Component, type Superpod, type ComponentRow } from '@hac-d/core';
+import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
@@ -171,6 +171,12 @@ export function ScenarioPage() {
                 <Field label={t('scenario.replenish')}><NumberInput value={s.workload.spareReplenishHours} min={0.01} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), spareReplenishHours: v } }))} /></Field>
                 <Field label={t('scenario.recoveryPath')}><Select value={s.workload.recovery} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), recovery: v } }))} options={[{ value: 'checkpoint', label: 'checkpoint (τ/2)' }, { value: 'replica', label: 'replica (one step)' }]} /></Field>
                 {s.workload.recovery === 'replica' && <Field label={t('scenario.stepTime')}><NumberInput value={s.workload.stepTimeS ?? 10} min={0} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), stepTimeS: v } }))} /></Field>}
+                <Field label={t('scenario.measuredRecompute')} hint={t('scenario.measuredRecomputeHint')}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <NumberInput value={s.workload.measuredRecomputeS ?? 0} min={0} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), measuredRecomputeS: v > 0 ? v : undefined } }))} />
+                    {s.workload.measuredRecomputeS !== undefined && <button type="button" className="btn small" onClick={() => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), measuredRecomputeS: undefined } }))}>×</button>}
+                  </div>
+                </Field>
               </>
             ) : (
               <>
@@ -220,9 +226,9 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
   const presets = Object.keys(PIPELINE_PRESETS);
   const ladders = Object.keys(LADDER_PRESETS);
   const mode = s.recovery.mode;
-  const selectValue = mode === 'preset' ? s.recovery.preset : mode === 'pipeline' ? 'custom' : s.recovery.rungs ? 'ladder-custom' : `ladder:${s.recovery.preset}`;
+  const selectValue = mode === 'preset' ? s.recovery.preset : mode === 'pipeline' ? 'custom' : mode === 'mixture' ? 'mixture' : s.recovery.rungs ? 'ladder-custom' : `ladder:${s.recovery.preset}`;
   const n = s.workload.type === 'training' ? s.workload.nGpus : s.workload.replicasRequired * s.workload.gpusPerReplica;
-  const ladder = mode === 'ladder' ? (s.recovery.rungs ? { id: 'custom', rungs: s.recovery.rungs } : LADDER_PRESETS[s.recovery.preset ?? '']) : undefined;
+  const ladder = mode === 'ladder' ? (s.recovery.rungs ? { id: 'custom', rungs: s.recovery.rungs } : LADDER_PRESETS[s.recovery.preset ?? '']) : mode === 'mixture' ? mixtureLadder(s.recovery) : undefined;
   const ladderResult = ladder ? ladderExpectation(ladder as Parameters<typeof ladderExpectation>[0], n) : undefined;
   const onSelect = (v: string) => {
     if (v === 'custom') {
@@ -231,13 +237,14 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
     } else if (v === 'ladder-custom') {
       const base = ladder ?? LADDER_PRESETS['mindcluster-a3'];
       upd((x) => ({ ...x, recovery: { mode: 'ladder', preset: base.id, rungs: base.rungs.map((r) => ({ ...r })) as never } }));
-    } else if (v.startsWith('ladder:')) upd((x) => ({ ...x, recovery: { mode: 'ladder', preset: v.slice(7) } }));
+    } else if (v === 'mixture') upd((x) => ({ ...x, recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } } }));
+    else if (v.startsWith('ladder:')) upd((x) => ({ ...x, recovery: { mode: 'ladder', preset: v.slice(7) } }));
     else upd((x) => ({ ...x, recovery: { mode: 'preset', preset: v } }));
   };
   const setRung = (i: number, patch: Record<string, unknown>) =>
     upd((x) => (x.recovery.mode === 'ladder' && x.recovery.rungs ? { ...x, recovery: { ...x.recovery, rungs: x.recovery.rungs.map((r, j) => (j === i ? ({ ...r, ...patch } as typeof r) : r)) } } : x));
   return (
-    <Card title={mode === 'ladder' ? t('scenario.ladder') : t('scenario.recovery')} sub={mode === 'ladder' ? t('scenario.ladderNote') : undefined}>
+    <Card title={mode === 'ladder' ? t('scenario.ladder') : mode === 'mixture' ? t('scenario.mixtureMode') : t('scenario.recovery')} sub={mode === 'ladder' ? t('scenario.ladderNote') : mode === 'mixture' ? t('scenario.mixtureNote') : undefined}>
       <div className="form-grid">
         <Field label={t('scenario.preset')}>
           <Select
@@ -248,12 +255,27 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
               { value: 'custom', label: `${t('scenario.pipelineMode')}: ${t('scenario.custom')}` },
               ...ladders.map((l) => ({ value: `ladder:${l}`, label: `${t('scenario.ladderMode')}: ${LADDER_PRESETS[l].name?.en ?? l}` })),
               { value: 'ladder-custom', label: `${t('scenario.ladderMode')}: ${t('scenario.custom')}` },
+              { value: 'mixture', label: t('scenario.mixtureMode') },
             ]}
           />
         </Field>
         {ladderResult && <Field label={`E[T] @ N = ${n}`}><div style={{ padding: '6px 0' }}>{ladderResult.meanS.toFixed(0)} s · {t('training.pManual')} {(ladderResult.pManual * 100).toFixed(2)} %</div></Field>}
       </div>
-      {mode !== 'ladder' ? (
+      {s.recovery.mode === 'mixture' && (() => {
+        const r = s.recovery;
+        const setMix = (patch: (q: typeof r) => typeof r) => upd((x) => (x.recovery.mode === 'mixture' ? { ...x, recovery: patch(x.recovery) } : x));
+        return (
+          <div className="form-grid" style={{ marginTop: 8 }}>
+            <Field label={t('scenario.detCoverage')}><NumberInput value={r.detection.coverage} min={0} max={1} step={0.01} onChange={(v) => setMix((q) => ({ ...q, detection: { ...q.detection, coverage: v } }))} /></Field>
+            <Field label={t('scenario.detAutoS')}><NumberInput value={r.detection.autoSeconds} min={0} onChange={(v) => setMix((q) => ({ ...q, detection: { ...q.detection, autoSeconds: v } }))} /></Field>
+            <Field label={t('scenario.detTimeoutS')}><NumberInput value={r.detection.timeoutSeconds} min={0} onChange={(v) => setMix((q) => ({ ...q, detection: { ...q.detection, timeoutSeconds: v } }))} /></Field>
+            <Field label={t('scenario.autoSuccessP')}><NumberInput value={r.automatic.successProbability} min={0} max={1} step={0.01} onChange={(v) => setMix((q) => ({ ...q, automatic: { ...q.automatic, successProbability: v } }))} /></Field>
+            <Field label={t('scenario.autoSeconds')}><NumberInput value={r.automatic.seconds} min={0} onChange={(v) => setMix((q) => ({ ...q, automatic: { ...q.automatic, seconds: v } }))} /></Field>
+            <Field label={t('scenario.manualSeconds')}><NumberInput value={r.manual.seconds} min={0} onChange={(v) => setMix((q) => ({ ...q, manual: { seconds: v } }))} /></Field>
+          </div>
+        );
+      })()}
+      {mode !== 'ladder' && mode !== 'mixture' ? (
         <>
           <div className="table-wrap" style={{ marginTop: 8 }}>
             <table className="data">
@@ -316,7 +338,7 @@ function RecoveryEditor({ s, upd }: { s: Scenario; upd: Upd }) {
             </table>
           </div>
           <div className="btn-row" style={{ marginTop: 8 }}>
-            {s.recovery.mode === 'ladder' && !s.recovery.rungs && <button type="button" className="btn small" onClick={() => onSelect('ladder-custom')}>{t('scenario.customise')}</button>}
+            {(s.recovery.mode === 'ladder' || s.recovery.mode === 'mixture') && !(s.recovery.mode === 'ladder' && s.recovery.rungs) && <button type="button" className="btn small" onClick={() => onSelect('ladder-custom')}>{t('scenario.customise')}</button>}
             {s.recovery.mode === 'ladder' && s.recovery.rungs && (
               <button type="button" className="btn small" onClick={() => upd((x) => (x.recovery.mode === 'ladder' && x.recovery.rungs ? { ...x, recovery: { ...x.recovery, rungs: [...x.recovery.rungs.slice(0, -1), { id: `rung-${x.recovery.rungs.length}`, kind: 'auto', successProbability: 0.5, timeS: 300 }, x.recovery.rungs[x.recovery.rungs.length - 1]] } } : x))}>{t('common.add')}</button>
             )}

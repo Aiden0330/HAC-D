@@ -57,15 +57,15 @@ export function TrainingPage() {
         <span className="sub">{t('training.sub')}</span>
       </div>
       <div className="kpi-row">
-        <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t('training.dalyFull')} ${fmtPct(tr.dalyGoodput, 2)}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
+        <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')} ${fmtPct(tr.headlineGoodput, 2)} · ${t('training.operational')} ${fmtPct(tr.operationalAvailability, 3)}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
         <Kpi label={t('common.mtbi')} value={fmtDuration(tr.mtbiS, lang)} note={`${fmtNum(tr.interruptionsPerDay, 1)} ${t('common.interruptions_per_day')}`} />
-        <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
+        <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryKind === 'mixture' ? t('scenario.mixtureMode') : tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
         <Kpi label={t('common.interval')} value={fmtDuration(tr.tauS, lang)} note={tr.intervalModel} />
         <Kpi label={t('common.lost_per_day')} value={fmtMoney(tr.lostDollarsPerDay)} note={`${fmtInt(tr.wastedGpuHoursPerDay)} ${t('common.wasted')}`} />
         <Kpi label={t('training.wall')} value={fmtNum(tr.wallClockDays, 1)} note={`${fmtNum(tr.expectedInterruptions, 0)} interruptions · P(no interruption 24 h) ${fmtPct(tr.pNoInterruption24h, 1)}`} />
       </div>
       <div className={`callout${fo.validity === 'invalid' ? ' crit' : fo.validity === 'caution' ? ' warn' : ''}`}>
-        <b>{t('training.regime')}: {t(regimeKey)}</b> · (τ+δ)/M = {fo.smallParameter.toFixed(3)} · R/M = {fo.restartRatio.toFixed(3)} · <Badge status={fo.validity === 'ok' ? 'pass' : fo.validity === 'caution' ? 'warn' : 'fail'}>{fo.validity}</Badge>
+        <b>{t('training.regime')}: {t(regimeKey)}</b> · (τ+δ)/M = {fo.smallParameter.toFixed(3)} · R/M = {fo.restartRatio.toFixed(3)} · <Badge status={fo.validity === 'ok' ? 'pass' : fo.validity === 'caution' ? 'warn' : 'fail'}>{fo.validity}</Badge> · {t('training.headlineIs')}: <b>{t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')}</b>
         {fo.warnings.length > 0 && (
           <ul className="plain">
             {fo.warnings.map((w) => (
@@ -74,6 +74,20 @@ export function TrainingPage() {
           </ul>
         )}
       </div>
+      <Card title={t('training.modelsTitle')} formula={result.formulas.goodput}>
+        <DataTable
+          columns={[t('training.model'), t('common.goodput'), t('training.assumption')]}
+          numericFrom={1}
+          rows={[
+            [t('training.operational'), fmtPct(tr.operationalAvailability, 4), 'A_op = M/(M + R)'],
+            [`${t('training.modelFirst')}${tr.headlineModel === 'first-order' ? ' ★' : ''}`, fmtPct(tr.firstOrder.goodput, 4), `W = ${fmtDuration(tr.recomputePerInterruptionS, lang)} (${tr.recomputeSource}) · (τ+δ)/M, R/M ≪ 1`],
+            [t('training.modelProduct'), fmtPct(tr.productGoodput, 4), 'A_op · τ/(τ+δ) · (1 − W/M)'],
+            [`${t('training.modelExact')}${tr.headlineModel === 'exact-renewal' ? ' ★' : ''}`, fmtPct(tr.renewalGoodput, 4), `${t('training.impliedW')} ${fmtDuration(tr.impliedRecomputeS, lang)} · ${t('training.noRecoveryFailures')}`],
+            [t('training.dalyFull'), fmtPct(tr.dalyGoodput, 4), t('training.dalyAssumption')],
+          ]}
+        />
+        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('training.headlineRule')}{result.formulas.mttr ? ` · MTTR: ${result.formulas.mttr}` : ''}</div>
+      </Card>
       <div className="grid cols-2">
         <Card formula={result.formulas.goodput}>
           <StackedBar
@@ -104,8 +118,8 @@ export function TrainingPage() {
       <Card formula={result.formulas.scale} sub={t('training.scaleNote')}>
         <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel={t('training.nLabel')} yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
         <DataTable
-          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', t('common.goodput'), t('common.interruptions_per_day'), '']}
-          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), fmtPct(r.goodput.goodput, 1), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
+          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', `${t('common.goodput')} (${t('training.modelFirst')})`, `${t('common.goodput')} (${t('training.modelExact')})`, t('common.interruptions_per_day'), '']}
+          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), r.headlineModel === 'first-order' ? <b key="f">{fmtPct(r.goodput.goodput, 1)}</b> : fmtPct(r.goodput.goodput, 1), r.headlineModel === 'exact-renewal' ? <b key="e">{fmtPct(r.renewalGoodput, 1)}</b> : fmtPct(r.renewalGoodput, 1), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
         />
       </Card>
       <div className="grid cols-2">

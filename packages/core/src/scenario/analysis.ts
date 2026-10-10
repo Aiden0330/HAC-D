@@ -113,6 +113,11 @@ export function scaleAllRates(s: Scenario, factor: number): Scenario {
 /** Multiply every recovery stage (or ladder rung) value (seconds) by `factor` (resolves a preset into an explicit pipeline / ladder). */
 export function scaleRecovery(s: Scenario, factor: number): Scenario {
   const c = cloneScenario(s);
+  if (c.recovery.mode === 'mixture') {
+    const r = c.recovery;
+    c.recovery = { ...r, detection: { ...r.detection, autoSeconds: r.detection.autoSeconds * factor, timeoutSeconds: r.detection.timeoutSeconds * factor }, automatic: { ...r.automatic, seconds: r.automatic.seconds * factor }, manual: { seconds: r.manual.seconds * factor } };
+    return c;
+  }
   if (c.recovery.mode === 'ladder') {
     const l = resolveRecovery(c).ladder!;
     c.recovery = { mode: 'ladder', preset: l.id, rungs: l.rungs.map((r) => ({ ...r, timeS: typeof r.timeS === 'number' ? r.timeS * factor : r.timeS })) as Extract<Scenario['recovery'], { mode: 'ladder' }>['rungs'] };

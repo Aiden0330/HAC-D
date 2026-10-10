@@ -165,6 +165,52 @@ export interface ScaleRow {
   tauS: number;
   goodput: GoodputFirstOrder;
   interruptionsPerDay: number;
+  /** v2: exact renewal goodput (no small-parameter assumption) */
+  renewalGoodput: number;
+  /** v2: first-order when its flags are ok, otherwise the exact renewal value */
+  headline: number;
+  headlineModel: 'first-order' | 'exact-renewal';
+}
+
+/**
+ * Exact renewal goodput (ai-cluster-reliability V1 §1, docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md F4):
+ * TOR = λτ / [(e^{λ(τ+δ)} − 1)(1 + λR)], λ = 1/M. Failures may hit the save; none are counted during recovery;
+ * a checkpoint is retried until an interval completes. λ → 0 gives τ/(τ+δ).
+ */
+export function renewalGoodput(tauS: number, deltaS: number, mtbiS: number, restartS: number): number {
+  if (!(mtbiS > 0) || !(tauS > 0)) return 0;
+  const lam = 1 / mtbiS;
+  const x = lam * (tauS + deltaS);
+  const growth = x < 1e-6 ? x * (1 + x / 2) : Math.expm1(x);
+  return (lam * tauS) / (growth * (1 + lam * restartS));
+}
+
+/** Expected lost work per failed interval, E[min(X, τ) | X < τ+δ] (seconds); τ/2 at low failure rates. */
+export function expectedRollbackS(tauS: number, deltaS: number, mtbiS: number): number {
+  if (!(mtbiS > 0) || !(tauS > 0)) return 0;
+  const lam = 1 / mtbiS;
+  const L = tauS + deltaS;
+  // low-rate limit (τ²/2 + τδ)/(τ+δ): avoids cancellation when λL is tiny
+  if (lam * L < 1e-6) return (tauS * tauS / 2 + tauS * deltaS) / L;
+  const denom = -Math.expm1(-lam * L);
+  if (denom <= 0) return tauS / 2;
+  return (-Math.expm1(-lam * tauS) / lam - tauS * Math.exp(-lam * L)) / denom;
+}
+
+/** Operational (time) availability M/(M + R): running-time share, saves and recompute count as running. */
+export function operationalAvailability(mtbiS: number, restartS: number): number {
+  return mtbiS > 0 ? mtbiS / (mtbiS + restartS) : 0;
+}
+
+/** Product form A_op × τ/(τ+δ) × (1 − W/M) — three independently measured factors (F3). */
+export function productGoodput(tauS: number, deltaS: number, mtbiS: number, restartS: number, recomputeS: number): number {
+  if (!(mtbiS > 0)) return 0;
+  return Math.max(0, operationalAvailability(mtbiS, restartS) * (tauS / (tauS + deltaS)) * (1 - recomputeS / mtbiS));
+}
+
+/** Headline rule: the first-order value while its flags are ok, the exact renewal value once (τ+δ)/M or R/M is not small. */
+export function headlineGoodput(fo: GoodputFirstOrder, renewal: number): { goodput: number; model: 'first-order' | 'exact-renewal' } {
+  return fo.validity === 'ok' ? { goodput: fo.goodput, model: 'first-order' } : { goodput: renewal, model: 'exact-renewal' };
 }
 
 /**
@@ -181,6 +227,10 @@ export function scaleTable(
   return sizes.map((n) => {
     const mtbiS = 3600 / (n * lambdaPerGpuHour);
     const tauS = intervalModel === 'young' ? youngInterval(deltaS, mtbiS) : intervalModel === 'daly3' ? dalyThreeTerm(deltaS, mtbiS) : dalyExact(deltaS, mtbiS);
-    return { nGpus: n, mtbiS, tauS, goodput: goodputFirstOrder(deltaS, tauS, mtbiS, restartFn(n)), interruptionsPerDay: 86400 / mtbiS };
+    const restart = restartFn(n);
+    const goodput = goodputFirstOrder(deltaS, tauS, mtbiS, restart);
+    const renewal = renewalGoodput(tauS, deltaS, mtbiS, restart);
+    const head = headlineGoodput(goodput, renewal);
+    return { nGpus: n, mtbiS, tauS, goodput, interruptionsPerDay: 86400 / mtbiS, renewalGoodput: renewal, headline: head.goodput, headlineModel: head.model };
   });
 }
