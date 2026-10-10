@@ -35,11 +35,11 @@ export const strings = {
     training: {
       title: 'Training job', sub: 'MTBI, optimal checkpoint interval, goodput and its loss terms, scale extrapolation with validity flags.',
       lossDecomposition: 'Loss decomposition (fraction of wall time)', save: 'Checkpoint save δ/τ', recompute: 'Recompute τ/2M', restart: 'Recovery R/M', blocked: 'Spares exhausted',
-      scale: 'Scale extrapolation (1/N law, recovery pipeline scaled with N)', scaleNote: 'Rows marked caution or invalid violate τ+δ ≪ M or R ≪ M; the first-order number is shown but should not be used.',
+      scale: 'Scale extrapolation (1/N law, recovery pipeline scaled with N)', scaleNote: 'N is the number of GPUs / NPUs in the job, not supernodes. Every component class is scaled proportionally from the configured size; rows marked caution or invalid violate τ+δ ≪ M or R ≪ M and their first-order number should not be used.',
       regime: 'Regime', regime_checkpoint: 'checkpoint-dominated', regime_restart: 'restart-dominated', regime_invalid: 'first-order invalid',
       intervalCurve: 'Goodput vs checkpoint interval', components: 'Interruption share by component class', dalyFull: 'Daly full model',
       recoveryStages: 'Recovery pipeline at N', stage: 'Stage', meanS: 'Mean', shareOfR: 'Share of R', dominant: 'dominant', effectiveGoodput: 'Effective goodput', wall: 'Wall-clock (days)',
-      ladderAt: 'Recovery ladder at N', subhealthTitle: 'Sub-health (straggler law)', pSlowed: 'P(job slowed)', perfFactor: 'Job performance factor φ_job', isolationRate: 'Isolation interruptions / h', hardwareRate: 'Hardware interruptions / h', minPerf: 'Lowest performance φ', pManual: 'P(person needed)',
+      nLabel: 'N = GPUs / NPUs in the job', supernodes: 'supernodes', ladderAt: 'Recovery ladder at N', subhealthTitle: 'Sub-health (straggler law)', pSlowed: 'P(job slowed)', perfFactor: 'Job performance factor φ_job', isolationRate: 'Isolation interruptions / h', hardwareRate: 'Hardware interruptions / h', minPerf: 'Lowest performance φ', pManual: 'P(person needed)',
     },
     inference: {
       title: 'Inference service', sub: 'N+k replicas: service-up vs capacity-sufficient availability, k for the target, replica failure arrivals.',
@@ -115,11 +115,11 @@ export const strings = {
     training: {
       title: '训练作业', sub: 'MTBI、最优 checkpoint 间隔、goodput 及其损失分项、按规模外推与有效性标记。',
       lossDecomposition: '损失分解（占墙钟时间比例）', save: 'checkpoint 写入 δ/τ', recompute: '重算 τ/2M', restart: '恢复 R/M', blocked: '备机耗尽',
-      scale: '规模外推（1/N 定律，恢复流水线随 N 变化）', scaleNote: '标记为 caution 或 invalid 的行违反 τ+δ ≪ M 或 R ≪ M；一阶数值仅供参考。',
+      scale: '规模外推（1/N 定律，恢复流水线随 N 变化）', scaleNote: 'N 是作业使用的 GPU/NPU 数，不是超节点数。各部件类按当前方案规模等比例外推；标记为 caution 或 invalid 的行违反 τ+δ ≪ M 或 R ≪ M，一阶数值仅供参考。',
       regime: '区间', regime_checkpoint: 'checkpoint 主导', regime_restart: '重启主导', regime_invalid: '一阶式失效',
       intervalCurve: 'goodput 随 checkpoint 间隔的变化', components: '各部件类的中断率占比', dalyFull: 'Daly 完整模型',
       recoveryStages: '规模 N 下的恢复流水线', stage: '阶段', meanS: '均值', shareOfR: '占 R 比例', dominant: '主导', effectiveGoodput: '有效 goodput', wall: '墙钟时间（天）',
-      ladderAt: '规模 N 下的分级恢复', subhealthTitle: '亚健康（掉队者定律）', pSlowed: '作业被拖慢的概率', perfFactor: '作业性能因子 φ_job', isolationRate: '隔离引起的中断（/小时）', hardwareRate: '硬件中断（/小时）', minPerf: '最低性能 φ', pManual: '需要人工的概率',
+      nLabel: 'N = 作业 GPU/NPU 数', supernodes: '超节点数', ladderAt: '规模 N 下的分级恢复', subhealthTitle: '亚健康（掉队者定律）', pSlowed: '作业被拖慢的概率', perfFactor: '作业性能因子 φ_job', isolationRate: '隔离引起的中断（/小时）', hardwareRate: '硬件中断（/小时）', minPerf: '最低性能 φ', pManual: '需要人工的概率',
     },
     inference: {
       title: '推理服务', sub: 'N+k 副本：「有服务」与「容量充足」两个可用率、达到目标所需的 k、副本故障到达。',

@@ -46,6 +46,8 @@ export function TrainingPage() {
   if (firstCaution) bands.push({ from: firstCaution.nGpus, to: firstInvalid?.nGpus ?? tr.scale[tr.scale.length - 1].nGpus * 2, label: 'caution' });
   if (firstInvalid) bands.push({ from: firstInvalid.nGpus, to: tr.scale[tr.scale.length - 1].nGpus * 2, label: 'first-order invalid' });
 
+  const sp = scenario.topology.superpod;
+  const supernodeSize = sp ? sp.npusPerNode * sp.nodesPerRack * sp.computeRacks : 0;
   const regimeKey = fo.regime === 'checkpoint-dominated' ? 'training.regime_checkpoint' : fo.regime === 'restart-dominated' ? 'training.regime_restart' : 'training.regime_invalid';
 
   return (
@@ -100,10 +102,10 @@ export function TrainingPage() {
         </Card>
       )}
       <Card formula={result.formulas.scale} sub={t('training.scaleNote')}>
-        <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel="N (GPU)" yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
+        <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel={t('training.nLabel')} yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
         <DataTable
-          columns={['N', t('common.mtbi'), 'τ', t('common.goodput'), t('common.interruptions_per_day'), '']}
-          rows={tr.scale.map((r) => [fmtInt(r.nGpus), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), fmtPct(r.goodput.goodput, 1), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
+          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', t('common.goodput'), t('common.interruptions_per_day'), '']}
+          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), fmtPct(r.goodput.goodput, 1), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
         />
       </Card>
       <div className="grid cols-2">
