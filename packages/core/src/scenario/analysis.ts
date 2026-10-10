@@ -23,6 +23,8 @@ export interface CompareRow {
   mtbfHours: number;
   mtbiHours?: number;
   recoveryS?: number;
+  /** job-level operational availability M/(M + R) (training workloads) */
+  operationalAvailability?: number;
   goodput?: number;
   effectiveGoodput?: number;
   wastedGpuHoursPerDay?: number;
@@ -58,6 +60,7 @@ export function compareScenarios(scenarios: Scenario[]): Comparison {
       mtbfHours: r.system.mtbfHours,
       mtbiHours: r.training?.mtbiHours,
       recoveryS: r.training?.recoveryS,
+      operationalAvailability: r.training?.operationalAvailability,
       goodput: r.training?.firstOrder.goodput,
       effectiveGoodput: r.training?.effectiveGoodput,
       wastedGpuHoursPerDay: r.training?.wastedGpuHoursPerDay,

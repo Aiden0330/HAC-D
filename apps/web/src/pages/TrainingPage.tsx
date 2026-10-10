@@ -58,6 +58,7 @@ export function TrainingPage() {
       </div>
       <div className="kpi-row">
         <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')} ${fmtPct(tr.headlineGoodput, 2)} · ${t('training.operational')} ${fmtPct(tr.operationalAvailability, 3)}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
+        <Kpi label={t('training.operational')} value={fmtPct(tr.operationalAvailability, 3)} note={`A_op = M/(M + R) · ${t('training.aopNote')}`} />
         <Kpi label={t('common.mtbi')} value={fmtDuration(tr.mtbiS, lang)} note={`${fmtNum(tr.interruptionsPerDay, 1)} ${t('common.interruptions_per_day')}`} />
         <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryKind === 'mixture' ? t('scenario.mixtureMode') : tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
         <Kpi label={t('common.interval')} value={fmtDuration(tr.tauS, lang)} note={tr.intervalModel} />
