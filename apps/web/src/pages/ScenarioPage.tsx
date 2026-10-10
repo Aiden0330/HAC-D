@@ -36,6 +36,8 @@ export function ScenarioPage() {
 
   if (!active) return <div className="callout">No scenario. Load an example.</div>;
   const { scenario: s, result } = active;
+  const sp = s.topology.superpod;
+  const supernodeSize = sp ? sp.npusPerNode * sp.nodesPerRack * sp.computeRacks : 0;
 
   const importJson = (file: File) => {
     file.text().then((txt) => {
@@ -157,6 +159,11 @@ export function ScenarioPage() {
             {s.workload.type === 'training' ? (
               <>
                 <Field label={t('scenario.nGpus')} hint={s.topology.superpod ? t('scenario.nGpusHint') : undefined}><NumberInput value={s.workload.nGpus} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), nGpus: Math.round(v) } }))} /></Field>
+                {supernodeSize > 0 && (
+                  <Field label={t('scenario.supernodesUsed')} hint={`${t('scenario.supernodeIs')} ${supernodeSize} NPU · ${t('scenario.supernodesUsedHint')}`}>
+                    <NumberInput value={Math.ceil(s.workload.nGpus / supernodeSize)} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), nGpus: Math.max(1, Math.round(v)) * supernodeSize } }))} />
+                  </Field>
+                )}
                 <Field label={t('scenario.durationDays')}><NumberInput value={s.workload.durationDays} min={0.1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), durationDays: v } }))} /></Field>
                 <Field label={t('scenario.deltaS')}><NumberInput value={s.workload.deltaS} min={0} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), deltaS: v } }))} /></Field>
                 <Field label={t('scenario.intervalModel')}><Select value={s.workload.intervalModel} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), intervalModel: v } }))} options={[{ value: 'young', label: 'Young √(2δM)' }, { value: 'daly3', label: 'Daly three-term' }, { value: 'dalyExact', label: 'Daly exact' }, { value: 'saxena', label: 'Saxena (availability)' }]} /></Field>
@@ -170,14 +177,14 @@ export function ScenarioPage() {
                 <Field label={t('scenario.clusterSize')} hint={t('scenario.clusterSizeHint')}>
                   <NumberInput value={s.workload.replicasRequired * s.workload.gpusPerReplica} min={1} step={1} onChange={(v) => upd((x) => { const w = x.workload as typeof s.workload; return { ...x, workload: { ...w, replicasRequired: Math.max(1, Math.ceil(v / w.gpusPerReplica)) } }; })} />
                 </Field>
-                <Field label={t('scenario.replicasRequired')} hint={s.topology.superpod ? `${t('scenario.supernodeIs')} ${s.topology.superpod.npusPerNode * s.topology.superpod.nodesPerRack * s.topology.superpod.computeRacks} NPU` : undefined}><NumberInput value={s.workload.replicasRequired} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), replicasRequired: Math.round(v) } }))} /></Field>
+                <Field label={supernodeSize > 0 && s.workload.gpusPerReplica === supernodeSize ? t('scenario.supernodesRequired') : t('scenario.replicasRequired')} hint={supernodeSize > 0 ? (s.workload.gpusPerReplica === supernodeSize ? `${t('scenario.supernodeIs')} ${supernodeSize} NPU` : t('scenario.pressSupernode')) : undefined}><NumberInput value={s.workload.replicasRequired} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), replicasRequired: Math.round(v) } }))} /></Field>
                 <Field label={t('scenario.gpusPerReplica')}>
                   <div style={{ display: 'flex', gap: 4 }}>
                     <NumberInput value={s.workload.gpusPerReplica} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), gpusPerReplica: Math.round(v) } }))} />
                     {s.topology.superpod && <button type="button" className="btn small" title={t('scenario.useSupernode')} onClick={() => upd((x) => { const sp = x.topology.superpod!; const size = sp.npusPerNode * sp.nodesPerRack * sp.computeRacks; const w = x.workload as typeof s.workload; const cluster = w.replicasRequired * w.gpusPerReplica; return { ...x, workload: { ...w, gpusPerReplica: size, replicasRequired: Math.max(1, Math.ceil(cluster / size)) } }; })}>= {t('scenario.supernode')}</button>}
                   </div>
                 </Field>
-                <Field label={t('scenario.spareReplicas')}><NumberInput value={s.workload.spareReplicas} min={0} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), spareReplicas: Math.round(v) } }))} /></Field>
+                <Field label={supernodeSize > 0 && s.workload.gpusPerReplica === supernodeSize ? t('scenario.spareSupernodes') : t('scenario.spareReplicas')}><NumberInput value={s.workload.spareReplicas} min={0} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), spareReplicas: Math.round(v) } }))} /></Field>
                 <Field label={t('scenario.capacityTarget')}><NumberInput value={s.workload.capacityTarget} min={0} max={1} step={0.0001} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), capacityTarget: v } }))} /></Field>
                 <Field label={t('scenario.windowHours')}><NumberInput value={s.workload.windowHours} min={0.1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), windowHours: v } }))} /></Field>
                 <Field label={t('scenario.replicaRecovery')}><NumberInput value={s.workload.replicaRecoveryHours ?? 1} min={0.001} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), replicaRecoveryHours: v } }))} /></Field>

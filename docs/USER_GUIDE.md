@@ -57,7 +57,7 @@ Do not model such a cluster as one synchronous training job (the 1/N law makes t
 
 1. Load `ascend-supercluster-100k` (or any CloudMatrix384 / Atlas 950 scenario) and set the workload type to inference.
 2. Press `= supernode` next to "GPUs per replica" so one replica unit is one supernode (384 NPUs for CloudMatrix384, 8,192 for Atlas 950).
-3. Type the cluster size (100,000 / 200,000 / 500,000) into "Cluster size"; replicas required becomes ⌈size ÷ supernode⌉ (261 / 521 / 1,303 CloudMatrix384 supernodes), and the Scenario KPI shows the supernode, node, L1/L2 chip and link counts.
+3. Enter either the cluster size (100,000 / 200,000 / 500,000) into "Cluster size" or the number of supernodes directly into "Supernodes required (N)" and "Spare supernodes (k)" (the fields take these names as soon as one replica is one supernode); 261 / 521 / 1,303 CloudMatrix384 supernodes correspond to the three sizes, and the Scenario KPI shows the supernode, node, L1/L2 chip and link counts. For a training job the field "Supernodes used by the job" sets Job NPUs = supernodes × supernode size.
 4. The Inference page then reports the supernode MTBF and MTTR (every class at or below supernode scope, including the UB fabric, racks' power and the scale-out leaf/spine switches, folded into one unit), the expected number of supernodes out of service, the capacity availability for the configured spares, and `k*`, the spare supernodes needed for the capacity target.
 
 With the example's analogue rates a CloudMatrix384 supernode has an MTBF of about 138 h and a repair time of 1.5 h, so about 1.1 % of supernodes are down at any time: 100k NPUs need 9 spare supernodes for 99.9 % capacity availability, 200k need 14 and 500k need 27.
