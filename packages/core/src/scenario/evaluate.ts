@@ -12,7 +12,7 @@ import { youngInterval, dalyThreeTerm, dalyExact, saxenaOptimalPeriod, goodputFi
 import { hotSparesBinomial, hotSparesPoisson, repairPipelineSpares, replacementsOverJob } from '../sparing/index.js';
 import { binomCdf } from '../math/special.js';
 import { lostDollarsPerDay, wastedGpuHoursPerDay } from '../cost/index.js';
-import { computeCounts, buildStructure, interruptionRatePerHour, type Counts, type ComponentInstances } from './build.js';
+import { computeCounts, buildStructure, interruptionRatePerHour, replicaComposition, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
 import { designReviewChecklist, type ChecklistItem } from './checklist.js';
 import type { Scenario } from './schema.js';
 
@@ -117,6 +117,15 @@ export interface TrainingKpis {
 export interface InferenceKpis {
   replicasRequired: number;
   spareReplicas: number;
+  /** physical scope of one replica (node, rack, supernode, zone) */
+  replicaScope: ScopeLevel;
+  /** GPUs / NPUs in the whole pool: (N + k) × GPUs per replica */
+  clusterGpus: number;
+  /** supernodes per replica and in total (0 without a supernode preset) */
+  supernodesPerReplica: number;
+  supernodesTotal: number;
+  /** classes folded into the replica unit */
+  replicaMembers: string[];
   replicaLambdaPerHour: number;
   replicaMtbfHours: number;
   replicaMttrHours: number;
@@ -441,9 +450,11 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
   if (s.workload.type === 'inference') {
     const w = s.workload;
     const total = w.replicasRequired + w.spareReplicas;
-    const members = items.filter((ci) => (ci.component.countRule.per === 'gpu' || ci.component.countRule.per === 'node') && !ci.component.redundancy);
-    const lamRep = members.reduce((a, ci) => a + (ci.lambdaIndependent * ci.total) / total, 0);
-    const mttrRep = w.replicaRecoveryHours ?? Math.max(...members.map((m) => m.mttr), 0.1);
+    const comp = replicaComposition(s, counts, items, total, w.gpusPerReplica, w.replicaRecoveryHours);
+    const lamRep = comp.lambdaPerReplica;
+    const mttrRep = comp.mttrH;
+    const sp = s.topology.superpod;
+    const supernodeSize = sp ? sp.npusPerNode * sp.nodesPerRack * sp.computeRacks : 0;
     const u = (lamRep * mttrRep) / (1 + lamRep * mttrRep);
     const capAt = (k: number) => binomCdf(w.replicasRequired + k, k, u);
     let kReq = 0;
@@ -454,6 +465,11 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     inference = {
       replicasRequired: w.replicasRequired,
       spareReplicas: w.spareReplicas,
+      replicaScope: comp.scope,
+      clusterGpus: total * w.gpusPerReplica,
+      supernodesPerReplica: supernodeSize > 0 ? w.gpusPerReplica / supernodeSize : 0,
+      supernodesTotal: supernodeSize > 0 ? Math.ceil((total * w.gpusPerReplica) / supernodeSize) : 0,
+      replicaMembers: comp.members.map((m) => m.ci.component.id),
       replicaLambdaPerHour: lamRep,
       replicaMtbfHours: lamRep > 0 ? 1 / lamRep : Infinity,
       replicaMttrHours: mttrRep,
@@ -468,7 +484,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       idleSpareGpuHoursPerDay: idle,
       spareDollarsPerDay: idle * (s.costs.spareUnitCostPerHour ?? s.costs.pricePerGpuHour),
     };
-    formulas.inference = 'u_r = gλ·MTTR/(1 + gλ·MTTR); A_any = 1 − u_r^{n+k}; A_cap = Σ_{j≤k} C(n+k, j) u_r^j (1−u_r)^{n+k−j}';
+    formulas.inference = 'u_r = λ_r·MTTR_r/(1 + λ_r·MTTR_r) with λ_r = Σ (classes at or below the replica scope) and MTTR_r = Σλ_iT_i/Σλ_i; A_any = 1 − u_r^{n+k}; A_cap = Σ_{j≤k} C(n+k, j) u_r^j (1−u_r)^{n+k−j}';
     if (w.spareReplicas < kReq) warnings.push(`configured spare replicas (${w.spareReplicas}) below the ${kReq} needed for the ${(w.capacityTarget * 100).toFixed(3)} % capacity target`);
   }
 

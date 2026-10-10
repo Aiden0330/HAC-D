@@ -167,8 +167,16 @@ export function ScenarioPage() {
               </>
             ) : (
               <>
-                <Field label={t('scenario.replicasRequired')}><NumberInput value={s.workload.replicasRequired} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), replicasRequired: Math.round(v) } }))} /></Field>
-                <Field label={t('scenario.gpusPerReplica')}><NumberInput value={s.workload.gpusPerReplica} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), gpusPerReplica: Math.round(v) } }))} /></Field>
+                <Field label={t('scenario.clusterSize')} hint={t('scenario.clusterSizeHint')}>
+                  <NumberInput value={s.workload.replicasRequired * s.workload.gpusPerReplica} min={1} step={1} onChange={(v) => upd((x) => { const w = x.workload as typeof s.workload; return { ...x, workload: { ...w, replicasRequired: Math.max(1, Math.ceil(v / w.gpusPerReplica)) } }; })} />
+                </Field>
+                <Field label={t('scenario.replicasRequired')} hint={s.topology.superpod ? `${t('scenario.supernodeIs')} ${s.topology.superpod.npusPerNode * s.topology.superpod.nodesPerRack * s.topology.superpod.computeRacks} NPU` : undefined}><NumberInput value={s.workload.replicasRequired} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), replicasRequired: Math.round(v) } }))} /></Field>
+                <Field label={t('scenario.gpusPerReplica')}>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <NumberInput value={s.workload.gpusPerReplica} min={1} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), gpusPerReplica: Math.round(v) } }))} />
+                    {s.topology.superpod && <button type="button" className="btn small" title={t('scenario.useSupernode')} onClick={() => upd((x) => { const sp = x.topology.superpod!; const size = sp.npusPerNode * sp.nodesPerRack * sp.computeRacks; const w = x.workload as typeof s.workload; const cluster = w.replicasRequired * w.gpusPerReplica; return { ...x, workload: { ...w, gpusPerReplica: size, replicasRequired: Math.max(1, Math.ceil(cluster / size)) } }; })}>= {t('scenario.supernode')}</button>}
+                  </div>
+                </Field>
                 <Field label={t('scenario.spareReplicas')}><NumberInput value={s.workload.spareReplicas} min={0} step={1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), spareReplicas: Math.round(v) } }))} /></Field>
                 <Field label={t('scenario.capacityTarget')}><NumberInput value={s.workload.capacityTarget} min={0} max={1} step={0.0001} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), capacityTarget: v } }))} /></Field>
                 <Field label={t('scenario.windowHours')}><NumberInput value={s.workload.windowHours} min={0.1} onChange={(v) => upd((x) => ({ ...x, workload: { ...(x.workload as typeof s.workload), windowHours: v } }))} /></Field>

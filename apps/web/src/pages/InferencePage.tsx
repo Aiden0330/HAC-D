@@ -19,11 +19,17 @@ export function InferencePage() {
         <h1>{t('inference.title')}</h1>
         <span className="sub">{t('inference.sub')}</span>
       </div>
+      {inf.replicaScope === 'supernode' && (
+        <div className="callout">
+          <b>{t('inference.clusterTitle')}</b>: {fmtInt(inf.clusterGpus)} NPU = {inf.replicasRequired} + {inf.spareReplicas} × {fmtInt(scenario.workload.gpusPerReplica)} · {t('inference.supernodesTotal')} {inf.supernodesTotal} · {t('inference.replicaMembers')}: {inf.replicaMembers.join(', ')}
+        </div>
+      )}
       <div className="kpi-row">
-        <Kpi label={`${t('inference.capacity')} (k = ${inf.spareReplicas})`} value={fmtPct(inf.capacityAvailability, 4)} tone={inf.capacityAvailability < target ? 'bad' : undefined} note={`target ${fmtPct(target, 2)}`} hero />
+        <Kpi label={`${t('inference.capacity')} (k = ${inf.spareReplicas})`} value={fmtPct(inf.capacityAvailability, 4)} tone={inf.capacityAvailability < target ? 'bad' : undefined} note={`target ${fmtPct(target, 2)} · ${t('inference.unitScope')}: ${inf.replicaScope}`} hero />
         <Kpi label={t('inference.kRequired')} value={String(inf.kRequiredForTarget)} note={`${fmtPct(inf.kRequiredForTarget / inf.replicasRequired, 1)} redundancy`} />
         <Kpi label={t('inference.serviceUp')} value={fmtPct(inf.serviceUpAvailability, 5)} />
-        <Kpi label={t('inference.replicaMtbf')} value={fmtHours(inf.replicaMtbfHours, lang)} note={`${t('inference.replicaU')} ${fmtPct(inf.replicaUnavailability, 3)} · MTTR ${fmtHours(inf.replicaMttrHours, lang)}`} />
+        <Kpi label={inf.replicaScope === 'supernode' ? t('inference.supernodeMtbf') : t('inference.replicaMtbf')} value={fmtHours(inf.replicaMtbfHours, lang)} note={`${t('inference.replicaU')} ${fmtPct(inf.replicaUnavailability, 3)} · MTTR ${fmtHours(inf.replicaMttrHours, lang)}`} />
+        <Kpi label={t('inference.expectedDown')} value={fmtNum(inf.expectedDownReplicas, 2)} note={inf.replicaScope === 'supernode' ? t('inference.supernodesDownNote') : undefined} />
         <Kpi label={t('inference.failuresPerDay')} value={fmtNum(inf.replicaFailuresPerDay, 2)} note={`${t('inference.pNoFailure')} ${fmtPct(inf.pNoReplicaFailureInWindow, 1)}`} />
         <Kpi label={t('inference.idleSpares')} value={fmtInt(inf.idleSpareGpuHoursPerDay)} note={fmtMoney(inf.spareDollarsPerDay)} />
       </div>

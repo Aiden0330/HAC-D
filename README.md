@@ -22,6 +22,7 @@ node --import tsx packages/cli/src/main.ts allocate nvl72.json --goodput 0.98 --
 node --import tsx packages/cli/src/main.ts simulate ex1.json --reps 100
 node --import tsx packages/cli/src/main.ts example ascend-cm384 > cm384.json          # CloudMatrix384 supernode (v2)
 node --import tsx packages/cli/src/main.ts measures cm384.json                       # original vs compensated + waterfall
+node --import tsx packages/cli/src/main.ts example ascend-supercluster-100k > sc.json  # 100,000 NPUs as 261 + 3 supernodes (capacity availability)
 node --import tsx packages/cli/src/main.ts methods book.xlsx                         # which availability methods a spreadsheet uses
 node --import tsx packages/cli/src/main.ts import-excel book.xlsx --out imported.json # topology + parameters → scenario, reconciled
 node --import tsx packages/cli/src/main.ts export-excel cm384.json cm384.xlsx        # workbook with live formulas

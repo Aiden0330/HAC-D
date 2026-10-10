@@ -29,6 +29,7 @@ export const strings = {
       switchover: 'Switchover', switchoverSuccess: 'Success probability', switchoverOutage: 'Outage per switchover (s)', switchoverRecovery: 'Failed-switch recovery (h)',
       subhealth: 'Sub-health', shRate: 'Entry rate (/h)', shDuration: 'Duration (h)', shPerformance: 'Performance φ', shEscalation: 'Escalation ×', shPolicy: 'Policy', shDetectP: 'Detection probability', shDetectDelay: 'Detection delay (h)', tolerate: 'tolerate (run slow)', isolate: 'isolate (switch out)', legacyFailslow: 'legacy fail-slow (v1) in use', convert: 'Convert to sub-health',
       mtbfUnit: 'MTBF per unit', meanRepair_: 'E[R]', lambdaAgg: 'λ aggregate', fromSuperpod: 'GPUs per node, nodes per rack, network planes and the scale-up domain are taken from the supernode geometry below. The number of NPUs in the job is set under Workload → Job GPUs / NPUs.',
+      clusterSize: 'Cluster size (GPUs / NPUs)', clusterSizeHint: 'Sets replicas required = ⌈cluster size ÷ GPUs per replica⌉.', supernodeIs: 'one supernode =', useSupernode: 'Use one supernode as the replica unit', supernode: 'supernode',
       perNode: 'Per node', liveNote: 'Results recompute automatically after every edit; there is no recalculate step.', nGpusHint: 'NPUs used by the job; the supernode count follows (one supernode holds NPUs per node × nodes per rack × compute racks).',
       details: 'Details', ladder: 'Recovery ladder', rung: 'Rung', kind: 'Kind', success: 'Success', reach: 'Reach', timeS: 'Time (s)', ladderNote: 'Rungs are tried in order; the last (manual) rung always succeeds. MindCluster preset values are assumptions until measured.', customise: 'Customise rungs', pipelineMode: 'pipeline', ladderMode: 'ladder', provenance: 'Provenance',
     },
@@ -43,6 +44,7 @@ export const strings = {
     },
     inference: {
       title: 'Inference service', sub: 'N+k replicas: service-up vs capacity-sufficient availability, k for the target, replica failure arrivals.',
+      clusterTitle: 'Cluster of supernodes', supernodesTotal: 'supernodes in the pool', replicaMembers: 'classes inside one supernode', unitScope: 'unit', supernodeMtbf: 'Supernode MTBF', expectedDown: 'Expected units down', supernodesDownNote: 'supernodes out of service at any time (steady state)',
       curve: 'Capacity availability vs spare replicas k', kRequired: 'k required for target', serviceUp: 'Service-up availability', capacity: 'Capacity availability', replicaMtbf: 'Replica MTBF', replicaU: 'Replica unavailability', failuresPerDay: 'Replica failures / day', pNoFailure: 'P(no replica failure in window)', idleSpares: 'Idle spare GPU·h/day', notTraining: 'Switch the workload to inference to use this page.',
     },
     spares: {
@@ -109,6 +111,7 @@ export const strings = {
       switchover: '倒换', switchoverSuccess: '倒换成功率', switchoverOutage: '每次倒换中断（秒）', switchoverRecovery: '倒换失败恢复时间（小时）',
       subhealth: '亚健康', shRate: '进入率（/小时）', shDuration: '持续时间（小时）', shPerformance: '性能 φ', shEscalation: '恶化倍数', shPolicy: '策略', shDetectP: '检测概率', shDetectDelay: '检测时延（小时）', tolerate: '容忍（降速运行）', isolate: '隔离（倒换出去）', legacyFailslow: '当前使用 v1 的 fail-slow 字段', convert: '转换为亚健康',
       mtbfUnit: '单元 MTBF', meanRepair_: 'E[R]', lambdaAgg: 'λ 合计', fromSuperpod: '每节点 GPU 数、每机柜节点数、网络平面数与 scale-up 域由下方的超节点几何决定。作业使用的 NPU 数在「负载 → 作业 GPU/NPU 数」中设置。',
+      clusterSize: '集群规模（GPU/NPU 数）', clusterSizeHint: '所需副本数 = ⌈集群规模 ÷ 每副本 GPU 数⌉。', supernodeIs: '一个超节点 =', useSupernode: '以一个超节点为副本单元', supernode: '超节点',
       perNode: '每节点', liveNote: '每次修改后结果自动重算，无需「重新计算」按钮。', nGpusHint: '作业使用的 NPU 数；超节点数随之推算（一个超节点 = 每节点 NPU 数 × 每机柜节点数 × 计算机柜数）。',
       details: '详情', ladder: '分级恢复', rung: '级', kind: '类型', success: '成功率', reach: '到达概率', timeS: '时间（秒）', ladderNote: '各级按顺序尝试，最后一级（人工）必成功。MindCluster 预设取值为假设，待实测替换。', customise: '自定义各级', pipelineMode: '流水线', ladderMode: '分级恢复', provenance: '出处',
     },
@@ -123,6 +126,7 @@ export const strings = {
     },
     inference: {
       title: '推理服务', sub: 'N+k 副本：「有服务」与「容量充足」两个可用率、达到目标所需的 k、副本故障到达。',
+      clusterTitle: '超节点集群', supernodesTotal: '池中超节点数', replicaMembers: '一个超节点内的部件类', unitScope: '单元', supernodeMtbf: '超节点 MTBF', expectedDown: '期望停机单元数', supernodesDownNote: '任一时刻停机的超节点数（稳态期望）',
       curve: '容量可用率随备用副本数 k 的变化', kRequired: '达到目标所需 k', serviceUp: '有服务可用率', capacity: '容量可用率', replicaMtbf: '副本 MTBF', replicaU: '副本不可用率', failuresPerDay: '每日副本故障数', pNoFailure: '窗口内无副本故障的概率', idleSpares: '每日空闲备用 GPU·h', notTraining: '将负载切换为推理以使用本页。',
     },
     spares: {

@@ -121,6 +121,41 @@ const assumed = (derivation: string) => ({ source: 'HAC-D analogue assumption', 
 const paper = (derivation: string) => ({ source: 'Serving Large Language Models on Huawei CloudMatrix384', org: 'Huawei', venue: 'arXiv 2506.12708 v3', year: 2025, url: 'https://arxiv.org/abs/2506.12708', confidence: 'derived' as const, derivation });
 
 /** Component classes of a CloudMatrix384-style supernode; `commShare` sets the plane-loss performance factors. */
+const hpn = (what: string) => ({ source: 'Alibaba HPN: A Data Center Network for Large Language Model Training', org: 'Alibaba', venue: 'SIGCOMM 2024', year: 2024, url: 'https://ennanzhai.github.io/pub/sigcomm24-hpn.pdf', confidence: 'paper-reported' as const, derivation: `${what} (library records nic_optics.nic_tor_link_failure_rate.hpn / switch.tor_critical_error_rate.hpn used as the scale-out analogue)` });
+
+/** Scale-out (RDMA / RoCE) tier between supernodes: per-die 400G links, leaf and spine switches per supernode (2-tier, 4-plane Clos per Huawei; counts assumed). */
+function scaleOutComponents(scaleOutCommShare = 0.15): ScenarioInput['components'] {
+  const planePerf = 1 / (1 + scaleOutCommShare / 3); // one of 4 scale-out planes lost ≈ 0.952 at f = 0.15
+  return [
+    {
+      id: 'scaleout_link',
+      name: { zh: 'Scale-out 光链路（每 die 一个 400G 口，含光模块）', en: 'Scale-out optical link (one 400G port per die, incl. transceivers)' },
+      subsystem: 'network',
+      countRule: { per: 'gpu', factor: 2 },
+      failure: { value: 0.057 / 100 / (30 * 24), unit: 'per_h', koujing: { event: 'link_failure', denominator: 'link_h', level: 'component' }, provenance: hpn('0.057 % of NIC–ToR links fail per month → 7.9e-7 /h') },
+      repair: { auto: { coverage: 0.9, successProbability: 0.95, mttrHours: 0.02 }, manual: { mttrHours: 4 }, provenance: assumed('link flaps recovered by HCCL retransmission / path switch in ~1 min; hard faults need a module swap') },
+    },
+    {
+      id: 'scaleout_leaf',
+      name: { zh: 'Scale-out 叶交换机（每超节点 24 台，假设）', en: 'Scale-out leaf switch (24 per supernode, assumed)' },
+      subsystem: 'network',
+      countRule: { per: 'supernode', factor: 24 },
+      failure: { value: 0.1 * (0.051 / 100 / (30 * 24)), unit: 'per_h', koujing: { event: 'switch_failure_job_interrupting', denominator: 'switch_h', level: 'component' }, provenance: hpn('0.051 % of ToR switches hit a critical error per month → 7.1e-7 /h; 10 % assumed job-interrupting, 90 % degrade one of 4 planes (sub-health)') },
+      repair: { mttrHours: 4 },
+      subhealth: { ratePerHour: 0.9 * (0.051 / 100 / (30 * 24)), durationHours: 4, performance: planePerf, escalationMultiplier: 1, policy: 'tolerate' },
+    },
+    {
+      id: 'scaleout_spine',
+      name: { zh: 'Scale-out 骨干交换机（每超节点 8 台，假设）', en: 'Scale-out spine switch (8 per supernode, assumed)' },
+      subsystem: 'network',
+      countRule: { per: 'supernode', factor: 8 },
+      failure: { value: 0.1 * (0.051 / 100 / (30 * 24)), unit: 'per_h', koujing: { event: 'switch_failure_job_interrupting', denominator: 'switch_h', level: 'component' }, provenance: hpn('ToR critical-error rate used for spines (no public spine data); 10 % job-interrupting, 90 % sub-health') },
+      repair: { mttrHours: 4 },
+      subhealth: { ratePerHour: 0.9 * (0.051 / 100 / (30 * 24)), durationHours: 4, performance: planePerf, escalationMultiplier: 1, policy: 'tolerate' },
+    },
+  ];
+}
+
 function ascendComponents(commShare: number): ScenarioInput['components'] {
   const planeLoss = (planes: number, lost: number) => 1 / (1 + (commShare * lost) / (planes - lost)); // §15 generalised to `lost` of `planes`
   const subplanePerf = planeLoss(7, 1); // one of 7 UB sub-planes ≈ 0.952 at f_comm = 0.3
@@ -266,9 +301,36 @@ export function atlas950Training(): Scenario {
   return parseScenario(input);
 }
 
+/**
+ * SuperCluster sizing: `npus` NPUs served as N + k CloudMatrix384 supernodes (capacity availability).
+ * Each supernode is one replica unit that fails when any of its NPUs, CPUs, UB fabric parts, power or
+ * cooling fails (classes with declared redundancy enter through their group's equivalent rate).
+ */
+export function ascendSupercluster(npus = 100000, spareSupernodes = 3): Scenario {
+  const supernode = 384;
+  const required = Math.ceil(npus / supernode);
+  const input: ScenarioInput = {
+    meta: {
+      id: `ascend-supercluster-${Math.round(npus / 1000)}k`,
+      name: `SuperCluster — ${npus.toLocaleString('en-US')} NPUs as ${required} + ${spareSupernodes} CloudMatrix384 supernodes`,
+      basis: ['arXiv 2506.12708 §3.3 (supernode topology)', 'Huawei Connect 2025 (2-tier, 4-plane scale-out Clos)', 'Alibaba HPN SIGCOMM 2024 (scale-out analogues)', 'docs/ASCEND_SOURCES.md'],
+      description: `Capacity availability of a ${npus.toLocaleString('en-US')}-NPU cluster: ${required} supernodes required, ${spareSupernodes} spare; change "Cluster size" or "Spare replicas" to re-size. Scale-out switch counts and all failure rates are analogues tagged assumed / paper-reported.`,
+    },
+    topology: { gpusPerNode: 8, nodesPerRack: 4, racksPerZone: 16, nvlinkDomainGpus: supernode, networkPlanes: 7, superpod: { preset: 'cloudmatrix384' } },
+    components: [...ascendComponents(0.3), ...scaleOutComponents(0.15)],
+    structure: { mode: 'template', template: 'inference-nk' },
+    workload: { type: 'inference', replicasRequired: required, gpusPerReplica: supernode, spareReplicas: spareSupernodes, capacityTarget: 0.999, windowHours: 24 },
+    recovery: { mode: 'ladder', preset: 'mindcluster-a3' },
+    measures: { subhealthThreshold: 0.7, primary: 'compensated', commShare: 0.3 },
+    assumptions: ['one supernode = one replica unit: any job-interrupting fault inside it takes the supernode out until repaired (rate-weighted MTTR of its classes)', 'scale-out leaf / spine counts per supernode are assumptions (768 NPU ports at 32 downlinks per 64-port switch; 2-tier, 4-plane Clos)', ASCEND_NOTE],
+  };
+  return parseScenario(input);
+}
+
 export const EXAMPLES: Record<string, () => Scenario> = {
   'ascend-cm384': cloudMatrix384Training,
   'ascend-atlas950': atlas950Training,
+  'ascend-supercluster-100k': () => ascendSupercluster(100000, 3),
   'survey-ex1': workedExample1,
   'survey-ex3': () => workedExample3(),
   'survey-ex4': () => workedExample4(),

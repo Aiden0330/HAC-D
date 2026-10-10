@@ -3,7 +3,7 @@
  * recovery ladder, original vs compensated measures, Monte Carlo adapter with dual repair.
  */
 import { describe, it, expect } from 'vitest';
-import { parseScenario, evaluateScenario, resolveRecovery, compareScenarios, scaleRecovery, workedExample1, EXAMPLES, type ScenarioInput } from '../src/index.js';
+import { parseScenario, evaluateScenario, resolveRecovery, compareScenarios, scaleRecovery, workedExample1, workedExample4, ascendSupercluster, EXAMPLES, type ScenarioInput } from '../src/index.js';
 import { mcSpecFromScenario } from '../src/mc/fromScenario.js';
 import { mean as distMean } from '../src/math/distributions.js';
 
@@ -129,5 +129,28 @@ describe('examples still evaluate', () => {
       const r = evaluateScenario(make());
       expect(r.system.measures.original.availability).toBeLessThanOrEqual(r.system.measures.compensated.availability + 1e-12);
     }
+  });
+});
+
+describe('supercluster sizing (N + k supernodes)', () => {
+  it('folds supernode-scoped classes into the supernode unit and sizes the pool from the cluster size', () => {
+    const s = ascendSupercluster(100000, 3);
+    const r = evaluateScenario(s);
+    const i = r.inference!;
+    expect(i.replicasRequired).toBe(Math.ceil(100000 / 384));
+    expect(i.replicaScope).toBe('supernode');
+    expect(i.supernodesTotal).toBe(264);
+    for (const id of ['npu', 'cpu', 'ub_l1_switch', 'ub_l2_switch', 'ub_optical_link', 'rack_power', 'cdu', 'scaleout_leaf']) expect(i.replicaMembers).toContain(id);
+    expect(i.replicaUnavailability).toBeGreaterThan(0);
+    expect(i.kRequiredForTarget).toBeGreaterThan(3);
+    // more NPUs → more supernodes → more spares needed for the same capacity target
+    const big = evaluateScenario(ascendSupercluster(500000, 3)).inference!;
+    expect(big.replicasRequired).toBe(Math.ceil(500000 / 384));
+    expect(big.kRequiredForTarget).toBeGreaterThan(i.kRequiredForTarget);
+  });
+  it('worked example 4 keeps its survey value (node-scope replicas, no fabric classes)', () => {
+    const r = evaluateScenario(workedExample4());
+    expect(r.inference!.replicaScope).toBe('node');
+    expect(r.inference!.capacityAvailability).toBeCloseTo(0.99988, 4);
   });
 });

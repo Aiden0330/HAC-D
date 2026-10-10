@@ -4,7 +4,7 @@
  * training job with hot spares (Fig. 4-1b / 4-3), N+k inference replicas (Fig. 4-1c),
  * and infrastructure redundancy (worked example 5).
  */
-import type { Block, LeafBlock } from '../rbd/index.js';
+import { evaluate as evalRbd, type Block, type LeafBlock } from '../rbd/index.js';
 import { manualOnly, meanRepairH, isDual, subhealthRateFromProbability, SUBHEALTH_THRESHOLD_DEFAULT, type DualRepair, type Subhealth, type Switchover } from '../ctmc/repair.js';
 import { toPerHour } from '../units/index.js';
 import type { Scenario, Component, BlockInput, SwitchoverInput } from './schema.js';
@@ -283,6 +283,97 @@ export function ccfLeaves(items: ComponentInstances[]): LeafBlock[] {
 
 const PER_UNIT_SCOPES = new Set(['gpu', 'node']);
 
+/* ---------------------------------------------------------------------- */
+/* Replica composition (v2): which classes live inside one replica unit     */
+/* ---------------------------------------------------------------------- */
+
+export type ScopeLevel = 'gpu' | 'node' | 'rack' | 'supernode' | 'zone' | 'cluster';
+const SCOPE_RANK: Record<ScopeLevel, number> = { gpu: 0, node: 1, rack: 2, supernode: 3, zone: 4, cluster: 5 };
+
+/** Physical scope of a count rule (superpod scopes count per supernode or per node inside it). */
+export function scopeOfCountRule(per: Component['countRule']['per']): ScopeLevel {
+  switch (per) {
+    case 'gpu':
+      return 'gpu';
+    case 'node':
+      return 'node';
+    case 'rack':
+      return 'rack';
+    case 'zone':
+      return 'zone';
+    case 'fixed':
+      return 'cluster';
+    default:
+      return 'supernode';
+  }
+}
+
+/** Smallest physical scope that contains `gpusPerReplica` GPUs. */
+export function replicaScope(s: Scenario, counts: Counts, gpusPerReplica: number): ScopeLevel {
+  if (gpusPerReplica <= counts.gpusPerNode) return 'node';
+  const perRack = counts.gpusPerNode * counts.nodesPerRack;
+  if (gpusPerReplica <= perRack) return 'rack';
+  const sp = s.topology.superpod;
+  if (sp && gpusPerReplica <= sp.npusPerNode * sp.nodesPerRack * sp.computeRacks) return 'supernode';
+  if (gpusPerReplica <= perRack * s.topology.racksPerZone) return 'zone';
+  return 'cluster';
+}
+
+export interface ReplicaMember {
+  ci: ComponentInstances;
+  /** failure rate contributed to one replica, per hour */
+  lambdaPerReplica: number;
+  mttrH: number;
+  /** the class's declared redundancy was reduced to an equivalent exponential first */
+  viaGroup: boolean;
+}
+
+export interface ReplicaComposition {
+  scope: ScopeLevel;
+  members: ReplicaMember[];
+  /** classes above the replica scope: stay in series with the pool */
+  others: ComponentInstances[];
+  lambdaPerReplica: number;
+  /** rate-weighted mean repair time of the replica, hours (or the configured replica recovery) */
+  mttrH: number;
+  notes: string[];
+}
+
+/**
+ * Everything at or below the replica's scope (GPU, node, rack, supernode-level fabric …) fails the replica;
+ * classes with declared redundancy enter through their group's equivalent rate. Classes above the scope
+ * (zone, fixed) stay in series with the pool.
+ */
+export function replicaComposition(s: Scenario, counts: Counts, items: ComponentInstances[], totalReplicas: number, gpusPerReplica: number, replicaRecoveryHours?: number): ReplicaComposition {
+  const scope = replicaScope(s, counts, gpusPerReplica);
+  const rank = SCOPE_RANK[scope];
+  const members: ReplicaMember[] = [];
+  const others: ComponentInstances[] = [];
+  const notes: string[] = [];
+  for (const ci of items) {
+    const cs = scopeOfCountRule(ci.component.countRule.per);
+    if (cs === 'cluster' || SCOPE_RANK[cs] > rank) {
+      others.push(ci);
+      continue;
+    }
+    const red = (ci.component as Component & { redundancy?: Redundancy }).redundancy;
+    if (red && red.scheme !== 'series') {
+      const single: ComponentInstances = { ...ci, instances: 1, total: ci.unitsPerInstance };
+      const r = evalRbd(componentBlock(single));
+      const mttrEq = Number.isFinite(r.equivalentMttr) && r.equivalentMttr > 0 ? r.equivalentMttr : ci.mttr;
+      members.push({ ci, lambdaPerReplica: (r.equivalentFailureRate * ci.instances) / totalReplicas, mttrH: mttrEq, viaGroup: true });
+    } else {
+      members.push({ ci, lambdaPerReplica: (ci.lambdaIndependent * ci.total) / totalReplicas, mttrH: ci.mttr, viaGroup: false });
+    }
+  }
+  const lambdaPerReplica = members.reduce((a, m) => a + m.lambdaPerReplica, 0);
+  const weighted = lambdaPerReplica > 0 ? members.reduce((a, m) => a + m.lambdaPerReplica * m.mttrH, 0) / lambdaPerReplica : 0.1;
+  const mttrH = replicaRecoveryHours ?? Math.max(weighted, 1e-6);
+  notes.push(`replica scope ${scope}: ${members.map((m) => m.ci.component.id + (m.viaGroup ? ' (group λ_eq)' : '')).join(', ') || 'none'}; replica MTTR ${mttrH.toPrecision(3)} h${replicaRecoveryHours === undefined ? ' (rate-weighted mean of the members)' : ' (configured)'}`);
+  if (members.some((m) => m.ci.subhealth)) notes.push('sub-health of replica members is not propagated into the replica pool (closed form); see the Training page for the straggler law');
+  return { scope, members, others, lambdaPerReplica, mttrH, notes };
+}
+
 /** Build the block tree for the scenario's structure mode. */
 export function buildStructure(s: Scenario, counts: Counts): { root: Block; items: ComponentInstances[]; notes: string[] } {
   const items = s.components.filter((c) => c.enabled).map((c) => componentInstances(c, counts, s.measures.subhealthThreshold));
@@ -312,15 +403,13 @@ export function buildStructure(s: Scenario, counts: Counts): { root: Block; item
 
   if (template === 'inference-nk' && s.workload.type === 'inference') {
     const w = s.workload;
-    const replicaMembers = items.filter((ci) => PER_UNIT_SCOPES.has(ci.component.countRule.per) && !(ci.component as Component & { redundancy?: Redundancy }).redundancy);
-    const others = items.filter((ci) => !replicaMembers.includes(ci));
     const totalReplicas = w.replicasRequired + w.spareReplicas;
-    const perReplica = replicaMembers.reduce((a, ci) => a + ci.lambdaIndependent * ci.total / totalReplicas, 0);
-    const mttrRep = w.replicaRecoveryHours ?? Math.max(...replicaMembers.map((m) => m.mttr), 0.1);
-    const replica: LeafBlock = { kind: 'leaf', id: 'replica', name: `Replica (${w.gpusPerReplica} GPU)`, count: 1, lambda: perReplica, mttr: mttrRep };
-    const pool: Block = { kind: 'kofn', id: 'replica-pool', name: `Replicas ${w.replicasRequired}-of-${totalReplicas}`, n: totalReplicas, k: w.replicasRequired, unit: replica, capacityMode: 'proportional' };
-    notes.push(`replica unit aggregates ${replicaMembers.map((m) => m.component.id).join(', ')}; replica MTTR ${mttrRep} h`);
-    return { root: { kind: 'series', id: 'service', name: 'Inference service', children: [pool, ...others.map(componentBlock), ...ccf] }, items, notes };
+    const comp = replicaComposition(s, counts, items, totalReplicas, w.gpusPerReplica, w.replicaRecoveryHours);
+    const unitName = comp.scope === 'supernode' ? `Supernode (${w.gpusPerReplica} NPU)` : `Replica (${w.gpusPerReplica} GPU)`;
+    const replica: LeafBlock = { kind: 'leaf', id: 'replica', name: unitName, count: 1, lambda: comp.lambdaPerReplica, mttr: comp.mttrH };
+    const pool: Block = { kind: 'kofn', id: 'replica-pool', name: `${comp.scope === 'supernode' ? 'Supernodes' : 'Replicas'} ${w.replicasRequired}-of-${totalReplicas}`, n: totalReplicas, k: w.replicasRequired, unit: replica, capacityMode: 'proportional' };
+    notes.push(...comp.notes);
+    return { root: { kind: 'series', id: 'service', name: comp.scope === 'supernode' ? 'Cluster of supernodes' : 'Inference service', children: [pool, ...comp.others.map(componentBlock), ...ccf] }, items, notes };
   }
 
   // infrastructure or fallback: every component with its declared redundancy, in series
