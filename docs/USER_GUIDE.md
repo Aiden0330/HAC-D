@@ -64,3 +64,22 @@ With the example's analogue rates a CloudMatrix384 supernode has an MTBF of abou
 
 ### Training availability models (v2.1)
 The Training page lists five models side by side (operational A_op, first order, product form, exact renewal, Daly full) and marks the headline with ★: the first-order value while (τ+δ)/M and R/M are small, the exact renewal value otherwise; the scale table shows both columns. "Measured lost computation per failure W" in the workload editor replaces τ/2 when you have replay logs. The recovery selector offers "MTTR mixture (detection + automatic + manual)" with detection coverage, automatic detection delay, timeout fallback, automatic success and duration, and manual duration; R = T_det + T_auto + (1 − p_s)·T_manual.
+
+## v3 additions (2026-10-10): silent corruption, mechanism chain, attribution
+
+### Delivered goodput (正确有效产出)
+When any component class carries a silent-corruption rate, the Training page headlines the **delivered goodput**: the correct progress retained at the end of the job window divided by the window length. The performance goodput (hard interruptions, sub-health, chain) is shown next to it with the delivery factor. The "Silent corruption over the job window" card gives the episode rate ν, the expected number of undetected episodes and how many are discovered inside the window, the clean / dirty / pause shares, the probability of still being dirty at the end, and the no-recovery factor for comparison. The job-window ledger shows every share of the window once (downtime, saves, rollback, slow-down, elastic domain loss, spares, SDC rollback, terminal discard, delivered).
+
+### Scenario page
+- **Silent corruption policy (job level)**, under Measures: immediate detection coverage q and time, fallback discovery delay (120 h in the reference baseline), optional step recovery (redo at most 1 s, recover in 1 s). Per-class silent rates are set in the component Details ("Silent corruption" checkbox + rate per unit-hour).
+- **Recovery mechanism chain**: enable replay (no rollback), DP-domain elasticity (no rollback, domain out for 180 s, 1 s global sync) and process rescheduling (rollback) with success probabilities and success / failure times; each class declares in Details → "Mechanism applicability" the fraction of its interruptions a mechanism can act on (the reference catalog's flags, aggregated per source in the built-in examples). Interruptions then run replay → elastic → process → global checkpoint recovery; detected sub-healthy units are isolated after saving progress (pause without rollback).
+- Example **"Reference baseline, three fault classes"** reproduces the reference tool's confirmed baseline (interruption 96.6 %, sub-health 2 %, silent 1.4 %; delivered 62.6 % at 100k cards).
+
+### Mechanisms page
+Pick the mechanisms to attribute (default: the reference's six candidates D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST), choose the value function (delivered goodput, effective goodput or A_op) and press Attribute: the page strips the selected mechanisms from the scenario (baseline), evaluates all 2^n combinations with the closed forms and shows single gains, last-added gains and exact Shapley values (they sum to the combined gain). The library table lists all twelve reference mechanisms with change, prerequisite, failure path, confidence and editable target parameters; Apply writes a mechanism's parameters into the active scenario, Remove takes it out again.
+
+### Simulate page
+The default mode is now the **window ledger**: a finite-window simulation with the same semantics as the reference engine (three fault classes, mechanism chain, sub-health isolation, silent corruption with clean-checkpoint rollback and terminal discard). It reports the delivered goodput with its confidence interval and quantiles, A_op, P(delivered ≥ target), the probability of ending dirty, the mean ledger and the attribution by class, and compares with the closed form (delta badge). The previous unit-level job simulation (Weibull lifetimes, spares, common cause) is still available as the second mode.
+
+### Compare / Report
+The Compare table and the tornado carry a Delivered column / metric; the HTML report and the Excel export list the delivered goodput and A_op.

@@ -6,7 +6,7 @@ import { Kpi, Card, DataTable, Badge } from '../components/ui.js';
 import { StackedBar } from '../charts/StackedBar.js';
 import { LineChart } from '../charts/LineChart.js';
 import { BarChart } from '../charts/BarChart.js';
-import { fmtPct, fmtDuration, fmtMoney, fmtNum, fmtInt, fmtRatePerMillion } from '../lib/format.js';
+import { fmtPct, fmtDuration, fmtMoney, fmtNum, fmtInt, fmtRatePerMillion, fmtHours } from '../lib/format.js';
 
 export function TrainingPage() {
   const { t } = useTranslation();
@@ -57,10 +57,18 @@ export function TrainingPage() {
         <span className="sub">{t('training.sub')}</span>
       </div>
       <div className="kpi-row">
-        <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')} ${fmtPct(tr.headlineGoodput, 2)} · ${t('training.operational')} ${fmtPct(tr.operationalAvailability, 3)}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
-        <Kpi label={t('training.operational')} value={fmtPct(tr.operationalAvailability, 3)} note={`A_op = M/(M + R) · ${t('training.aopNote')}`} />
+        {tr.sdc ? (
+          <>
+            <Kpi label={t('training.delivered')} value={fmtPct(tr.deliveredGoodput, 2)} note={`${t('training.deliveredNote')} · ${t('training.performanceGoodput')} ${fmtPct(tr.effectiveGoodput, 2)} × ${t('training.sdcFactor')} ${fmtNum(tr.sdc.delivery.factor, 4)}`} tone={tr.deliveredGoodput < 0.9 ? 'bad' : undefined} hero />
+            <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')} ${fmtPct(tr.headlineGoodput, 2)}`} />
+          </>
+        ) : (
+          <Kpi label={t('training.effectiveGoodput')} value={fmtPct(tr.effectiveGoodput, 2)} note={`${t(tr.headlineModel === 'first-order' ? 'training.modelFirst' : 'training.modelExact')} ${fmtPct(tr.headlineGoodput, 2)} · ${t('training.noSdc')}`} tone={tr.effectiveGoodput < 0.9 ? 'bad' : undefined} hero />
+        )}
+        <Kpi label={t('training.operational')} value={fmtPct(tr.operationalAvailability, 3)} note={`A_op = 1/(1 + λ_rb R_rb + λ_p R_p) · ${t('training.aopNote')}`} />
         <Kpi label={t('common.mtbi')} value={fmtDuration(tr.mtbiS, lang)} note={`${fmtNum(tr.interruptionsPerDay, 1)} ${t('common.interruptions_per_day')}`} />
         <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryKind === 'mixture' ? t('scenario.mixtureMode') : tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
+        <Kpi label={t('training.eventRate')} value={fmtNum(tr.eventRatePerHour, 3)} note={`${t('training.rollbackEvents')} ${fmtPct(tr.pRollback, 1)} · ${t('training.pauseOnlyEvents')} ${fmtPct(1 - tr.pRollback, 1)} · ${t('training.meanPauseAll')} ${fmtDuration(tr.meanPauseS, lang)}`} />
         <Kpi label={t('common.interval')} value={fmtDuration(tr.tauS, lang)} note={tr.intervalModel} />
         <Kpi label={t('common.lost_per_day')} value={fmtMoney(tr.lostDollarsPerDay)} note={`${fmtInt(tr.wastedGpuHoursPerDay)} ${t('common.wasted')}`} />
         <Kpi label={t('training.wall')} value={fmtNum(tr.wallClockDays, 1)} note={`${fmtNum(tr.expectedInterruptions, 0)} interruptions · P(no interruption 24 h) ${fmtPct(tr.pNoInterruption24h, 1)}`} />
@@ -98,6 +106,7 @@ export function TrainingPage() {
               { label: t('training.recompute'), value: fo.terms.recompute },
               { label: t('training.restart'), value: fo.terms.restart },
               ...(tr.blockedProbability > 0 ? [{ label: t('training.blocked'), value: tr.blockedProbability }] : []),
+              ...(tr.localLossFraction > 0 ? [{ label: t('training.ledger_local'), value: tr.localLossFraction }] : []),
             ]}
             format={(v) => fmtPct(v, 2)}
           />
@@ -107,6 +116,43 @@ export function TrainingPage() {
           <DataTable columns={[t('training.stage'), t('training.meanS'), t('training.shareOfR'), t('common.notes')]} numericFrom={1} rows={tr.recovery.stages.map((s) => [s.name === tr.recovery.dominant ? <b key="d">{s.name}</b> : s.name, fmtDuration(s.meanS, lang), fmtPct(s.share, 1), <span key="n" className="muted" style={{ fontSize: 12 }}>{s.note ?? ''}</span>])} />
         </Card>
       </div>
+      <Card title={t('training.ledgerTitle')} sub={t('training.ledgerNote')} formula={result.formulas.ledger}>
+        <StackedBar
+          title={t('training.ledgerTitle')}
+          segments={[
+            { label: t('training.ledger_delivered'), value: tr.ledger.delivered },
+            { label: t('training.ledger_downtime'), value: tr.ledger.downtime },
+            { label: t('training.ledger_save'), value: tr.ledger.save },
+            { label: t('training.ledger_rollback'), value: tr.ledger.rollback },
+            ...(tr.ledger.slowdown > 0 ? [{ label: t('training.ledger_slowdown'), value: tr.ledger.slowdown }] : []),
+            ...(tr.ledger.local > 0 ? [{ label: t('training.ledger_local'), value: tr.ledger.local }] : []),
+            ...(tr.ledger.blocked > 0 ? [{ label: t('training.ledger_blocked'), value: tr.ledger.blocked }] : []),
+            ...(tr.ledger.sdcRollback > 0 ? [{ label: t('training.ledger_sdcRollback'), value: tr.ledger.sdcRollback }] : []),
+            ...(tr.ledger.terminal > 0 ? [{ label: t('training.ledger_terminal'), value: tr.ledger.terminal }] : []),
+          ]}
+          total={1}
+          format={(v) => fmtPct(v, 3)}
+        />
+      </Card>
+      {tr.sdc && (
+        <Card title={t('training.sdcTitle')} formula={result.formulas.sdc}>
+          <div className="kpi-row">
+            <Kpi label={t('training.delivered')} value={fmtPct(tr.deliveredGoodput, 2)} note={`${t('training.sdcFactor')} ${fmtNum(tr.sdc.delivery.factor, 4)} · ${t('training.cTime')} ${fmtNum(tr.sdc.delivery.cTimeNoRecovery, 4)}`} hero />
+            <Kpi label={t('training.sdcRate')} value={tr.sdc.ratePerHour.toExponential(3)} note={`${t('training.sdcCoverage')} ${fmtPct(tr.sdc.coverage, 1)} · ${t('training.pClear')} ${fmtPct(tr.sdc.pClearedBeforePersist, 2)}`} />
+            <Kpi label={t('training.episodeRate')} value={tr.sdc.episodeRatePerWallHour.toExponential(3)} note={`${t('training.sdcEpisodes')} ${fmtNum(tr.sdc.delivery.expectedEpisodes, 2)} · ${fmtNum(tr.sdc.delivery.expectedDiscovered, 2)} ${t('training.sdcDiscovered')}`} />
+            <Kpi label={t('training.sdcClean')} value={fmtPct(tr.sdc.delivery.cleanTimeFraction, 2)} note={`${t('training.sdcDirty')} ${fmtPct(tr.sdc.delivery.dirtyTimeFraction, 2)} · ${t('training.sdcPause')} ${fmtPct(tr.sdc.delivery.pauseFraction, 3)} · ${t('training.stationary')} ${fmtPct(tr.sdc.delivery.stationaryCleanFraction, 2)}`} />
+            <Kpi label={t('training.pDirtyEnd')} value={fmtPct(tr.sdc.delivery.pDirtyAtEnd, 1)} note={`${t('training.ledger_terminal')} ${fmtPct(tr.sdc.delivery.terminalDiscardFraction, 2)} · ${t('training.ledger_sdcRollback')} ${fmtPct(tr.sdc.delivery.rollbackFraction, 2)}`} tone={tr.sdc.delivery.pDirtyAtEnd > 0.2 ? 'warn' : undefined} />
+            <Kpi label={t('training.sdcFallback')} value={fmtHours(tr.sdc.fallbackDelayH, lang)} note={`${t('common.recovery')} ${fmtDuration(tr.sdc.episodePauseS, lang)} · ${tr.sdc.stepRecovery ? 'step recovery' : 'checkpoint recovery'} · ${tr.sdc.delivery.method}`} />
+          </div>
+          <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('training.mechanismsHint')}</div>
+        </Card>
+      )}
+      <Card title={t('training.chainTitle')} sub={tr.chain.active ? `${t('training.detectGlobal')}: ${fmtDuration(tr.detectS, lang)} · ${fmtDuration(tr.globalRecoveryS, lang)}` : t('training.chainInactive')} formula={result.formulas.chain}>
+        <DataTable
+          columns={[t('common.component'), t('training.chainRate'), t('training.applicable'), t('training.pReplay'), t('training.pElastic'), t('training.pProcess'), t('training.pGlobal'), t('training.pRollback'), t('training.meanPause'), t('training.localLoss')]}
+          rows={tr.chain.rows.map((r) => [r.name, r.ratePerHour.toExponential(2), `${fmtNum(r.applicable.replay, 2)} / ${fmtNum(r.applicable.process, 2)} / ${fmtNum(r.applicable.elastic, 2)}`, fmtPct(r.pReplay, 1), fmtPct(r.pElastic, 1), fmtPct(r.pProcess, 1), fmtPct(r.pGlobal, 1), fmtPct(r.pRollback, 1), fmtDuration(r.meanPauseS, lang), `${fmtNum(r.localLossS, 2)} s`])}
+        />
+      </Card>
       {tr.subhealth && (
         <Card title={t('training.subhealthTitle')} formula={result.formulas.subhealth}>
           <div className="kpi-row">
@@ -119,8 +165,8 @@ export function TrainingPage() {
       <Card formula={result.formulas.scale} sub={t('training.scaleNote')}>
         <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel={t('training.nLabel')} yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
         <DataTable
-          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', `${t('common.goodput')} (${t('training.modelFirst')})`, `${t('common.goodput')} (${t('training.modelExact')})`, t('common.interruptions_per_day'), '']}
-          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), r.headlineModel === 'first-order' ? <b key="f">{fmtPct(r.goodput.goodput, 1)}</b> : fmtPct(r.goodput.goodput, 1), r.headlineModel === 'exact-renewal' ? <b key="e">{fmtPct(r.renewalGoodput, 1)}</b> : fmtPct(r.renewalGoodput, 1), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
+          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', `${t('common.goodput')} (${t('training.modelFirst')})`, `${t('common.goodput')} (${t('training.modelExact')})`, ...(tr.sdc ? [t('training.scaleDelivered')] : []), t('common.interruptions_per_day'), '']}
+          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), r.headlineModel === 'first-order' ? <b key="f">{fmtPct(r.goodput.goodput, 1)}</b> : fmtPct(r.goodput.goodput, 1), r.headlineModel === 'exact-renewal' ? <b key="e">{fmtPct(r.renewalGoodput, 1)}</b> : fmtPct(r.renewalGoodput, 1), ...(tr.sdc ? [fmtPct(r.delivered ?? r.headline, 1)] : []), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
         />
       </Card>
       <div className="grid cols-2">

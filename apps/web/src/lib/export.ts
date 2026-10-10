@@ -60,6 +60,8 @@ export function htmlReport(s: Scenario, r: EvaluationResult, lang: 'zh' | 'en'):
       [zh ? 'goodput（一阶）' : 'Goodput (first order)', pct(t.firstOrder.goodput), r.formulas.goodput],
       [zh ? 'goodput（Daly 完整）' : 'Goodput (Daly full)', pct(t.dalyGoodput)],
       [zh ? '有效 goodput' : 'Effective goodput', pct(t.effectiveGoodput)],
+      [zh ? '正确有效产出（交付）' : 'Delivered goodput (correct)', pct(t.deliveredGoodput), r.formulas.sdc ?? ''],
+      [zh ? '运行可用率 A_op' : 'Operational availability A_op', pct(t.operationalAvailability)],
       [zh ? '每日损失' : 'Lost $/day', `$${t.lostDollarsPerDay.toFixed(0)}`, r.formulas.cost],
     );
   }

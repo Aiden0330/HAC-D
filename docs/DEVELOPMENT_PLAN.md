@@ -369,3 +369,16 @@ Known gaps and next steps:
 | E6 Export + docs | done | xlsx export (Report / Import / CLI / MCP); README, USER_GUIDE, MODEL_REFERENCE §10–17, ASCEND_SOURCES |
 
 Open after v2: image / diagram import (adapter onto the TopologyDraft IR), Monte Carlo for the isolate policy and switchover failures (closed forms only), per-block measures in the RBD diagram, Playwright automation.
+
+### v3 status (2026-10-10, decisions: goodput-based allocation, four-source granularity, mechanism library + Shapley, SDC first)
+
+| Phase | Status | Evidence |
+|---|---|---|
+| V1 Silent corruption delivery model | done | `sdc/index.ts` (alternating renewal, finite window), schema `component.sdc` / `scenario.sdc`, §20; 5 independent goldens (renewal equations on a grid) |
+| V2 Mechanism chain + mixed renewal | done | `mechanisms/chain.ts`, `checkpoint/renewalGoodputMixed`, §19; 10 goldens |
+| V3 Window-ledger Monte Carlo | done | `mc/ledger.ts`, `mc/ledgerFromScenario.ts`, §21; conservation asserted per replication |
+| V4 Mechanism library + Shapley | done | `mechanisms/index.ts` (12 reference mechanisms, exact Shapley), Mechanisms page |
+| V5 Reference reproduction | done | `ref-three-classes-100k`; delivered within the reference CI at four scales (`docs/REFERENCE_COMPARISON_100K_500K.md` §5) |
+| Tests | 349 core (18 files incl. `golden_v3`, `v3_models`) + 29 importers | `npm test` |
+
+Open after v3: 54-event catalog converter (class budgets, per-event applicability), DP-elastic *template* (F5) beside the chain rung, Monte Carlo confidence intervals for Shapley (ledger over coalitions), target scans (coverage × recovery time), image / diagram import.

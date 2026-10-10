@@ -140,6 +140,10 @@ export interface ComponentInstances {
   repair: DualRepair;
   /** v2 sub-health (or the v1 fail-slow alias) */
   subhealth?: Subhealth;
+  /** v3 silent-corruption rate per unit-hour (0 when the class produces none) */
+  sdcLambda: number;
+  /** v3 fraction of this class's hard interruptions each chain mechanism applies to */
+  applicable: { replay: number; process: number; elastic: number };
 }
 
 export function componentInstances(c: Component, counts: Counts, subhealthThreshold = SUBHEALTH_THRESHOLD_DEFAULT): ComponentInstances {
@@ -208,7 +212,14 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
     mttr: meanRepairH(repair),
     repair,
     subhealth: componentSubhealth(c, subhealthThreshold),
+    sdcLambda: c.sdc?.ratePerHour ?? 0,
+    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0 },
   };
+}
+
+/** Job-level silent-corruption rate per hour: Σ n_i λ_sdc,i over the enabled classes. */
+export function sdcRatePerHour(items: ComponentInstances[]): number {
+  return items.reduce((a, ci) => a + ci.total * ci.sdcLambda, 0);
 }
 
 function leafFor(ci: ComponentInstances, count: number, idSuffix = ''): LeafBlock {

@@ -40,6 +40,14 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - **CloudMatrix384 / Atlas 950 presets**: supernode geometry from the Huawei paper (48 nodes × 8 NPU, 7 UB sub-planes × 16 L2 chips, 5,376 optical links) with count scopes for L1/L2 chips, links, transceivers and sub-planes; 104 sourced records in the library (`docs/ASCEND_SOURCES.md`); failure rates are analogues tagged `assumed`.
 - **Excel import / export** (`packages/importers`, SheetJS): method fingerprinting of formulas (A = MTBF/(MTBF+MTTR), series product, rare-event sum, parallel complement, k-of-n COMBIN / BINOM.DIST, switchover weighting, MTTR mixtures, Markov MMULT/MINVERSE …), topology extraction from level columns, indentation, outline levels and the formula dependency graph, conversion to a scenario, reconciliation against the sheet's own numbers, and export of a workbook with live formulas. Nine synthetic fixture workbooks under `packages/importers/test/fixtures`.
 
+## v3 (2026-10-10): silent corruption, mechanism chain, Shapley attribution
+
+- **Silent data corruption at scenario level** (`component.sdc`, `scenario.sdc`): immediate detection coverage and time, fallback discovery delay, optional step recovery; a finite-window alternating-renewal closed form gives the delivered (正确有效) goodput, the expected undetected episodes, the clean-time share, the terminal-discard probability and a window ledger. Validated against independent Python goldens and the ai-cluster-reliability audited engine (93.33 / 62.6 / 45.7 / 25.3 % at 10k / 100k / 200k / 500k cards vs its 93.33 / 62.56 / 45.87 / 25.24 %).
+- **Mechanism chain with per-class applicability**: replay → DP-domain elasticity → process rescheduling → global checkpoint recovery, each rung with applicable fraction, success probability and distinct success / failure times; pause-only vs rollback events enter a generalised exact renewal `λ_rb τ/[(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)]`; detected sub-healthy units are isolated after saving progress.
+- **Mechanism library and attribution** (`packages/core/src/mechanisms`): the reference catalog's twelve mechanisms as scenario transforms with target parameters; single, last-added and exact Shapley gains over all 2^n coalitions with the closed forms; a Mechanisms page in the web app.
+- **Window-ledger Monte Carlo** (`mc/ledger.ts`): the reference engine's semantics (three fault classes, chain, clean-checkpoint retention, terminal discard) with a conserved ledger, CI, quantiles and P(≥ target); Simulate page default mode.
+- Example `ref-three-classes-100k` (the reference's confirmed baseline) and `scripts/ref-compare-v3.ts` for the cross-check; `docs/MODEL_REFERENCE.md` §19–§22, `docs/REFERENCE_COMPARISON_100K_500K.md` §5.
+
 ## Layout
 
 | Path | What |

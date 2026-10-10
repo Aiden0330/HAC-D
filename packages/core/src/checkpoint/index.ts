@@ -170,6 +170,9 @@ export interface ScaleRow {
   /** v2: first-order when its flags are ok, otherwise the exact renewal value */
   headline: number;
   headlineModel: 'first-order' | 'exact-renewal';
+  /** v3: headline × blocked × sub-health × local loss, and the delivered share after silent corruption (set by the scenario evaluator) */
+  effective?: number;
+  delivered?: number;
 }
 
 /**
@@ -233,4 +236,55 @@ export function scaleTable(
     const head = headlineGoodput(goodput, renewal);
     return { nGpus: n, mtbiS, tauS, goodput, interruptionsPerDay: 86400 / mtbiS, renewalGoodput: renewal, headline: head.goodput, headlineModel: head.model };
   });
+}
+
+/* ------------------------- v3: mixed event classes ------------------------- */
+
+export interface MixedRenewalInput {
+  tauS: number;
+  deltaS: number;
+  /** events per second (job running clock) that roll back to the last checkpoint, and their mean pause */
+  rollbackRatePerS: number;
+  rollbackPauseS: number;
+  /** events per second that only pause the job (replay, elastic, isolation of a detected sub-healthy unit) */
+  pauseRatePerS: number;
+  pauseS: number;
+}
+
+export interface MixedRenewalResult {
+  /** useful work per wall second */
+  goodput: number;
+  /** fraction of wall time the job is running (training or saving) */
+  runningFraction: number;
+  /** fractions of wall time: saves of completed intervals, compute later rolled back, pauses by kind */
+  saveFraction: number;
+  rollbackFraction: number;
+  rollbackPauseFraction: number;
+  pauseOnlyFraction: number;
+  /** expected rollback per rollback event E[min(X, τ) | X < τ+δ], seconds */
+  impliedRecomputeS: number;
+}
+
+/**
+ * Exact renewal goodput with two event classes on the running clock (docs/MODEL_REFERENCE.md §19):
+ * TOR = λ_rb τ / [(e^{λ_rb L} − 1)(1 + λ_rb R_rb + λ_p R_p)], L = τ + δ. Pause-only events do not restart the
+ * interval; λ_rb → 0 gives τ/L · 1/(1 + λ_p R_p); λ_p = 0 gives the classic form.
+ */
+export function renewalGoodputMixed(i: MixedRenewalInput): MixedRenewalResult {
+  const L = i.tauS + i.deltaS;
+  const lamRb = Math.max(0, i.rollbackRatePerS);
+  const lamP = Math.max(0, i.pauseRatePerS);
+  const x = lamRb * L;
+  // running time per completed interval: (e^{x} − 1)/λ_rb → L as λ_rb → 0
+  const runPerInterval = x < 1e-9 ? L * (1 + x / 2) : Math.expm1(x) / lamRb;
+  const pauseFactor = 1 + lamRb * i.rollbackPauseS + lamP * i.pauseS;
+  const wallPerInterval = runPerInterval * pauseFactor;
+  const goodput = i.tauS > 0 && wallPerInterval > 0 ? i.tauS / wallPerInterval : 0;
+  const runningFraction = 1 / pauseFactor;
+  const saveFraction = goodput * (i.deltaS / Math.max(i.tauS, 1e-12));
+  const rollbackFraction = Math.max(0, runningFraction - goodput - saveFraction);
+  const rollbackPauseFraction = (runPerInterval * lamRb * i.rollbackPauseS) / wallPerInterval;
+  const pauseOnlyFraction = (runPerInterval * lamP * i.pauseS) / wallPerInterval;
+  const implied = lamRb > 0 ? expectedRollbackS(i.tauS, i.deltaS, 1 / lamRb) : (i.tauS * i.tauS / 2 + i.tauS * i.deltaS) / Math.max(L, 1e-12);
+  return { goodput, runningFraction, saveFraction, rollbackFraction, rollbackPauseFraction, pauseOnlyFraction, impliedRecomputeS: implied };
 }

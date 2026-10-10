@@ -12,8 +12,9 @@ import { SimulatePage } from './pages/SimulatePage.js';
 import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
 import { ImportPage } from './pages/ImportPage.js';
+import { MechanismsPage } from './pages/MechanismsPage.js';
 
-const PAGES: Page[] = ['scenario', 'training', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'import', 'library'];
+const PAGES: Page[] = ['scenario', 'training', 'mechanisms', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'import', 'library'];
 
 export function App() {
   const { t } = useTranslation();
@@ -62,6 +63,7 @@ export function App() {
       <main>
         {page === 'scenario' && <ScenarioPage />}
         {page === 'training' && <TrainingPage />}
+        {page === 'mechanisms' && <MechanismsPage />}
         {page === 'inference' && <InferencePage />}
         {page === 'spares' && <SparesPage />}
         {page === 'allocation' && <AllocationPage />}

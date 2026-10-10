@@ -334,6 +334,40 @@ export function ascendSupercluster(npus = 100000, spareSupernodes = 3): Scenario
  * automatic recovery 180 s with 99 % success else +2 h manual. Hard interruptions only (stage 0 of the comparison in
  * docs/REFERENCE_COMPARISON_100K_500K.md); add sub-health to the card class for stage 1. Silent corruption is not modelled.
  */
+/**
+ * Mechanism applicability of the four sources, aggregated from the reference's 54-event catalog
+ * (catalogs/review-2026-10-09/inputs.json, FIT-weighted per source): the share of a source's interruptions that
+ * replay / process rescheduling / DP elasticity can act on, and each source's share of the silent-corruption budget
+ * (AI Core carries 85 % of it, so 87 % of the silent events sit in the accelerator source).
+ */
+export const REFERENCE_SOURCES = [
+  { id: 'hbm', subsystem: 'memory', share: 0.172, sdcShare: 0.0, mechanisms: { replay: 0.698, process: 1, elastic: 1 }, name: { zh: 'HBM / 片上内存（17.2 %）', en: 'HBM / on-package memory (17.2 %)' } },
+  { id: 'gpu', subsystem: 'compute', share: 0.301, sdcShare: 0.87134, mechanisms: { replay: 0.831, process: 1, elastic: 1 }, name: { zh: '加速卡本体（30.1 %）', en: 'Faulty accelerator (30.1 %)' } },
+  { id: 'network', subsystem: 'network', share: 0.084, sdcShare: 0.04443, mechanisms: { replay: 0.595, process: 0.357, elastic: 0.357 }, name: { zh: '网络交换机 / 线缆（8.4 %）', en: 'Network switch / cable (8.4 %)' } },
+  { id: 'other', subsystem: 'other', share: 0.443, sdcShare: 0.08423, mechanisms: { replay: 0, process: 0.361, elastic: 0.361 }, name: { zh: '其他来源（44.3 %）', en: 'Other sources (44.3 %)' } },
+] as const;
+
+/** Fault-class shares of the reference baseline: interruption 96.6 %, sub-health 2 %, silent 1.4 % of all events. */
+export const REFERENCE_SHARES = { hard: 0.966, slow: 0.02, sdc: 0.014 } as const;
+
+function referenceComponents(lamCard: number, withSlow: boolean, withSdc: boolean): ScenarioInput['components'] {
+  return REFERENCE_SOURCES.map((src) => ({
+    id: src.id,
+    name: src.name,
+    subsystem: src.subsystem,
+    countRule: { per: 'gpu' as const, factor: 1 },
+    failure: { value: lamCard * src.share, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance: { source: 'ai-cluster-reliability-main confirmed baseline: 10,000-card hard MTBF 30 h (3,333 FIT per card) × Llama 3 Table 5 category share', org: 'user baseline / Meta', year: 2026, url: 'https://arxiv.org/abs/2407.21783', confidence: 'assumed' as const, derivation: `${src.share} × 1/(10,000 × 30 h) per card-hour; shares borrowed from Llama 3, not measured on this cluster` } },
+    repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
+    mechanisms: { ...src.mechanisms },
+    ...(withSlow
+      ? { subhealth: { ratePerHour: (lamCard * src.share * REFERENCE_SHARES.slow) / REFERENCE_SHARES.hard, durationHours: 24, performance: 0.95, escalationMultiplier: 1, policy: 'isolate' as const, detection: { probability: 0.95, delayHours: 5 / 60 } } }
+      : {}),
+    ...(withSdc && src.sdcShare > 0
+      ? { sdc: { ratePerHour: (lamCard * REFERENCE_SHARES.sdc * src.sdcShare) / REFERENCE_SHARES.hard, provenance: { source: 'reference catalog: silent events are 1.4 % of all events; per-source split from the 54-event catalog (AI Core 85 % of the silent budget)', confidence: 'assumed' as const, derivation: `${src.sdcShare} × 0.014/0.966 × λ_card` } } }
+      : {}),
+  }));
+}
+
 export function referenceBaseline(npus = 100000): Scenario {
   const lamCard = 1 / (10000 * 30);
   const input: ScenarioInput = {
@@ -341,27 +375,10 @@ export function referenceBaseline(npus = 100000): Scenario {
       id: `ref-baseline-${Math.round(npus / 1000)}k`,
       name: `Reference baseline — ${npus.toLocaleString('en-US')} cards, MTBF 30 h @ 10k, τ 300 s, R 264.5 s`,
       basis: ['ai-cluster-reliability-main catalogs/review-2026-10-09 (user-confirmed baseline)', 'docs/REFERENCE_COMPARISON_100K_500K.md'],
-      description: 'Hard interruptions only, as in the like-for-like comparison; the per-card rate is split into HBM / GPU / network / other with the Llama 3 shares so that targets can be allocated to sources. Sub-health (2 % of events, 24 h, −5 %, 95 % detected in 5 min) can be added to a class; silent corruption is not modelled in HAC-D yet.',
+      description: 'Hard interruptions only, as in the like-for-like comparison; the per-card rate is split into HBM / GPU / network / other with the Llama 3 shares so that targets can be allocated to sources, and each source carries the mechanism applicability fractions of the reference catalog. The three-class variant (sub-health and silent corruption) is the example "Reference baseline, three fault classes".',
     },
     topology: { gpusPerNode: 8, nodesPerRack: 32, racksPerZone: 64, nvlinkDomainGpus: 8 },
-    // the reference splits the per-card interruption rate into four sources with the Llama 3 Table 5 shares
-    // (HBM 17.2 %, faulty GPU 30.1 %, network switch / cable 8.4 %, other 44.3 %); the split lets the Allocation page
-    // apportion a target to the sources, it does not change the job-level result.
-    components: (
-      [
-        ['hbm', 'memory', 0.172, { zh: 'HBM / 片上内存（17.2 %）', en: 'HBM / on-package memory (17.2 %)' }],
-        ['gpu', 'compute', 0.301, { zh: '加速卡本体（30.1 %）', en: 'Faulty accelerator (30.1 %)' }],
-        ['network', 'network', 0.084, { zh: '网络交换机 / 线缆（8.4 %）', en: 'Network switch / cable (8.4 %)' }],
-        ['other', 'other', 0.443, { zh: '其他来源（44.3 %）', en: 'Other sources (44.3 %)' }],
-      ] as const
-    ).map(([id, subsystem, share, name]) => ({
-      id,
-      name,
-      subsystem,
-      countRule: { per: 'gpu' as const, factor: 1 },
-      failure: { value: lamCard * share, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance: { source: 'ai-cluster-reliability-main confirmed baseline: 10,000-card hard MTBF 30 h (3,333 FIT per card) × Llama 3 Table 5 category share', org: 'user baseline / Meta', year: 2026, url: 'https://arxiv.org/abs/2407.21783', confidence: 'assumed' as const, derivation: `${share} × 1/(10,000 × 30 h) per card-hour; shares borrowed from Llama 3, not measured on this cluster` } },
-      repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
-    })),
+    components: referenceComponents(lamCard, false, false),
     structure: { mode: 'template', template: 'training-series' },
     workload: { type: 'training', nGpus: npus, durationDays: 30, deltaS: 4, intervalS: 300, intervalModel: 'young' },
     recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } },
@@ -370,8 +387,36 @@ export function referenceBaseline(npus = 100000): Scenario {
   return parseScenario(input);
 }
 
+/**
+ * The reference's confirmed three-class baseline: interruptions 96.6 %, sub-health 2 % (24 h, −5 %, 95 % detected in
+ * 5 min, isolated after saving progress) and silent corruption 1.4 % (no immediate detection, discovered after
+ * 120 h, rollback to the last clean checkpoint, terminal discard at day 30). Reproduces the reference's
+ * 正确有效产出 (delivered goodput) and is the starting point of the Mechanisms page.
+ */
+export function referenceThreeClasses(npus = 100000): Scenario {
+  const lamCard = 1 / (10000 * 30);
+  const input: ScenarioInput = {
+    meta: {
+      id: `ref-three-classes-${Math.round(npus / 1000)}k`,
+      name: `Reference baseline, three fault classes — ${npus.toLocaleString('en-US')} cards (interruption / sub-health / silent)`,
+      basis: ['ai-cluster-reliability-main catalogs/review-2026-10-09 (confirmed baseline, results.json)', 'docs/MODEL_REFERENCE.md §19–§22'],
+      description: 'Interruptions 96.6 %, sub-health 2 % and silent corruption 1.4 % of all events on the 10,000-card MTBF 30 h anchor; τ 300 s / δ 4 s; detection 95 % in 10 s else 60 s; automatic recovery 180 s at 99 % else + 2 h manual. Silent corruption is not detected immediately (0 %) and is discovered after 120 h. Reference 30-day delivered goodput: 93.3 % at 10k, 62.6 % at 100k, 45.9 % at 200k, 25.2 % at 500k cards.',
+    },
+    topology: { gpusPerNode: 8, nodesPerRack: 32, racksPerZone: 64, nvlinkDomainGpus: 8 },
+    components: referenceComponents(lamCard, true, true),
+    structure: { mode: 'template', template: 'training-series' },
+    workload: { type: 'training', nGpus: npus, durationDays: 30, deltaS: 4, intervalS: 300, intervalModel: 'young' },
+    recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } },
+    sdc: { detection: { coverage: 0, detectSeconds: 1 }, fallbackDelayHours: 120 },
+    targets: { goodput: 0.9 },
+    assumptions: ['fixed checkpoint interval 300 s to match the reference', 'sub-health: a detected slow unit is isolated after saving the current progress (no rollback), undetected units slow the job for 24 h', 'silent corruption: the first undetected event opens an episode discovered after 120 h; work since the last clean checkpoint is rolled back; still-dirty state at day 30 is discarded'],
+  };
+  return parseScenario(input);
+}
+
 export const EXAMPLES: Record<string, () => Scenario> = {
   'ref-baseline-100k': () => referenceBaseline(100000),
+  'ref-three-classes-100k': () => referenceThreeClasses(100000),
   'ascend-cm384': cloudMatrix384Training,
   'ascend-atlas950': atlas950Training,
   'ascend-supercluster-100k': () => ascendSupercluster(100000, 3),

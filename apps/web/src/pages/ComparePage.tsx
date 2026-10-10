@@ -33,7 +33,7 @@ export function ComparePage() {
       return [];
     }
   }, [active, metric]);
-  const fmtMetric = (v: number) => (metric === 'goodput' || metric === 'availability' ? fmtPct(v, 2) : metric === 'lostDollarsPerDay' ? fmtMoney(v) : fmtHours(v, lang));
+  const fmtMetric = (v: number) => (metric === 'goodput' || metric === 'delivered' || metric === 'availability' ? fmtPct(v, 2) : metric === 'lostDollarsPerDay' ? fmtMoney(v) : fmtHours(v, lang));
   const base = torn[0]?.base ?? 0;
   return (
     <div className="grid" style={{ gap: 14 }}>
@@ -51,7 +51,7 @@ export function ComparePage() {
       {cmp && cmp.rows.length > 0 && (
         <Card>
           <DataTable
-            columns={['', t('common.availability'), t('compare.original'), t('compare.performability'), t('compare.human'), t('training.operational'), t('common.mtbi'), t('common.recovery'), t('common.goodput'), t('common.lost_per_day'), 'blocked', 'hot spares P99', t('inference.capacity'), 'k*', 'checklist warn']}
+            columns={['', t('common.availability'), t('compare.original'), t('compare.performability'), t('compare.human'), t('training.operational'), t('common.mtbi'), t('common.recovery'), t('common.goodput'), t('compare.delivered'), t('common.lost_per_day'), 'blocked', 'hot spares P99', t('inference.capacity'), 'k*', 'checklist warn']}
             rows={cmp.rows.map((r) => [
               r.name,
               `${fmtPct(r.availability, 4)}${cmp.best.availability === r.id ? ' ★' : ''}`,
@@ -62,6 +62,7 @@ export function ComparePage() {
               r.mtbiHours !== undefined ? `${fmtHours(r.mtbiHours, lang)}${cmp.best.mtbiHours === r.id ? ' ★' : ''}` : '—',
               r.recoveryS !== undefined ? `${fmtDuration(r.recoveryS, lang)}${cmp.best.recoveryS === r.id ? ' ★' : ''}` : '—',
               r.effectiveGoodput !== undefined ? `${fmtPct(r.effectiveGoodput, 2)}${cmp.best.effectiveGoodput === r.id ? ' ★' : ''}` : '—',
+              r.deliveredGoodput !== undefined ? `${fmtPct(r.deliveredGoodput, 2)}${cmp.best.deliveredGoodput === r.id ? ' ★' : ''}` : '—',
               r.lostDollarsPerDay !== undefined ? `${fmtMoney(r.lostDollarsPerDay)}${cmp.best.lostDollarsPerDay === r.id ? ' ★' : ''}` : '—',
               r.blockedProbability !== undefined ? fmtPct(r.blockedProbability, 4) : '—',
               r.hotSparesRequired !== undefined ? fmtInt(r.hotSparesRequired) : '—',
@@ -88,11 +89,11 @@ export function ComparePage() {
           title={`${t('compare.tornado')} — ${active.scenario.meta.name}`}
           actions={
             <Field label={t('compare.metric')}>
-              <Select value={metric} onChange={setMetric} options={[{ value: 'goodput', label: t('common.goodput') }, { value: 'availability', label: t('common.availability') }, { value: 'lostDollarsPerDay', label: t('common.lost_per_day') }, { value: 'mtbiHours', label: t('common.mtbi') }]} />
+              <Select value={metric} onChange={setMetric} options={[{ value: 'goodput', label: t('common.goodput') }, { value: 'delivered', label: t('compare.delivered') }, { value: 'availability', label: t('common.availability') }, { value: 'lostDollarsPerDay', label: t('common.lost_per_day') }, { value: 'mtbiHours', label: t('common.mtbi') }]} />
             </Field>
           }
         >
-          <Tornado title="" base={base} items={torn.map((r) => ({ name: r.name, low: r.low, high: r.high, lowLabel: r.lowLabel, highLabel: r.highLabel }))} format={fmtMetric} metricLabel={t(`common.${metric === 'lostDollarsPerDay' ? 'lost_per_day' : metric === 'mtbiHours' ? 'mtbi' : metric}`)} />
+          <Tornado title="" base={base} items={torn.map((r) => ({ name: r.name, low: r.low, high: r.high, lowLabel: r.lowLabel, highLabel: r.highLabel }))} format={fmtMetric} metricLabel={metric === 'delivered' ? t('compare.delivered') : t(`common.${metric === 'lostDollarsPerDay' ? 'lost_per_day' : metric === 'mtbiHours' ? 'mtbi' : metric}`)} />
         </Card>
       )}
     </div>

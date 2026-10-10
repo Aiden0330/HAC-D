@@ -12,7 +12,7 @@ export interface TornadoItem {
 }
 
 /** Tornado: for each parameter, the metric at its low and high setting as two shades of one hue around the base value. */
-export function Tornado({ title, subtitle, base, items, format, metricLabel }: { title: string; subtitle?: string; base: number; items: TornadoItem[]; format: (v: number) => string; metricLabel: string }) {
+export function Tornado({ title, subtitle, base, items, format, metricLabel, legendLow, legendHigh }: { title: string; subtitle?: string; base: number; items: TornadoItem[]; format: (v: number) => string; metricLabel: string; legendLow?: string; legendHigh?: string }) {
   const [ref, width] = useMeasure<HTMLDivElement>();
   const [tip, setTip] = useState<TooltipState | null>(null);
   const labelW = Math.min(260, Math.max(100, ...items.map((d) => d.name.length * 6.2)));
@@ -30,7 +30,7 @@ export function Tornado({ title, subtitle, base, items, format, metricLabel }: {
     <ChartFrame
       title={title}
       subtitle={subtitle}
-      legend={<Legend items={[{ label: `${metricLabel} @ low (×½)`, color: lowColor }, { label: `${metricLabel} @ high (×2)`, color: highColor }]} />}
+      legend={<Legend items={[{ label: legendLow ?? `${metricLabel} @ low (×½)`, color: lowColor }, { label: legendHigh ?? `${metricLabel} @ high (×2)`, color: highColor }]} />}
       table={{ columns: ['', 'low', 'high', 'swing'], rows: items.map((d) => [d.name, format(d.low), format(d.high), format(Math.abs(d.high - d.low))]) }}
     >
       <div ref={ref}>

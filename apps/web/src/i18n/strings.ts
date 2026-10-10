@@ -2,7 +2,7 @@
 export const strings = {
   en: {
     app: { title: 'HAC-D', eyebrow: 'AI cluster availability modeling', footer: 'First-order closed forms with validity flags; non-exponential or correlated inputs route to Monte Carlo. Grounded in the survey chapter “AI 集群可靠性建模”.' },
-    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
+    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', mechanisms: 'Mechanisms', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
     theme: { auto: 'Auto', light: 'Light', dark: 'Dark' },
     common: {
       formula: 'Formula', table: 'Table', chart: 'Chart', download: 'Download', copy: 'Copy', add: 'Add', remove: 'Remove', run: 'Run', running: 'Running…', reset: 'Reset', apply: 'Apply',
@@ -36,6 +36,9 @@ export const strings = {
       clusterSize: 'Cluster size (GPUs / NPUs)', clusterSizeHint: 'Sets replicas required = ⌈cluster size ÷ GPUs per replica⌉.', supernodeIs: 'one supernode =', useSupernode: 'Use one supernode as the replica unit', supernode: 'supernode',
       perNode: 'Per node', liveNote: 'Results recompute automatically after every edit; there is no recalculate step.', nGpusHint: 'NPUs used by the job; the supernode count follows (one supernode holds NPUs per node × nodes per rack × compute racks).',
       mtbfAnchor: 'Fleet MTBF anchor', mtbfAnchorHint: 'N units with a fleet MTBF of M hours → per-unit MTBF N × M h (unit mtbf_h); e.g. 10,000 × 30 h.',
+      sdcTitle: 'Silent corruption policy (job level)', sdcCoverage: 'Immediate detection coverage q', sdcDetectS: 'Detection time (s)', sdcFallback: 'Fallback discovery delay (h)', sdcStep: 'Step recovery (volatile clean state)', sdcStepS: 'Redo at most (s)', sdcRecoverS: 'Step recovery time (s)', sdcNote: 'Per-class silent rates are set in the component Details. Undetected corruption is discovered after the fallback delay and rolled back to the last clean checkpoint; still-dirty state at the end of the window is discarded.', sdcNone: 'No class carries a silent-corruption rate: the policy is inert until one is set in the component Details.',
+      mechTitle: 'Recovery mechanism chain (tried before the global checkpoint recovery)', mechReplay: 'Replay (re-execute, no rollback)', mechElastic: 'DP-domain elasticity (no rollback)', mechProcess: 'Process rescheduling (rollback)', mechSuccess: 'Success', mechSuccessS: 'Success time (s)', mechFailureS: 'Failure time (s)', mechDomains: 'DP domains', mechRecoverS: 'Domain out (s)', mechSyncS: 'Global sync (s)', mechNote: 'Each class declares the fraction of its interruptions a mechanism can act on (Details → applicability); a class without the flag goes straight to the next rung.',
+      sdcComponent: 'Silent corruption', sdcRatePerUnit: 'Silent-corruption rate (/unit·h)', applicability: 'Mechanism applicability (fraction of this class’s interruptions)', applReplay: 'replay', applProcess: 'process', applElastic: 'elastic',
       details: 'Details', ladder: 'Recovery ladder', rung: 'Rung', kind: 'Kind', success: 'Success', reach: 'Reach', timeS: 'Time (s)', ladderNote: 'Rungs are tried in order; the last (manual) rung always succeeds. MindCluster preset values are assumptions until measured.', customise: 'Customise rungs', pipelineMode: 'pipeline', ladderMode: 'ladder', provenance: 'Provenance',
     },
     training: {
@@ -46,6 +49,12 @@ export const strings = {
       intervalCurve: 'Goodput vs checkpoint interval', components: 'Interruption share by component class', dalyFull: 'Daly full model',
       recoveryStages: 'Recovery pipeline at N', stage: 'Stage', meanS: 'Mean', shareOfR: 'Share of R', dominant: 'dominant', effectiveGoodput: 'Effective goodput', wall: 'Wall-clock (days)',
       nLabel: 'N = GPUs / NPUs in the job', supernodes: 'supernodes', aopNote: 'running-time share of the job; checkpoint saves and recompute count as running', modelsTitle: 'Training availability models', model: 'Model', assumption: 'Assumptions', operational: 'Operational A_op', modelFirst: 'first order', modelExact: 'exact renewal', modelProduct: 'product form', impliedW: 'implied W', noRecoveryFailures: 'no failures during recovery; checkpoint retried until an interval completes', dalyAssumption: 'failures also during recovery (e^{R/M})', headlineIs: 'headline', headlineRule: '★ headline: first order while (τ+δ)/M and R/M are small (ok), otherwise the exact renewal model; blocked spares and sub-health multiply the headline.', ladderAt: 'Recovery ladder at N', subhealthTitle: 'Sub-health (straggler law)', pSlowed: 'P(job slowed)', perfFactor: 'Job performance factor φ_job', isolationRate: 'Isolation interruptions / h', hardwareRate: 'Hardware interruptions / h', minPerf: 'Lowest performance φ', pManual: 'P(person needed)',
+      delivered: 'Delivered goodput (correct)', deliveredNote: 'correct progress retained at the end of the job window ÷ window length (正确有效产出)', performanceGoodput: 'performance goodput', noSdc: 'no silent corruption in this scenario: delivered = effective goodput',
+      sdcTitle: 'Silent corruption over the job window', sdcRate: 'Silent events / h', sdcCoverage: 'immediate detection', episodeRate: 'Episode rate ν (/wall h)', sdcEpisodes: 'Expected episodes', sdcDiscovered: 'discovered in the window', sdcClean: 'Clean-time share', sdcDirty: 'dirty', sdcPause: 'episode pauses', pDirtyEnd: 'P(dirty at end)', sdcFactor: 'Delivery factor', cTime: 'no-recovery factor (1 − e^{−νT})/(νT)', pClear: 'P(cleared by a rollback before the first dirty checkpoint)', sdcFallback: 'Fallback delay', stationary: 'stationary clean share 1/(1 + νc)',
+      chainTitle: 'Mechanism chain per class', chainInactive: 'No chain mechanism is enabled: every interruption goes to the global recovery (Scenario → Recovery mechanism chain).', chainRate: 'λ (/h)', pReplay: 'replay', pElastic: 'elastic', pProcess: 'process', pGlobal: 'global', pRollback: 'P(rollback)', meanPause: 'mean pause', localLoss: 'domain loss / event', applicable: 'applicable (rp / pr / el)',
+      eventRate: 'Stopping events / h', rollbackEvents: 'roll back', pauseOnlyEvents: 'pause only', meanPauseAll: 'mean pause R̄', detectGlobal: 'detection T_det · global recovery',
+      ledgerTitle: 'Job-window ledger (closed form, shares of the window)', ledger_downtime: 'downtime', ledger_save: 'checkpoint saves', ledger_rollback: 'rollback (interruptions)', ledger_slowdown: 'sub-health slow-down', ledger_local: 'elastic domain loss', ledger_blocked: 'spares exhausted', ledger_sdcRollback: 'rollback (silent corruption)', ledger_terminal: 'terminal discard', ledger_delivered: 'delivered', ledgerNote: 'Every share of the window is booked once; the decomposition follows the headline model and closes on the delivered goodput.',
+      scaleDelivered: 'delivered', mechanismsHint: 'Attribute the gains of detection, replay, elasticity, rescheduling and faster checkpoints on the Mechanisms page.',
     },
     inference: {
       title: 'Inference service', sub: 'N+k replicas: service-up vs capacity-sufficient availability, k for the target, replica failure arrivals.',
@@ -67,18 +76,27 @@ export const strings = {
     compare: {
       title: 'Compare options', sub: 'Side-by-side KPIs of the scenarios you select, plus one-at-a-time sensitivity of the active scenario.',
       select: 'Scenarios to compare', metric: 'Metric', tornado: 'Tornado: one-at-a-time ×½ / ×2', best: 'best', pareto: 'Goodput vs lost $/day',
-      original: 'Original A', performability: 'Perf-weighted A', human: 'Human fraction',
+      original: 'Original A', performability: 'Perf-weighted A', human: 'Human fraction', delivered: 'Delivered',
     },
     simulate: {
       title: 'Monte Carlo', sub: 'Discrete-event simulation of the job with Weibull/lognormal lifetimes, lemon units, common cause, hot-spare pool, fail-slow; compared with the closed form.',
       replications: 'Replications', seed: 'Seed', workHours: 'Simulated work (hours)', run: 'Run simulation', goodputDist: 'Goodput distribution across replications', ci: '95 % CI', closedForm: 'Closed form', mc: 'Monte Carlo', delta: 'Δ',
       agrees: 'Monte Carlo agrees with the closed form', disagrees: 'Monte Carlo disagrees with the closed form: prefer the simulation', failures: 'Failures by class (all replications)', peakSpares: 'Peak spares in use (P99)', blocked: 'Blocked fraction', notTraining: 'Simulation currently covers training workloads.',
+      mode: 'Model', modeJob: 'Job simulation (units, spares, Weibull, common cause)', modeLedger: 'Window ledger (three fault classes, mechanism chain, silent corruption)', trials: 'trials', runLedger: 'Run ledger simulation', delivered: 'Delivered goodput', ledgerTitle: 'Window ledger (mean shares of the window)', pTarget: 'P(delivered ≥ target)', unresolved: 'P(dirty at end)', byClass: 'Attribution by class (mean shares of the window)', counts: 'Events per run', episodes: 'SDC episodes', manual: 'manual recoveries', ledgerNote: 'Same semantics as the audited reference engine: faults arrive on the running clock; every hour of the window is booked once (delivered + downtime + save + rollback + slow-down + local + terminal = T).', aop: 'Operational availability',
     },
     report: { title: 'Design review', sub: 'The survey’s 11-item checklist applied to the active scenario, assumptions, and exports.', checklist: 'Checklist', export: 'Export', exportHtml: 'Self-contained HTML report', exportCsv: 'Components CSV', exportXlsx: 'Excel workbook (live formulas)', importanceTitle: 'Importance measures', cutsets: 'Minimal cut sets (top)', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
     measures: {
       title: 'Original vs compensated', sub: 'Original (原始): every unit fault is an outage repaired manually, redundancy removed. Compensated (补偿后): after redundancy, switchover success, automatic recovery and the sub-health policy.',
       original: 'Original', compensated: 'Compensated', strict: 'Strict (sub-health = down)', tolerant: 'Tolerant (sub-health = up)', performability: 'Performance-weighted', waterfall: 'Compensation waterfall (unavailability by step)', step_original: 'original', step_redundancy: '+ redundancy', 'step_auto-recovery': '+ automatic recovery', 'step_subhealth-policy': '+ sub-health policy',
       switchoverPenalty: 'Switchover penalty', humanFraction: 'Events needing a person', autoShare: 'Downtime on the automatic path', gain: 'Gain ΔA', unavailabilityRatio: 'U_original / U_compensated', mtbfRatio: 'MTBF ratio', approximate: 'A first-order or reduced model was used in at least one block.', measure: 'Measure', unavailability: 'Unavailability', frequency: 'ν (/h)',
+    },
+    mechanisms: {
+      title: 'Fault-management mechanisms', sub: 'The reference catalog’s twelve mechanisms as scenario changes; single gains, last-added gains and exact Shapley attribution over all combinations, evaluated with the closed forms.',
+      players: 'Mechanisms to attribute', metric: 'Value function', run: 'Attribute', running: 'Evaluating coalitions…', baseline: 'Baseline (players stripped)', combined: 'All selected', delta: 'Combined gain', single: 'Single gain (alone)', lastAdded: 'Last-added gain', shapley: 'Shapley value', share: 'Share', coalitions: 'coalitions', interaction: 'Interaction (combined − Σ single)',
+      library: 'Mechanism library (reference catalog)', status: 'Status', kind: 'Kind', scope: 'Scope', change: 'Change', prerequisite: 'Prerequisite', failure: 'Failure / fallback', parameters: 'Parameters', confidence: 'Confidence', inScenario: 'in scenario', apply: 'Apply to scenario', remove: 'Remove', notTraining: 'Attribution applies to training workloads.', noPlayers: 'Select at least one mechanism with a scenario transform.',
+      metric_delivered: 'Delivered goodput (correct)', metric_effective: 'Effective goodput (performance)', metric_aOp: 'Operational availability A_op', status_baseline: 'baseline', status_candidate: 'candidate', status_conditional: 'conditional', status_informational: 'informational',
+      singleChart: 'Single gains (each mechanism alone on the baseline)', shapleyChart: 'Shapley values (sum = combined gain)', valueCol: 'value alone', hint: 'Closed forms: 2^n coalitions in milliseconds. The reference tool simulates each coalition (Monte Carlo) and reports confidence intervals; HAC-D’s window-ledger simulation on the Simulate page gives the same check for one scenario.', tooMany: 'At most 10 mechanisms in the browser (1,024 coalitions).',
+      params: 'Parameter overrides', paramHint: 'Edit a target parameter before attributing (e.g. D-SDC coverage 0.999, R-ELASTIC domains 100).', legendLoss: 'loss (negative gain)', legendGain: 'gain over the baseline',
     },
     import: {
       title: 'Import spreadsheet', sub: 'Load an availability workbook: detect the methods it uses, extract the topology, convert it into a scenario and reconcile with the sheet’s own numbers.',
@@ -89,7 +107,7 @@ export const strings = {
   },
   zh: {
     app: { title: 'HAC-D', eyebrow: 'AI 集群可用性建模', footer: '一阶解析式附有效性标记；非指数或相关故障输入转入蒙特卡洛。依据综述章节《AI 集群可靠性建模》。' },
-    nav: { scenario: '方案', library: '参数库', training: '训练作业', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
+    nav: { scenario: '方案', library: '参数库', training: '训练作业', mechanisms: '机制', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
     theme: { auto: '自动', light: '浅色', dark: '深色' },
     common: {
       formula: '公式', table: '表格', chart: '图', download: '下载', copy: '复制', add: '新增', remove: '删除', run: '运行', running: '运行中…', reset: '重置', apply: '应用',
@@ -122,6 +140,9 @@ export const strings = {
       supernodesUsed: '作业使用的超节点数', supernodesUsedHint: '设置后作业 NPU 数 = 超节点数 × 超节点规模', supernodesRequired: '所需超节点数（N）', spareSupernodes: '备用超节点数（k）', pressSupernode: '点击「= 超节点」按钮以超节点为单元计数',
       clusterSize: '集群规模（GPU/NPU 数）', clusterSizeHint: '所需副本数 = ⌈集群规模 ÷ 每副本 GPU 数⌉。', supernodeIs: '一个超节点 =', useSupernode: '以一个超节点为副本单元', supernode: '超节点',
       perNode: '每节点', liveNote: '每次修改后结果自动重算，无需「重新计算」按钮。', nGpusHint: '作业使用的 NPU 数；超节点数随之推算（一个超节点 = 每节点 NPU 数 × 每机柜节点数 × 计算机柜数）。',
+            sdcTitle: '静默错误策略（作业级）', sdcCoverage: '即时检出率 q', sdcDetectS: '检测时间（s）', sdcFallback: '兜底发现时延（h）', sdcStep: 'step 恢复（易失干净状态）', sdcStepS: '最多重做（s）', sdcRecoverS: 'step 恢复时间（s）', sdcNote: '各部件类的静默事件率在「详情」中设置。漏检的污染在兜底时延后被发现并回退到最后一个干净检查点；窗口结束时仍带错的状态判废。', sdcNone: '没有部件类带静默事件率：在部件「详情」中设置后该策略才起作用。',
+      mechTitle: '恢复机制链（在全局 checkpoint 恢复之前依次尝试）', mechReplay: '重执行（不回滚）', mechElastic: 'DP 域弹性（不回滚）', mechProcess: '进程重调度（回滚）', mechSuccess: '成功率', mechSuccessS: '成功耗时（s）', mechFailureS: '失败耗时（s）', mechDomains: 'DP 域数', mechRecoverS: '域不可用（s）', mechSyncS: '全局同步（s）', mechNote: '每个部件类声明其中断中可由各机制处理的比例（详情 → 适用比例）；未声明的类直接进入下一级。',
+      sdcComponent: '静默错误', sdcRatePerUnit: '静默事件率（/单元·小时）', applicability: '机制适用比例（占本类中断）', applReplay: '重执行', applProcess: '进程重调度', applElastic: '弹性',
       mtbfAnchor: '集群 MTBF 锚点', mtbfAnchorHint: 'N 个单元的集群 MTBF 为 M 小时 → 单元 MTBF = N × M 小时（单位 mtbf_h）；如 10,000 × 30 h。',
       details: '详情', ladder: '分级恢复', rung: '级', kind: '类型', success: '成功率', reach: '到达概率', timeS: '时间（秒）', ladderNote: '各级按顺序尝试，最后一级（人工）必成功。MindCluster 预设取值为假设，待实测替换。', customise: '自定义各级', pipelineMode: '流水线', ladderMode: '分级恢复', provenance: '出处',
     },
@@ -133,6 +154,12 @@ export const strings = {
       intervalCurve: 'goodput 随 checkpoint 间隔的变化', components: '各部件类的中断率占比', dalyFull: 'Daly 完整模型',
       recoveryStages: '规模 N 下的恢复流水线', stage: '阶段', meanS: '均值', shareOfR: '占 R 比例', dominant: '主导', effectiveGoodput: '有效 goodput', wall: '墙钟时间（天）',
       nLabel: 'N = 作业 GPU/NPU 数', supernodes: '超节点数', aopNote: '作业处于运行态的时间占比；checkpoint 保存与重算计为运行', modelsTitle: '训练可用性模型', model: '模型', assumption: '假设', operational: '运行可用率 A_op', modelFirst: '一阶式', modelExact: '精确更新式', modelProduct: '乘积式', impliedW: '推导 W', noRecoveryFailures: '恢复期间不计新故障；检查点重试直至完成一个周期', dalyAssumption: '恢复期间也可能故障（e^{R/M}）', headlineIs: '首要值', headlineRule: '★ 首要值：当 (τ+δ)/M 与 R/M 都很小（ok）时用一阶式，否则用精确更新式；备机耗尽与亚健康按乘法叠加。', ladderAt: '规模 N 下的分级恢复', subhealthTitle: '亚健康（掉队者定律）', pSlowed: '作业被拖慢的概率', perfFactor: '作业性能因子 φ_job', isolationRate: '隔离引起的中断（/小时）', hardwareRate: '硬件中断（/小时）', minPerf: '最低性能 φ', pManual: '需要人工的概率',
+      delivered: '正确有效产出（交付 goodput）', deliveredNote: '作业窗口结束时保留的正确进度 ÷ 窗口长度', performanceGoodput: '性能 goodput', noSdc: '本方案没有静默错误：正确有效产出 = 有效 goodput',
+      sdcTitle: '作业窗口内的静默错误', sdcRate: '静默事件（/小时）', sdcCoverage: '即时检出率', episodeRate: '漏检事件率 ν（/墙钟小时）', sdcEpisodes: '期望漏检事件数', sdcDiscovered: '窗口内被发现', sdcClean: '干净时间占比', sdcDirty: '带错', sdcPause: '发现后的恢复停顿', pDirtyEnd: '期末仍带错的概率', sdcFactor: '交付系数', cTime: '无恢复系数 (1 − e^{−νT})/(νT)', pClear: '首个带错检查点写入前被回滚清除的概率', sdcFallback: '兜底发现时延', stationary: '稳态干净占比 1/(1 + νc)',
+      chainTitle: '各部件类的恢复机制链', chainInactive: '未启用任何机制链：所有中断直接进入全局恢复（方案 → 恢复机制链）。', chainRate: 'λ（/小时）', pReplay: '重执行', pElastic: '弹性', pProcess: '进程重调度', pGlobal: '全局', pRollback: '回滚概率', meanPause: '平均停顿', localLoss: '每事件域损失', applicable: '适用比例（重执行 / 进程 / 弹性）',
+      eventRate: '导致停顿的事件（/小时）', rollbackEvents: '回滚', pauseOnlyEvents: '仅停顿', meanPauseAll: '平均停顿 R̄', detectGlobal: '检测 T_det · 全局恢复',
+      ledgerTitle: '作业窗口账本（解析式，占窗口比例）', ledger_downtime: '停机', ledger_save: 'checkpoint 保存', ledger_rollback: '回滚（中断）', ledger_slowdown: '亚健康降速', ledger_local: '弹性域损失', ledger_blocked: '备机耗尽', ledger_sdcRollback: '回滚（静默错误）', ledger_terminal: '期末判废', ledger_delivered: '正确交付', ledgerNote: '窗口内每一份时间只记一次；分解口径与首要模型一致，并闭合于正确有效产出。',
+      scaleDelivered: '正确交付', mechanismsHint: '在「机制」页归因检测、重执行、弹性、重调度与更快 checkpoint 的收益。',
     },
     inference: {
       title: '推理服务', sub: 'N+k 副本：「有服务」与「容量充足」两个可用率、达到目标所需的 k、副本故障到达。',
@@ -154,18 +181,27 @@ export const strings = {
     compare: {
       title: '方案对比', sub: '所选方案的 KPI 并排对比，以及当前方案的单因素敏感性。',
       select: '选择要对比的方案', metric: '指标', tornado: '龙卷风图：单因素 ×½ / ×2', best: '最优', pareto: 'goodput 对每日损失',
-      original: '原始可用率', performability: '性能加权可用率', human: '需人工比例',
+      original: '原始可用率', performability: '性能加权可用率', human: '需人工比例', delivered: '正确交付',
     },
     simulate: {
       title: '蒙特卡洛', sub: '作业的离散事件仿真：Weibull/对数正态寿命、lemon 节点、共因、热备池、fail-slow；与解析式交叉验证。',
       replications: '重复次数', seed: '随机种子', workHours: '仿真工作量（小时）', run: '运行仿真', goodputDist: '各次重复的 goodput 分布', ci: '95% 置信区间', closedForm: '解析式', mc: '蒙特卡洛', delta: 'Δ',
       agrees: '蒙特卡洛与解析式一致', disagrees: '蒙特卡洛与解析式不一致：以仿真为准', failures: '各类部件故障数（全部重复）', peakSpares: '备机占用峰值（P99）', blocked: '阻塞时间占比', notTraining: '仿真目前覆盖训练负载。',
+      mode: '模型', modeJob: '作业仿真（单元、备件、Weibull、共因）', modeLedger: '窗口账本（三类故障、机制链、静默错误）', trials: '次', runLedger: '运行账本仿真', delivered: '正确有效产出', ledgerTitle: '窗口账本（占窗口比例的均值）', pTarget: 'P(正确交付 ≥ 目标)', unresolved: '期末仍带错的概率', byClass: '按部件类归因（占窗口比例的均值）', counts: '每次运行的事件数', episodes: '静默漏检事件', manual: '人工恢复', ledgerNote: '与参考引擎同一口径：故障在运行时钟上到达；窗口内每一份时间只记一次（正确交付 + 停机 + 保存 + 回滚 + 降速 + 域损失 + 判废 = T）。', aop: '运行可用率',
     },
     report: { title: '设计评审', sub: '综述的 11 条设计评审清单应用于当前方案，附假设与导出。', checklist: '清单', export: '导出', exportHtml: '自包含 HTML 报告', exportCsv: '部件 CSV', exportXlsx: 'Excel 工作簿（含公式）', importanceTitle: '重要度', cutsets: '最小割集（前若干）', birnbaum: 'Birnbaum', fv: 'Fussell-Vesely', raw: 'RAW', rrw: 'RRW' },
     measures: {
       title: '原始 vs 补偿后', sub: '原始：每个单元故障都造成中断、仅人工修复、不计冗余。补偿后：计入冗余、倒换成功率、自动恢复与亚健康策略。',
       original: '原始', compensated: '补偿后', strict: '严格（亚健康计为不可用）', tolerant: '宽松（亚健康计为可用）', performability: '性能加权', waterfall: '补偿瀑布（各步的不可用率）', step_original: '原始', step_redundancy: '+ 冗余', 'step_auto-recovery': '+ 自动恢复', 'step_subhealth-policy': '+ 亚健康策略',
       switchoverPenalty: '倒换损失', humanFraction: '需人工处理的事件比例', autoShare: '自动路径的停机占比', gain: '增益 ΔA', unavailabilityRatio: 'U_原始 / U_补偿后', mtbfRatio: 'MTBF 比', approximate: '至少一个块使用了一阶近似或简化模型。', measure: '度量', unavailability: '不可用率', frequency: 'ν（/小时）',
+    },
+    mechanisms: {
+      title: '故障管理机制', sub: '参考工具的 12 项可靠性机制作为方案变更：单项收益、末位加入收益与全组合精确 Shapley 归因，均用解析式计算。',
+      players: '参与归因的机制', metric: '价值函数', run: '归因', running: '正在枚举组合…', baseline: '基线（已剥离所选机制）', combined: '全部启用', delta: '组合收益', single: '单项收益（单独启用）', lastAdded: '末位加入收益', shapley: 'Shapley 贡献', share: '占比', coalitions: '个组合', interaction: '交互项（组合 − Σ 单项）',
+      library: '机制库（参考目录）', status: '状态', kind: '类型', scope: '作用范围', change: '变化', prerequisite: '前置条件', failure: '失败 / 回退', parameters: '参数', confidence: '置信', inScenario: '已在方案中', apply: '应用到方案', remove: '移除', notTraining: '归因适用于训练负载。', noPlayers: '请至少选择一项带方案变更的机制。',
+      metric_delivered: '正确有效产出', metric_effective: '有效 goodput（性能）', metric_aOp: '运行可用率 A_op', status_baseline: '基线已有', status_candidate: '候选', status_conditional: '有条件', status_informational: '仅说明',
+      singleChart: '单项收益（各机制单独加在基线上）', shapleyChart: 'Shapley 贡献（合计 = 组合收益）', valueCol: '单独启用时的值', hint: '解析式：2^n 个组合毫秒级完成。参考工具对每个组合做蒙特卡洛并给置信区间；HAC-D 在「蒙特卡洛」页的窗口账本仿真可对单个方案做同样的校核。', tooMany: '浏览器内最多 10 项机制（1,024 个组合）。',
+      params: '参数覆盖', paramHint: '归因前可修改目标参数（如 D-SDC 检出率 0.999、R-ELASTIC 域数 100）。', legendLoss: '损失（负收益）', legendGain: '相对基线的收益',
     },
     import: {
       title: '导入表格', sub: '加载可用性计算表：识别所用方法、提取拓扑、转换为方案并与表内数值对账。',

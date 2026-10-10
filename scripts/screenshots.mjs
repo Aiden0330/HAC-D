@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'shots';
 mkdirSync(out, { recursive: true });
-const pages = ['Scenario', 'Training', 'Report', 'Import', 'Compare'];
+const pages = ['Scenario', 'Training', 'Mechanisms', 'Simulate', 'Report', 'Import', 'Compare'];
 const browser = await chromium.launch();
 for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
   for (const theme of ['light', 'dark']) {
@@ -17,9 +17,20 @@ for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
     await page.evaluate((t) => { localStorage.removeItem('hacd-scenarios-v1'); localStorage.setItem('hacd-theme', t); document.documentElement.setAttribute('data-theme', t); }, theme);
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(500);
+    // the three-class reference example shows the silent-corruption, chain and ledger cards
+    await page.selectOption('#scenario-select', 'ref-three-classes-100k').catch(() => {});
+    await page.waitForTimeout(400);
     for (const name of pages) {
       await page.getByRole('navigation').getByRole('button', { name, exact: true }).click();
       await page.waitForTimeout(700);
+      if (name === 'Mechanisms') {
+        await page.getByRole('button', { name: 'Attribute', exact: true }).click();
+        await page.waitForTimeout(2500);
+      }
+      if (name === 'Simulate') {
+        await page.getByRole('button', { name: 'Run ledger simulation', exact: true }).click();
+        await page.waitForTimeout(4000);
+      }
       if (name === 'Import') {
         // real upload of a fixture workbook, then import it as a scenario
         await page.locator('main input[type=file]').setInputFiles(new URL('../packages/importers/test/fixtures/hierarchy_levels_zh.xlsx', import.meta.url).pathname);

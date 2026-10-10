@@ -145,3 +145,21 @@ Not recommended to copy: the flat per-card FIT sum as the only structure (HAC-D'
 4. Which quantity is "training availability" for reporting: operational A_op, effective goodput (first order / exact), or the correctness-aware 30-day delivery?
 5. Should HAC-D adopt the ai-cluster baseline and 54-event catalog as a built-in cross-check scenario?
 6. Build order: items 1–3 (formulas, days) first, or go straight to 4–6 (SDC, DP domains, ledger Monte Carlo, weeks)?
+
+## 6. Status (2026-10-10)
+
+Decisions taken: allocation stays on effective goodput; the reference example keeps the four-source granularity (HBM / GPU / network / other) with the catalog's silent-corruption split; mechanisms are a library with exact Shapley attribution over closed forms; the silent-corruption model was built first.
+
+| Item | Status | Where |
+|---|---|---|
+| 1 MTTR mixture | done (v2.1) | `recovery.mode = 'mixture'`, §18 |
+| 2 Exact renewal, implied W, product form | done (v2.1) | `checkpoint/renewalGoodput`, §18 |
+| 3 Validity-driven headline | done (v2.1) | `headlineGoodput` |
+| 4 Silent data corruption at scenario level | done (v3) | `sdc/index.ts`, `scenario.sdc`, `component.sdc`, §20; delivered goodput on the Training page |
+| 5 DP-domain elastic recovery | done as a chain rung (v3) | `mechanisms/chain.ts` elastic rung with local capacity loss; the separate elastic *template* (F5) remains open |
+| 6 Finite-window Monte Carlo with a conserved ledger | done (v3) | `mc/ledger.ts`, Simulate page "Window ledger" mode, §21 |
+| 7 Mechanism chain with per-class applicability | done (v3) | `scenario.mechanisms`, `component.mechanisms` fractions, §19 |
+| 8 Event-catalog import / reference baseline | partly: baseline examples done (`ref-baseline-100k`, `ref-three-classes-100k`), catalog aggregated to four sources; the 54-event converter is not built | `scenario/examples.ts` |
+| 9 Shapley attribution | done (v3) | `mechanisms/index.ts`, Mechanisms page, §22 |
+
+Cross-check against the reference engine: `docs/REFERENCE_COMPARISON_100K_500K.md` §5.

@@ -45,3 +45,35 @@ Scripts: `node scripts/ref-run.cjs 400` (reference engine, 400 trajectories per 
 2. The MTTR mixture convention adopted on 2026-10-10 (timeout fallback, failed attempt charged) is the one the reference uses; with it both tools compute R = 264.5 s.
 3. Sub-health closed forms agree to 0.1 points; the simulator needs the isolate policy.
 4. Silent corruption is the single largest term at these scales in the reference's baseline and is absent from HAC-D; until the SDC delivery model exists, HAC-D's training availability at 100k–500k should be read as "hard interruptions and sub-health only".
+
+## 5. v3 (2026-10-10): three classes and mechanisms in closed form, plus the ledger simulation
+
+HAC-D now carries the reference's three-class baseline as the built-in example `ref-three-classes-100k` (four sources with the catalog's silent-corruption split and mechanism applicability fractions; `docs/MODEL_REFERENCE.md` §19–§22). The audited engine's published means (`results.json`, 4000 trials, 95 % CI half-widths in parentheses) against HAC-D's closed forms, delivered goodput in %:
+
+| Cards | Reference base | HAC-D closed form | Reference A_op | HAC-D A_op |
+|---:|---:|---:|---:|---:|
+| 10,000 | 93.33 (0.26) | 93.33 | 99.749 | 99.748 |
+| 100,000 | 62.56 (0.46) | 62.61 | 97.556 | 97.548 |
+| 200,000 | 45.87 (0.40) | 45.66 | 95.235 | 95.222 |
+| 500,000 | 25.24 (0.26) | 25.32 | 88.880 | 88.877 |
+
+Single mechanisms on the baseline (delivered goodput, %), reference Monte Carlo vs HAC-D closed form; the reference's paired-delta CI half-width is given for the mechanisms whose random streams stay aligned:
+
+| Cards | Mechanism | Reference | HAC-D | Reference Δ ± CI | HAC-D Δ |
+|---:|---|---:|---:|---:|---:|
+| 100,000 | D-SDC (95 % immediate detection) | 92.62 | 92.33 | +30.06 ± 0.47 | +29.72 |
+| 100,000 | D-SDC + R-SDC (step recovery) | 92.66 | 92.38 | +30.11 | +29.76 |
+| 100,000 | R-REPLAY | 63.12 | 63.23 | +0.56 ± 0.09 | +0.62 |
+| 100,000 | R-PROCESS | 62.99 | 63.10 | +0.43 ± 0.07 | +0.49 |
+| 100,000 | R-ELASTIC | 64.06 | 63.69 | +1.50 ± 0.58 | +1.08 |
+| 100,000 | C-FAST (60 s / 1 s) | 62.82 | 62.90 | +0.26 ± 0.07 | +0.28 |
+| 100,000 | six combined | 94.72 | 94.98 | +32.16 ± 0.49 | +32.37 |
+| 500,000 | D-SDC | 73.13 | 73.27 | +47.89 ± 0.38 | +47.94 |
+| 500,000 | R-ELASTIC | 26.33 | 26.22 | +1.09 ± 0.35 | +0.90 |
+| 500,000 | six combined | 82.79 | 83.45 | +57.55 ± 0.42 | +58.13 |
+
+Exact Shapley values at 100,000 cards (points of delivered goodput): HAC-D D-SDC 30.68, R-SDC 0.02, R-REPLAY 0.33, R-PROCESS 0.34, R-ELASTIC 0.83, C-FAST 0.17 (Δ 32.37, 64 coalitions in 0.1 s); reference 31.06 / 0.02 / 0.36 / 0.32 / 0.25 / 0.18 (Δ 32.17, 64 × 2000 trials). The elastic values differ by more than the others because the reference's elastic path skips the `recovery()` draw and desynchronises its fault stream, so its paired deltas carry ±0.3–0.6 points of sampling error; HAC-D's closed form sits inside those intervals.
+
+HAC-D's own ledger simulation (`simulateScenarioLedger`, 200 trials) on the same baseline: 94.0 ± 1.1, 63.9 ± 2.0, 46.2 ± 1.8, 24.8 ± 1.2 % — consistent with both the reference and the closed forms, with the same ledger shape (downtime, saves, hard rollback, slow-down, SDC rollback, terminal discard). Reproduce with `node --import tsx scripts/ref-compare-v3.ts 200`.
+
+What remains different: the reference's 54-event granularity (HAC-D aggregates to the four sources), its finite-horizon Monte Carlo with confidence intervals for every coalition (HAC-D attributes with closed forms and offers the ledger simulation per scenario), and its target scans (HAC-D: Allocation page and tornado).

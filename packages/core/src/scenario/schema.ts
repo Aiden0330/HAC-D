@@ -168,6 +168,18 @@ export const ComponentSchema = z.object({
   failslow: z.object({ ratePerHour: z.number().nonnegative(), durationHours: z.number().positive(), capacity: z.number().min(0).max(1) }).optional(),
   /** v2 sub-health with threshold rule, escalation and tolerate / isolate policy (takes precedence over failslow) */
   subhealth: SubhealthSchema.optional(),
+  /**
+   * v3 silent data corruption (静默错误) produced by this class: events per unit-hour that corrupt the training
+   * state without an interruption. Handled by the job-level `scenario.sdc` policy (immediate detection,
+   * fallback discovery, clean-checkpoint rollback, terminal discard).
+   */
+  sdc: z.object({ ratePerHour: z.number().nonnegative(), provenance: ProvenanceSchema.optional() }).optional(),
+  /**
+   * v3 mechanism applicability: the fraction of this class's hard interruptions that each recovery mechanism of
+   * `scenario.mechanisms` can act on (the reference catalog's per-event replay / process / elastic flags,
+   * aggregated per class). Missing = 0 = the mechanism does not apply to this class.
+   */
+  mechanisms: z.object({ replay: z.number().min(0).max(1).optional(), process: z.number().min(0).max(1).optional(), elastic: z.number().min(0).max(1).optional() }).optional(),
   /** infant mortality: rate multiplier for the first `durationHours` of life (simulation) */
   infant: z.object({ multiplier: z.number().positive(), durationHours: z.number().positive() }).optional(),
   /** lemon units: fraction of units with a higher rate (simulation) */
@@ -315,6 +327,30 @@ export const MeasuresSchema = z.object({
   commShare: z.number().min(0).max(1).default(0.3),
 });
 
+/**
+ * v3 silent-data-corruption policy (docs/MODEL_REFERENCE.md §20). Immediate detection catches a fraction
+ * `coverage` of corruptions after `detectSeconds`; the job then rolls back to the last checkpoint (or, with step
+ * recovery, redoes at most `stepSeconds`) and recovers. Undetected corruptions are discovered after
+ * `fallbackDelayHours`, the job rolls back to the last clean checkpoint; corruption still undiscovered at the end
+ * of the window discards the work since the last clean checkpoint.
+ */
+export const SdcPolicySchema = z.object({
+  detection: z.object({ coverage: z.number().min(0).max(1).default(0), detectSeconds: z.number().nonnegative().default(1) }).prefault({}),
+  fallbackDelayHours: z.number().positive().default(120),
+  /** volatile clean step state: a detected corruption redoes at most stepSeconds and recovers in recoverSeconds */
+  stepRecovery: z.object({ stepSeconds: z.number().nonnegative().default(1), recoverSeconds: z.number().nonnegative().default(1) }).optional(),
+});
+
+/** v3 recovery mechanism chain tried before the global checkpoint recovery (docs/MODEL_REFERENCE.md §19). */
+export const MechanismChainSchema = z.object({
+  /** transient faults re-executed in place: no rollback */
+  replay: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(5), failureSeconds: z.number().nonnegative().default(10) }).optional(),
+  /** DP-domain elasticity: the faulty domain drops out for recoverSeconds while the others continue; no rollback */
+  elastic: z.object({ domains: z.number().int().positive().default(50), success: z.number().min(0).max(1).default(0.98), recoverSeconds: z.number().nonnegative().default(180), failureSeconds: z.number().nonnegative().default(120), syncSeconds: z.number().nonnegative().default(1) }).optional(),
+  /** process / pod rescheduling with rollback to the last checkpoint */
+  process: z.object({ success: z.number().min(0).max(1).default(0.95), successSeconds: z.number().nonnegative().default(60), failureSeconds: z.number().nonnegative().default(120) }).optional(),
+});
+
 export const SparesSchema = z.object({
   /** fraction of interruptions that need a hardware replacement */
   hardwareReplacementFraction: z.number().min(0).max(1).default(0.587),
@@ -355,6 +391,8 @@ export const ScenarioSchema = z.object({
   targets: TargetsSchema.prefault({}),
   costs: CostsSchema.prefault({}),
   measures: MeasuresSchema.prefault({}),
+  sdc: SdcPolicySchema.prefault({}),
+  mechanisms: MechanismChainSchema.prefault({}),
   assumptions: z.array(z.string()).default([]),
 });
 
@@ -369,6 +407,8 @@ export type Repair = z.infer<typeof RepairSchema>;
 export type SubhealthInput = z.infer<typeof SubhealthSchema>;
 export type SwitchoverInput = z.infer<typeof SwitchoverSchema>;
 export type Recovery = z.infer<typeof RecoverySchema>;
+export type SdcPolicy = z.infer<typeof SdcPolicySchema>;
+export type MechanismChain = z.infer<typeof MechanismChainSchema>;
 
 export function parseScenario(input: unknown): Scenario {
   return ScenarioSchema.parse(input);

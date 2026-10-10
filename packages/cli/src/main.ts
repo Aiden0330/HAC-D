@@ -13,12 +13,15 @@
  *   hacd methods <book.xlsx> [--json]               which availability methods a spreadsheet uses (formula fingerprints)
  *   hacd import-excel <book.xlsx> [--sheet S] [--out scenario.json] [--json]   topology + parameters → scenario, reconciled
  *   hacd export-excel <scenario.json> [out.xlsx]    workbook with live formulas (Inputs / Structure / Results / Formulas)
+ *   hacd mechanisms <scenario.json> [--players D-SDC,R-SDC,…] [--metric delivered|effective|aOp] [--json]   single / last-added / Shapley gains (v3)
+ *   hacd ledger <scenario.json> [--trials 300] [--seed 1] [--target 0.9] [--json]   finite-window ledger simulation vs the closed form (v3)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
-  type AllocationMethod, type TornadoMetric,
+  mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY,
+  type AllocationMethod, type TornadoMetric, type AttributionMetric,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
@@ -308,6 +311,53 @@ switch (cmd) {
     console.log(`wrote ${target} (${bytes.byteLength} bytes; sheets Inputs, Structure, Results, Formulas)`);
     break;
   }
+  case 'mechanisms': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd mechanisms <scenario.json> [--players D-SDC,R-SDC,R-REPLAY,R-PROCESS,R-ELASTIC,C-FAST] [--metric delivered|effective|aOp] [--json]');
+      process.exit(1);
+    }
+    const players = flag('players') ? flag('players')!.split(',').map((x) => x.trim()).filter(Boolean) : DEFAULT_PLAYERS;
+    const rep = mechanismReport(load(path), players, { metric: (flag('metric') as AttributionMetric | undefined) ?? 'delivered' });
+    if (json) {
+      out(rep);
+      break;
+    }
+    console.log(`${rep.metric}: baseline ${pct(rep.baseline[rep.metric], 3)} → all ${pct(rep.combined[rep.metric], 3)} (Δ ${(rep.delta * 100).toFixed(3)} pt, ${rep.coalitions} coalitions, interaction ${(rep.interaction * 100).toFixed(3)} pt)`);
+    printTable([
+      ['mechanism', 'name', 'alone', 'single gain', 'last-added', 'Shapley', 'share'],
+      ...rep.gains.slice().sort((a, b) => b.shapley - a.shapley).map((g) => [g.id, MECHANISM_LIBRARY.find((m) => m.id === g.id)?.name.en ?? '', pct(g.values[rep.metric], 3), `${(g.single * 100).toFixed(3)} pt`, `${(g.lastAdded * 100).toFixed(3)} pt`, `${(g.shapley * 100).toFixed(3)} pt`, pct(g.share, 1)]),
+    ]);
+    for (const n of rep.notes) console.log(`- ${n}`);
+    break;
+  }
+  case 'ledger': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd ledger <scenario.json> [--trials 300] [--seed 1] [--target 0.9] [--json]');
+      process.exit(1);
+    }
+    const r = simulateScenarioLedger(load(path), { trials: Number(flag('trials') ?? 300), seed: Number(flag('seed') ?? 1), target: flag('target') ? Number(flag('target')) : undefined });
+    if (json) {
+      out({ ...r, summary: { ...r.summary, values: undefined } });
+      break;
+    }
+    const L = r.summary;
+    console.log(`${r.disagrees ? 'DISAGREES' : 'agrees'} with closed form: delivered ${pct(L.delivered.mean, 3)} ± ${pct(L.delivered.ci95, 3)} vs ${pct(r.closedForm.delivered, 3)}; A_op ${pct(L.operationalAvailability.mean, 3)} vs ${pct(r.closedForm.operationalAvailability, 3)}${L.pAtLeastTarget !== undefined ? `; P(≥ ${pct(L.target ?? 0, 0)}) ${pct(L.pAtLeastTarget, 1)}` : ''}; P(dirty at end) ${pct(L.pUnresolvedAtEnd, 1)}`);
+    printTable([
+      ['ledger share', 'Monte Carlo', 'closed form'],
+      ['delivered', pct(L.ledger.delivered, 3), pct(r.closedForm.ledger.delivered, 3)],
+      ['downtime', pct(L.ledger.downtime, 3), pct(r.closedForm.ledger.downtime, 3)],
+      ['saves', pct(L.ledger.save, 3), pct(r.closedForm.ledger.save, 3)],
+      ['rollback (interruptions)', pct(L.ledger.rollbackHard, 3), pct(r.closedForm.ledger.rollback, 3)],
+      ['slow-down', pct(L.ledger.slowdown, 3), pct(r.closedForm.ledger.slowdown, 3)],
+      ['local loss', pct(L.ledger.localLoss, 3), pct(r.closedForm.ledger.local, 3)],
+      ['rollback (silent)', pct(L.ledger.rollbackSdc, 3), pct(r.closedForm.ledger.sdcRollback, 3)],
+      ['terminal discard', pct(L.ledger.terminalInvalid, 3), pct(r.closedForm.ledger.terminal, 3)],
+    ]);
+    printTable([['class', 'events/run', 'downtime', 'rollback', 'slow-down', 'local', 'terminal'], ...Object.entries(L.byClass).map(([id, a]) => [id, a.events.toFixed(1), pct(a.downtime, 3), pct(a.rollback, 3), pct(a.slowdown, 3), pct(a.localLoss, 3), pct(a.terminalInvalid, 3)])]);
+    break;
+  }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | schema> [--json]');
 }

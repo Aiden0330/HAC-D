@@ -27,6 +27,8 @@ export interface CompareRow {
   operationalAvailability?: number;
   goodput?: number;
   effectiveGoodput?: number;
+  /** v3 delivered (correct) goodput over the job window */
+  deliveredGoodput?: number;
   wastedGpuHoursPerDay?: number;
   lostDollarsPerDay?: number;
   blockedProbability?: number;
@@ -63,6 +65,7 @@ export function compareScenarios(scenarios: Scenario[]): Comparison {
       operationalAvailability: r.training?.operationalAvailability,
       goodput: r.training?.firstOrder.goodput,
       effectiveGoodput: r.training?.effectiveGoodput,
+      deliveredGoodput: r.training?.deliveredGoodput,
       wastedGpuHoursPerDay: r.training?.wastedGpuHoursPerDay,
       lostDollarsPerDay: r.training?.lostDollarsPerDay,
       blockedProbability: r.training?.blockedProbability,
@@ -91,6 +94,7 @@ export function compareScenarios(scenarios: Scenario[]): Comparison {
   };
   pick('availability', true);
   pick('effectiveGoodput', true);
+  pick('deliveredGoodput', true);
   pick('lostDollarsPerDay', false);
   pick('mtbiHours', true);
   pick('recoveryS', false);
@@ -157,12 +161,14 @@ export function withCcfBeta(s: Scenario, factor: number): Scenario {
 
 /* ------------------------------ tornado ------------------------------ */
 
-export type TornadoMetric = 'goodput' | 'availability' | 'lostDollarsPerDay' | 'mtbiHours';
+export type TornadoMetric = 'goodput' | 'delivered' | 'availability' | 'lostDollarsPerDay' | 'mtbiHours';
 
 export function metricOf(r: EvaluationResult, metric: TornadoMetric): number {
   switch (metric) {
     case 'goodput':
       return r.training?.effectiveGoodput ?? r.system.capacityAvailability;
+    case 'delivered':
+      return r.training?.deliveredGoodput ?? r.training?.effectiveGoodput ?? r.system.capacityAvailability;
     case 'availability':
       return r.system.availability;
     case 'lostDollarsPerDay':

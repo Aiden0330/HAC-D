@@ -1,0 +1,464 @@
+{
+ "version": "3.0",
+ "generated": "2026-10-10",
+ "tool": "python/mpmath (mp.dps=30) quadrature; renewal equations on a grid with exact exponential kernel",
+ "spec": "docs/MODEL_REFERENCE.md \u00a719 (mechanism chain, mixed renewal), \u00a720 (silent-corruption delivery)",
+ "cases": [
+  {
+   "id": "mixed.hard_only_100k",
+   "group": "mixed",
+   "inputs": {
+    "tauS": 300,
+    "deltaS": 4,
+    "rollbackRatePerHour": 0.3333333333333333,
+    "rollbackPauseS": 264.5,
+    "pauseRatePerHour": 0,
+    "pauseS": 0
+   },
+   "expected": {
+    "goodput": 0.9497580940172048,
+    "runningFraction": 0.9760947173392381,
+    "saveFraction": 0.01266344125356273,
+    "rollbackFraction": 0.013673182068470539,
+    "rollbackPauseFraction": 0.023905282660761897,
+    "pauseOnlyFraction": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "mixed.replay_100k",
+   "group": "mixed",
+   "inputs": {
+    "tauS": 300,
+    "deltaS": 4,
+    "rollbackRatePerHour": 0.2073,
+    "rollbackPauseS": 265.2,
+    "pauseRatePerHour": 0.1326,
+    "pauseS": 29.06
+   },
+   "expected": {
+    "goodput": 0.9625011159919417,
+    "runningFraction": 0.9839212734677891,
+    "saveFraction": 0.012833348213225888,
+    "rollbackFraction": 0.008586809262621663,
+    "rollbackPauseFraction": 0.015025560159253956,
+    "pauseOnlyFraction": 0.0010531663729568738
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "mixed.elastic_500k",
+   "group": "mixed",
+   "inputs": {
+    "tauS": 300,
+    "deltaS": 4,
+    "rollbackRatePerHour": 0.584,
+    "rollbackPauseS": 269,
+    "pauseRatePerHour": 1.1155,
+    "pauseS": 8.35
+   },
+   "expected": {
+    "goodput": 0.9201736310709137,
+    "runningFraction": 0.9558172354517099,
+    "saveFraction": 0.012268981747612182,
+    "rollbackFraction": 0.023374622633184183,
+    "rollbackPauseFraction": 0.04170974011681162,
+    "pauseOnlyFraction": 0.0024730244314784145
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "mixed.pause_only",
+   "group": "mixed",
+   "inputs": {
+    "tauS": 300,
+    "deltaS": 4,
+    "rollbackRatePerHour": 0,
+    "rollbackPauseS": 0,
+    "pauseRatePerHour": 0.5,
+    "pauseS": 120
+   },
+   "expected": {
+    "goodput": 0.9706643658326143,
+    "runningFraction": 0.9836065573770492,
+    "saveFraction": 0.012942191544434857,
+    "rollbackFraction": 3.543711097672514e-32,
+    "rollbackPauseFraction": 0.0,
+    "pauseOnlyFraction": 0.01639344262295082
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "mixed.fast_ckpt",
+   "group": "mixed",
+   "inputs": {
+    "tauS": 60,
+    "deltaS": 1,
+    "rollbackRatePerHour": 1.6667,
+    "rollbackPauseS": 264.5,
+    "pauseRatePerHour": 0.3,
+    "pauseS": 10
+   },
+   "expected": {
+    "goodput": 0.8633417979356154,
+    "runningFraction": 0.8902424640882681,
+    "saveFraction": 0.014389029965593589,
+    "rollbackFraction": 0.012511636187059165,
+    "rollbackPauseFraction": 0.10901566719165831,
+    "pauseOnlyFraction": 0.0007418687200735568
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.gpu_all",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     }
+    },
+    "applicable": {
+     "replay": 0.831,
+     "process": 1,
+     "elastic": 1
+    }
+   },
+   "expected": {
+    "pReplay": 0.7479,
+    "pElastic": 0.24705800000000003,
+    "pProcess": 0.004789900000000004,
+    "pGlobal": 0.0002521000000000005,
+    "pRollback": 0.005042000000000005,
+    "meanPauseS": 15.215548200000002,
+    "pauseRollbackS": 1.0658602000000013,
+    "pauseNoRollbackS": 14.149688000000001,
+    "localLossS": 0.9462321400000002
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.other_partial",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     }
+    },
+    "applicable": {
+     "replay": 0,
+     "process": 0.361,
+     "elastic": 0.361
+    }
+   },
+   "expected": {
+    "pReplay": 0.0,
+    "pElastic": 0.35378,
+    "pProcess": 0.221621149,
+    "pGlobal": 0.424598851,
+    "pRollback": 0.64622,
+    "meanPauseS": 130.99382191200002,
+    "pauseRollbackS": 130.64004191200002,
+    "pauseNoRollbackS": 0.35378,
+    "localLossS": 1.3549773999999999
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.replay_only",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     }
+    },
+    "applicable": {
+     "replay": 0.7
+    }
+   },
+   "expected": {
+    "pReplay": 0.63,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.37,
+    "pRollback": 0.37,
+    "meanPauseS": 109.59,
+    "pauseRollbackS": 98.565,
+    "pauseNoRollbackS": 11.025,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.process_only_zero_detect",
+   "group": "chain",
+   "inputs": {
+    "detectS": 0,
+    "globalS": 300,
+    "params": {
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     }
+    },
+    "applicable": {
+     "process": 1
+    }
+   },
+   "expected": {
+    "pReplay": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.95,
+    "pGlobal": 0.050000000000000044,
+    "pRollback": 1.0,
+    "meanPauseS": 78.00000000000001,
+    "pauseRollbackS": 78.00000000000001,
+    "pauseNoRollbackS": 0.0,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.none",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {},
+    "applicable": {
+     "replay": 1,
+     "process": 1,
+     "elastic": 1
+    }
+   },
+   "expected": {
+    "pReplay": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 1.0,
+    "pRollback": 1.0,
+    "meanPauseS": 264.5,
+    "pauseRollbackS": 264.5,
+    "pauseNoRollbackS": 0.0,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "sdc.reference_100k",
+   "group": "sdc",
+   "inputs": {
+    "horizonH": 720,
+    "nuPerWallHour": 0.004647,
+    "fallbackDelayH": 119.93,
+    "episodePauseH": 0.07,
+    "cleanGoodput": 0.94741,
+    "preEpisodeLossH": 0.0418
+   },
+   "expected": {
+    "delivered": 0.6262516008398917,
+    "cleanTimeFraction": 0.6611498988162753,
+    "expectedEpisodes": 2.212101777455447,
+    "expectedDiscovered": 1.8543086154546828
+   },
+   "tolerance": {
+    "rel": 2e-06
+   }
+  },
+  {
+   "id": "sdc.reference_500k",
+   "group": "sdc",
+   "inputs": {
+    "horizonH": 720,
+    "nuPerWallHour": 0.02146,
+    "fallbackDelayH": 119.93,
+    "episodePauseH": 0.07,
+    "cleanGoodput": 0.81534,
+    "preEpisodeLossH": 0.0418
+   },
+   "expected": {
+    "delivered": 0.24139274006324823,
+    "cleanTimeFraction": 0.2963899847652541,
+    "expectedEpisodes": 4.579580932604896,
+    "expectedDiscovered": 3.85757029815207
+   },
+   "tolerance": {
+    "rel": 2e-06
+   }
+  },
+  {
+   "id": "sdc.day_fallback",
+   "group": "sdc",
+   "inputs": {
+    "horizonH": 720,
+    "nuPerWallHour": 0.02,
+    "fallbackDelayH": 23.5,
+    "episodePauseH": 0.5,
+    "cleanGoodput": 0.9,
+    "preEpisodeLossH": 0.04
+   },
+   "expected": {
+    "delivered": 0.6108517163989938,
+    "cleanTimeFraction": 0.6793279764223685,
+    "expectedEpisodes": 9.78232286048211,
+    "expectedDiscovered": 9.464755292914516
+   },
+   "tolerance": {
+    "rel": 2e-06
+   }
+  },
+  {
+   "id": "sdc.rare",
+   "group": "sdc",
+   "inputs": {
+    "horizonH": 720,
+    "nuPerWallHour": 0.0001,
+    "fallbackDelayH": 119.93,
+    "episodePauseH": 0.07,
+    "cleanGoodput": 0.98,
+    "preEpisodeLossH": 0.04
+   },
+   "expected": {
+    "delivered": 0.9693323868505198,
+    "cleanTimeFraction": 0.98911871767897,
+    "expectedEpisodes": 0.07121654767288585,
+    "expectedDiscovered": 0.05936575716942741
+   },
+   "tolerance": {
+    "rel": 2e-06
+   }
+  },
+  {
+   "id": "sdc.short_window",
+   "group": "sdc",
+   "inputs": {
+    "horizonH": 240,
+    "nuPerWallHour": 0.05,
+    "fallbackDelayH": 5.95,
+    "episodePauseH": 0.05,
+    "cleanGoodput": 0.85,
+    "preEpisodeLossH": 0.02
+   },
+   "expected": {
+    "delivered": 0.6549607987511554,
+    "cleanTimeFraction": 0.7714497040649653,
+    "expectedEpisodes": 9.257396448779582,
+    "expectedDiscovered": 9.028550294933439
+   },
+   "tolerance": {
+    "rel": 2e-06
+   }
+  },
+  {
+   "id": "pclear.100k",
+   "group": "pclear",
+   "inputs": {
+    "rollbackRatePerHour": 0.3333333333333333,
+    "periodH": 0.08444444444444445
+   },
+   "expected": {
+    "p": 0.013942945088559651
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "pclear.500k",
+   "group": "pclear",
+   "inputs": {
+    "rollbackRatePerHour": 1.6666666666666667,
+    "periodH": 0.08444444444444445
+   },
+   "expected": {
+    "p": 0.06718200767385815
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "pclear.tiny",
+   "group": "pclear",
+   "inputs": {
+    "rollbackRatePerHour": 0.0001,
+    "periodH": 0.08444444444444445
+   },
+   "expected": {
+    "p": 4.22221033747365e-06
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  }
+ ]
+}

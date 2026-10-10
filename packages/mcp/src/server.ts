@@ -2,7 +2,7 @@
 /**
  * HAC-D MCP server (stdio). Tools: list_examples, get_example, evaluate_scenario, compare_scenarios,
  * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
- * excel_method_report, import_excel_scenario, export_excel (v2).
+ * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, simulate_ledger (v3).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -14,7 +14,8 @@ import { dirname, join, basename } from 'node:path';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook } from '@hac-d/importers';
 import {
   EXAMPLES, parseScenario, evaluateScenario, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario, scenarioJsonSchema, filterLibrary,
-  type Library, type AllocationMethod, type TornadoMetric,
+  mechanismReport, simulateScenarioLedger, MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms,
+  type Library, type AllocationMethod, type TornadoMetric, type AttributionMetric,
 } from '@hac-d/core';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -59,7 +60,7 @@ server.registerTool(
 
 server.registerTool(
   'tornado_scenario',
-  { description: 'One-at-a-time sensitivity (×½ / ×2) of goodput, availability, lost $/day or MTBI to every component rate, the recovery time, checkpoint δ, hot spares and common-cause β.', inputSchema: { scenario: scenarioArg, metric: z.enum(['goodput', 'availability', 'lostDollarsPerDay', 'mtbiHours']).optional() } },
+  { description: 'One-at-a-time sensitivity (×½ / ×2) of goodput, availability, lost $/day or MTBI to every component rate, the recovery time, checkpoint δ, hot spares and common-cause β.', inputSchema: { scenario: scenarioArg, metric: z.enum(['goodput', 'delivered', 'availability', 'lostDollarsPerDay', 'mtbiHours']).optional() } },
   async ({ scenario, metric }) => text(tornadoForScenario(toScenario(scenario), (metric as TornadoMetric | undefined) ?? 'goodput')),
 );
 
@@ -101,6 +102,33 @@ server.registerTool(
     const bytes = exportWorkbook(s, evaluateScenario(s));
     writeFileSync(outPath, bytes);
     return text({ path: outPath, bytes: bytes.byteLength, sheets: ['Inputs', 'Structure', 'Results', 'Formulas'] });
+  },
+);
+
+server.registerTool(
+  'mechanism_library',
+  { description: 'The fault-management mechanism library (the reference catalog’s twelve mechanisms: detection of interruptions / sub-health / silent corruption, replay, process rescheduling, DP-domain elasticity, global checkpoint recovery, manual recovery, step recovery, faster checkpoints, physical protection and hardware reliability) with change, prerequisite, failure path, confidence and target parameters, and which of them are active in a scenario.', inputSchema: { scenario: scenarioArg.optional() } },
+  async ({ scenario }) => text({ mechanisms: MECHANISM_LIBRARY.map((m) => ({ ...m, apply: undefined, hasTransform: !!m.apply })), defaultPlayers: DEFAULT_PLAYERS, active: scenario ? activeMechanisms(toScenario(scenario)) : undefined }),
+);
+
+server.registerTool(
+  'mechanism_report',
+  { description: 'Attribute the gain of fault-management mechanisms on a training scenario: strips the selected mechanisms (baseline), evaluates all 2^n coalitions with the closed forms (value = delivered goodput, effective goodput or A_op) and returns single gains, last-added gains and exact Shapley values. Players default to the reference’s six candidates; at most 12.', inputSchema: { scenario: scenarioArg, players: z.array(z.string()).max(12).optional(), metric: z.enum(['delivered', 'effective', 'aOp']).optional(), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional() } },
+  async ({ scenario, players, metric, parameters }) => text(mechanismReport(toScenario(scenario), players ?? DEFAULT_PLAYERS, { metric: (metric as AttributionMetric | undefined) ?? 'delivered', parameters })),
+);
+
+server.registerTool(
+  'apply_mechanisms',
+  { description: 'Return the scenario with the given mechanisms applied (their target parameters written into the scenario: silent-corruption detection, step recovery, replay / process / elastic chain, faster checkpoints, detection targets).', inputSchema: { scenario: scenarioArg, ids: z.array(z.string()), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional() } },
+  async ({ scenario, ids, parameters }) => text(applyMechanisms(toScenario(scenario), ids, parameters)),
+);
+
+server.registerTool(
+  'simulate_ledger',
+  { description: 'Finite-window ledger simulation of a training job with three fault classes (interruptions through the mechanism chain, sub-health with detection and isolation, silent corruption with immediate detection, fallback discovery, clean-checkpoint rollback and terminal discard): delivered goodput with CI and quantiles, A_op, P(≥ target), mean ledger, event counts, per-class attribution, compared with the closed form. Keep trials ≤ 1000 for interactive use.', inputSchema: { scenario: scenarioArg, trials: z.number().int().min(1).max(20000).optional(), seed: z.number().optional(), target: z.number().min(0).max(1).optional() } },
+  async ({ scenario, trials, seed, target }) => {
+    const r = simulateScenarioLedger(toScenario(scenario), { trials: trials ?? 200, seed: seed ?? 1, target });
+    return text({ ...r, summary: { ...r.summary, values: undefined } });
   },
 );
 
