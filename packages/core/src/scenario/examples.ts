@@ -327,7 +327,43 @@ export function ascendSupercluster(npus = 100000, spareSupernodes = 3): Scenario
   return parseScenario(input);
 }
 
+
+/**
+ * The ai-cluster-reliability-main confirmed baseline (catalogs/review-2026-10-09): 10,000-card hard-interruption
+ * MTBF 30 h with linear scaling, checkpoint 300 s compute + 4 s save, detection 95 % in 10 s else 60 s timeout,
+ * automatic recovery 180 s with 99 % success else +2 h manual. Hard interruptions only (stage 0 of the comparison in
+ * docs/REFERENCE_COMPARISON_100K_500K.md); add sub-health to the card class for stage 1. Silent corruption is not modelled.
+ */
+export function referenceBaseline(npus = 100000): Scenario {
+  const lamCard = 1 / (10000 * 30);
+  const input: ScenarioInput = {
+    meta: {
+      id: `ref-baseline-${Math.round(npus / 1000)}k`,
+      name: `Reference baseline — ${npus.toLocaleString('en-US')} cards, MTBF 30 h @ 10k, τ 300 s, R 264.5 s`,
+      basis: ['ai-cluster-reliability-main catalogs/review-2026-10-09 (user-confirmed baseline)', 'docs/REFERENCE_COMPARISON_100K_500K.md'],
+      description: 'Hard interruptions only, as in the like-for-like comparison. Sub-health (2 % of events, 24 h, −5 %, 95 % detected in 5 min) can be added to the card class; silent corruption is not modelled in HAC-D yet.',
+    },
+    topology: { gpusPerNode: 8, nodesPerRack: 32, racksPerZone: 64, nvlinkDomainGpus: 8 },
+    components: [
+      {
+        id: 'card',
+        name: { zh: '加速卡（作业中断等效，万卡 MTBF 30 h）', en: 'Accelerator card (job-interruption equivalent, 10k-card MTBF 30 h)' },
+        subsystem: 'compute',
+        countRule: { per: 'gpu', factor: 1 },
+        failure: { value: lamCard, unit: 'per_h', koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' }, provenance: { source: 'ai-cluster-reliability-main confirmed baseline (user), 10,000-card hard MTBF 30 h → 3,333 FIT per card', org: 'user baseline', year: 2026, confidence: 'assumed', derivation: '1/(10,000 × 30 h) per card-hour; interruption rate ∝ N' } },
+        repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
+      },
+    ],
+    structure: { mode: 'template', template: 'training-series' },
+    workload: { type: 'training', nGpus: npus, durationDays: 30, deltaS: 4, intervalS: 300, intervalModel: 'young' },
+    recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } },
+    assumptions: ['fixed checkpoint interval 300 s (not the Young optimum) to match the reference', 'recovery: MTTR mixture R = T_det + T_auto + (1 − p_s)·T_manual = 12.5 + 180 + 72 = 264.5 s'],
+  };
+  return parseScenario(input);
+}
+
 export const EXAMPLES: Record<string, () => Scenario> = {
+  'ref-baseline-100k': () => referenceBaseline(100000),
   'ascend-cm384': cloudMatrix384Training,
   'ascend-atlas950': atlas950Training,
   'ascend-supercluster-100k': () => ascendSupercluster(100000, 3),
