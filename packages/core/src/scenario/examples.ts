@@ -341,19 +341,27 @@ export function referenceBaseline(npus = 100000): Scenario {
       id: `ref-baseline-${Math.round(npus / 1000)}k`,
       name: `Reference baseline — ${npus.toLocaleString('en-US')} cards, MTBF 30 h @ 10k, τ 300 s, R 264.5 s`,
       basis: ['ai-cluster-reliability-main catalogs/review-2026-10-09 (user-confirmed baseline)', 'docs/REFERENCE_COMPARISON_100K_500K.md'],
-      description: 'Hard interruptions only, as in the like-for-like comparison. Sub-health (2 % of events, 24 h, −5 %, 95 % detected in 5 min) can be added to the card class; silent corruption is not modelled in HAC-D yet.',
+      description: 'Hard interruptions only, as in the like-for-like comparison; the per-card rate is split into HBM / GPU / network / other with the Llama 3 shares so that targets can be allocated to sources. Sub-health (2 % of events, 24 h, −5 %, 95 % detected in 5 min) can be added to a class; silent corruption is not modelled in HAC-D yet.',
     },
     topology: { gpusPerNode: 8, nodesPerRack: 32, racksPerZone: 64, nvlinkDomainGpus: 8 },
-    components: [
-      {
-        id: 'card',
-        name: { zh: '加速卡（作业中断等效，万卡 MTBF 30 h）', en: 'Accelerator card (job-interruption equivalent, 10k-card MTBF 30 h)' },
-        subsystem: 'compute',
-        countRule: { per: 'gpu', factor: 1 },
-        failure: { value: lamCard, unit: 'per_h', koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' }, provenance: { source: 'ai-cluster-reliability-main confirmed baseline (user), 10,000-card hard MTBF 30 h → 3,333 FIT per card', org: 'user baseline', year: 2026, confidence: 'assumed', derivation: '1/(10,000 × 30 h) per card-hour; interruption rate ∝ N' } },
-        repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
-      },
-    ],
+    // the reference splits the per-card interruption rate into four sources with the Llama 3 Table 5 shares
+    // (HBM 17.2 %, faulty GPU 30.1 %, network switch / cable 8.4 %, other 44.3 %); the split lets the Allocation page
+    // apportion a target to the sources, it does not change the job-level result.
+    components: (
+      [
+        ['hbm', 'memory', 0.172, { zh: 'HBM / 片上内存（17.2 %）', en: 'HBM / on-package memory (17.2 %)' }],
+        ['gpu', 'compute', 0.301, { zh: '加速卡本体（30.1 %）', en: 'Faulty accelerator (30.1 %)' }],
+        ['network', 'network', 0.084, { zh: '网络交换机 / 线缆（8.4 %）', en: 'Network switch / cable (8.4 %)' }],
+        ['other', 'other', 0.443, { zh: '其他来源（44.3 %）', en: 'Other sources (44.3 %)' }],
+      ] as const
+    ).map(([id, subsystem, share, name]) => ({
+      id,
+      name,
+      subsystem,
+      countRule: { per: 'gpu' as const, factor: 1 },
+      failure: { value: lamCard * share, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance: { source: 'ai-cluster-reliability-main confirmed baseline: 10,000-card hard MTBF 30 h (3,333 FIT per card) × Llama 3 Table 5 category share', org: 'user baseline / Meta', year: 2026, url: 'https://arxiv.org/abs/2407.21783', confidence: 'assumed' as const, derivation: `${share} × 1/(10,000 × 30 h) per card-hour; shares borrowed from Llama 3, not measured on this cluster` } },
+      repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
+    })),
     structure: { mode: 'template', template: 'training-series' },
     workload: { type: 'training', nGpus: npus, durationDays: 30, deltaS: 4, intervalS: 300, intervalModel: 'young' },
     recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } },

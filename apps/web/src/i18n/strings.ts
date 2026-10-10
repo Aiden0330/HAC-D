@@ -35,6 +35,7 @@ export const strings = {
       supernodesUsed: 'Supernodes used by the job', supernodesUsedHint: 'sets Job NPUs = supernodes × supernode size', supernodesRequired: 'Supernodes required (N)', spareSupernodes: 'Spare supernodes (k)', pressSupernode: 'press "= supernode" next to GPUs per replica to count in supernodes',
       clusterSize: 'Cluster size (GPUs / NPUs)', clusterSizeHint: 'Sets replicas required = ⌈cluster size ÷ GPUs per replica⌉.', supernodeIs: 'one supernode =', useSupernode: 'Use one supernode as the replica unit', supernode: 'supernode',
       perNode: 'Per node', liveNote: 'Results recompute automatically after every edit; there is no recalculate step.', nGpusHint: 'NPUs used by the job; the supernode count follows (one supernode holds NPUs per node × nodes per rack × compute racks).',
+      mtbfAnchor: 'Fleet MTBF anchor', mtbfAnchorHint: 'N units with a fleet MTBF of M hours → per-unit MTBF N × M h (unit mtbf_h); e.g. 10,000 × 30 h.',
       details: 'Details', ladder: 'Recovery ladder', rung: 'Rung', kind: 'Kind', success: 'Success', reach: 'Reach', timeS: 'Time (s)', ladderNote: 'Rungs are tried in order; the last (manual) rung always succeeds. MindCluster preset values are assumptions until measured.', customise: 'Customise rungs', pipelineMode: 'pipeline', ladderMode: 'ladder', provenance: 'Provenance',
     },
     training: {
@@ -121,6 +122,7 @@ export const strings = {
       supernodesUsed: '作业使用的超节点数', supernodesUsedHint: '设置后作业 NPU 数 = 超节点数 × 超节点规模', supernodesRequired: '所需超节点数（N）', spareSupernodes: '备用超节点数（k）', pressSupernode: '点击「= 超节点」按钮以超节点为单元计数',
       clusterSize: '集群规模（GPU/NPU 数）', clusterSizeHint: '所需副本数 = ⌈集群规模 ÷ 每副本 GPU 数⌉。', supernodeIs: '一个超节点 =', useSupernode: '以一个超节点为副本单元', supernode: '超节点',
       perNode: '每节点', liveNote: '每次修改后结果自动重算，无需「重新计算」按钮。', nGpusHint: '作业使用的 NPU 数；超节点数随之推算（一个超节点 = 每节点 NPU 数 × 每机柜节点数 × 计算机柜数）。',
+      mtbfAnchor: '集群 MTBF 锚点', mtbfAnchorHint: 'N 个单元的集群 MTBF 为 M 小时 → 单元 MTBF = N × M 小时（单位 mtbf_h）；如 10,000 × 30 h。',
       details: '详情', ladder: '分级恢复', rung: '级', kind: '类型', success: '成功率', reach: '到达概率', timeS: '时间（秒）', ladderNote: '各级按顺序尝试，最后一级（人工）必成功。MindCluster 预设取值为假设，待实测替换。', customise: '自定义各级', pipelineMode: '流水线', ladderMode: '分级恢复', provenance: '出处',
     },
     training: {

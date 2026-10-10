@@ -355,6 +355,7 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
   const { t } = useTranslation();
   const lang = useLang();
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const [anchor, setAnchor] = useState<Record<string, { n: number; h: number }>>({});
   const toggle = (id: string) => setOpen((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const setComp = (id: string, fn: (c: Component) => Component) => upd((x) => ({ ...x, components: x.components.map((c) => (c.id === id ? fn(c) : c)) }));
   const add = () =>
@@ -479,6 +480,14 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
                                 <Field label={t('scenario.switchoverRecovery')}><NumberInput value={c.redundancy.switchover?.failureRecoveryHours ?? manualOf(c)} min={0.001} onChange={(v) => setComp(c.id, (q) => ({ ...q, redundancy: { ...q.redundancy!, switchover: { successProbability: q.redundancy!.switchover?.successProbability ?? 1, ...q.redundancy!.switchover, failureRecoveryHours: v } } }))} /></Field>
                               </div>
                             ) : <div className="muted" style={{ fontSize: 12 }}>{t('scenario.redundancy')}: series</div>}
+                            <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.mtbfAnchor')}</h4>
+                            <div className="muted" style={{ fontSize: 11, marginBottom: 4 }}>{t('scenario.mtbfAnchorHint')}</div>
+                            <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                              <NumberInput value={anchor[c.id]?.n ?? 10000} min={1} step={1} onChange={(v) => setAnchor((a) => ({ ...a, [c.id]: { n: Math.round(v), h: a[c.id]?.h ?? 30 } }))} />
+                              <span className="muted" style={{ fontSize: 11 }}>×</span>
+                              <NumberInput value={anchor[c.id]?.h ?? 30} min={0.001} onChange={(v) => setAnchor((a) => ({ ...a, [c.id]: { n: a[c.id]?.n ?? 10000, h: v } }))} />
+                              <button type="button" className="btn small" onClick={() => { const a = anchor[c.id] ?? { n: 10000, h: 30 }; setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: a.n * a.h, unit: 'mtbf_h', provenance: { source: 'fleet MTBF anchor', confidence: 'assumed', ...q.failure.provenance, derivation: `${a.n} units × ${a.h} h fleet MTBF → per-unit MTBF ${(a.n * a.h).toLocaleString('en-US')} h` } } }))}}>{t('common.apply')}</button>
+                            </div>
                             <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.provenance')}</h4>
                             <input value={c.failure.provenance?.source ?? ''} placeholder="source" onChange={(e) => setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, provenance: { ...(q.failure.provenance ?? { confidence: 'assumed' }), source: e.target.value } } }))} style={{ width: '100%' }} />
                             {c.failure.koujing && <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>{t('common.koujing')}: {c.failure.koujing.event} / {c.failure.koujing.denominator} / {c.failure.koujing.level}</div>}
