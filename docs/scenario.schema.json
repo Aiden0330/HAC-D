@@ -1,0 +1,2454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "default": "0.2",
+      "type": "string",
+      "enum": [
+        "0.1",
+        "0.2"
+      ]
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string"
+        },
+        "basis": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "topology": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "gpusPerNode": {
+          "default": 8,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "nodesPerRack": {
+          "default": 4,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "racksPerZone": {
+          "default": 64,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "nvlinkDomainGpus": {
+          "default": 8,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "networkPlanes": {
+          "default": 1,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "torMode": {
+          "default": "single",
+          "type": "string",
+          "enum": [
+            "single",
+            "dual"
+          ]
+        },
+        "power": {
+          "default": "2N",
+          "type": "string",
+          "enum": [
+            "none",
+            "N+1",
+            "2N",
+            "catcher"
+          ]
+        },
+        "cooling": {
+          "default": {
+            "modules": 6,
+            "required": 5
+          },
+          "type": "object",
+          "properties": {
+            "modules": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "modules",
+            "required"
+          ]
+        },
+        "superpod": {
+          "type": "object",
+          "properties": {
+            "preset": {
+              "default": "custom",
+              "type": "string",
+              "enum": [
+                "cloudmatrix384",
+                "atlas950",
+                "custom"
+              ]
+            },
+            "npusPerNode": {
+              "default": 8,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "cpusPerNode": {
+              "default": 4,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "l1PerNode": {
+              "default": 7,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "nodesPerRack": {
+              "default": 4,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "computeRacks": {
+              "default": 12,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "commRacks": {
+              "default": 4,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "subPlanes": {
+              "default": 7,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "l2PerSubPlane": {
+              "default": 16,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "l2Ports": {
+              "default": 48,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "linksPerL1": {
+              "default": 16,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "transceiversPerLink": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "rdmaPortsPerNpu": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "vpcNicsPerNode": {
+              "default": 1,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "object",
+            "properties": {
+              "zh": {
+                "type": "string"
+              },
+              "en": {
+                "type": "string"
+              }
+            }
+          },
+          "subsystem": {
+            "default": "other",
+            "type": "string",
+            "enum": [
+              "compute",
+              "memory",
+              "interconnect",
+              "network",
+              "host",
+              "storage",
+              "power",
+              "cooling",
+              "software",
+              "other"
+            ]
+          },
+          "countRule": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "gpu"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "node"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "rack"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "zone"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "fixed"
+                  },
+                  "count": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "per",
+                  "count"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "supernode"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "comm_rack"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "l1_switch"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "l2_switch"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "subplane"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "optical_link"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "transceiver"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              }
+            ]
+          },
+          "failure": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "per_h",
+                  "per_1e6_h",
+                  "FIT",
+                  "per_year",
+                  "per_day",
+                  "per_1000_node_day",
+                  "per_node_day",
+                  "per_month",
+                  "per_week",
+                  "mtbf_h",
+                  "h_per_event",
+                  "gpu_h_per_event",
+                  "gpu_day_per_event",
+                  "node_h_per_event"
+                ]
+              },
+              "weibullShape": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "koujing": {
+                "type": "object",
+                "properties": {
+                  "event": {
+                    "type": "string"
+                  },
+                  "denominator": {
+                    "type": "string"
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": [
+                      "component",
+                      "node",
+                      "job",
+                      "fleet"
+                    ]
+                  },
+                  "includesPlanned": {
+                    "type": "boolean"
+                  },
+                  "dedup": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "event",
+                  "denominator",
+                  "level"
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "org": {
+                    "type": "string"
+                  },
+                  "venue": {
+                    "type": "string"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "surveyRef": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "measured",
+                      "paper-reported",
+                      "vendor",
+                      "derived",
+                      "assumed",
+                      "scan-level"
+                    ]
+                  },
+                  "derivation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "confidence"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "unit"
+            ]
+          },
+          "repair": {
+            "type": "object",
+            "properties": {
+              "mttrHours": {
+                "type": "number",
+                "minimum": 0
+              },
+              "auto": {
+                "type": "object",
+                "properties": {
+                  "coverage": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "successProbability": {
+                    "default": 1,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "mttrHours": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "coverage",
+                  "mttrHours"
+                ]
+              },
+              "manual": {
+                "type": "object",
+                "properties": {
+                  "mttrHours": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "mttrHours"
+                ]
+              },
+              "distribution": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "point"
+                      },
+                      "value": {
+                        "type": "number",
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "exponential"
+                      },
+                      "rate": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "rate"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "weibull"
+                      },
+                      "shape": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      "scale": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "shape",
+                      "scale"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "lognormal"
+                      },
+                      "mu": {
+                        "type": "number"
+                      },
+                      "sigma": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "mu",
+                      "sigma"
+                    ]
+                  }
+                ]
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "org": {
+                    "type": "string"
+                  },
+                  "venue": {
+                    "type": "string"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "surveyRef": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "measured",
+                      "paper-reported",
+                      "vendor",
+                      "derived",
+                      "assumed",
+                      "scan-level"
+                    ]
+                  },
+                  "derivation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "confidence"
+                ]
+              }
+            }
+          },
+          "blastRadius": {
+            "type": "string",
+            "enum": [
+              "gpu",
+              "node",
+              "nvlink_domain",
+              "rack",
+              "tor",
+              "power_zone",
+              "cdu",
+              "plane",
+              "zone",
+              "cluster",
+              "supernode",
+              "ub_subplane",
+              "l2_switch",
+              "l1_switch",
+              "optical_link",
+              "comm_rack"
+            ]
+          },
+          "ccf": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "enum": [
+                  "gpu",
+                  "node",
+                  "nvlink_domain",
+                  "rack",
+                  "tor",
+                  "power_zone",
+                  "cdu",
+                  "plane",
+                  "zone",
+                  "cluster",
+                  "supernode",
+                  "ub_subplane",
+                  "l2_switch",
+                  "l1_switch",
+                  "optical_link",
+                  "comm_rack"
+                ]
+              },
+              "beta": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "domain",
+              "beta"
+            ]
+          },
+          "failslow": {
+            "type": "object",
+            "properties": {
+              "ratePerHour": {
+                "type": "number",
+                "minimum": 0
+              },
+              "durationHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "capacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "ratePerHour",
+              "durationHours",
+              "capacity"
+            ]
+          },
+          "subhealth": {
+            "type": "object",
+            "properties": {
+              "ratePerHour": {
+                "type": "number",
+                "minimum": 0
+              },
+              "steadyStateProbability": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMaximum": 1
+              },
+              "durationHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "performance": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "escalationMultiplier": {
+                "default": 1,
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "policy": {
+                "default": "tolerate",
+                "type": "string",
+                "enum": [
+                  "tolerate",
+                  "isolate"
+                ]
+              },
+              "detection": {
+                "type": "object",
+                "properties": {
+                  "probability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "delayHours": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "probability",
+                  "delayHours"
+                ]
+              },
+              "threshold": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "durationHours",
+              "performance"
+            ]
+          },
+          "sdc": {
+            "type": "object",
+            "properties": {
+              "ratePerHour": {
+                "type": "number",
+                "minimum": 0
+              },
+              "provenance": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "org": {
+                    "type": "string"
+                  },
+                  "venue": {
+                    "type": "string"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "surveyRef": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "measured",
+                      "paper-reported",
+                      "vendor",
+                      "derived",
+                      "assumed",
+                      "scan-level"
+                    ]
+                  },
+                  "derivation": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "confidence"
+                ]
+              }
+            },
+            "required": [
+              "ratePerHour"
+            ]
+          },
+          "mechanisms": {
+            "type": "object",
+            "properties": {
+              "replay": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "process": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "elastic": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "infant": {
+            "type": "object",
+            "properties": {
+              "multiplier": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "durationHours": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "multiplier",
+              "durationHours"
+            ]
+          },
+          "lemon": {
+            "type": "object",
+            "properties": {
+              "fraction": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "multiplier": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            },
+            "required": [
+              "fraction",
+              "multiplier"
+            ]
+          },
+          "redundancy": {
+            "type": "object",
+            "properties": {
+              "scheme": {
+                "type": "string",
+                "enum": [
+                  "series",
+                  "parallel",
+                  "kofn",
+                  "standby"
+                ]
+              },
+              "n": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "k": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "capacityMode": {
+                "type": "string",
+                "enum": [
+                  "binary",
+                  "proportional",
+                  "fractional"
+                ]
+              },
+              "standbyFactor": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "switchProbability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "switchover": {
+                "type": "object",
+                "properties": {
+                  "successProbability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "outageS": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "failureRecoveryHours": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "successProbability"
+                ]
+              }
+            },
+            "required": [
+              "scheme"
+            ]
+          },
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "countRule",
+          "failure",
+          "repair"
+        ]
+      }
+    },
+    "structure": {
+      "default": {
+        "mode": "template",
+        "template": "training-series"
+      },
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "template"
+            },
+            "template": {
+              "type": "string",
+              "enum": [
+                "training-series",
+                "training-hot-spares",
+                "inference-nk",
+                "infrastructure"
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "template"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "custom"
+            },
+            "root": {
+              "$ref": "#/$defs/__schema0"
+            }
+          },
+          "required": [
+            "mode",
+            "root"
+          ]
+        }
+      ]
+    },
+    "workload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "training"
+            },
+            "nGpus": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "durationDays": {
+              "default": 30,
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "deltaS": {
+              "type": "number",
+              "minimum": 0
+            },
+            "intervalModel": {
+              "default": "young",
+              "type": "string",
+              "enum": [
+                "young",
+                "daly3",
+                "dalyExact",
+                "saxena"
+              ]
+            },
+            "intervalS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "hotSpareNodes": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "spareReplenishHours": {
+              "default": 24,
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "recovery": {
+              "default": "checkpoint",
+              "type": "string",
+              "enum": [
+                "checkpoint",
+                "replica"
+              ]
+            },
+            "stepTimeS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "measuredRecomputeS": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "type",
+            "nGpus",
+            "deltaS"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "inference"
+            },
+            "replicasRequired": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "gpusPerReplica": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "spareReplicas": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "capacityTarget": {
+              "default": 0.999,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "windowHours": {
+              "default": 24,
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "replicaRecoveryHours": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "type",
+            "replicasRequired",
+            "gpusPerReplica"
+          ]
+        }
+      ]
+    },
+    "recovery": {
+      "default": {
+        "mode": "preset",
+        "preset": "baseline-timeout-manual"
+      },
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "preset"
+            },
+            "preset": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "preset"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "pipeline"
+            },
+            "stages": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "enum": [
+                      "detect",
+                      "localize",
+                      "remediate",
+                      "restart",
+                      "load",
+                      "recompute",
+                      "warmup"
+                    ]
+                  },
+                  "value": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "point"
+                              },
+                              "value": {
+                                "type": "number",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "exponential"
+                              },
+                              "rate": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "rate"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "weibull"
+                              },
+                              "shape": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              },
+                              "scale": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "shape",
+                              "scale"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "lognormal"
+                              },
+                              "mu": {
+                                "type": "number"
+                              },
+                              "sigma": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "mu",
+                              "sigma"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "scale": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "constant"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "linear"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "power"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "exponent": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "exponent"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "log"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "slope": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "slope"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "order-statistic"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "cv": {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "cv"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "bandwidth"
+                          },
+                          "sizeGB": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "bandwidthGBps": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "bandwidthScalesWithN": {
+                            "type": "boolean"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "sizeGB",
+                          "bandwidthGBps",
+                          "bandwidthScalesWithN",
+                          "refN"
+                        ]
+                      }
+                    ]
+                  },
+                  "note": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "value"
+                ]
+              }
+            }
+          },
+          "required": [
+            "mode",
+            "stages"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "ladder"
+            },
+            "preset": {
+              "type": "string"
+            },
+            "rungs": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "object",
+                    "properties": {
+                      "zh": {
+                        "type": "string"
+                      },
+                      "en": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "auto",
+                      "manual"
+                    ]
+                  },
+                  "successProbability": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "timeS": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "point"
+                              },
+                              "value": {
+                                "type": "number",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "value"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "exponential"
+                              },
+                              "rate": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "rate"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "weibull"
+                              },
+                              "shape": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              },
+                              "scale": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "shape",
+                              "scale"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "const": "lognormal"
+                              },
+                              "mu": {
+                                "type": "number"
+                              },
+                              "sigma": {
+                                "type": "number",
+                                "exclusiveMinimum": 0
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "mu",
+                              "sigma"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "scale": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "constant"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "linear"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "power"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "exponent": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "exponent"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "log"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "slope": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "slope"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "order-statistic"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "cv": {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "refN",
+                          "cv"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "bandwidth"
+                          },
+                          "sizeGB": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "bandwidthGBps": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "bandwidthScalesWithN": {
+                            "type": "boolean"
+                          },
+                          "refN": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "sizeGB",
+                          "bandwidthGBps",
+                          "bandwidthScalesWithN",
+                          "refN"
+                        ]
+                      }
+                    ]
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "confidence": {
+                    "type": "string",
+                    "enum": [
+                      "measured",
+                      "paper-reported",
+                      "vendor",
+                      "derived",
+                      "assumed"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "successProbability",
+                  "timeS"
+                ]
+              }
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "mixture"
+            },
+            "detection": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "coverage": {
+                  "default": 0.95,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "autoSeconds": {
+                  "default": 10,
+                  "type": "number",
+                  "minimum": 0
+                },
+                "timeoutSeconds": {
+                  "default": 60,
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            },
+            "automatic": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "successProbability": {
+                  "default": 0.99,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "seconds": {
+                  "default": 180,
+                  "type": "number",
+                  "minimum": 0
+                },
+                "scale": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "constant"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "linear"
+                        },
+                        "refN": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "refN"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "power"
+                        },
+                        "refN": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "exponent": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "refN",
+                        "exponent"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "log"
+                        },
+                        "refN": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "slope": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "refN",
+                        "slope"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "order-statistic"
+                        },
+                        "refN": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "cv": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "refN",
+                        "cv"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "bandwidth"
+                        },
+                        "sizeGB": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "bandwidthGBps": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        },
+                        "bandwidthScalesWithN": {
+                          "type": "boolean"
+                        },
+                        "refN": {
+                          "type": "number",
+                          "exclusiveMinimum": 0
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "sizeGB",
+                        "bandwidthGBps",
+                        "bandwidthScalesWithN",
+                        "refN"
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "manual": {
+              "default": {},
+              "type": "object",
+              "properties": {
+                "seconds": {
+                  "default": 7200,
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "required": [
+            "mode"
+          ]
+        }
+      ]
+    },
+    "spares": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "hardwareReplacementFraction": {
+          "default": 0.587,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "turnaroundHours": {
+          "default": 72,
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "quantile": {
+          "default": 0.99,
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 0.999999
+        }
+      }
+    },
+    "targets": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "availability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "goodput": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "capacityAvailability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "costs": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "pricePerGpuHour": {
+          "default": 3.662109375,
+          "type": "number",
+          "minimum": 0
+        },
+        "spareUnitCostPerHour": {
+          "type": "number",
+          "minimum": 0
+        },
+        "extraDollarsPerDay": {
+          "default": 0,
+          "type": "number"
+        }
+      }
+    },
+    "measures": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "subhealthThreshold": {
+          "default": 0.7,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "primary": {
+          "default": "compensated",
+          "type": "string",
+          "enum": [
+            "compensated",
+            "original"
+          ]
+        },
+        "commShare": {
+          "default": 0.3,
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "sdc": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "detection": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "coverage": {
+              "default": 0,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "detectSeconds": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "fallbackDelayHours": {
+          "default": 120,
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "stepRecovery": {
+          "type": "object",
+          "properties": {
+            "stepSeconds": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0
+            },
+            "recoverSeconds": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mechanisms": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "replay": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "default": 0.9,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "successSeconds": {
+              "default": 5,
+              "type": "number",
+              "minimum": 0
+            },
+            "failureSeconds": {
+              "default": 10,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "elastic": {
+          "type": "object",
+          "properties": {
+            "domains": {
+              "default": 50,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "success": {
+              "default": 0.98,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "recoverSeconds": {
+              "default": 180,
+              "type": "number",
+              "minimum": 0
+            },
+            "failureSeconds": {
+              "default": 120,
+              "type": "number",
+              "minimum": 0
+            },
+            "syncSeconds": {
+              "default": 1,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "process": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "default": 0.95,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "successSeconds": {
+              "default": 60,
+              "type": "number",
+              "minimum": 0
+            },
+            "failureSeconds": {
+              "default": 120,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "meta",
+    "components",
+    "workload"
+  ],
+  "$defs": {
+    "__schema0": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "component"
+            },
+            "componentId": {
+              "type": "string"
+            },
+            "count": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "componentId"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "series"
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema0"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "children"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "parallel"
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema0"
+              }
+            },
+            "switchover": {
+              "type": "object",
+              "properties": {
+                "successProbability": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "outageS": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "failureRecoveryHours": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "successProbability"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "children"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "kofn"
+            },
+            "n": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "k": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "unit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "crews": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "capacityMode": {
+              "type": "string",
+              "enum": [
+                "binary",
+                "proportional",
+                "fractional"
+              ]
+            },
+            "switchover": {
+              "type": "object",
+              "properties": {
+                "successProbability": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "outageS": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "failureRecoveryHours": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "successProbability"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "n",
+            "k",
+            "unit"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "const": "standby"
+            },
+            "n": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "unit": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "standbyFactor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "switchProbability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "crews": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "switchover": {
+              "type": "object",
+              "properties": {
+                "successProbability": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "outageS": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "failureRecoveryHours": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "successProbability"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "n",
+            "unit"
+          ]
+        }
+      ]
+    }
+  }
+}

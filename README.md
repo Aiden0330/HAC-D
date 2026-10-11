@@ -2,6 +2,14 @@
 
 HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training and inference clusters. It takes a cluster design — topology, component classes with 口径-typed failure parameters and provenance, workload, recovery pipeline, spares — and returns availability, MTBF/MTBI, MTTR, goodput and its loss terms, spare counts, N+k replica sizing and the cost of unavailability. It allocates a goodput or availability target to subsystem budgets, compares design options, runs one-at-a-time sensitivity, and cross-checks the closed forms with a Monte Carlo discrete-event simulation. It is grounded in the survey chapter *AI 集群可靠性建模：MTBF、MTTR 与可靠性框图* (2026-10).
 
+## Documentation
+
+- **User manual**: `docs/USER_MANUAL.html` (self-contained, with screenshots and the methods reference; source `docs/manual/USER_MANUAL.src.html`, rebuild with `npm run manual`).
+- **Specification**: `docs/SPEC.md` (requirements, data model, KPIs and 口径, interfaces, validation); scenario JSON Schema `docs/scenario.schema.json`.
+- **Workflows**: `docs/WORKFLOW.md` (analysis workflow A1–A10, development workflow B1–B8); allocation practice `docs/ALLOCATION_PRACTICE.md`.
+- **Skills**: `docs/SKILLS.md` lists the Claude Code skills in `.claude/skills` (model-check, release-check, scenario-review, allocate-to-target, reference-compare, add-parameter, build-manual).
+- **Models**: `docs/MODEL_REFERENCE.md`; comparisons `docs/REFERENCE_COMPARISON_100K_500K.md`, `docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`.
+
 ## Quick start
 
 ```bash

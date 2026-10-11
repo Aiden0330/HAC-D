@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAC-D User Manual</title>
+<meta name="description" content="User manual of HAC-D, the AI-cluster availability, MTBF, MTTR and goodput modeling tool: pages, methods, formulas, validation and interfaces (v3.1, 2026-10-11).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede7; --ink: #1d1d1b; --muted: #5f5e58; --rule: #d9d6cd; --rule-strong: #b9b5a8;
+    --accent: #2f4fb8; --accent-soft: #e7ecfa; --warn: #a8691b; --warn-soft: #f6ead6; --ok: #2d7a4f; --ok-soft: #e1f0e6; --crit: #b3382c;
+    --s1: #2f4fb8; --s2: #d2652d; --s3: #2d7a4f; --s4: #b8862f; --s5: #c0477e; --s6: #4a9fb5; --s7: #6a4bb3;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+      --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+      --s1: #8fa4ea; --s2: #e5906a; --s3: #7cc89a; --s4: #d9b367; --s5: #e08ab0; --s6: #7fc4d6; --s7: #a78de0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+    --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+    --s1: #8fa4ea; --s2: #e5906a; --s3: #7cc89a; --s4: #d9b367; --s5: #e08ab0; --s6: #7fc4d6; --s7: #a78de0;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "Helvetica Neue", Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif; font-size: 15px; line-height: 1.55; }
+  code, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code { overflow-wrap: anywhere; }
+  p, li, dd, td, figcaption { overflow-wrap: anywhere; }
+  h1, h2, h3, h4 { font-family: "IBM Plex Serif", "IBM Plex Sans", Georgia, serif; font-weight: 600; line-height: 1.25; margin: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 0; min-height: 100vh; max-width: 100vw; }
+  nav.toc { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 24px 18px; border-right: 1px solid var(--rule); background: var(--surface); font-size: 13px; }
+  nav.toc .brand { font-family: "IBM Plex Serif", serif; font-size: 20px; font-weight: 600; letter-spacing: 0.2px; }
+  nav.toc .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  nav.toc ol { list-style: none; padding: 0; margin: 0; }
+  nav.toc li { margin: 2px 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--ink); }
+  nav.toc a:hover { background: var(--accent-soft); text-decoration: none; }
+  nav.toc .num { color: var(--muted); display: inline-block; width: 2.2em; }
+  main { padding: 28px 40px 80px; max-width: 980px; min-width: 0; }
+  header.title { padding-bottom: 18px; border-bottom: 1px solid var(--rule); margin-bottom: 28px; }
+  header.title h1 { font-size: 34px; }
+  header.title .sub { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  section { margin: 34px 0; }
+  h2 { font-size: 24px; margin: 38px 0 12px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  h3 { font-size: 17px; margin: 22px 0 8px; }
+  h4 { font-size: 15px; margin: 16px 0 6px; font-family: "IBM Plex Sans", sans-serif; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 13.5px; background: var(--surface); }
+  th, td { border-bottom: 1px solid var(--rule); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; font-size: 12.5px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  figure { margin: 14px 0 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; }
+  figure img { width: 100%; height: auto; display: block; border-radius: var(--radius-sm); }
+  figure.narrow { max-width: 330px; }
+  figcaption { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .formula { font-family: "IBM Plex Mono", monospace; font-size: 13px; background: var(--surface-2); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 10px 0; font-size: 14px; }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout.ok { border-left-color: var(--ok); background: var(--ok-soft); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .kv { display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); gap: 4px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule-strong); color: var(--muted); margin-right: 4px; }
+  pre { background: var(--surface-2); padding: 10px 12px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 12.5px; max-width: 100%; }
+  figure svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "IBM Plex Sans", sans-serif; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--c); vertical-align: -1px; }
+  footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 40px; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); min-width: 0; }
+    main { padding: 18px 16px 60px; }
+    header.title h1 { font-size: 26px; }
+    h2 { font-size: 21px; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    main { max-width: none; padding: 0; }
+    figure { break-inside: avoid; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="eyebrow">AI cluster availability modeling</div>
+  <div class="brand">HAC-D · User Manual</div>
+  <div style="color: var(--muted); margin: 4px 0 16px;">v3.1 · 2026-10-11</div>
+  <ol>
+    <li><a href="#s1"><span class="num">1</span>What HAC-D is</a></li>
+    <li><a href="#s2"><span class="num">2</span>Quick start</a></li>
+    <li><a href="#s3"><span class="num">3</span>Concepts and 口径</a></li>
+    <li><a href="#s4"><span class="num">4</span>Scenario page</a></li>
+    <li><a href="#s5"><span class="num">5</span>Training page</a></li>
+    <li><a href="#s6"><span class="num">6</span>Mechanisms page</a></li>
+    <li><a href="#s7"><span class="num">7</span>Allocation page</a></li>
+    <li><a href="#s8"><span class="num">8</span>Inference, spares and domains</a></li>
+    <li><a href="#s9"><span class="num">9</span>Compare page</a></li>
+    <li><a href="#s10"><span class="num">10</span>Simulate page</a></li>
+    <li><a href="#s11"><span class="num">11</span>Report page</a></li>
+    <li><a href="#s12"><span class="num">12</span>Import and Library</a></li>
+    <li><a href="#s13"><span class="num">13</span>Methods reference</a></li>
+    <li><a href="#s14"><span class="num">14</span>Validation and accuracy</a></li>
+    <li><a href="#s15"><span class="num">15</span>Recommended workflow</a></li>
+    <li><a href="#s16"><span class="num">16</span>CLI, MCP and files</a></li>
+    <li><a href="#s17"><span class="num">17</span>Limitations and roadmap</a></li>
+    <li><a href="#s18"><span class="num">18</span>Glossary</a></li>
+  </ol>
+</nav>
+<main>
+<header class="title">
+  <h1>HAC-D User Manual</h1>
+  <div class="sub">Availability, MTBF, MTTR and goodput modeling for AI training and inference clusters: closed forms with validity flags, Monte Carlo where the closed forms do not hold, every number with its formula and its 口径 (event, denominator, level). Version 3.1, 2026-10-11.</div>
+</header>
+
+<section id="s1">
+<h2>1. What HAC-D is</h2>
+<p>HAC-D turns a cluster description (topology, component classes with failure and repair parameters, workload, recovery policy, fault-management mechanisms) into availability, mean time between interruptions, recovery time, goodput and cost figures, and then helps allocate a target back to subsystems and mechanisms. It is grounded in the survey chapter <em>AI 集群可靠性建模</em> and cross-checked against an independent reference engine (an audited 30-day discrete-event simulator of one training job).</p>
+<h3>1.1 Principles</h3>
+<ul>
+  <li><b>Every number carries its formula and its 口径.</b> A rate is an event class per denominator at a level (for example hard interruptions per card-hour at job level). Quantities of different event classes are never added.</li>
+  <li><b>Closed forms first, with validity flags.</b> The first-order goodput checks τ + δ ≪ M and R ≪ M; when the flags fire the headline switches to the exact renewal form.</li>
+  <li><b>Monte Carlo when the assumptions break.</b> Non-exponential lifetimes, correlated failures, finite spare pools, finite windows and silent corruption route to simulation; the closed-form result stays visible with a delta badge.</li>
+  <li><b>Provenance on every parameter.</b> Library records and scenario inputs carry source, year and confidence (measured, paper-reported, vendor, derived, assumed, scan-level).</li>
+</ul>
+<h3>1.2 Architecture</h3>
+<div class="table-wrap"><table>
+  <tr><th>Package</th><th>Role</th><th>Notes</th></tr>
+  <tr><td><code>packages/core</code></td><td>pure TypeScript numerics</td><td>units, math, RBD, CTMC, repair paths, recovery ladder, checkpoint and goodput models, SDC delivery, mechanism chain and library, planner, spares, MTTR, allocation, sensitivity, cost, Monte Carlo, scenario schema and examples, parameter library (635 records)</td></tr>
+  <tr><td><code>apps/web</code></td><td>Vite + React static app</td><td>bilingual zh / en, light and dark, computation in a Web Worker, eleven pages</td></tr>
+  <tr><td><code>packages/cli</code></td><td>command line <code>hacd</code></td><td>same functions as the web app, JSON or table output</td></tr>
+  <tr><td><code>packages/mcp</code></td><td>MCP server</td><td>17 tools for agents (evaluate, compare, allocate, tornado, simulate, library, Excel, mechanisms, ledger, planner)</td></tr>
+  <tr><td><code>packages/importers</code></td><td>Excel import and export</td><td>method fingerprinting of formulas, topology extraction, reconciliation, workbook export with live formulas</td></tr>
+</table></div>
+</section>
+
+<section id="s2">
+<h2>2. Quick start</h2>
+<pre>npm install                      # Node ≥ 20, npm workspaces
+npm run dev                      # web app on http://localhost:5173
+npm test                         # 358 core + 29 importer tests (golden vectors included)
+node --import tsx packages/cli/src/main.ts examples        # CLI
+claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP server</pre>
+<p>In the web app: Scenario → <b>Load example</b> (nine built-in scenarios, see §16.3) → the other pages recompute automatically after every edit; there is no "recalculate" step. The language (中文 / EN) and theme (Auto / Light / Dark) switches sit in the header. Scenarios are kept in the browser's local storage; <b>Export JSON</b> saves one, <b>Import JSON</b> loads one, <b>Restore built-in</b> resets an example.</p>
+<figure class="narrow"><img src="img/training-mobile.jpg" alt="Training page at 375 px width"><figcaption>Every page is laid out for 1280 px and 375 px; charts carry a table twin (the Table button) for reading exact values.</figcaption></figure>
+</section>
+
+<section id="s3">
+<h2>3. Concepts and 口径</h2>
+<h3>3.1 Metrics</h3>
+<div class="table-wrap"><table>
+  <tr><th>Metric</th><th>Definition</th><th>Where</th></tr>
+  <tr><td>Availability A (compensated, 补偿后)</td><td>steady-state probability that the system structure is up, with redundancy, switchover success, automatic recovery and the sub-health policy as configured</td><td>Scenario, Report</td></tr>
+  <tr><td>Original availability (原始)</td><td>same structure with every unit fault counted as an outage repaired manually and redundancy removed; the compensation waterfall adds the mechanisms one by one</td><td>Report</td></tr>
+  <tr><td>Strict / tolerant / performance-weighted</td><td>sub-health counted as down / as up / weighted by its performance factor</td><td>Report</td></tr>
+  <tr><td>MTBF, equivalent MTTR</td><td>A / ν_sys and (1 − A) / ν_sys from the steady-state failure frequency</td><td>Scenario</td></tr>
+  <tr><td>MTBI</td><td>mean time between job interruptions, 1 / Σ nᵢλᵢ (plus isolations of detected sub-healthy units)</td><td>Training</td></tr>
+  <tr><td>Recovery R(N)</td><td>mean time from interruption to productive training, excluding recompute; pipeline, ladder or mixture</td><td>Training</td></tr>
+  <tr><td>Operational availability A_op</td><td>running-time share 1 / (1 + λ_rb R_rb + λ_p R_p) (saves and recompute count as running)</td><td>Training, Compare</td></tr>
+  <tr><td>Goodput (first order, exact renewal, product, Daly)</td><td>useful computation per wall time under periodic checkpointing, §13.5</td><td>Training</td></tr>
+  <tr><td>Effective goodput</td><td>headline goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local): spares, sub-health and elastic-domain loss applied</td><td>Training, Compare</td></tr>
+  <tr><td>Delivered goodput (正确有效产出)</td><td>correct progress retained at the end of the job window ÷ window length, after silent-corruption rollback and terminal discard</td><td>Training, Allocation, Mechanisms</td></tr>
+  <tr><td>Capacity availability (inference)</td><td>probability that at least the required replicas are up in an N+k pool</td><td>Inference</td></tr>
+</table></div>
+<h3>3.2 Fault classes</h3>
+<p>Three manifestations are modelled per component class, each with its own 口径 and its own handling:</p>
+<ul>
+  <li><b>Interruption (中断)</b>: the unit stops; the job is detected down, recovers through the mechanism chain and the global checkpoint recovery, rolls back to the last checkpoint unless a no-rollback rung handled it.</li>
+  <li><b>Sub-health (亚健康, fail-slow)</b>: the unit keeps running at a performance factor φ for a duration; the synchronous job is slowed (straggler law); the policy is tolerate or isolate (detected units are switched out after saving progress).</li>
+  <li><b>Silent corruption (静默错误, SDC)</b>: the state is corrupted without an interruption; immediate detection catches a share, undetected corruption is discovered after a fallback delay and rolled back to the last clean checkpoint; still-dirty state at the end of the window is discarded.</li>
+</ul>
+<h3>3.3 Confidence and provenance</h3>
+<p>Each rate or time may carry <code>provenance</code> (source, organisation, year, URL, derivation) and a confidence tag. The library (§12.2) uses the same tags; the reference examples tag borrowed shares and targets as <i>assumed</i>. The planner (§6.3) derates assumed mechanism parameters; the Allocation page weights feasibility by confidence.</p>
+</section>
+
+<section id="s4">
+<h2>4. Scenario page</h2>
+<figure><img src="img/scenario.jpg" alt="Scenario page"><figcaption>Scenario page with the three-class reference example: KPI tiles (compensated and original availability, MTBF, equivalent MTTR, goodput, A_op), the topology, measures, workload, silent-corruption policy and recovery editors, then the component table.</figcaption></figure>
+<h3>4.1 Topology and supernode presets</h3>
+<p>GPUs per node, nodes per rack, racks per zone, scale-up domain size and network planes define the count scopes (per gpu, node, rack, zone, fixed). A <b>Supernode preset</b> (CloudMatrix384 or a parametrised Atlas 950) adds the supernode geometry: NPUs per node, compute and communication racks, UB sub-planes, L2 chips per sub-plane and ports, L1 chips and links per node, transceivers per link. Component classes can then count per supernode, communication rack, L1 or L2 switch, sub-plane, optical link or transceiver. For CloudMatrix384 the derived counts are 48 nodes × 8 NPU, 7 sub-planes × 16 L2 chips, 5,376 optical links; fields the public sources do not give are marked <i>assumed</i>.</p>
+<h3>4.2 Component classes</h3>
+<div class="table-wrap"><table>
+  <tr><th>Field</th><th>Meaning</th></tr>
+  <tr><td>count rule</td><td>units per gpu / node / rack / zone / supernode scope, or a fixed count</td></tr>
+  <tr><td>failure rate and unit</td><td>per hour, per million hours, FIT, AFR, MTBF hours …; a <b>Fleet MTBF anchor</b> converts "N units with fleet MTBF M" into the per-unit rate</td></tr>
+  <tr><td>repair paths</td><td>manual MTTR, or dual-path: automatic coverage c, success s, automatic MTTR T_a, manual MTTR T_m (E[R] = c T_a + (1 − c s) T_m)</td></tr>
+  <tr><td>redundancy</td><td>series, parallel, k-of-n, standby; switchover success probability, outage per switchover, failed-switch recovery time</td></tr>
+  <tr><td>common cause</td><td>β factor and the domain it brings down (node, rack, supernode, sub-plane …)</td></tr>
+  <tr><td>sub-health</td><td>entry rate or steady-state probability, duration, performance φ, escalation multiplier, policy tolerate / isolate, detection probability and delay</td></tr>
+  <tr><td>silent corruption</td><td>silent events per unit-hour (job-level policy in §4.4)</td></tr>
+  <tr><td>mechanism applicability</td><td>fraction of this class's interruptions that replay, process rescheduling and DP elasticity can act on (the reference catalog's per-event flags aggregated per source)</td></tr>
+  <tr><td>infant mortality, lemons, Weibull shape</td><td>used by the Monte Carlo job simulation</td></tr>
+</table></div>
+<h3>4.3 Workload and recovery</h3>
+<p>Training: job GPUs / NPUs (or supernodes used), duration, exposed checkpoint save δ, interval model (Young, Daly three-term, Daly exact, Saxena) or a fixed interval, hot-spare nodes and replenishment, recovery path (checkpoint τ/2 or replica one step), measured lost computation W. Inference: replicas required, GPUs per replica (one supernode as the unit), spare replicas, capacity target, SLO window.</p>
+<p>Recovery: a <b>pipeline</b> of stages with scale laws (presets <code>baseline-timeout-manual</code>, <code>automated-probe-standby</code>, <code>trainmover-8192-restart</code>, <code>elastic-replica</code>), a <b>ladder</b> of rungs with success probabilities (<code>mindcluster-a3</code>, <code>generic-auto-restart</code>, or custom), or the <b>MTTR mixture</b> R = T_det + T_auto + (1 − p_s) T_manual with T_det = p_d t_auto + (1 − p_d) t_timeout.</p>
+<h3>4.4 Silent-corruption policy and mechanism chain</h3>
+<p>Job-level: immediate detection coverage q and time, fallback discovery delay D (120 h in the reference baseline), optional step recovery (redo at most t_step, recover in t_rec). The <b>recovery mechanism chain</b> enables replay (no rollback), DP-domain elasticity (no rollback; one of n domains out for t_el, global sync t_sync) and process rescheduling (rollback), each with success probability and success / failure times; they are tried in that order before the global checkpoint recovery.</p>
+<h3>4.5 Measures, targets, costs, JSON</h3>
+<p>Sub-health threshold φ_min (default 0.7: below it sub-health counts as down), communication share for fabric-plane loss, headline measure (compensated / original), goodput and availability targets, $ per GPU-hour. The scenario JSON editor at the bottom shows the full document (schema in <code>docs/scenario.schema.json</code>).</p>
+</section>
+
+<section id="s5">
+<h2>5. Training page</h2>
+<figure><img src="img/training.jpg" alt="Training page"><figcaption>Training page: delivered and effective goodput, A_op, MTBI, recovery, stopping events, interval, cost; the regime line with the first-order flags; the models table; loss decomposition and recovery stages; the window ledger; the silent-corruption card.</figcaption></figure>
+<h3>5.1 Reading the page</h3>
+<ul>
+  <li><b>Delivered goodput</b> is the hero tile when the scenario has silent corruption; the <b>effective goodput</b> (performance) and the delivery factor are shown beside it.</li>
+  <li><b>Regime line</b>: (τ + δ)/M and R/M with the validity badge; the headline model (first order while ok, otherwise exact renewal).</li>
+  <li><b>Models table</b>: A_op, first order ★, product form, exact renewal (with the implied rollback W), Daly full model, with the assumption of each.</li>
+  <li><b>Window ledger</b>: delivered + downtime + saves + rollback + slow-down + elastic domain loss + spares + SDC rollback + terminal discard = 1 (closed form, decomposed with the headline model).</li>
+  <li><b>Mechanism chain per class</b>: applicable fractions, P(replay / elastic / process / global), P(rollback), mean pause, domain loss per event.</li>
+  <li><b>Scale extrapolation</b>: 1/N law with the chain, pause-only events and the SDC window applied per row; caution / invalid badges where the first-order flags fire; a supernodes column under a supernode preset.</li>
+</ul>
+<h3>5.2 The window ledger</h3>
+<figure>
+<svg viewBox="0 0 900 150" role="img" aria-label="Window ledger of the three-class reference baseline at 100,000 cards">
+  <g font-size="12" fill="var(--ink)">
+    <rect x="20" y="30" width="529" height="34" fill="var(--s1)" rx="4"/>
+    <rect x="551" y="30" width="21" height="34" fill="var(--s2)"/>
+    <rect x="574" y="30" width="11" height="34" fill="var(--s3)"/>
+    <rect x="587" y="30" width="12" height="34" fill="var(--s4)"/>
+    <rect x="601" y="30" width="247" height="34" fill="var(--s5)" />
+    <rect x="850" y="30" width="24" height="34" fill="var(--s7)" rx="4"/>
+    <text x="24" y="52" fill="#fff" font-weight="600">delivered 62.6 %</text>
+    <text x="604" y="52" fill="#fff" font-weight="600">rollback after silent corruption 29.3 %</text>
+    <text x="20" y="20" fill="var(--muted)">Reference three-class baseline, 100,000 cards, 30-day window (closed form)</text>
+    <text x="20" y="90" fill="var(--muted)">■ delivered 62.61 · downtime 2.51 · saves 1.33 · rollback (interruptions) 1.39 · slow-down 0.04 · SDC rollback 29.29 · terminal discard 2.83 (% of the window)</text>
+    <text x="20" y="112" fill="var(--muted)">The performance goodput (94.7 %) is the sum of delivered and the two silent-corruption lines; hardware alone cannot close a 32-point gap.</text>
+  </g>
+</svg>
+<figcaption>Each share of the window is booked once. Allocation and mechanism choice work on these lines (§7, §15).</figcaption>
+</figure>
+<h3>5.3 Silent corruption over the window</h3>
+<figure>
+<svg viewBox="0 0 900 170" role="img" aria-label="Timeline of a silent-corruption episode">
+  <g font-size="12" fill="var(--ink)">
+    <line x1="30" y1="80" x2="870" y2="80" stroke="var(--rule-strong)" stroke-width="2"/>
+    <rect x="30" y="66" width="300" height="28" fill="var(--s3)" opacity="0.85"/>
+    <rect x="330" y="66" width="380" height="28" fill="var(--s5)" opacity="0.85"/>
+    <rect x="710" y="66" width="40" height="28" fill="var(--s2)" opacity="0.9"/>
+    <rect x="750" y="66" width="120" height="28" fill="var(--s3)" opacity="0.85"/>
+    <text x="40" y="84" fill="#fff" font-weight="600">clean ~ Exp(ν)</text>
+    <text x="340" y="84" fill="#fff" font-weight="600">dirty: every later checkpoint is corrupted (D = fallback delay)</text>
+    <text x="754" y="84" fill="#fff" font-weight="600">clean</text>
+    <text x="330" y="52" text-anchor="middle">undetected SDC event</text>
+    <text x="710" y="52" text-anchor="middle">discovery → rollback to the last clean checkpoint</text>
+    <text x="730" y="124" text-anchor="middle" fill="var(--muted)">pause R_c</text>
+    <text x="30" y="150" fill="var(--muted)">ν = λ_sdc (1 − q) · A_run · (1 − P_clear); work during the dirty period is lost at discovery, or discarded at the end of the window if still dirty.</text>
+  </g>
+</svg>
+<figcaption>Alternating renewal process behind the delivered goodput (§13.7). The card reports the episode rate, expected episodes, clean / dirty / pause shares, P(dirty at end) and the no-recovery factor for comparison.</figcaption>
+</figure>
+</section>
+
+<section id="s6">
+<h2>6. Mechanisms page</h2>
+<figure><img src="img/mechanisms.jpg" alt="Mechanisms page"><figcaption>Mechanisms page: the players to attribute, the plan-to-target card (cheapest feasible set, necessary mechanisms, Pareto front, coverage × recovery scan, ledger verification), then the attribution report and the library table with editable parameters and effort scores.</figcaption></figure>
+<h3>6.1 Mechanism library</h3>
+<p>The twelve mechanisms of the reference catalog, each with the change it makes, its prerequisite, its failure path, the confidence of its parameters and an effort score (1–5) used by the planner. Eight have a scenario transform; the others are informational (already in the baseline or no double credit).</p>
+<div class="table-wrap"><table>
+  <tr><th>ID</th><th>Mechanism</th><th>Scenario change (targets of the reference policy)</th><th>Effort</th></tr>
+  <tr><td>D-HARD</td><td>interruption detection / timeout fallback</td><td>mixture detection 95 % in 10 s → 99.9 % in 1 s</td><td class="num">2</td></tr>
+  <tr><td>D-SLOW</td><td>sub-health detection</td><td>95 % in 5 min → 99 % in 30 s on every sub-healthy class</td><td class="num">3</td></tr>
+  <tr><td>D-SDC</td><td>immediate silent-corruption detection</td><td>coverage 0 → 95 %, 1 s; rollback to the last checkpoint + global recovery</td><td class="num">5</td></tr>
+  <tr><td>R-SDC</td><td>clean step-state recovery (requires D-SDC)</td><td>detected corruption redoes ≤ 1 s and recovers in 1 s</td><td class="num">4</td></tr>
+  <tr><td>R-REPLAY</td><td>operator / communication replay</td><td>90 % in 5 s, no rollback; failure 10 s</td><td class="num">2</td></tr>
+  <tr><td>R-PROCESS</td><td>process / pod rescheduling</td><td>95 % in 60 s with rollback; failure 120 s</td><td class="num">3</td></tr>
+  <tr><td>R-ELASTIC</td><td>DP-domain elasticity</td><td>98 %; 1 of 50 domains out 180 s; 1 s sync; no rollback; failure 120 s</td><td class="num">5</td></tr>
+  <tr><td>R-CKPT, R-MANUAL</td><td>global checkpoint recovery, manual recovery</td><td>baseline (3 min at 99 %, +2 h manual)</td><td class="num">—</td></tr>
+  <tr><td>C-FAST</td><td>faster checkpoints</td><td>τ 300 s / δ 4 s → 60 s / 1 s</td><td class="num">3</td></tr>
+  <tr><td>H-PROTECT</td><td>existing optical / power protection</td><td>informational: already in the residual rates</td><td class="num">—</td></tr>
+  <tr><td>H-RELIABILITY</td><td>lower hardware failure rates</td><td>optional rate-reduction factor (no blanket assumption)</td><td class="num">4</td></tr>
+</table></div>
+<h3>6.2 Attribution</h3>
+<p>Select the players and the value function (delivered goodput, effective goodput or A_op), press <b>Attribute</b>: the selected mechanisms are stripped from the scenario (baseline), all 2ⁿ coalitions are evaluated with the closed forms, and the report gives single gains (each alone), last-added gains (added to all the others) and exact Shapley values, which sum to the combined gain. Substitutes (replay, elasticity, process rescheduling) show diminishing returns; complements (detection and step recovery) show up only together.</p>
+<h3>6.3 Plan to target</h3>
+<p>Set the target, press <b>Plan</b>: every coalition is evaluated nominally and with the library's assumed parameters derated (coverage −5 points, success −8 points, times ×1.5); a coalition is feasible when both reach the target. The card reports the cheapest feasible set by effort, the mechanisms present in every feasible set (necessary), the effort–value Pareto front, a scan of silent-corruption detection coverage × automatic recovery time on top of the plan, and, when enabled, a window-ledger simulation of the plan with P(window ≥ target) against a confidence level. Effort scores and target parameters are editable in the library table.</p>
+<div class="callout">Reference three-class baseline, target 90 % delivered: at 50,000 cards D-SDC alone is cheapest and necessary (95.4 % nominal, 94.2 % derated, 95 % of months ≥ 90 %); at 100,000 cards it passes on the mean (92.3 %) but only 85 % of months reach 90 %, so add replay or elasticity for margin; at 500,000 cards no library set suffices (83.4 %) and the scan shows coverage ≥ 99 % with recovery ≤ 120 s is needed, the reference tool's own conclusion.</div>
+</section>
+
+<section id="s7">
+<h2>7. Allocation page</h2>
+<figure><img src="img/allocation.jpg" alt="Allocation page"><figcaption>Allocation page on the delivered basis: the silent-corruption card (feasibility by hardware alone, required detection coverage and fallback delay, implied effective target), the loss budget tiles, notes, the allowed failure rate per class and the allowed time per recovery stage.</figcaption></figure>
+<h3>7.1 Methods</h3>
+<div class="table-wrap"><table>
+  <tr><th>Method</th><th>Rule</th><th>Use when</th></tr>
+  <tr><td>Equal</td><td>λᵢ* = λ*/m</td><td>no information on the subsystems</td></tr>
+  <tr><td>ARINC</td><td>λᵢ* ∝ current λᵢ</td><td>current proportions are trusted; everybody improves by the same factor</td></tr>
+  <tr><td>AGREE</td><td>Rᵢ = 1 − (1 − R*^{nᵢ/N}) / wᵢ, complexity × importance × duty</td><td>module counts and importance weights are known</td></tr>
+  <tr><td>Feasibility of improvement</td><td>weights by how improvable a class is (assumed values weigh more)</td><td>mixed confidence</td></tr>
+  <tr><td>Minimum effort (Albert)</td><td>worst classes brought to a common level</td><td>few classes dominate</td></tr>
+  <tr><td>Cost-optimal</td><td>minimise Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ} s.t. Σ λᵢ = λ* (Lagrangian)</td><td>cost curves per class</td></tr>
+</table></div>
+<h3>7.2 Goodput budget and target basis</h3>
+<p>With the Young interval the first-order loss is L = √(2δ/M) + R/M. Given a target G*, the page solves the required MTBI (keep R), the required recovery time (keep λ), and a balanced split, then apportions the required interruption rate to the classes and the required recovery time to the stages. In the slack case the tables show how far each class may degrade (improvement factors below 1).</p>
+<p>On the <b>delivered basis</b> (default when silent corruption is present) a delivered target G_d is converted into effective and interruption targets (÷ delivery factor ÷ sub-health factor); the page first checks whether the hardware alone can reach it (rates → 0 under the current silent-corruption policy) and, if not, reports the smallest immediate detection coverage q* and the longest fallback delay D* that do, and computes the budgets with the coverage raised to q*.</p>
+<h3>7.3 Worked example: 90 % at 50,000 cards</h3>
+<div class="table-wrap"><table>
+  <tr><th>Quantity</th><th class="num">Value</th></tr>
+  <tr><td>delivered goodput today (q = 0, D = 120 h)</td><td class="num">76.7 %</td></tr>
+  <tr><td>reachable by hardware alone</td><td class="num">77.9 %</td></tr>
+  <tr><td>immediate detection needed (hardware as is)</td><td class="num">71.5 %</td></tr>
+  <tr><td>or fallback delay needed (q = 0)</td><td class="num">32 h</td></tr>
+  <tr><td>with the reference's 95 % detection</td><td class="num">95.4 %</td></tr>
+  <tr><td>then: allowed interruption rate (ARINC, keep R)</td><td class="num">×4, MTBI ≥ 1.49 h</td></tr>
+  <tr><td>or: allowed recovery time (keep λ)</td><td class="num">≤ 24 min</td></tr>
+</table></div>
+</section>
+
+<section id="s8">
+<h2>8. Inference, spares and domains</h2>
+<p><b>Inference</b>: an N+k replica pool with one replica = a node, rack or supernode; replica rate λ_r = Σ classes at or below the replica scope, MTTR_r rate-weighted, u_r = λ_r MTTR_r / (1 + λ_r MTTR_r), service-up availability 1 − u_r^{n+k}, capacity availability Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}, the k required for the target, replica failures per day and idle spare GPU-hours. Under a supernode preset the page sizes 100k / 200k / 500k-NPU clusters in supernodes (for CloudMatrix384 analogue rates: 261 / 521 / 1,303 supernodes, k* = 9 / 14 / 27 spares for 99.9 % capacity availability).</p>
+<p><b>Spares &amp; domains</b>: hot spares by binomial quantile (ByteRobust), by Poisson with replenishment time (Meta), units in the repair pipeline and replacements over the job, a required-spares map over node MTBF × MTTR, and spare granularity matched to the failure domain.</p>
+</section>
+
+<section id="s9">
+<h2>9. Compare page</h2>
+<figure><img src="img/compare.jpg" alt="Compare page"><figcaption>Compare page: side-by-side KPIs of the selected scenarios (availability, original, performance-weighted, human fraction, A_op, MTBI, recovery, goodput, delivered, lost $/day, blocked, spares, inference capacity, k*), goodput and cost bars, and the one-at-a-time tornado of the active scenario.</figcaption></figure>
+<p>The tornado halves and doubles each component rate, the recovery time, the checkpoint δ, the hot spares and the common-cause β, for goodput, delivered goodput, availability, lost $/day or MTBI. Use it for parameter sensitivity; use the Mechanisms page for the value of discrete mechanisms.</p>
+</section>
+
+<section id="s10">
+<h2>10. Simulate page</h2>
+<figure><img src="img/simulate.jpg" alt="Simulate page"><figcaption>Simulate page in window-ledger mode: agreement badge against the closed form, delivered goodput with CI and quantiles, A_op, P(delivered ≥ target), P(dirty at end), events per run, the mean ledger, the distribution across windows and the attribution by class.</figcaption></figure>
+<p><b>Window ledger</b> (default): a discrete-event simulation of one job window with the three fault classes, the mechanism chain (Bernoulli applicability), sub-health detection and isolation, silent corruption (immediate detection, step recovery, fallback discovery, clean-checkpoint retention, terminal discard) and checkpoint batching; the same semantics as the audited reference engine, every hour booked once. <b>Job simulation</b>: unit-level Monte Carlo with Weibull / lognormal lifetimes and repairs, infant mortality, lemon units, β-factor common cause with blast radius, finite hot-spare pool, redundancy groups and fail-slow. Both compare with the closed form and flag disagreement; prefer the simulation when it disagrees.</p>
+</section>
+
+<section id="s11">
+<h2>11. Report page</h2>
+<figure><img src="img/report.jpg" alt="Report page"><figcaption>Report page: the eleven-item design-review checklist, original vs compensated measures with the compensation waterfall, the reliability block diagram, importance measures and minimal cut sets, assumptions and warnings; exports to HTML, CSV, JSON and Excel.</figcaption></figure>
+<div class="table-wrap"><table>
+  <tr><th>#</th><th>Checklist item (survey design review)</th></tr>
+  <tr><td>1</td><td>Define the metric basis (口径) first</td></tr>
+  <tr><td>2</td><td>Use your own cluster's failure rates</td></tr>
+  <tr><td>3</td><td>δ is the exposed save time only; keep ≥ 2 snapshots</td></tr>
+  <tr><td>4</td><td>Check τ + δ ≪ M and R ≪ M</td></tr>
+  <tr><td>5</td><td>Account for recovery read bandwidth separately</td></tr>
+  <tr><td>6</td><td>Size spares by quantile, not by ratio</td></tr>
+  <tr><td>7</td><td>Spare granularity matches the failure domain</td></tr>
+  <tr><td>8</td><td>Measure MTTR stage by stage</td></tr>
+  <tr><td>9</td><td>Check the independence and exponential assumptions</td></tr>
+  <tr><td>10</td><td>Put fail-slow and SDC into the model</td></tr>
+  <tr><td>11</td><td>Monetise before comparing options; cross-validate with simulation</td></tr>
+</table></div>
+<p>Importance measures (Birnbaum, Fussell-Vesely, RAW, RRW) rank the blocks; the Excel export writes a workbook with live formulas (Inputs, Structure, Results, Formulas) that recalculates independently of HAC-D.</p>
+</section>
+
+<section id="s12">
+<h2>12. Import and Library</h2>
+<figure><img src="img/import.jpg" alt="Import page"><figcaption>Import page: methods detected in a workbook (formula fingerprints with cell addresses), column roles, the extracted topology with evidence and confidence, and the reconciliation of the sheet's cached values against HAC-D.</figcaption></figure>
+<h3>12.1 Excel import</h3>
+<p>Formulas are fingerprinted into 18 method tags: availability from MTBF / MTTR or λ / MTTR, unavailability λ·MTTR, FIT → λ, AFR → MTBF, series product, rare-event sum, parallel complement, k-of-n explicit sum / COMBIN / BINOM.DIST, standby, switchover weighting, MTTR auto / manual mixture, Markov MMULT / MINVERSE, percent and complement conversions, power of count. The topology is extracted from level columns, indentation, outline levels and the formula dependency graph into a draft, converted into a scenario and reconciled with the sheet's own numbers. Nine synthetic fixture workbooks are the test set; real workbooks tune the header lexicon.</p>
+<h3>12.2 Parameter library</h3>
+<p>635 survey-sourced records (failure rates, MTTR stage times, SDC rates, spare ratios, checkpoint overheads, Ascend sources) with 口径, provenance and confidence. Filter by class, kind, confidence and stage, then <b>Use as rate</b> on a component of the active scenario.</p>
+</section>
+
+<section id="s13">
+<h2>13. Methods reference</h2>
+<p>Full derivations: <code>docs/MODEL_REFERENCE.md</code> (§1–§22.2) and <code>docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md</code>. Times in seconds unless noted.</p>
+<h3>13.1 Structure</h3>
+<div class="formula">series: A = Π Aᵢ, λ = Σ λᵢ · parallel: U = Π Uᵢ · k-of-n (repairable): Σ_{j≤n−k} C(n,j) uʲ (1−u)ⁿ⁻ʲ, u = λ·MTTR/(1 + λ·MTTR)
+standby: CTMC with standby factor and switch probability · common cause: β-factor on the declared domain · cut sets and importance from the Boolean structure</div>
+<h3>13.2 Repair paths and switchover</h3>
+<div class="formula">E[R] = c·T_a + (1 − c·s)·T_m;  A = 1/(1 + λ·E[R]);  human fraction = 1 − c·s;  automatic share of downtime = c·T_a/E[R]
+k-of-n group: exact chain over (in automatic repair, in manual repair, switch-failed); micro-outage U_sw = Σ π·w·λ·p_sw·t_sw/3600; failed switchover cleared in T_sf</div>
+<h3>13.3 Sub-health</h3>
+<div class="formula">unit: states U, H, H′, I, D_a, D_m;  A_strict = π_U;  A_tolerant = π_U + π_H;  performability = π_U + φ·π_H;  down when φ < threshold (0.7)
+job: P(slowed) = 1 − Π (1 − p_H,i)^{nᵢ};  φ_job = 1 − P(slowed)(1 − φ_min);  isolate: ν_iso = π_H·p_d/T_d pause-only events (progress saved first)
+fabric plane loss: performance 1/(1 + f_comm/(P − 1))</div>
+<h3>13.4 Original vs compensated</h3>
+<div class="formula">original: every unit fault is an outage repaired manually, redundancy removed: λ_o = λ + λ_sh, E[R_o] = (λ T_m + λ_sh D)/(λ + λ_sh)
+waterfall: original → + redundancy → + automatic recovery → + sub-health policy;  switchover penalty reported separately</div>
+<h3>13.5 Checkpointing and goodput</h3>
+<div class="formula">interval: Young τ = √(2δM_rb); Daly three-term and exact; Saxena availability-optimal period
+MTTR mixture: R = T_det + T_auto + (1 − p_s)·T_manual,  T_det = p_d·t_auto + (1 − p_d)·t_timeout
+first order: G ≈ 1 − δ/τ − (P_rb·W + R̄)/M_ev,  W = τ/2 (or one step / measured);  flags (τ+δ)/M and R/M
+exact renewal (mixed): G = λ_rb τ / [(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)];  implied W = E[min(X, τ) | X < τ+δ]
+product: A_run · τ/(τ+δ) · (1 − P_rb W/M_ev);  Daly full: τ/(M e^{R/M}(e^{(τ+δ)/M} − 1)) · 1/(1 + λ_p R_p)
+headline: first order while the flags are ok, otherwise exact renewal;  effective = headline × (1 − P_blocked) × φ_job × (1 − ℓ_local)</div>
+<h3>13.6 Mechanism chain</h3>
+<figure>
+<svg viewBox="0 0 900 120" role="img" aria-label="Mechanism chain per interruption">
+  <g font-size="12" fill="var(--ink)">
+    <rect x="10" y="30" width="150" height="48" rx="8" fill="var(--s3)" opacity="0.9"/><text x="85" y="50" text-anchor="middle" fill="#fff" font-weight="600">replay</text><text x="85" y="66" text-anchor="middle" fill="#fff">a_rp, s_rp · no rollback</text>
+    <rect x="200" y="30" width="150" height="48" rx="8" fill="var(--s6)" opacity="0.95"/><text x="275" y="50" text-anchor="middle" fill="#fff" font-weight="600">elastic</text><text x="275" y="66" text-anchor="middle" fill="#fff">1 of n domains out · no rollback</text>
+    <rect x="390" y="30" width="150" height="48" rx="8" fill="var(--s4)" opacity="0.95"/><text x="465" y="50" text-anchor="middle" fill="#fff" font-weight="600">process reschedule</text><text x="465" y="66" text-anchor="middle" fill="#fff">a_pr, s_pr · rollback</text>
+    <rect x="580" y="30" width="150" height="48" rx="8" fill="var(--s1)" opacity="0.95"/><text x="655" y="50" text-anchor="middle" fill="#fff" font-weight="600">global checkpoint</text><text x="655" y="66" text-anchor="middle" fill="#fff">T_auto, p_s · rollback</text>
+    <rect x="770" y="30" width="120" height="48" rx="8" fill="var(--s2)" opacity="0.95"/><text x="830" y="50" text-anchor="middle" fill="#fff" font-weight="600">manual</text><text x="830" y="66" text-anchor="middle" fill="#fff">+ T_manual</text>
+    <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M160 54 L200 54"/><path d="M350 54 L390 54"/><path d="M540 54 L580 54"/><path d="M730 54 L770 54"/></g>
+    <text x="180" y="100" text-anchor="middle" fill="var(--muted)">fail: + t_fail</text><text x="370" y="100" text-anchor="middle" fill="var(--muted)">fail: + t_fail</text><text x="560" y="100" text-anchor="middle" fill="var(--muted)">fail: + t_fail</text><text x="750" y="100" text-anchor="middle" fill="var(--muted)">1 − p_s</text>
+    <text x="10" y="18" fill="var(--muted)">detection delay d first; each rung applies to a fraction of the class's interruptions; failed rungs charge their time before the next</text>
+  </g>
+</svg>
+<figcaption>Per class the 27-path tree gives P(rollback), E[pause · 1{rollback}], E[pause · 1{no rollback}] and E[local loss]; aggregated rate-weighted into λ_rb, λ_p, R_rb, R_p.</figcaption>
+</figure>
+<h3>13.7 Silent corruption (finite window)</h3>
+<div class="formula">ν = λ_sdc (1 − q) · A_run · (1 − P_clear),  P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L)  (a rollback before the first dirty checkpoint clears the corruption)
+S_k = Γ(k, ν) + (k − 1)(D + R_c);  P(S_k ≤ y) = P(Poisson(νz) ≥ k), z = y − (k − 1)c
+E[N] = Σ_k P(S_k ≤ T);  E[dirty] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx;  E[pause] = Σ_k ∫_D^c P(S_k ≤ T − x) dx
+delivered = [g·(T − E[dirty] − E[pause]) − U·E[N]]/T,  U = (τ²/2 + τδ)/(τ + δ);  detected corruption: rollback event with pause t_d + G, or pause-only with step recovery</div>
+<h3>13.8 Attribution and planning</h3>
+<div class="formula">Shapley: φᵢ = Σ_{S∌i} |S|!(n−|S|−1)!/n! · [v(S ∪ {i}) − v(S)],  Σ φᵢ = v(all) − v(∅);  interaction = Δ − Σ single gains
+planner: feasible S ⇔ v(S) ≥ G* and v_derated(S) ≥ G*;  plan = argmin effort;  necessary = ∩ feasible S;  Pareto over (effort, v);  verification P(window ≥ G*) ≥ confidence</div>
+<h3>13.9 Allocation and spares</h3>
+<div class="formula">goodput budget (Young): L = √(2δ/M) + R/M;  fix R: √(2δ) s + R s² = L*, s = M^{−1/2};  fix M: R* = M (L* − √(2δ/M))
+delivered basis: effective target = G_d / f_SDC;  headline target = effective / (φ_job (1 − P_blocked)(1 − ℓ));  q*, D* by bisection
+availability split: ln Aᵢ = (wᵢ/Σw) ln A*;  λᵢ = Uᵢ/(MTTRᵢ(1 − Uᵢ))
+hot spares: smallest k with P(Binomial(N_nodes, p_daily) ≤ k) ≥ q;  Poisson(N λ T_replenish) quantile;  repair pipeline Poisson(N λ f_hw L) quantile
+inference: u_r = λ_r MTTR_r/(1 + λ_r MTTR_r);  A_any = 1 − u_r^{n+k};  A_cap = Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}</div>
+</section>
+
+<section id="s14">
+<h2>14. Validation and accuracy</h2>
+<h3>14.1 Golden vectors and tests</h3>
+<p>187 golden vectors computed independently in Python (mpmath quadrature, exact CTMC solutions, renewal equations on a grid) from the model specification without reading the engine: 143 for v1, 26 for v2, 18 for v3. The suite has 358 core tests and 29 importer tests; exported workbooks are recalculated with an independent formula engine; every page is screenshot-checked at 1280 px and 375 px in light and dark.</p>
+<h3>14.2 Cross-check with the reference engine</h3>
+<p>The audited reference engine (one training job, 30-day discrete-event simulation, 4000 trials per scenario) and HAC-D on the same baseline: 10,000-card hard MTBF 30 h with linear scaling, τ 300 s, δ 4 s, detection 95 % in 10 s else 60 s, recovery 180 s at 99 % else +2 h manual.</p>
+<div class="table-wrap"><table>
+  <tr><th>Cards</th><th class="num">Reference A_op</th><th class="num">HAC-D A_op</th><th class="num">Reference useful (hard only)</th><th class="num">HAC-D exact renewal</th><th class="num">Reference delivered (three classes)</th><th class="num">HAC-D delivered</th></tr>
+  <tr><td>10,000</td><td class="num">99.75 %</td><td class="num">99.75 %</td><td class="num">98.3 %</td><td class="num">98.3 %</td><td class="num">93.33 ± 0.26 %</td><td class="num">93.33 %</td></tr>
+  <tr><td>100,000</td><td class="num">97.56 %</td><td class="num">97.55 %</td><td class="num">94.99 %</td><td class="num">94.98 %</td><td class="num">62.56 ± 0.46 %</td><td class="num">62.61 %</td></tr>
+  <tr><td>200,000</td><td class="num">95.24 %</td><td class="num">95.22 %</td><td class="num">91.43 %</td><td class="num">91.45 %</td><td class="num">45.87 ± 0.40 %</td><td class="num">45.66 %</td></tr>
+  <tr><td>500,000</td><td class="num">88.88 %</td><td class="num">88.88 %</td><td class="num">81.84 %</td><td class="num">81.88 %</td><td class="num">25.24 ± 0.26 %</td><td class="num">25.32 %</td></tr>
+</table></div>
+<p>Single-mechanism gains and the six-player Shapley values agree within the reference's sampling error; the elastic value differs most (0.83 vs 0.25 points at 100k) because the reference's elastic path desynchronises its fault stream (±0.3–0.6 points on its paired deltas). The first-order goodput is 0.2 / 0.4 / 2.4 points low at 100k / 200k / 500k, which is why the headline rule switches to the exact renewal form when the flags fire.</p>
+</section>
+
+<section id="s15">
+<h2>15. Recommended workflow</h2>
+<figure>
+<svg viewBox="0 0 900 110" role="img" aria-label="Analysis workflow across the pages">
+  <g font-size="12" fill="var(--ink)">
+    <g>
+      <rect x="10" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="69" y="45" text-anchor="middle" font-weight="600">1 口径 + data</text><text x="69" y="61" text-anchor="middle" fill="var(--muted)">Library, Scenario</text>
+      <rect x="156" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="215" y="45" text-anchor="middle" font-weight="600">2 evaluate</text><text x="215" y="61" text-anchor="middle" fill="var(--muted)">Training, Inference</text>
+      <rect x="302" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="361" y="45" text-anchor="middle" font-weight="600">3 attribute</text><text x="361" y="61" text-anchor="middle" fill="var(--muted)">Mechanisms, Compare</text>
+      <rect x="448" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="507" y="45" text-anchor="middle" font-weight="600">4 allocate / plan</text><text x="507" y="61" text-anchor="middle" fill="var(--muted)">Allocation, Mechanisms</text>
+      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 verify</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">Simulate</text>
+      <rect x="740" y="26" width="150" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="815" y="45" text-anchor="middle" font-weight="600">6 review + report</text><text x="815" y="61" text-anchor="middle" fill="var(--muted)">Report, exports</text>
+    </g>
+    <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M128 48 L156 48"/><path d="M274 48 L302 48"/><path d="M420 48 L448 48"/><path d="M566 48 L594 48"/><path d="M712 48 L740 48"/></g>
+    <text x="450" y="98" text-anchor="middle" fill="var(--muted)">then measure (stage times, detection coverage, incident logs) and loop back to step 1</text>
+  </g>
+</svg>
+<figcaption>The step-by-step procedure with its cross-field references is in <code>docs/WORKFLOW.md</code> and <code>docs/ALLOCATION_PRACTICE.md</code>.</figcaption>
+</figure>
+<ol>
+  <li><b>Fix the 口径 and gather data</b>: which metric (delivered goodput, effective goodput, A_op, capacity availability), which window; rates from your own logs where possible, library records with provenance otherwise.</li>
+  <li><b>Build and evaluate the scenario</b>: topology and classes, repair paths, sub-health and silent corruption, workload and recovery; read the Training (or Inference) page and the regime flags.</li>
+  <li><b>Attribute</b>: where does the loss go (ledger), which levers matter (Shapley, tornado).</li>
+  <li><b>Allocate and plan</b>: on the Allocation page apportion the interruption budget; on the Mechanisms page pick the cheapest sufficient mechanism set with derating.</li>
+  <li><b>Verify</b>: window-ledger simulation with P(window ≥ target); job simulation when lifetimes or correlations are non-exponential.</li>
+  <li><b>Review and report</b>: the eleven-item checklist, original vs compensated measures, exports; then measure in production and loop.</li>
+</ol>
+</section>
+
+<section id="s16">
+<h2>16. CLI, MCP and files</h2>
+<h3>16.1 CLI</h3>
+<div class="table-wrap"><table>
+  <tr><th>Command</th><th>What it does</th></tr>
+  <tr><td><code>hacd examples</code>, <code>hacd example &lt;id&gt;</code></td><td>list / print a built-in scenario</td></tr>
+  <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>evaluate: availability, MTBF, goodput, spares, inference, checklist</td></tr>
+  <tr><td><code>hacd compare a.json b.json …</code></td><td>side-by-side KPIs</td></tr>
+  <tr><td><code>hacd allocate &lt;s&gt; --goodput 0.9 --basis delivered --method arinc</code></td><td>budgets per class and stage; silent-corruption levers</td></tr>
+  <tr><td><code>hacd tornado &lt;s&gt; --metric delivered</code></td><td>one-at-a-time sensitivity</td></tr>
+  <tr><td><code>hacd simulate &lt;s&gt; --reps 100</code></td><td>unit-level Monte Carlo vs the closed form</td></tr>
+  <tr><td><code>hacd ledger &lt;s&gt; --trials 300 --target 0.9</code></td><td>window-ledger simulation vs the closed form</td></tr>
+  <tr><td><code>hacd mechanisms &lt;s&gt; --players D-SDC,R-REPLAY</code></td><td>single / last-added / Shapley gains</td></tr>
+  <tr><td><code>hacd plan &lt;s&gt; --target 0.9 --trials 200</code></td><td>cheapest feasible mechanism set, necessary mechanisms, scan, verification</td></tr>
+  <tr><td><code>hacd measures &lt;s&gt;</code></td><td>original vs compensated and the waterfall</td></tr>
+  <tr><td><code>hacd methods book.xlsx</code>, <code>hacd import-excel book.xlsx --out s.json</code>, <code>hacd export-excel s.json</code></td><td>Excel method report, import, export</td></tr>
+  <tr><td><code>hacd schema</code></td><td>JSON Schema of the scenario file</td></tr>
+</table></div>
+<p>All commands accept <code>--json</code>.</p>
+<h3>16.2 MCP tools</h3>
+<p><code>list_examples</code>, <code>get_example</code>, <code>scenario_schema</code>, <code>evaluate_scenario</code>, <code>compare_scenarios</code>, <code>allocate_scenario</code>, <code>tornado_scenario</code>, <code>simulate_scenario</code>, <code>library_search</code>, <code>excel_method_report</code>, <code>import_excel_scenario</code>, <code>export_excel</code>, <code>mechanism_library</code>, <code>mechanism_report</code>, <code>apply_mechanisms</code>, <code>simulate_ledger</code>, <code>plan_mechanisms</code>.</p>
+<h3>16.3 Built-in examples</h3>
+<div class="table-wrap"><table>
+  <tr><th>ID</th><th>Scenario</th></tr>
+  <tr><td><code>ref-baseline-100k</code></td><td>reference baseline, hard interruptions only: 100,000 cards, MTBF 30 h at 10k, τ 300 s, R 264.5 s, four sources (HBM / GPU / network / other)</td></tr>
+  <tr><td><code>ref-three-classes-100k</code></td><td>the same with sub-health 2 % and silent corruption 1.4 % of events (the reference's confirmed baseline)</td></tr>
+  <tr><td><code>ascend-cm384</code>, <code>ascend-atlas950</code></td><td>CloudMatrix384 and Atlas 950 training jobs with supernode geometry and analogue rates</td></tr>
+  <tr><td><code>ascend-supercluster-100k</code></td><td>inference pool of 384-NPU supernodes with spares</td></tr>
+  <tr><td><code>survey-ex1</code>, <code>survey-ex3</code>, <code>survey-ex4</code></td><td>the survey chapter's worked examples (10k-card job, NVL72 domain vs node, N+k inference)</td></tr>
+  <tr><td><code>nvl72-16k</code></td><td>a 16k-GPU NVL72 design</td></tr>
+</table></div>
+<h3>16.4 Scenario JSON</h3>
+<pre>{ "version": "0.2", "meta": { "name": "…", "basis": [], "description": "…" },
+  "topology": { "gpusPerNode": 8, "nodesPerRack": 32, "racksPerZone": 64, "nvlinkDomainGpus": 8, "superpod": { … } },
+  "components": [ { "id": "gpu", "subsystem": "compute", "countRule": { "per": "gpu" },
+      "failure": { "value": 3.3e-6, "unit": "per_h", "koujing": { "event": "hard_interruption", "denominator": "card_h", "level": "job" }, "provenance": { … } },
+      "repair": { "auto": { "coverage": 1, "successProbability": 0.99, "mttrHours": 0.053 }, "manual": { "mttrHours": 2 } },
+      "subhealth": { … }, "sdc": { "ratePerHour": … }, "mechanisms": { "replay": 0.83, "process": 1, "elastic": 1 } } ],
+  "structure": { "mode": "template", "template": "training-series" },
+  "workload": { "type": "training", "nGpus": 100000, "durationDays": 30, "deltaS": 4, "intervalS": 300 },
+  "recovery": { "mode": "mixture", "detection": { "coverage": 0.95, "autoSeconds": 10, "timeoutSeconds": 60 }, "automatic": { "successProbability": 0.99, "seconds": 180 }, "manual": { "seconds": 7200 } },
+  "sdc": { "detection": { "coverage": 0, "detectSeconds": 1 }, "fallbackDelayHours": 120 },
+  "mechanisms": { "replay": { … }, "elastic": { … }, "process": { … } },
+  "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9 } }</pre>
+<p>The full JSON Schema is in <code>docs/scenario.schema.json</code>; the tool specification in <code>docs/SPEC.md</code>.</p>
+</section>
+
+<section id="s17">
+<h2>17. Limitations and roadmap</h2>
+<ul>
+  <li>Closed forms assume exponential lifetimes and repairs and independent failures (common cause only through β); the simulations relax this.</li>
+  <li>The mechanism chain's elastic rung is a capacity model (one domain out, the others continue); it is not a synchronous-training performance promise and needs the prerequisites listed in the library.</li>
+  <li>Silent corruption uses a fixed fallback delay and a single episode at a time, as the reference does; retention windows and locate / verify success rates are not separate parameters yet.</li>
+  <li>Mechanism parameters of the library are targets and priors from the reference catalog (tagged); derating is a convention, not a measurement.</li>
+  <li>Open items: the 54-event catalog converter, a DP-elastic training template, Monte Carlo confidence intervals for Shapley values, image / diagram import.</li>
+</ul>
+</section>
+
+<section id="s18">
+<h2>18. Glossary</h2>
+<dl class="kv">
+  <dt>口径</dt><dd>metric basis: event class, denominator and level of a quantity; HAC-D never adds quantities of different 口径</dd>
+  <dt>原始 / 补偿后</dt><dd>original (inherent hardware, no fault tolerance) vs compensated (after redundancy, switchover, automatic recovery, sub-health policy)</dd>
+  <dt>亚健康</dt><dd>sub-health, fail-slow: a unit that runs at reduced performance</dd>
+  <dt>静默错误 (SDC)</dt><dd>silent data corruption: corrupted state without an interruption</dd>
+  <dt>正确有效产出</dt><dd>delivered goodput: correct progress retained at the end of the window ÷ window length</dd>
+  <dt>MTBI / MTBF / MTTR</dt><dd>mean time between interruptions (job) / between failures (system) / to repair</dd>
+  <dt>A_op</dt><dd>operational availability: running-time share of the job</dd>
+  <dt>τ, δ, W, R</dt><dd>checkpoint interval, exposed save time, lost computation per rollback, recovery time</dd>
+  <dt>Shapley value</dt><dd>fair share of a combined gain attributed to one mechanism over all orders of adding the mechanisms</dd>
+  <dt>supernode (超节点)</dt><dd>a scale-up domain such as CloudMatrix384 (384 NPUs, 48 nodes, 12 compute + 4 communication racks)</dd>
+</dl>
+</section>
+
+<footer>HAC-D v3.1 · 2026-10-11 · Sources: survey chapter <em>AI 集群可靠性建模</em>; ai-cluster-reliability audited catalog (2026-10-09); docs/MODEL_REFERENCE.md, docs/ALLOCATION_PRACTICE.md, docs/REFERENCE_COMPARISON_100K_500K.md. Screenshots from the web app at 1280 px (light).</footer>
+</main>
+</div>
+</body>
+</html>

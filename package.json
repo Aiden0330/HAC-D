@@ -13,7 +13,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "dev": "npm run dev -w @hac-d/web",
-    "shots": "node scripts/screenshots.mjs"
+    "shots": "node scripts/screenshots.mjs",
+    "manual": "node scripts/build-manual.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",
