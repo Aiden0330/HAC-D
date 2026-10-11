@@ -30,8 +30,7 @@
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "Helvetica Neue", Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif; font-size: 15px; line-height: 1.55; }
   code, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
-  code { overflow-wrap: anywhere; }
-  p, li, dd, td, figcaption { overflow-wrap: anywhere; }
+  td code { white-space: nowrap; }
   h1, h2, h3, h4 { font-family: "IBM Plex Serif", "IBM Plex Sans", Georgia, serif; font-weight: 600; line-height: 1.25; margin: 0; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
@@ -80,6 +79,8 @@
   .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--c); vertical-align: -1px; }
   footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 40px; }
   @media (max-width: 900px) {
+    code, p, li, dd, td, figcaption { overflow-wrap: anywhere; }
+    td code { white-space: normal; }
     .layout { grid-template-columns: minmax(0, 1fr); }
     nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); min-width: 0; }
     main { padding: 18px 16px 60px; }
