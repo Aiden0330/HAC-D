@@ -227,6 +227,8 @@ export interface ScenarioAllocation {
   stageAllocation?: { name: string; currentS: number; budgetS: number; improvementFactor: number }[];
   /** availability-target split across subsystems */
   unavailability?: { rows: UnavailabilityRow[]; unavailabilityBudget: number };
+  /** v3: delivered-goodput basis (silent corruption): target conversion, feasibility by hardware alone, required detection */
+  sdc?: SdcAllocation;
   notes: string[];
 }
 
@@ -267,36 +269,134 @@ function runMethod(method: AllocationMethod, subs: Subsystem[], lambdaSystem: nu
   }
 }
 
-export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; availabilityTarget?: number; method?: AllocationMethod; restartShare?: number } = {}): ScenarioAllocation {
+export type AllocationBasis = 'effective' | 'delivered';
+
+export interface SdcAllocation {
+  basis: 'delivered';
+  deliveredTarget: number;
+  currentDelivered: number;
+  currentEffective: number;
+  /** delivered / effective of the scenario the budget was computed on */
+  factor: number;
+  /** effective and headline goodput targets implied by the delivered target */
+  effectiveTarget: number;
+  headlineTarget: number;
+  /** delivered goodput if the hardware never failed, with the current silent-corruption policy */
+  maxDeliveredByHardware: number;
+  feasibleByHardware: boolean;
+  /** smallest immediate detection coverage that reaches the target with the current hardware (undefined: not even 100 %) */
+  requiredCoverage?: number;
+  /** longest fallback delay that reaches the target with the current hardware and coverage (undefined: not even 0.01 h) */
+  requiredFallbackDelayH?: number;
+  /** coverage used for the rate / stage budgets below (raised to requiredCoverage when the hardware alone cannot reach the target) */
+  coverageUsed: number;
+}
+
+function withCoverage(s: Scenario, q: number): Scenario {
+  const c = cloneScenario(s);
+  c.sdc = { ...c.sdc, detection: { ...c.sdc.detection, coverage: q } };
+  return c;
+}
+function withFallback(s: Scenario, hours: number): Scenario {
+  const c = cloneScenario(s);
+  c.sdc = { ...c.sdc, fallbackDelayHours: hours };
+  return c;
+}
+function deliveredOf(s: Scenario): number {
+  return evaluateScenario(s).training?.deliveredGoodput ?? 0;
+}
+/** smallest x in [lo, hi] with f(x) ≥ target for an increasing f (undefined when f(hi) < target) */
+function bisectUp(f: (x: number) => number, lo: number, hi: number, target: number): number | undefined {
+  if (f(hi) < target) return undefined;
+  if (f(lo) >= target) return lo;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (f(mid) >= target) hi = mid;
+    else lo = mid;
+  }
+  return hi;
+}
+/** largest x in [lo, hi] with f(x) ≥ target for a decreasing f (undefined when f(lo) < target) */
+function bisectDown(f: (x: number) => number, lo: number, hi: number, target: number): number | undefined {
+  if (f(lo) < target) return undefined;
+  if (f(hi) >= target) return hi;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (f(mid) >= target) lo = mid;
+    else hi = mid;
+  }
+  return lo;
+}
+
+export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; availabilityTarget?: number; method?: AllocationMethod; restartShare?: number; basis?: AllocationBasis } = {}): ScenarioAllocation {
   const method = opts.method ?? 'arinc';
-  const r = evaluateScenario(s);
+  let r = evaluateScenario(s);
   const notes: string[] = [];
   const out: ScenarioAllocation = { target: { goodput: opts.goodputTarget ?? s.targets.goodput, availability: opts.availabilityTarget ?? s.targets.availability }, notes };
   const subs = subsystemsFrom(s);
-  if (s.workload.type === 'training' && r.training && out.target.goodput !== undefined) {
+  let budgetScenario = s;
+  let goodputTarget = out.target.goodput;
+  if (s.workload.type === 'training' && r.training && goodputTarget !== undefined && opts.basis === 'delivered') {
+    const tr = r.training;
+    if (!tr.sdc) {
+      notes.push('delivered basis: the scenario has no silent corruption, so the delivered goodput equals the effective goodput');
+    } else {
+      const Gd = goodputTarget;
+      // upper bound reachable by hardware alone: failure rates → 0 with the current silent-corruption policy
+      const noHw = cloneScenario(s);
+      for (const c of noHw.components) c.failure = { ...c.failure, value: c.failure.value * 1e-6 };
+      const maxByHardware = deliveredOf(noHw);
+      const feasibleByHardware = maxByHardware >= Gd;
+      const q0 = s.sdc.detection.coverage;
+      const requiredCoverage = tr.deliveredGoodput >= Gd ? q0 : bisectUp((q) => deliveredOf(withCoverage(s, q)), q0, 1, Gd);
+      const requiredFallback = tr.deliveredGoodput >= Gd ? s.sdc.fallbackDelayHours : bisectDown((D) => deliveredOf(withFallback(s, D)), 0.01, s.sdc.fallbackDelayHours, Gd);
+      let coverageUsed = q0;
+      if (!feasibleByHardware) {
+        if (requiredCoverage !== undefined) {
+          coverageUsed = requiredCoverage;
+          budgetScenario = withCoverage(s, requiredCoverage);
+          r = evaluateScenario(budgetScenario);
+          notes.push(`delivered ${(Gd * 100).toFixed(1)} % is out of reach of the hardware alone (at most ${(maxByHardware * 100).toFixed(2)} % with the current silent-corruption policy): the budgets below assume immediate silent-corruption detection raised to ${(requiredCoverage * 100).toFixed(2)} %`);
+        } else notes.push(`delivered ${(Gd * 100).toFixed(1)} % is out of reach even with 100 % immediate detection; shorten the fallback delay or the recovery`);
+      }
+      const tr2 = r.training!;
+      const factor = tr2.effectiveGoodput > 0 ? tr2.deliveredGoodput / tr2.effectiveGoodput : 1;
+      const phiOther = tr2.headlineGoodput > 0 ? tr2.effectiveGoodput / tr2.headlineGoodput : 1;
+      const effectiveTarget = Math.min(0.9999, Gd / Math.max(factor, 1e-9));
+      const headlineTarget = Math.min(0.9999, effectiveTarget / Math.max(phiOther, 1e-9));
+      out.sdc = { basis: 'delivered', deliveredTarget: Gd, currentDelivered: tr.deliveredGoodput, currentEffective: tr.effectiveGoodput, factor, effectiveTarget, headlineTarget, maxDeliveredByHardware: maxByHardware, feasibleByHardware, requiredCoverage, requiredFallbackDelayH: requiredFallback, coverageUsed };
+      notes.push(`delivered target ${(Gd * 100).toFixed(1)} % ÷ delivery factor ${factor.toFixed(4)} = effective target ${(effectiveTarget * 100).toFixed(2)} %; ÷ sub-health / spares / local factor ${phiOther.toFixed(4)} = headline (interruption) target ${(headlineTarget * 100).toFixed(2)} %`);
+      goodputTarget = headlineTarget;
+    }
+  }
+  if (s.workload.type === 'training' && r.training && goodputTarget !== undefined) {
+    const w = budgetScenario.workload as Extract<Scenario['workload'], { type: 'training' }>;
     const gb = goodputBudget({
-      goodputTarget: out.target.goodput,
-      nGpus: s.workload.nGpus,
-      deltaS: s.workload.deltaS,
+      goodputTarget,
+      nGpus: w.nGpus,
+      deltaS: w.deltaS,
       recoveryS: r.training.recoveryS,
-      lambdaPerGpuHour: r.training.interruptionRatePerHour / s.workload.nGpus,
+      lambdaPerGpuHour: r.training.interruptionRatePerHour / w.nGpus,
       restartShare: opts.restartShare,
     });
     out.goodput = gb;
     notes.push(...gb.notes);
     const lambdaJobRequired = 3600 / gb.fixRecovery.requiredMtbiS; // per hour
-    if (lambdaJobRequired < r.training.interruptionRatePerHour) {
+    if (Number.isFinite(lambdaJobRequired) && lambdaJobRequired > 0) {
       try {
         out.rateAllocation = runMethod(method, subs, lambdaJobRequired);
+        if (lambdaJobRequired >= r.training.interruptionRatePerHour) notes.push('current interruption rate already meets the goodput target at the current recovery time: the rate table shows how far each class may degrade (allowed rates above the current ones, improvement factors below 1)');
       } catch (e) {
         notes.push(`rate allocation (${method}) failed: ${(e as Error).message}`);
       }
-    } else notes.push('current interruption rate already meets the goodput target at the current recovery time');
-    const composed = resolveRecovery(s).compose(s.workload.nGpus);
+    }
+    if (r.training.chain.active) notes.push('a mechanism chain is active: the budget uses the global recovery time and the hardware interruption rate; pause-only outcomes (replay, elastic) make the real loss smaller than the first-order budget');
+    const composed = resolveRecovery(budgetScenario).compose(w.nGpus);
     const stages = composed.stages.filter((st) => st.name !== 'recompute').map((st) => ({ name: st.name, currentS: st.meanS, floorS: Math.min(st.meanS, st.name === 'detect' ? 5 : st.name === 'localize' ? 5 : 0) }));
-    if (gb.fixRate.requiredRecoveryS > 0 && gb.fixRate.requiredRecoveryS < r.training.recoveryS) {
+    if (gb.fixRate.requiredRecoveryS > 0) {
       out.stageAllocation = allocateRecoveryStages(stages, gb.fixRate.requiredRecoveryS).map((b, i) => ({ name: b.name, currentS: stages[i].currentS, budgetS: b.budgetS, improvementFactor: b.improvementFactor }));
-    } else notes.push('current recovery time already meets the goodput target at the current interruption rate');
+      if (gb.fixRate.requiredRecoveryS >= r.training.recoveryS) notes.push('current recovery time already meets the goodput target at the current interruption rate: stage budgets show the allowed times');
+    }
   }
   if (out.target.availability !== undefined) {
     out.unavailability = allocateUnavailability(subs, out.target.availability);

@@ -72,6 +72,7 @@ export const strings = {
       requiredMtbi: 'Required MTBI', requiredRate: 'Required per-GPU rate', improvement: 'Improvement ×', requiredR: 'Required recovery R', rateTable: 'Allowed failure rate per component class', stageTable: 'Allowed time per recovery stage', unavailTable: 'Availability target split', feasibility: 'Feasibility',
       methods: { equal: 'Equal apportionment', arinc: 'ARINC (∝ current rates)', agree: 'AGREE (complexity × importance)', feasibility: 'Feasibility of improvement', 'minimum-effort': 'Minimum effort (Albert)', 'cost-optimal': 'Cost-optimal (Lagrangian)' },
       allocated: 'Allocated λ (aggregate)', perUnit: 'Allocated λ per unit (1e6 h)', currentAgg: 'Current λ (aggregate)', mtbfPerUnit: 'MTBF per unit',
+      basis: 'Target basis', basisEffective: 'Effective goodput (performance)', basisDelivered: 'Delivered goodput (correct, with silent corruption)', sdcTitle: 'Silent corruption and the delivered target', currentDelivered: 'Current delivered goodput', factor: 'delivery factor', maxByHardware: 'reachable by hardware alone', requiredCoverage: 'Immediate detection needed (hardware as is)', requiredFallback: 'Fallback delay needed (current coverage)', effectiveTarget: 'Effective target implied', headlineTarget: 'interruption target', coverageUsed: 'budgets below assume coverage', notReachable: 'not reachable', infeasible: 'The hardware alone cannot reach the delivered target under the current silent-corruption policy: detection must be raised first; the budgets below assume the required coverage.', feasible: 'The delivered target is reachable by hardware alone; raising silent-corruption detection is the alternative lever.',
     },
     compare: {
       title: 'Compare options', sub: 'Side-by-side KPIs of the scenarios you select, plus one-at-a-time sensitivity of the active scenario.',
@@ -177,6 +178,7 @@ export const strings = {
       requiredMtbi: '所需 MTBI', requiredRate: '所需单 GPU 中断率', improvement: '需改进倍数', requiredR: '所需恢复时间 R', rateTable: '各部件类允许的故障率', stageTable: '各恢复阶段允许的时间', unavailTable: '可用率目标分解', feasibility: '可行性',
       methods: { equal: '等分配', arinc: 'ARINC（按当前故障率）', agree: 'AGREE（复杂度 × 重要度）', feasibility: '可改进性加权', 'minimum-effort': '最小努力（Albert）', 'cost-optimal': '成本最优（拉格朗日）' },
       allocated: '分配 λ（合计）', perUnit: '分配 λ（每单元，百万小时）', currentAgg: '当前 λ（合计）', mtbfPerUnit: '每单元 MTBF',
+      basis: '目标口径', basisEffective: '有效 goodput（性能）', basisDelivered: '正确有效产出（含静默错误）', sdcTitle: '静默错误与正确交付目标', currentDelivered: '当前正确有效产出', factor: '交付系数', maxByHardware: '仅靠硬件可达', requiredCoverage: '所需即时检出率（硬件不变）', requiredFallback: '所需兜底时延（检出率不变）', effectiveTarget: '对应的有效 goodput 目标', headlineTarget: '中断项目标', coverageUsed: '下方预算假设检出率', notReachable: '无法达到', infeasible: '在当前静默错误策略下仅靠硬件无法达到正确交付目标：必须先提高检出率；下方预算假设已达到所需检出率。', feasible: '仅靠硬件即可达到正确交付目标；提高静默错误检出率是另一条路径。',
     },
     compare: {
       title: '方案对比', sub: '所选方案的 KPI 并排对比，以及当前方案的单因素敏感性。',

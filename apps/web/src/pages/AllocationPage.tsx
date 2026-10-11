@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { allocateScenario, type AllocationMethod } from '@hac-d/core';
+import { allocateScenario, type AllocationMethod, type AllocationBasis } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, DataTable, Field, NumberInput, Select, Badge } from '../components/ui.js';
 import { fmtPct, fmtDuration, fmtNum, fmtRatePerMillion, fmtHours } from '../lib/format.js';
@@ -15,14 +15,17 @@ export function AllocationPage() {
   const [goodputTarget, setGoodputTarget] = useState<number>(active?.scenario.targets.goodput ?? 0.97);
   const [availabilityTarget, setAvailabilityTarget] = useState<number>(active?.scenario.targets.availability ?? 0.999);
   const [restartShare, setRestartShare] = useState(0.5);
+  const hasSdc = !!active?.result?.training?.sdc;
+  const [basisChoice, setBasis] = useState<AllocationBasis | undefined>(undefined);
+  const basis: AllocationBasis = basisChoice ?? (hasSdc ? 'delivered' : 'effective');
   const alloc = useMemo(() => {
     if (!active || active.error) return undefined;
     try {
-      return allocateScenario(active.scenario, { goodputTarget, availabilityTarget, method, restartShare });
+      return allocateScenario(active.scenario, { goodputTarget, availabilityTarget, method, restartShare, basis });
     } catch (e) {
       return { error: (e as Error).message };
     }
-  }, [active, goodputTarget, availabilityTarget, method, restartShare]);
+  }, [active, goodputTarget, availabilityTarget, method, restartShare, basis]);
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
   const isTraining = active.scenario.workload.type === 'training';
   const a = alloc && !('error' in alloc) ? alloc : undefined;
@@ -39,6 +42,11 @@ export function AllocationPage() {
               <NumberInput value={goodputTarget} step={0.005} min={0.5} max={0.9999} onChange={setGoodputTarget} />
             </Field>
           )}
+          {isTraining && hasSdc && (
+            <Field label={t('allocation.basis')}>
+              <Select value={basis} onChange={setBasis} options={[{ value: 'delivered', label: t('allocation.basisDelivered') }, { value: 'effective', label: t('allocation.basisEffective') }]} />
+            </Field>
+          )}
           <Field label={t('scenario.availabilityTarget')}>
             <NumberInput value={availabilityTarget} step={0.0005} min={0.9} max={0.999999} onChange={setAvailabilityTarget} />
           </Field>
@@ -53,6 +61,17 @@ export function AllocationPage() {
         </div>
         {alloc && 'error' in alloc && <div className="callout crit" style={{ marginTop: 8 }}>{alloc.error}</div>}
       </Card>
+      {a?.sdc && (
+        <Card title={t('allocation.sdcTitle')} formula="delivered = effective × f_SDC; effective target = G_d / f_SDC; headline target = effective target / (φ_job (1 − P_blocked)(1 − ℓ)); q* and D* by bisection on the closed form">
+          <div className={`callout${a.sdc.feasibleByHardware ? '' : ' warn'}`} style={{ marginBottom: 10 }}>{a.sdc.feasibleByHardware ? t('allocation.feasible') : t('allocation.infeasible')}</div>
+          <div className="kpi-row">
+            <Kpi label={t('allocation.currentDelivered')} value={fmtPct(a.sdc.currentDelivered, 2)} note={`${t('allocation.factor')} ${fmtNum(a.sdc.factor, 4)} · ${t('allocation.maxByHardware')} ${fmtPct(a.sdc.maxDeliveredByHardware, 2)}`} tone={a.sdc.currentDelivered < a.sdc.deliveredTarget ? 'warn' : undefined} />
+            <Kpi label={t('allocation.requiredCoverage')} value={a.sdc.requiredCoverage !== undefined ? fmtPct(a.sdc.requiredCoverage, 2) : t('allocation.notReachable')} note={`${t('allocation.coverageUsed')} ${fmtPct(a.sdc.coverageUsed, 2)}`} hero={!a.sdc.feasibleByHardware} />
+            <Kpi label={t('allocation.requiredFallback')} value={a.sdc.requiredFallbackDelayH !== undefined ? fmtHours(a.sdc.requiredFallbackDelayH, lang) : t('allocation.notReachable')} />
+            <Kpi label={t('allocation.effectiveTarget')} value={fmtPct(a.sdc.effectiveTarget, 2)} note={`${t('allocation.headlineTarget')} ${fmtPct(a.sdc.headlineTarget, 2)}`} />
+          </div>
+        </Card>
+      )}
       {a?.goodput && (
         <>
           <div className="kpi-row">

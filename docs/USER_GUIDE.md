@@ -83,3 +83,6 @@ The default mode is now the **window ledger**: a finite-window simulation with t
 
 ### Compare / Report
 The Compare table and the tornado carry a Delivered column / metric; the HTML report and the Excel export list the delivered goodput and A_op.
+
+### Allocation page with silent corruption (v3.1)
+When the scenario carries silent corruption, the Allocation page offers a **target basis**: *effective goodput* (performance, as before) or *delivered goodput* (default when silent corruption is present). On the delivered basis the page first checks whether the target is reachable by hardware alone (failure rates → 0 under the current silent-corruption policy); if not, it reports the immediate detection coverage q* and the fallback delay D* that would reach the target with the hardware as is, raises the coverage to q* for the budgets, converts the delivered target into the effective and interruption targets (÷ delivery factor ÷ sub-health factor), and then apportions the interruption budget to the component classes and recovery stages as usual. When the target is already met, the rate table shows how far each class may degrade (improvement factors below 1).

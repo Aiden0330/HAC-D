@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'shots';
 mkdirSync(out, { recursive: true });
-const pages = ['Scenario', 'Training', 'Mechanisms', 'Simulate', 'Report', 'Import', 'Compare'];
+const pages = ['Scenario', 'Training', 'Mechanisms', 'Allocation', 'Simulate', 'Report', 'Import', 'Compare'];
 const browser = await chromium.launch();
 for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
   for (const theme of ['light', 'dark']) {

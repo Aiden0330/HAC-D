@@ -54,8 +54,8 @@ server.registerTool(
 
 server.registerTool(
   'allocate_scenario',
-  { description: 'Allocate a goodput and/or availability target to subsystem budgets: allowed interruption rate per component class (ARINC/AGREE/equal/feasibility/minimum-effort/cost-optimal), allowed time per recovery stage, availability split.', inputSchema: { scenario: scenarioArg, goodputTarget: z.number().min(0).max(1).optional(), availabilityTarget: z.number().min(0).max(1).optional(), method: z.enum(['equal', 'arinc', 'agree', 'feasibility', 'minimum-effort', 'cost-optimal']).optional(), restartShare: z.number().min(0).max(1).optional() } },
-  async ({ scenario, goodputTarget, availabilityTarget, method, restartShare }) => text(allocateScenario(toScenario(scenario), { goodputTarget, availabilityTarget, method: method as AllocationMethod | undefined, restartShare })),
+  { description: 'Allocate a goodput and/or availability target to subsystem budgets: allowed interruption rate per component class (ARINC/AGREE/equal/feasibility/minimum-effort/cost-optimal), allowed time per recovery stage, availability split.', inputSchema: { scenario: scenarioArg, goodputTarget: z.number().min(0).max(1).optional(), availabilityTarget: z.number().min(0).max(1).optional(), method: z.enum(['equal', 'arinc', 'agree', 'feasibility', 'minimum-effort', 'cost-optimal']).optional(), restartShare: z.number().min(0).max(1).optional(), basis: z.enum(['effective', 'delivered']).optional() } },
+  async ({ scenario, goodputTarget, availabilityTarget, method, restartShare, basis }) => text(allocateScenario(toScenario(scenario), { goodputTarget, availabilityTarget, method: method as AllocationMethod | undefined, restartShare, basis })),
 );
 
 server.registerTool(

@@ -21,7 +21,7 @@ import { basename } from 'node:path';
 import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
   mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY,
-  type AllocationMethod, type TornadoMetric, type AttributionMetric,
+  type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
@@ -168,10 +168,10 @@ switch (cmd) {
   case 'allocate': {
     const path = files[0];
     if (!path) {
-      console.error('usage: hacd allocate <scenario.json> [--goodput 0.97] [--availability 0.999] [--method arinc] [--json]');
+      console.error('usage: hacd allocate <scenario.json> [--goodput 0.97] [--basis effective|delivered] [--availability 0.999] [--method arinc] [--json]');
       process.exit(1);
     }
-    const a = allocateScenario(load(path), { goodputTarget: flag('goodput') ? Number(flag('goodput')) : undefined, availabilityTarget: flag('availability') ? Number(flag('availability')) : undefined, method: (flag('method') as AllocationMethod | undefined) ?? 'arinc' });
+    const a = allocateScenario(load(path), { goodputTarget: flag('goodput') ? Number(flag('goodput')) : undefined, availabilityTarget: flag('availability') ? Number(flag('availability')) : undefined, method: (flag('method') as AllocationMethod | undefined) ?? 'arinc', basis: flag('basis') as AllocationBasis | undefined });
     if (json) {
       out(a);
       break;
@@ -180,6 +180,10 @@ switch (cmd) {
       console.log(`loss budget ${pct(a.goodput.lossBudget)} · current ${pct(a.goodput.current.loss)}`);
       console.log(`keep R, tighten λ: MTBI ≥ ${formatDuration(a.goodput.fixRecovery.requiredMtbiS)} (×${a.goodput.fixRecovery.improvementFactor.toFixed(2)})`);
       console.log(`keep λ, tighten R: R ≤ ${a.goodput.fixRate.requiredRecoveryS > 0 ? formatDuration(a.goodput.fixRate.requiredRecoveryS) : 'infeasible'}`);
+    }
+    if (a.sdc) {
+      console.log(`delivered basis: current ${pct(a.sdc.currentDelivered)} → target ${pct(a.sdc.deliveredTarget)}; delivery factor ${a.sdc.factor.toFixed(4)}; effective target ${pct(a.sdc.effectiveTarget)}; reachable by hardware alone ${pct(a.sdc.maxDeliveredByHardware)} (${a.sdc.feasibleByHardware ? 'feasible' : 'NOT feasible'})`);
+      console.log(`silent-corruption levers: immediate detection ≥ ${a.sdc.requiredCoverage !== undefined ? pct(a.sdc.requiredCoverage) : 'not reachable'} (hardware as is) · fallback delay ≤ ${a.sdc.requiredFallbackDelayH !== undefined ? `${a.sdc.requiredFallbackDelayH.toFixed(1)} h` : 'not reachable'} (current coverage) · budgets below assume coverage ${pct(a.sdc.coverageUsed)}`);
     }
     if (a.rateAllocation) {
       console.log(`\n## Allowed failure rate per component class (${a.rateAllocation.method})`);
