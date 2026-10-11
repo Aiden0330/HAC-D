@@ -47,6 +47,7 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - **Mechanism library and attribution** (`packages/core/src/mechanisms`): the reference catalog's twelve mechanisms as scenario transforms with target parameters; single, last-added and exact Shapley gains over all 2^n coalitions with the closed forms; a Mechanisms page in the web app.
 - **Window-ledger Monte Carlo** (`mc/ledger.ts`): the reference engine's semantics (three fault classes, chain, clean-checkpoint retention, terminal discard) with a conserved ledger, CI, quantiles and P(≥ target); Simulate page default mode.
 - Example `ref-three-classes-100k` (the reference's confirmed baseline) and `scripts/ref-compare-v3.ts` for the cross-check; `docs/MODEL_REFERENCE.md` §19–§22, `docs/REFERENCE_COMPARISON_100K_500K.md` §5.
+- **Allocation with mechanisms** (v3.1): the Allocation page accepts a delivered-goodput target (feasibility by hardware alone, required silent-corruption detection and fallback delay), and the Mechanisms page plans the cheapest feasible mechanism set by effort score with derated parameters, necessary mechanisms, a coverage × recovery scan and a ledger verification of P(window ≥ target); practice notes in `docs/ALLOCATION_PRACTICE.md`.
 
 ## Layout
 

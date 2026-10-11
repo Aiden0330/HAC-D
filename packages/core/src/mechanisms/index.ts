@@ -27,6 +27,8 @@ export interface MechanismDef {
   parameters: Record<string, number>;
   /** mechanisms that must be active for this one to have an effect */
   requires?: string[];
+  /** relative implementation effort 1–5 used by the planner (0 = informational); editable per run */
+  effort: number;
   /** scenario transform; absent for informational entries */
   apply?: (s: Scenario, p: Record<string, number>) => Scenario;
 }
@@ -38,6 +40,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '不增加误报或检测资源开销；此假设尚未计价', en: 'no extra false alarms or detection overhead; not priced yet' },
     failure: { zh: '仍由 60 s 超时兜底', en: 'the 60 s timeout still catches the rest' },
     confidence: 'baseline USER; 99.9 % / 1 s is a target to be audited',
+    effort: 2,
     parameters: { coverage: 0.999, detectSeconds: 1 },
     apply: (s, p) => {
       if (s.recovery.mode !== 'mixture') return s;
@@ -52,6 +55,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '识别真实亚健康而非负载变化，误报开销暂未计入', en: 'distinguishes real sub-health from load changes; false-alarm cost not counted' },
     failure: { zh: '漏检维持 24 h 降速；不是强制人工恢复', en: 'an undetected unit keeps slowing the job for 24 h; no forced manual recovery' },
     confidence: 'baseline USER; 99 % / 30 s is a target to be audited',
+    effort: 3,
     parameters: { coverage: 0.99, detectSeconds: 30 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -65,6 +69,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '全链路污染识别与干净点验证；1 s 为场景值', en: 'end-to-end corruption identification and clean-point verification; 1 s is a scenario value' },
     failure: { zh: '保留既有污染，漏检走兜底；新检测不能清洗旧污染', en: 'an existing undetected corruption is kept; the fallback still applies; a new detection does not clean old corruption' },
     confidence: '95 % is a user target; 1 s a provisional step-level value',
+    effort: 5,
     parameters: { coverage: 0.95, detectSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -78,6 +83,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '必须有 D-SDC 即时定位与有效易失干净状态', en: 'needs immediate localisation (D-SDC) and a valid volatile clean state' },
     failure: { zh: '按恢复成功率 100 % 的理想能力评估；失败和覆盖范围待测', en: 'evaluated as an ideal capability (100 % success); failure modes and coverage to be measured' },
     confidence: 'ideal capability target, not a vendor measurement',
+    effort: 4,
     parameters: { stepSeconds: 1, recoverSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -91,6 +97,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '可重执行、幂等、通信一致性；必须清除瞬态根因', en: 're-executable, idempotent, communication-consistent; the transient root cause must clear' },
     failure: { zh: '弹性 → 进程重调度 → 全局 CKPT → 人工', en: 'elastic → process reschedule → global checkpoint → manual' },
     confidence: 'PRIOR from the old mechanism library; not for persistent device damage',
+    effort: 2,
     parameters: { success: 0.9, successSeconds: 5, failureSeconds: 10 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -104,6 +111,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '健康备用资源；进程级故障可隔离；本版只用于中断', en: 'healthy spare resources; process-level faults isolable; interruptions only' },
     failure: { zh: '全局 CKPT → 人工', en: 'global checkpoint → manual' },
     confidence: 'PRIOR from the old mechanism library',
+    effort: 3,
     parameters: { success: 0.95, successSeconds: 60, failureSeconds: 120 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -117,6 +125,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '其余域可持续产生可保留的有效进度；状态冗余、备用资源、DP 数学语义与收敛验证', en: 'the other domains keep producing retained progress; redundant state, spare resources, DP semantics and convergence verified' },
     failure: { zh: '进程重调度（若启用）→ 全局 CKPT → 人工', en: 'process reschedule (if enabled) → global checkpoint → manual' },
     confidence: '50 domains USER; 98 % and 1 s are priors to be audited; a capacity model, not a synchronous-training performance promise',
+    effort: 5,
     parameters: { domains: 50, success: 0.98, recoverSeconds: 180, failureSeconds: 120, syncSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -130,6 +139,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '干净检查点永久保留，存储可读，恢复加载已含 3 min', en: 'clean checkpoints are retained, storage readable, loading included in the 3 min' },
     failure: { zh: '1 % 失败额外人工 2 h', en: '1 % fail and add 2 h of manual work' },
     confidence: 'latest USER values (replace the old 10–20 min curve)',
+    effort: 0,
     parameters: {},
   },
   {
@@ -138,6 +148,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '2 h 服务响应与资源修复能力；长尾尚未建模', en: '2 h service response and repair capacity; the long tail is not modelled' },
     failure: { zh: '超过 2 h 或最终失败的尾部待现场数据', en: 'tails beyond 2 h await field data' },
     confidence: '2 h USER; final success 100 % is a model termination assumption',
+    effort: 0,
     parameters: {},
   },
   {
@@ -146,6 +157,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '带宽、并发、存储空间能支撑；异步实现效果待测', en: 'bandwidth, concurrency and storage can sustain it; asynchronous saving to be measured' },
     failure: { zh: '保存失败沿现有故障事件进入恢复；新增存储压力未建模', en: 'a failed save follows the existing fault events; extra storage load not modelled' },
     confidence: 'target prior of this round',
+    effort: 3,
     parameters: { computeSeconds: 60, saveSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
@@ -159,6 +171,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '需要保护前物理故障率、共因故障、切换覆盖率和拓扑', en: 'needs pre-protection physical rates, common cause, switchover coverage and topology (HAC-D: model them as redundancy groups with switchover)' },
     failure: { zh: '未增加收益；不是保护技术本身没有价值', en: 'no extra gain here; the protection itself is valuable' },
     confidence: 'no independent incremental parameter',
+    effort: 0,
     parameters: {},
   },
   {
@@ -167,6 +180,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     prerequisite: { zh: '同器件、同暴露时长的前后实测；根因去重', en: 'before / after measurements on the same devices and exposure; root causes de-duplicated' },
     failure: { zh: '—', en: '—' },
     confidence: 'no quantified target provided',
+    effort: 4,
     parameters: { reduction: 0 },
     apply: (s, p) => {
       if (!(p.reduction > 0)) return s;

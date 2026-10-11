@@ -2,8 +2,8 @@
 import * as Comlink from 'comlink';
 import {
   evaluateScenario, compareScenarios, tornadoForScenario, allocateScenario, buildMcRun, finishMcRun, simulateReplications, summarize,
-  mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger,
-  type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication,
+  mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, planToTarget,
+  type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication, type PlanOptions,
 } from '@hac-d/core';
 
 export interface ComputeApi {
@@ -14,6 +14,7 @@ export interface ComputeApi {
   simulate(s: Scenario, opts: { replications: number; seed: number | string; workHours?: number; intervalS?: number }, onProgress?: (done: number, total: number) => void): ReturnType<typeof finishMcRun>;
   mechanisms(s: Scenario, players: string[], opts: { metric?: AttributionMetric; parameters?: Record<string, Record<string, number>> }): ReturnType<typeof mechanismReport>;
   ledger(s: Scenario, opts: { trials: number; seed: number | string; target?: number }, onProgress?: (done: number, total: number) => void): ReturnType<typeof finishLedgerRun>;
+  plan(s: Scenario, opts: PlanOptions): ReturnType<typeof planToTarget>;
 }
 
 const api: ComputeApi = {
@@ -35,6 +36,7 @@ const api: ComputeApi = {
     return { ...r, spec: { ...r.spec, recoverySampler: undefined as unknown as typeof r.spec.recoverySampler } };
   },
   mechanisms: (s, players, opts) => mechanismReport(s, players, opts),
+  plan: (s, opts) => planToTarget(s, opts),
   ledger: (s, opts, onProgress) => {
     const run = buildLedgerRun(s, opts);
     const rows: LedgerReplication[] = [];

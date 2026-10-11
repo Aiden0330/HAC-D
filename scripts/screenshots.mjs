@@ -26,6 +26,8 @@ for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
       if (name === 'Mechanisms') {
         await page.getByRole('button', { name: 'Attribute', exact: true }).click();
         await page.waitForTimeout(2500);
+        await page.getByRole('button', { name: 'Plan', exact: true }).click();
+        await page.waitForTimeout(6000);
       }
       if (name === 'Simulate') {
         await page.getByRole('button', { name: 'Run ledger simulation', exact: true }).click();

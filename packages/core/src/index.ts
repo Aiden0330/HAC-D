@@ -19,5 +19,6 @@ export * from './mc/ledger.js';
 export * from './mc/ledgerFromScenario.js';
 export * from './mechanisms/chain.js';
 export * from './mechanisms/index.js';
+export * from './mechanisms/plan.js';
 export * from './sdc/index.js';
 export * from './library/index.js';

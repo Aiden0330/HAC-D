@@ -2,7 +2,7 @@
 /**
  * HAC-D MCP server (stdio). Tools: list_examples, get_example, evaluate_scenario, compare_scenarios,
  * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
- * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, simulate_ledger (v3).
+ * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, apply_mechanisms, simulate_ledger, plan_mechanisms (v3).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -14,7 +14,7 @@ import { dirname, join, basename } from 'node:path';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook } from '@hac-d/importers';
 import {
   EXAMPLES, parseScenario, evaluateScenario, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario, scenarioJsonSchema, filterLibrary,
-  mechanismReport, simulateScenarioLedger, MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms,
+  mechanismReport, simulateScenarioLedger, MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, planToTarget,
   type Library, type AllocationMethod, type TornadoMetric, type AttributionMetric,
 } from '@hac-d/core';
 
@@ -130,6 +130,12 @@ server.registerTool(
     const r = simulateScenarioLedger(toScenario(scenario), { trials: trials ?? 200, seed: seed ?? 1, target });
     return text({ ...r, summary: { ...r.summary, values: undefined } });
   },
+);
+
+server.registerTool(
+  'plan_mechanisms',
+  { description: 'Choose the fault-management mechanisms that reach a goodput target: evaluates every coalition of the candidate mechanisms with the closed forms (nominal and with the mechanism parameters derated: coverage −5 pts, success −8 pts, times ×1.5), returns the cheapest feasible coalition by effort score, the necessary mechanisms, the effort–value Pareto front, a silent-corruption-coverage × recovery-time scan and an optional ledger-simulation verification of P(window ≥ target).', inputSchema: { scenario: scenarioArg, target: z.number().min(0).max(1).optional(), players: z.array(z.string()).max(10).optional(), metric: z.enum(['delivered', 'effective', 'aOp']).optional(), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional(), effort: z.record(z.string(), z.number()).optional(), derate: z.boolean().optional(), scan: z.boolean().optional(), verifyTrials: z.number().int().min(0).max(5000).optional(), confidence: z.number().min(0).max(1).optional() } },
+  async ({ scenario, target, players, metric, parameters, effort, derate, scan, verifyTrials, confidence }) => text(planToTarget(toScenario(scenario), { target, players, metric: metric as AttributionMetric | undefined, parameters, effort, derate: derate === false ? null : undefined, scan: scan ?? true, verify: verifyTrials ? { trials: verifyTrials, confidence } : undefined })),
 );
 
 const transport = new StdioServerTransport();

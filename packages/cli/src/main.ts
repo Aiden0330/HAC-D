@@ -15,12 +15,13 @@
  *   hacd export-excel <scenario.json> [out.xlsx]    workbook with live formulas (Inputs / Structure / Results / Formulas)
  *   hacd mechanisms <scenario.json> [--players D-SDC,R-SDC,…] [--metric delivered|effective|aOp] [--json]   single / last-added / Shapley gains (v3)
  *   hacd ledger <scenario.json> [--trials 300] [--seed 1] [--target 0.9] [--json]   finite-window ledger simulation vs the closed form (v3)
+ *   hacd plan <scenario.json> [--target 0.9] [--players …] [--no-derate] [--trials 200] [--json]   cheapest mechanism set for the target, necessary mechanisms, scan, verification (v3.1)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
-  mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY,
+  mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY, planToTarget,
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
@@ -362,6 +363,30 @@ switch (cmd) {
     printTable([['class', 'events/run', 'downtime', 'rollback', 'slow-down', 'local', 'terminal'], ...Object.entries(L.byClass).map(([id, a]) => [id, a.events.toFixed(1), pct(a.downtime, 3), pct(a.rollback, 3), pct(a.slowdown, 3), pct(a.localLoss, 3), pct(a.terminalInvalid, 3)])]);
     break;
   }
+  case 'plan': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd plan <scenario.json> [--target 0.9] [--players D-SDC,R-SDC,…] [--metric delivered|effective|aOp] [--no-derate] [--trials 200] [--confidence 0.9] [--json]');
+      process.exit(1);
+    }
+    const players = flag('players') ? flag('players')!.split(',').map((x) => x.trim()).filter(Boolean) : DEFAULT_PLAYERS;
+    const trials = flag('trials') ? Number(flag('trials')) : 200;
+    const p = planToTarget(load(path), { target: flag('target') ? Number(flag('target')) : undefined, players, metric: (flag('metric') as AttributionMetric | undefined) ?? 'delivered', derate: rest.includes('--no-derate') ? null : undefined, scan: true, verify: trials > 0 ? { trials, confidence: flag('confidence') ? Number(flag('confidence')) : 0.9 } : undefined });
+    if (json) {
+      out(p);
+      break;
+    }
+    console.log(`target ${pct(p.target)} (${p.metric}); baseline ${pct(p.baseline[p.metric])}; ${p.feasibleCount}/${p.coalitions.length} feasible coalitions; all on: ${pct(p.maxValue)} nominal / ${pct(p.maxDerated)} derated`);
+    if (p.plan) console.log(`plan: ${p.plan.ids.join(' + ') || '(nothing needed)'} · effort ${p.plan.effort} · ${pct(p.plan.value)} nominal / ${pct(p.plan.derated)} derated · necessary: ${p.necessary.join(', ') || '—'}`);
+    printTable([['coalition (Pareto front)', 'effort', 'nominal', 'derated', 'margin'], ...p.pareto.map((c) => [c.ids.join(' + ') || '∅', String(c.effort), pct(c.value), pct(c.derated), `${(c.margin * 100).toFixed(2)} pt${c.feasible ? ' ✓' : ''}`])]);
+    if (p.scan && p.scan.recoverySeconds.length) {
+      console.log(`\n## Scan: ${p.scan.basis}`);
+      printTable([['recovery s \\ coverage', ...p.scan.coverages.map((q) => pct(q, 1))], ...p.scan.recoverySeconds.map((sec) => [String(sec), ...p.scan!.coverages.map((q) => pct(p.scan!.cells.find((c) => c.coverage === q && c.recoverySeconds === sec)!.value))])]);
+    }
+    if (p.verification) console.log(`verification: mean ${pct(p.verification.mean)} ± ${pct(p.verification.ci95)}, P5 ${pct(p.verification.p05)}, P(window ≥ target) ${pct(p.verification.pAtLeastTarget, 1)} → ${p.verification.passes ? 'passes' : 'FAILS'} at confidence ${pct(p.verification.confidence, 0)}`);
+    for (const n of p.notes) console.log(`- ${n}`);
+    break;
+  }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | schema> [--json]');
 }

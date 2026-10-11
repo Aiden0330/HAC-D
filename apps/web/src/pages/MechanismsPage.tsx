@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, type MechanismReport, type AttributionMetric } from '@hac-d/core';
+import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, type MechanismReport, type AttributionMetric, type MechanismPlan } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { compute } from '../worker/client.js';
 import { Kpi, Card, DataTable, Field, Select, Badge, NumberInput } from '../components/ui.js';
 import { Tornado } from '../charts/Tornado.js';
+import { Heatmap } from '../charts/Heatmap.js';
 import { fmtPct, fmtNum } from '../lib/format.js';
 
 const METRICS: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
@@ -19,10 +20,18 @@ export function MechanismsPage() {
   const [metric, setMetric] = useState<AttributionMetric>('delivered');
   const [overrides, setOverrides] = useState<Record<string, Record<string, number>>>({});
   const [report, setReport] = useState<MechanismReport | null>(null);
+  const [plan, setPlan] = useState<MechanismPlan | null>(null);
+  const [planTarget, setPlanTarget] = useState<number>(active?.scenario.targets.goodput ?? 0.9);
+  const [derate, setDerate] = useState(true);
+  const [verify, setVerify] = useState(true);
+  const [trials, setTrials] = useState(200);
+  const [confidence, setConfidence] = useState(0.9);
+  const [efforts, setEfforts] = useState<Record<string, number>>({});
+  const [planning, setPlanning] = useState(false);
   const [running, setRunning] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const scenarioKey = active ? JSON.stringify(active.scenario) : '';
-  useEffect(() => setReport(null), [scenarioKey]);
+  useEffect(() => { setReport(null); setPlan(null); }, [scenarioKey]);
   const inScenario = useMemo(() => (active && !active.error ? activeMechanisms(active.scenario) : []), [active]);
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
   if (active.scenario.workload.type !== 'training') return <div className="callout">{t('mechanisms.notTraining')}</div>;
@@ -46,6 +55,25 @@ export function MechanismsPage() {
       setErr((e as Error).message);
     } finally {
       setRunning(false);
+    }
+  };
+  const runPlan = async () => {
+    if (players.length === 0) {
+      setErr(t('mechanisms.noPlayers'));
+      return;
+    }
+    if (players.length > 10) {
+      setErr(t('mechanisms.tooMany'));
+      return;
+    }
+    setPlanning(true);
+    setErr(null);
+    try {
+      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: overrides, effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }));
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setPlanning(false);
     }
   };
   const fmtMetric = (v: number) => fmtPct(v, 2);
@@ -75,6 +103,52 @@ export function MechanismsPage() {
         </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>● {t('mechanisms.inScenario')}</div>
         {err && <div className="callout crit" style={{ marginTop: 8 }}>{err}</div>}
+      </Card>
+      <Card title={t('mechanisms.planTitle')} sub={t('mechanisms.planSub')} formula="min Σ effort_i s.t. v(S) ≥ G* and v_derated(S) ≥ G*; necessary = ∩ feasible S; Pareto over (effort, v)">
+        <div className="form-grid">
+          <Field label={t('mechanisms.planTarget')}><NumberInput value={planTarget} min={0.5} max={0.9999} step={0.005} onChange={setPlanTarget} /></Field>
+          <Field label={t('mechanisms.planDerate')} hint={t('mechanisms.planDerateHint')}>
+            <label style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0', fontSize: 13 }}><input type="checkbox" checked={derate} onChange={(e) => setDerate(e.target.checked)} />{t('mechanisms.planDerate')}</label>
+          </Field>
+          <Field label={t('mechanisms.planVerify')}>
+            <label style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0', fontSize: 13 }}><input type="checkbox" checked={verify} onChange={(e) => setVerify(e.target.checked)} />{t('mechanisms.planVerify')}</label>
+          </Field>
+          {verify && <Field label={t('mechanisms.planTrials')}><NumberInput value={trials} min={20} max={5000} step={50} onChange={setTrials} /></Field>}
+          {verify && <Field label={t('mechanisms.planConfidence')}><NumberInput value={confidence} min={0.5} max={0.999} step={0.01} onChange={setConfidence} /></Field>}
+          <div className="field" style={{ justifyContent: 'end' }}>
+            <button type="button" className="btn primary" disabled={planning} onClick={runPlan}>{planning ? t('mechanisms.planning') : t('mechanisms.planRun')}</button>
+          </div>
+        </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('mechanisms.planEffortHint')}</div>
+        {plan && (
+          <div className="grid" style={{ gap: 12, marginTop: 12 }}>
+            <div className="kpi-row">
+              {plan.plan ? (
+                <Kpi label={t('mechanisms.planChosen')} value={plan.plan.ids.join(' + ') || '∅'} note={`${t('mechanisms.effort')} ${plan.plan.effort} · ${t('mechanisms.planValue')} ${fmtMetric(plan.plan.value)} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.plan.derated)} · ${t('mechanisms.planMargin')} ${(plan.plan.margin * 100).toFixed(2)} pt`} hero />
+              ) : (
+                <Kpi label={t('mechanisms.planNone')} value={fmtMetric(plan.maxValue)} note={`${t('mechanisms.planMax')} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.maxDerated)}`} tone="bad" hero />
+              )}
+              <Kpi label={t('mechanisms.planNecessary')} value={plan.necessary.join(', ') || '—'} note={`${plan.feasibleCount} / ${plan.coalitions.length} ${t('mechanisms.planFeasible')}`} />
+              <Kpi label={t('mechanisms.baseline')} value={fmtMetric(plan.baseline[plan.metric])} note={`${t('mechanisms.planTarget')} ${fmtMetric(plan.target)}`} />
+              {plan.verification && <Kpi label={t('mechanisms.planVerification')} value={`${t('mechanisms.planPTarget')} ${fmtPct(plan.verification.pAtLeastTarget, 1)}`} note={`${t('mechanisms.planMean')} ${fmtPct(plan.verification.mean, 2)} ± ${fmtPct(plan.verification.ci95, 2)} · P5 ${fmtPct(plan.verification.p05, 1)} · ${plan.verification.trials} ${t('simulate.trials')}`} tone={plan.verification.passes ? undefined : 'warn'} />}
+            </div>
+            <div className="grid cols-2">
+              <Card title={t('mechanisms.planPareto')}>
+                <DataTable columns={[t('mechanisms.planCoalition'), t('mechanisms.effort'), t('mechanisms.planValue'), t('mechanisms.planDerated'), t('mechanisms.planMargin')]} numericFrom={1} rows={plan.pareto.map((c) => [c.ids.join(' + ') || '∅', String(c.effort), fmtMetric(c.value), fmtMetric(c.derated), `${(c.margin * 100).toFixed(2)} pt${c.feasible ? ' ✓' : ''}`])} highlight={(i) => !!plan.plan && plan.pareto[i].ids.join() === plan.plan.ids.join()} />
+              </Card>
+              {plan.scan && plan.scan.recoverySeconds.length > 0 && (
+                <Card>
+                  <Heatmap title={t('mechanisms.planScan')} subtitle={plan.scan.basis} xs={plan.scan.coverages} ys={plan.scan.recoverySeconds} values={plan.scan.recoverySeconds.map((sec) => plan.scan!.coverages.map((q) => plan.scan!.cells.find((c) => c.coverage === q && c.recoverySeconds === sec)?.value ?? NaN))} formatX={(v) => fmtPct(v, 1)} formatY={(v) => `${v} s`} formatV={(v) => fmtPct(v, 1)} xLabel={t('mechanisms.planScanX')} yLabel={t('mechanisms.planScanY')} />
+                </Card>
+              )}
+            </div>
+            <ul className="plain muted" style={{ fontSize: 12 }}>
+              {plan.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </Card>
       {report && (
         <>
@@ -123,6 +197,7 @@ export function MechanismsPage() {
                 <th>{t('mechanisms.prerequisite')}</th>
                 <th>{t('mechanisms.failure')}</th>
                 <th>{t('mechanisms.parameters')}</th>
+                <th>{t('mechanisms.effort')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -150,6 +225,7 @@ export function MechanismsPage() {
                         </div>
                       ))}
                     </td>
+                    <td>{m.apply ? <NumberInput value={efforts[m.id] ?? m.effort} min={0} max={10} step={1} onChange={(v) => setEfforts((o) => ({ ...o, [m.id]: v }))} /> : <span className="muted">—</span>}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       {m.apply && (on ? (
                         <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC'].includes(m.id)}>{t('mechanisms.remove')}</button>
