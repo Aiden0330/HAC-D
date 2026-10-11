@@ -1,5 +1,7 @@
 # HAC-D — AI cluster availability, MTBF/MTTR and goodput modeling
 
+[中文说明 (README.zh.md)](README.zh.md) · User manual: [English](docs/USER_MANUAL.html) · [中文](docs/USER_MANUAL.zh.html)
+
 HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training and inference clusters. It takes a cluster design — topology, component classes with 口径-typed failure parameters and provenance, workload, recovery pipeline, spares — and returns availability, MTBF/MTBI, MTTR, goodput and its loss terms, spare counts, N+k replica sizing and the cost of unavailability. It allocates a goodput or availability target to subsystem budgets, compares design options, runs one-at-a-time sensitivity, and cross-checks the closed forms with a Monte Carlo discrete-event simulation. It is grounded in the survey chapter *AI 集群可靠性建模：MTBF、MTTR 与可靠性框图* (2026-10).
 
 ## Documentation

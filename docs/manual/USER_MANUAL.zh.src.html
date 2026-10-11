@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAC-D 用户手册</title>
+<meta name="description" content="HAC-D 用户手册：AI 集群可用性、MTBF、MTTR 与 goodput 建模工具的页面、方法、公式、验证与接口（v3.1，2026-10-11）。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede7; --ink: #1d1d1b; --muted: #5f5e58; --rule: #d9d6cd; --rule-strong: #b9b5a8;
+    --accent: #2f4fb8; --accent-soft: #e7ecfa; --warn: #a8691b; --warn-soft: #f6ead6; --ok: #2d7a4f; --ok-soft: #e1f0e6; --crit: #b3382c;
+    --s1: #2f4fb8; --s2: #d2652d; --s3: #2d7a4f; --s4: #b8862f; --s5: #c0477e; --s6: #4a9fb5; --s7: #6a4bb3;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+      --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+      --s1: #8fa4ea; --s2: #e5906a; --s3: #7cc89a; --s4: #d9b367; --s5: #e08ab0; --s6: #7fc4d6; --s7: #a78de0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+    --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+    --s1: #8fa4ea; --s2: #e5906a; --s3: #7cc89a; --s4: #d9b367; --s5: #e08ab0; --s6: #7fc4d6; --s7: #a78de0;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.6; }
+  code, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  td code { white-space: nowrap; }
+  h1, h2, h3, h4 { font-family: "IBM Plex Serif", "IBM Plex Sans", "PingFang SC", "Noto Serif CJK SC", Georgia, serif; font-weight: 600; line-height: 1.3; margin: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 0; min-height: 100vh; max-width: 100vw; }
+  nav.toc { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 24px 18px; border-right: 1px solid var(--rule); background: var(--surface); font-size: 13px; }
+  nav.toc .brand { font-family: "IBM Plex Serif", serif; font-size: 20px; font-weight: 600; }
+  nav.toc .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  nav.toc ol { list-style: none; padding: 0; margin: 0; }
+  nav.toc li { margin: 2px 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--ink); }
+  nav.toc a:hover { background: var(--accent-soft); text-decoration: none; }
+  nav.toc .num { color: var(--muted); display: inline-block; width: 2.2em; }
+  main { padding: 28px 40px 80px; max-width: 980px; min-width: 0; }
+  header.title { padding-bottom: 18px; border-bottom: 1px solid var(--rule); margin-bottom: 28px; }
+  header.title h1 { font-size: 34px; }
+  header.title .sub { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  section { margin: 34px 0; }
+  h2 { font-size: 24px; margin: 38px 0 12px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  h3 { font-size: 17px; margin: 22px 0 8px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 13.5px; background: var(--surface); }
+  th, td { border-bottom: 1px solid var(--rule); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; font-size: 12.5px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  figure { margin: 14px 0 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 10px; }
+  figure img { width: 100%; height: auto; display: block; border-radius: var(--radius-sm); }
+  figure svg { width: 100%; height: auto; display: block; }
+  figure.narrow { max-width: 330px; }
+  figcaption { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+  .formula { font-family: "IBM Plex Mono", monospace; font-size: 13px; background: var(--surface-2); border-left: 3px solid var(--accent); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 10px 0; font-size: 14px; }
+  .kv { display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); gap: 4px 14px; font-size: 14px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  pre { background: var(--surface-2); padding: 10px 12px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 12.5px; max-width: 100%; }
+  svg text { font-family: "IBM Plex Sans", "PingFang SC", sans-serif; }
+  footer { color: var(--muted); font-size: 12.5px; border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 40px; }
+  @media (max-width: 900px) {
+    code, p, li, dd, td, figcaption { overflow-wrap: anywhere; }
+    td code { white-space: normal; }
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--rule); min-width: 0; }
+    main { padding: 18px 16px 60px; }
+    header.title h1 { font-size: 26px; }
+    h2 { font-size: 21px; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    main { max-width: none; padding: 0; }
+    figure { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="目录">
+  <div class="eyebrow">AI cluster availability modeling</div>
+  <div class="brand">HAC-D · 用户手册</div>
+  <div style="color: var(--muted); margin: 4px 0 16px;">v3.1 · 2026-10-11 · <a href="USER_MANUAL.html">English</a></div>
+  <ol>
+    <li><a href="#s1"><span class="num">1</span>HAC-D 是什么</a></li>
+    <li><a href="#s2"><span class="num">2</span>快速开始</a></li>
+    <li><a href="#s3"><span class="num">3</span>概念与口径</a></li>
+    <li><a href="#s4"><span class="num">4</span>方案页</a></li>
+    <li><a href="#s5"><span class="num">5</span>训练作业页</a></li>
+    <li><a href="#s6"><span class="num">6</span>机制页</a></li>
+    <li><a href="#s7"><span class="num">7</span>可用性分配页</a></li>
+    <li><a href="#s8"><span class="num">8</span>推理服务、备件与故障域</a></li>
+    <li><a href="#s9"><span class="num">9</span>方案对比页</a></li>
+    <li><a href="#s10"><span class="num">10</span>蒙特卡洛页</a></li>
+    <li><a href="#s11"><span class="num">11</span>设计评审页</a></li>
+    <li><a href="#s12"><span class="num">12</span>导入与参数库</a></li>
+    <li><a href="#s13"><span class="num">13</span>方法参考</a></li>
+    <li><a href="#s14"><span class="num">14</span>验证与精度</a></li>
+    <li><a href="#s15"><span class="num">15</span>推荐工作流</a></li>
+    <li><a href="#s16"><span class="num">16</span>命令行、MCP 与文件</a></li>
+    <li><a href="#s17"><span class="num">17</span>局限与路线图</a></li>
+    <li><a href="#s18"><span class="num">18</span>术语表</a></li>
+  </ol>
+</nav>
+<main>
+<header class="title">
+  <h1>HAC-D 用户手册</h1>
+  <div class="sub">面向 AI 训练与推理集群的可用性、MTBF、MTTR 与 goodput 建模：解析式带有效性标记，解析式不成立时转蒙特卡洛，每个数字都带公式与口径（事件、分母、层级）。版本 3.1，2026-10-11。</div>
+</header>
+
+<section id="s1">
+<h2>1. HAC-D 是什么</h2>
+<p>HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载、恢复策略、故障管理机制）转换为可用率、平均中断间隔、恢复时间、goodput 与成本，并把目标反向分配到子系统和机制。它以综述章节《AI 集群可靠性建模》为依据，并与一个独立的参考引擎（经审核的单训练作业 30 天离散事件仿真器）交叉校核。</p>
+<h3>1.1 原则</h3>
+<ul>
+  <li><b>每个数字都带公式与口径。</b>故障率是「某事件类 / 某分母 / 某层级」（例如作业级的每卡·小时硬中断）。不同事件类的量永不相加。</li>
+  <li><b>解析式优先，并带有效性标记。</b>一阶 goodput 公式检查 τ + δ ≪ M 与 R ≪ M；标记触发时首要值切换为精确更新式。</li>
+  <li><b>假设不成立时转蒙特卡洛。</b>非指数寿命、相关故障、有限备件池、有限窗口与静默错误走仿真；解析式结果仍显示并带差值徽标。</li>
+  <li><b>每个参数都有出处。</b>参数库记录与方案输入带来源、年份与置信（measured、paper-reported、vendor、derived、assumed、scan-level）。</li>
+</ul>
+<h3>1.2 架构</h3>
+<div class="table-wrap"><table>
+  <tr><th>包</th><th>作用</th><th>说明</th></tr>
+  <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付、机制链与机制库、规划器、备件、MTTR、分配、敏感性、成本、蒙特卡洛、方案 schema 与示例、参数库（635 条）</td></tr>
+  <tr><td><code>apps/web</code></td><td>Vite + React 静态应用</td><td>中英双语、浅 / 深色，计算在 Web Worker 中，共 11 个页面</td></tr>
+  <tr><td><code>packages/cli</code></td><td>命令行 <code>hacd</code></td><td>与 Web 应用同一套函数，输出表格或 JSON</td></tr>
+  <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 17 个工具（评估、对比、分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器）</td></tr>
+  <tr><td><code>packages/importers</code></td><td>Excel 导入 / 导出</td><td>公式方法识别、拓扑提取、对账、含公式的工作簿导出</td></tr>
+</table></div>
+</section>
+
+<section id="s2">
+<h2>2. 快速开始</h2>
+<pre>npm install                      # Node ≥ 20，npm workspaces
+npm run dev                      # Web 应用 http://localhost:5173
+npm test                         # 358 个核心测试 + 29 个导入器测试（含黄金向量）
+node --import tsx packages/cli/src/main.ts examples        # 命令行
+claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务</pre>
+<p>Web 应用中：「方案」→ <b>加载示例</b>（九个内置方案，见 §16.3）→ 其他页面在每次编辑后自动重算，没有「重新计算」步骤。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。方案保存在浏览器本地存储；<b>导出 JSON</b> 保存一个方案，<b>导入 JSON</b> 读入，<b>恢复内置</b> 重置示例。</p>
+<figure class="narrow"><img src="img-zh/training-mobile.jpg" alt="375 px 宽度下的训练作业页"><figcaption>每个页面都按 1280 px 与 375 px 两种宽度排版；图表都有「表格」按钮可读取精确数值。</figcaption></figure>
+</section>
+
+<section id="s3">
+<h2>3. 概念与口径</h2>
+<h3>3.1 度量</h3>
+<div class="table-wrap"><table>
+  <tr><th>度量</th><th>定义</th><th>页面</th></tr>
+  <tr><td>可用率 A（补偿后）</td><td>系统结构处于可用态的稳态概率，计入冗余、倒换成功率、自动恢复与亚健康策略</td><td>方案、设计评审</td></tr>
+  <tr><td>原始可用率</td><td>同一结构，但每个单元故障都算停机、仅人工修复、不计冗余；补偿瀑布逐步加入各机制</td><td>设计评审</td></tr>
+  <tr><td>严格 / 宽松 / 性能加权</td><td>亚健康计为不可用 / 计为可用 / 按性能因子加权</td><td>设计评审</td></tr>
+  <tr><td>MTBF、等效 MTTR</td><td>由稳态故障频率得 A / ν_sys 与 (1 − A) / ν_sys</td><td>方案</td></tr>
+  <tr><td>MTBI</td><td>作业平均中断间隔 1 / Σ nᵢλᵢ（加上已检出亚健康单元的隔离）</td><td>训练作业</td></tr>
+  <tr><td>恢复时间 R(N)</td><td>从中断到恢复有效训练的平均时间，不含重算；流水线、分级或混合</td><td>训练作业</td></tr>
+  <tr><td>运行可用率 A_op</td><td>运行时间占比 1 / (1 + λ_rb R_rb + λ_p R_p)（保存与重算计为运行）</td><td>训练作业、方案对比</td></tr>
+  <tr><td>goodput（一阶、精确更新、乘积、Daly）</td><td>周期 checkpoint 下单位墙钟时间的有效计算，§13.5</td><td>训练作业</td></tr>
+  <tr><td>有效 goodput</td><td>首要 goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local)：计入备机、亚健康与弹性域损失</td><td>训练作业、方案对比</td></tr>
+  <tr><td>正确有效产出（交付 goodput）</td><td>作业窗口结束时保留的正确进度 ÷ 窗口长度，扣除静默错误回滚与期末判废</td><td>训练作业、可用性分配、机制</td></tr>
+  <tr><td>容量可用率（推理）</td><td>N+k 池中至少所需副本数可用的概率</td><td>推理服务</td></tr>
+</table></div>
+<h3>3.2 故障类别</h3>
+<p>每个部件类可建模三种表现，各有自己的口径与处理方式：</p>
+<ul>
+  <li><b>中断</b>：单元停止；作业被检测为停机，经机制链与全局 checkpoint 恢复，除非由不回滚的机制处理，否则回退到最近 checkpoint。</li>
+  <li><b>亚健康（fail-slow）</b>：单元以性能因子 φ 持续运行一段时间；同步作业被拖慢（掉队者定律）；策略为容忍或隔离（已检出的单元先保存进度再切出）。</li>
+  <li><b>静默错误（SDC）</b>：状态被污染而无中断；即时检测捕获一部分，漏检的污染在兜底时延后被发现并回退到最后一个干净 checkpoint；窗口结束时仍带错的状态判废。</li>
+</ul>
+<h3>3.3 置信与出处</h3>
+<p>每个故障率或时间可带 <code>provenance</code>（来源、机构、年份、URL、算式）与置信标签。参数库（§12.2）使用同样的标签；参考示例把借用的占比与目标值标为 <i>assumed</i>。规划器（§6.3）对假设参数降额；可用性分配页按置信加权可行性。</p>
+</section>
+
+<section id="s4">
+<h2>4. 方案页</h2>
+<figure><img src="img-zh/scenario.jpg" alt="方案页"><figcaption>方案页（三类故障参考示例）：KPI 卡片（补偿后与原始可用率、MTBF、等效 MTTR、goodput、A_op）、拓扑、度量、负载、静默错误策略与恢复编辑器，然后是部件表。</figcaption></figure>
+<h3>4.1 拓扑与超节点预设</h3>
+<p>每节点 GPU 数、每柜节点数、每区机柜数、scale-up 域大小与网络平面数决定计数范围（按 gpu、节点、机柜、区或固定数）。<b>超节点预设</b>（CloudMatrix384 或参数化的 Atlas 950）加入超节点几何：每节点 NPU 数、计算与通信机柜数、UB 子平面数、每子平面 L2 芯片数与端口数、每节点 L1 芯片数与链路数、每链路光模块数。部件类可按超节点、通信机柜、L1 或 L2 交换芯片、子平面、光链路或光模块计数。CloudMatrix384 的推导计数为 48 节点 × 8 NPU、7 个子平面 × 16 片 L2、5,376 条光链路；公开资料未给出的字段标为 <i>assumed</i>。</p>
+<h3>4.2 部件类</h3>
+<div class="table-wrap"><table>
+  <tr><th>字段</th><th>含义</th></tr>
+  <tr><td>计数规则</td><td>每 gpu / 节点 / 机柜 / 区 / 超节点范围内的单元数，或固定数量</td></tr>
+  <tr><td>故障率与单位</td><td>每小时、每百万小时、FIT、AFR、MTBF 小时等；<b>集群 MTBF 锚点</b>把「N 个单元、集群 MTBF 为 M」换算为单元故障率</td></tr>
+  <tr><td>修复路径</td><td>人工 MTTR，或双路径：自动覆盖率 c、成功率 s、自动 MTTR T_a、人工 MTTR T_m（E[R] = c T_a + (1 − c s) T_m）</td></tr>
+  <tr><td>冗余</td><td>串联、并联、k-of-n、备用；倒换成功率、每次倒换的短暂停机、倒换失败后的恢复时间</td></tr>
+  <tr><td>共因</td><td>β 因子及其波及的故障域（节点、机柜、超节点、子平面等）</td></tr>
+  <tr><td>亚健康</td><td>进入率或稳态概率、持续时间、性能 φ、升级倍数、容忍 / 隔离策略、检测概率与时延</td></tr>
+  <tr><td>静默错误</td><td>每单元·小时的静默事件率（作业级策略见 §4.4）</td></tr>
+  <tr><td>机制适用比例</td><td>本类中断中可由重执行、进程重调度与 DP 弹性处理的比例（参考目录逐事件标志按来源汇总）</td></tr>
+  <tr><td>婴儿期、lemon、Weibull 形状</td><td>供蒙特卡洛作业仿真使用</td></tr>
+</table></div>
+<h3>4.3 负载与恢复</h3>
+<p>训练：作业 GPU / NPU 数（或使用的超节点数）、时长、暴露的 checkpoint 保存时间 δ、间隔模型（Young、Daly 三项、Daly 精确、Saxena）或固定间隔、热备节点与补充时间、恢复路径（checkpoint τ/2 或副本一步）、实测每次故障丢失计算量 W。推理：所需副本数、每副本 GPU 数（可以一个超节点为单位）、备用副本、容量目标、SLO 窗口。</p>
+<p>恢复：带规模律的<b>流水线</b>（预设 <code>baseline-timeout-manual</code>、<code>automated-probe-standby</code>、<code>trainmover-8192-restart</code>、<code>elastic-replica</code>）、带成功率的<b>分级恢复</b>（<code>mindcluster-a3</code>、<code>generic-auto-restart</code> 或自定义），或 <b>MTTR 混合</b> R = T_det + T_auto + (1 − p_s) T_manual，其中 T_det = p_d t_auto + (1 − p_d) t_timeout。</p>
+<h3>4.4 静默错误策略与恢复机制链</h3>
+<p>作业级：即时检出率 q 与检测时间、兜底发现时延 D（参考基线为 120 h）、可选的 step 恢复（最多重做 t_step，用 t_rec 恢复）。<b>恢复机制链</b>可启用重执行（不回滚）、DP 域弹性（不回滚；n 个域中一个域不可用 t_el，全局同步 t_sync）与进程重调度（回滚），各带成功率与成功 / 失败耗时；按此顺序在全局 checkpoint 恢复之前依次尝试。</p>
+<h3>4.5 度量、目标、成本、JSON</h3>
+<p>亚健康阈值 φ_min（默认 0.7，低于则计为不可用）、用于网络平面损失的通信占比、首要度量（补偿后 / 原始）、goodput 与可用率目标、每 GPU 小时价格。页底的方案 JSON 编辑器显示完整文档（schema 见 <code>docs/scenario.schema.json</code>）。</p>
+</section>
+
+<section id="s5">
+<h2>5. 训练作业页</h2>
+<figure><img src="img-zh/training.jpg" alt="训练作业页"><figcaption>训练作业页：正确有效产出与有效 goodput、A_op、MTBI、恢复、导致停顿的事件、间隔、成本；带一阶标记的区间行；模型表；损失分解与恢复阶段；窗口账本；静默错误卡片。</figcaption></figure>
+<h3>5.1 怎样读这一页</h3>
+<ul>
+  <li>方案含静默错误时，<b>正确有效产出</b>是首要卡片；<b>有效 goodput</b>（性能）与交付系数显示在旁边。</li>
+  <li><b>区间行</b>：(τ + δ)/M 与 R/M 及有效性徽标；首要模型（标记正常时为一阶式，否则为精确更新式）。</li>
+  <li><b>模型表</b>：A_op、一阶式 ★、乘积式、精确更新式（含推导 W）、Daly 完整模型，各附假设。</li>
+  <li><b>窗口账本</b>：正确交付 + 停机 + 保存 + 回滚 + 降速 + 弹性域损失 + 备机 + 静默回滚 + 期末判废 = 1（解析式，按首要模型分解）。</li>
+  <li><b>各部件类的机制链</b>：适用比例、P(重执行 / 弹性 / 进程 / 全局)、回滚概率、平均停顿、每事件域损失。</li>
+  <li><b>规模外推</b>：1/N 定律，逐行应用机制链、仅停顿事件与静默错误窗口；一阶标记触发处带 caution / invalid 徽标；超节点预设下多一列超节点数。</li>
+</ul>
+<h3>5.2 窗口账本</h3>
+<figure>
+<svg viewBox="0 0 900 150" role="img" aria-label="10 万卡三类故障参考基线的窗口账本">
+  <g font-size="12" fill="var(--ink)">
+    <rect x="20" y="30" width="529" height="34" fill="var(--s1)" rx="4"/>
+    <rect x="551" y="30" width="21" height="34" fill="var(--s2)"/>
+    <rect x="574" y="30" width="11" height="34" fill="var(--s3)"/>
+    <rect x="587" y="30" width="12" height="34" fill="var(--s4)"/>
+    <rect x="601" y="30" width="247" height="34" fill="var(--s5)" />
+    <rect x="850" y="30" width="24" height="34" fill="var(--s7)" rx="4"/>
+    <text x="24" y="52" fill="#fff" font-weight="600">正确交付 62.6 %</text>
+    <text x="604" y="52" fill="#fff" font-weight="600">静默错误回滚 29.3 %</text>
+    <text x="20" y="20" fill="var(--muted)">三类故障参考基线，100,000 卡，30 天窗口（解析式）</text>
+    <text x="20" y="90" fill="var(--muted)">■ 正确交付 62.61 · 停机 2.51 · 保存 1.33 · 回滚（中断）1.39 · 降速 0.04 · 静默回滚 29.29 · 期末判废 2.83（占窗口 %）</text>
+    <text x="20" y="112" fill="var(--muted)">性能 goodput（94.7 %）= 正确交付 + 两项静默错误损失；仅靠硬件无法弥补 32 个百分点的差距。</text>
+  </g>
+</svg>
+<figcaption>窗口内每一份时间只记一次。分配与机制选择都在这些账本行上进行（§7、§15）。</figcaption>
+</figure>
+<h3>5.3 窗口内的静默错误</h3>
+<figure>
+<svg viewBox="0 0 900 170" role="img" aria-label="一次静默错误事件的时间线">
+  <g font-size="12" fill="var(--ink)">
+    <line x1="30" y1="80" x2="870" y2="80" stroke="var(--rule-strong)" stroke-width="2"/>
+    <rect x="30" y="66" width="300" height="28" fill="var(--s3)" opacity="0.85"/>
+    <rect x="330" y="66" width="380" height="28" fill="var(--s5)" opacity="0.85"/>
+    <rect x="710" y="66" width="40" height="28" fill="var(--s2)" opacity="0.9"/>
+    <rect x="750" y="66" width="120" height="28" fill="var(--s3)" opacity="0.85"/>
+    <text x="40" y="84" fill="#fff" font-weight="600">干净 ~ Exp(ν)</text>
+    <text x="340" y="84" fill="#fff" font-weight="600">带错：之后每个 checkpoint 都被污染（D = 兜底时延）</text>
+    <text x="754" y="84" fill="#fff" font-weight="600">干净</text>
+    <text x="330" y="52" text-anchor="middle">漏检的静默事件</text>
+    <text x="710" y="52" text-anchor="middle">发现 → 回退到最后一个干净 checkpoint</text>
+    <text x="730" y="124" text-anchor="middle" fill="var(--muted)">停顿 R_c</text>
+    <text x="30" y="150" fill="var(--muted)">ν = λ_sdc (1 − q) · A_run · (1 − P_clear)；带错期间的工作在发现时丢失，窗口结束仍带错则判废。</text>
+  </g>
+</svg>
+<figcaption>正确有效产出背后的交替更新过程（§13.7）。卡片给出事件率、期望事件数、干净 / 带错 / 停顿占比、期末仍带错的概率以及作为对照的无恢复系数。</figcaption>
+</figure>
+</section>
+
+<section id="s6">
+<h2>6. 机制页</h2>
+<figure><img src="img-zh/mechanisms.jpg" alt="机制页"><figcaption>机制页：参与归因的机制、按目标规划卡片（最低工作量可行组合、必要机制、Pareto 前沿、检出率 × 恢复时间扫描、账本仿真校核），然后是归因报告与带可编辑参数、工作量分数的机制库表。</figcaption></figure>
+<h3>6.1 机制库</h3>
+<p>参考目录的 12 项机制，各带其变化、前置条件、失败路径、参数置信以及规划器使用的工作量分数（1–5）。其中 8 项有方案变换；其余为说明性（已在基线中或不得重复计收益）。</p>
+<div class="table-wrap"><table>
+  <tr><th>ID</th><th>机制</th><th>方案变化（参考策略的目标值）</th><th>工作量</th></tr>
+  <tr><td>D-HARD</td><td>中断检测 / 超时兜底</td><td>混合检测 95 % 在 10 s → 99.9 % 在 1 s</td><td class="num">2</td></tr>
+  <tr><td>D-SLOW</td><td>亚健康检测</td><td>每个亚健康类 95 % 在 5 min → 99 % 在 30 s</td><td class="num">3</td></tr>
+  <tr><td>D-SDC</td><td>静默即时检测</td><td>检出率 0 → 95 %，1 s；回退到最近 checkpoint + 全局恢复</td><td class="num">5</td></tr>
+  <tr><td>R-SDC</td><td>干净 step 状态恢复（依赖 D-SDC）</td><td>已检出的静默最多重做 1 s、1 s 恢复</td><td class="num">4</td></tr>
+  <tr><td>R-REPLAY</td><td>通信 / 算子重执行</td><td>90 % 在 5 s，不回滚；失败 10 s</td><td class="num">2</td></tr>
+  <tr><td>R-PROCESS</td><td>进程 / Pod 重调度</td><td>95 % 在 60 s，回滚；失败 120 s</td><td class="num">3</td></tr>
+  <tr><td>R-ELASTIC</td><td>DP 域弹性</td><td>98 %；50 域中一个域不可用 180 s；同步 1 s；不回滚；失败 120 s</td><td class="num">5</td></tr>
+  <tr><td>R-CKPT、R-MANUAL</td><td>全局 checkpoint 恢复、人工恢复</td><td>基线（3 min、99 %，失败加 2 h 人工）</td><td class="num">—</td></tr>
+  <tr><td>C-FAST</td><td>更快的 checkpoint</td><td>τ 300 s / δ 4 s → 60 s / 1 s</td><td class="num">3</td></tr>
+  <tr><td>H-PROTECT</td><td>既有光路 / 供电保护</td><td>说明性：已在残余故障率中</td><td class="num">—</td></tr>
+  <tr><td>H-RELIABILITY</td><td>降低硬件故障率</td><td>可选的故障率下降比例（不预设）</td><td class="num">4</td></tr>
+</table></div>
+<h3>6.2 归因</h3>
+<p>选择参与的机制与价值函数（正确有效产出、有效 goodput 或 A_op），按<b>归因</b>：先把所选机制从方案中剥离（基线），再用解析式评估全部 2ⁿ 个组合，报告单项收益（单独启用）、末位加入收益（加在其余全部之上）与精确 Shapley 贡献（合计等于组合收益）。替代型机制（重执行、弹性、进程重调度）收益递减；互补型机制（检测 + step 恢复）只有一起启用才有收益。</p>
+<h3>6.3 按目标规划</h3>
+<p>设定目标后按<b>规划</b>：每个组合按名义参数与降额参数（检出率 −5 点、成功率 −8 点、时间 ×1.5）各评估一次，两者都达标才算可行。卡片报告工作量最低的可行组合、出现在每个可行组合中的机制（必要机制）、工作量–价值 Pareto 前沿、在该组合之上的静默检出率 × 自动恢复时间扫描，以及（启用时）用窗口账本仿真校核的 P(窗口 ≥ 目标) 与置信水平。工作量分数与目标参数可在机制库表中修改。</p>
+<div class="callout">三类故障参考基线，目标正确有效产出 90 %：5 万卡时仅 D-SDC 即为最低工作量且必要（名义 95.4 %，降额 94.2 %，95 % 的月份 ≥ 90 %）；10 万卡时均值达标（92.3 %）但只有 85 % 的月份达到 90 %，需加入重执行或弹性留余量；50 万卡时任何机制库组合都不够（83.4 %），扫描表明需要检出率 ≥ 99 % 且恢复 ≤ 120 s，与参考工具的结论一致。</div>
+</section>
+
+<section id="s7">
+<h2>7. 可用性分配页</h2>
+<figure><img src="img-zh/allocation.jpg" alt="可用性分配页"><figcaption>正确交付口径下的分配页：静默错误卡片（仅靠硬件可达性、所需检出率与兜底时延、对应的有效目标）、损失预算卡片、说明、各部件类允许的故障率与各恢复阶段允许的时间。</figcaption></figure>
+<h3>7.1 方法</h3>
+<div class="table-wrap"><table>
+  <tr><th>方法</th><th>规则</th><th>适用情形</th></tr>
+  <tr><td>等分</td><td>λᵢ* = λ*/m</td><td>对子系统没有信息</td></tr>
+  <tr><td>ARINC</td><td>λᵢ* ∝ 当前 λᵢ</td><td>信任当前比例，所有类按同一倍数改进</td></tr>
+  <tr><td>AGREE</td><td>Rᵢ = 1 − (1 − R*^{nᵢ/N}) / wᵢ，复杂度 × 重要度 × 工作时间</td><td>已知模块数与重要度权重</td></tr>
+  <tr><td>可改进性</td><td>按可改进程度加权（假设值权重更大）</td><td>置信参差不齐</td></tr>
+  <tr><td>最小努力（Albert）</td><td>只把最差的类拉到同一水平</td><td>少数类占主导</td></tr>
+  <tr><td>成本最优</td><td>在 Σ λᵢ = λ* 下最小化 Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ}（拉格朗日）</td><td>各类有成本曲线</td></tr>
+</table></div>
+<h3>7.2 goodput 预算与目标口径</h3>
+<p>在 Young 间隔下一阶损失为 L = √(2δ/M) + R/M。给定目标 G*，本页求解所需 MTBI（保持 R）、所需恢复时间（保持 λ）与均衡分配，再把所需中断率分配给各类、所需恢复时间分配给各阶段。有余量时表格显示各类可以恶化到何种程度（改进倍数小于 1）。</p>
+<p><b>正确交付口径</b>（方案含静默错误时为默认）把正确交付目标 G_d 换算为有效目标与中断项目标（÷ 交付系数 ÷ 亚健康系数）；先检查仅靠硬件能否达到（故障率 → 0 且静默策略不变），若不能，则报告达到目标所需的最小即时检出率 q* 与最长兜底时延 D*，并以检出率提高到 q* 计算预算。</p>
+<h3>7.3 算例：5 万卡达到 90 %</h3>
+<div class="table-wrap"><table>
+  <tr><th>量</th><th class="num">值</th></tr>
+  <tr><td>当前正确有效产出（q = 0，D = 120 h）</td><td class="num">76.7 %</td></tr>
+  <tr><td>仅靠硬件可达</td><td class="num">77.9 %</td></tr>
+  <tr><td>所需即时检出率（硬件不变）</td><td class="num">71.5 %</td></tr>
+  <tr><td>或所需兜底时延（q = 0）</td><td class="num">32 h</td></tr>
+  <tr><td>采用参考的 95 % 检出率后</td><td class="num">95.4 %</td></tr>
+  <tr><td>此时允许的中断率（ARINC，保持 R）</td><td class="num">×4，MTBI ≥ 1.49 h</td></tr>
+  <tr><td>或允许的恢复时间（保持 λ）</td><td class="num">≤ 24 min</td></tr>
+</table></div>
+</section>
+
+<section id="s8">
+<h2>8. 推理服务、备件与故障域</h2>
+<p><b>推理服务</b>：N+k 副本池，一个副本 = 一个节点、机柜或超节点；副本故障率 λ_r = 副本范围内及以下各类之和，MTTR_r 按率加权，u_r = λ_r MTTR_r / (1 + λ_r MTTR_r)，有服务可用率 1 − u_r^{n+k}，容量可用率 Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}，达到目标所需的 k、每日副本故障数与空闲备用 GPU 小时。超节点预设下本页以超节点数给出 10 万 / 20 万 / 50 万 NPU 集群的规模（CloudMatrix384 类比故障率：261 / 521 / 1,303 个超节点，99.9 % 容量可用率需 k* = 9 / 14 / 27 个备用）。</p>
+<p><b>备件与故障域</b>：按二项分位数的热备（ByteRobust）、按泊松与补充时间的热备（Meta）、维修流水线中的单元与作业期内的更换数、节点 MTBF × MTTR 的所需备件图，以及与故障域一致的备件粒度。</p>
+</section>
+
+<section id="s9">
+<h2>9. 方案对比页</h2>
+<figure><img src="img-zh/compare.jpg" alt="方案对比页"><figcaption>方案对比页：所选方案的并排 KPI（可用率、原始、性能加权、需人工比例、A_op、MTBI、恢复、goodput、正确交付、每日损失、阻塞、备件、推理容量、k*）、goodput 与成本柱状图，以及当前方案的单因素龙卷风图。</figcaption></figure>
+<p>龙卷风图把每个部件故障率、恢复时间、checkpoint δ、热备数与共因 β 各减半与加倍，对 goodput、正确交付、可用率、每日损失或 MTBI 作敏感性分析。参数敏感性用它；离散机制的价值用机制页。</p>
+</section>
+
+<section id="s10">
+<h2>10. 蒙特卡洛页</h2>
+<figure><img src="img-zh/simulate.jpg" alt="蒙特卡洛页"><figcaption>窗口账本模式下的蒙特卡洛页：与解析式的一致性徽标、带置信区间与分位数的正确有效产出、A_op、P(正确交付 ≥ 目标)、期末仍带错的概率、每次运行的事件数、平均账本、各窗口的分布以及按部件类归因。</figcaption></figure>
+<p><b>窗口账本</b>（默认）：对一个作业窗口做离散事件仿真，含三类故障、机制链（按适用比例做伯努利抽样）、亚健康检测与隔离、静默错误（即时检测、step 恢复、兜底发现、干净 checkpoint 保留、期末判废）与 checkpoint 批处理；与经审核的参考引擎同一口径，每小时只记一次。<b>作业仿真</b>：单元级蒙特卡洛，含 Weibull / 对数正态寿命与修复、婴儿期、lemon 单元、带波及范围的 β 共因、有限热备池、冗余组与 fail-slow。两者都与解析式对比并在不一致时提示；不一致时以仿真为准。</p>
+</section>
+
+<section id="s11">
+<h2>11. 设计评审页</h2>
+<figure><img src="img-zh/report.jpg" alt="设计评审页"><figcaption>设计评审页：11 条设计评审清单、原始 vs 补偿后度量与补偿瀑布、可靠性框图、重要度与最小割集、假设与警告；导出 HTML、CSV、JSON 与 Excel。</figcaption></figure>
+<div class="table-wrap"><table>
+  <tr><th>#</th><th>清单项（综述设计评审）</th></tr>
+  <tr><td>1</td><td>先定口径</td></tr>
+  <tr><td>2</td><td>用自己集群的故障率</td></tr>
+  <tr><td>3</td><td>δ 只计暴露时间，并保留两份以上快照</td></tr>
+  <tr><td>4</td><td>检查 τ + δ ≪ M 且 R ≪ M</td></tr>
+  <tr><td>5</td><td>单独核算恢复读带宽</td></tr>
+  <tr><td>6</td><td>备件按分位数算，不按比例</td></tr>
+  <tr><td>7</td><td>备件粒度与故障域一致</td></tr>
+  <tr><td>8</td><td>把 MTTR 拆段测量</td></tr>
+  <tr><td>9</td><td>核验独立与指数假设</td></tr>
+  <tr><td>10</td><td>把 fail-slow 与 SDC 写进模型</td></tr>
+  <tr><td>11</td><td>货币化后再比备机，并与仿真或实测交叉验证</td></tr>
+</table></div>
+<p>重要度（Birnbaum、Fussell-Vesely、RAW、RRW）对各块排序；Excel 导出生成带公式的工作簿（Inputs、Structure、Results、Formulas），可脱离 HAC-D 独立重算。</p>
+</section>
+
+<section id="s12">
+<h2>12. 导入与参数库</h2>
+<figure><img src="img-zh/import.jpg" alt="导入页"><figcaption>导入页：工作簿中识别到的方法（带单元格地址的公式指纹）、列角色、带依据与置信的提取拓扑，以及表内缓存值与 HAC-D 的对账。</figcaption></figure>
+<h3>12.1 Excel 导入</h3>
+<p>公式被识别为 18 种方法标签：由 MTBF / MTTR 或 λ / MTTR 求可用率、不可用度 λ·MTTR、FIT → λ、AFR → MTBF、串联乘积、稀有事件求和、并联补集、k-of-n 显式求和 / COMBIN / BINOM.DIST、备用、倒换加权、MTTR 自动 / 人工混合、Markov MMULT / MINVERSE、百分比与补集换算、计数幂次。拓扑从层级列、缩进、分组级别与公式依赖图提取为草稿，转换为方案并与表内数值对账。九个合成样例工作簿为测试集；真实工作簿用于调校表头词典。</p>
+<h3>12.2 参数库</h3>
+<p>635 条来自综述、带口径、出处与置信的记录（故障率、MTTR 各阶段时间、SDC 率、备件比例、checkpoint 开销、昇腾来源）。按类别、种类、置信与阶段筛选后，<b>用作故障率</b>可写入当前方案的部件。</p>
+</section>
+
+<section id="s13">
+<h2>13. 方法参考</h2>
+<p>完整推导见 <code>docs/MODEL_REFERENCE.md</code>（§1–§22.2）与 <code>docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md</code>。除注明外时间单位为秒。</p>
+<h3>13.1 结构</h3>
+<div class="formula">串联：A = Π Aᵢ，λ = Σ λᵢ · 并联：U = Π Uᵢ · k-of-n（可修）：Σ_{j≤n−k} C(n,j) uʲ (1−u)ⁿ⁻ʲ，u = λ·MTTR/(1 + λ·MTTR)
+备用：带备用系数与切换概率的 CTMC · 共因：声明故障域上的 β 因子 · 割集与重要度来自布尔结构</div>
+<h3>13.2 修复路径与倒换</h3>
+<div class="formula">E[R] = c·T_a + (1 − c·s)·T_m；A = 1/(1 + λ·E[R])；需人工比例 = 1 − c·s；自动路径停机占比 = c·T_a/E[R]
+k-of-n 组：在（自动修复中、人工修复中、倒换失败）状态上的精确链；短暂停机 U_sw = Σ π·w·λ·p_sw·t_sw/3600；倒换失败在 T_sf 内清除</div>
+<h3>13.3 亚健康</h3>
+<div class="formula">单元：状态 U、H、H′、I、D_a、D_m；A_strict = π_U；A_tolerant = π_U + π_H；性能加权 = π_U + φ·π_H；φ < 阈值（0.7）时计为不可用
+作业：P(被拖慢) = 1 − Π (1 − p_H,i)^{nᵢ}；φ_job = 1 − P(被拖慢)(1 − φ_min)；隔离：ν_iso = π_H·p_d/T_d 为仅停顿事件（先保存进度）
+网络平面损失：性能 1/(1 + f_comm/(P − 1))</div>
+<h3>13.4 原始与补偿后</h3>
+<div class="formula">原始：每个单元故障都算停机、仅人工修复、不计冗余：λ_o = λ + λ_sh，E[R_o] = (λ T_m + λ_sh D)/(λ + λ_sh)
+瀑布：原始 → + 冗余 → + 自动恢复 → + 亚健康策略；倒换损失单独报告</div>
+<h3>13.5 checkpoint 与 goodput</h3>
+<div class="formula">间隔：Young τ = √(2δM_rb)；Daly 三项与精确；Saxena 可用率最优周期
+MTTR 混合：R = T_det + T_auto + (1 − p_s)·T_manual，T_det = p_d·t_auto + (1 − p_d)·t_timeout
+一阶：G ≈ 1 − δ/τ − (P_rb·W + R̄)/M_ev，W = τ/2（或一步 / 实测）；标记 (τ+δ)/M 与 R/M
+精确更新（混合）：G = λ_rb τ / [(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)]；推导 W = E[min(X, τ) | X < τ+δ]
+乘积：A_run · τ/(τ+δ) · (1 − P_rb W/M_ev)；Daly 完整：τ/(M e^{R/M}(e^{(τ+δ)/M} − 1)) · 1/(1 + λ_p R_p)
+首要值：标记正常时取一阶式，否则取精确更新式；有效 = 首要值 × (1 − P_blocked) × φ_job × (1 − ℓ_local)</div>
+<h3>13.6 机制链</h3>
+<figure>
+<svg viewBox="0 0 900 120" role="img" aria-label="每次中断的机制链">
+  <g font-size="12" fill="var(--ink)">
+    <rect x="10" y="30" width="150" height="48" rx="8" fill="var(--s3)" opacity="0.9"/><text x="85" y="50" text-anchor="middle" fill="#fff" font-weight="600">重执行</text><text x="85" y="66" text-anchor="middle" fill="#fff">a_rp, s_rp · 不回滚</text>
+    <rect x="200" y="30" width="150" height="48" rx="8" fill="var(--s6)" opacity="0.95"/><text x="275" y="50" text-anchor="middle" fill="#fff" font-weight="600">弹性</text><text x="275" y="66" text-anchor="middle" fill="#fff">n 域中一个域不可用 · 不回滚</text>
+    <rect x="390" y="30" width="150" height="48" rx="8" fill="var(--s4)" opacity="0.95"/><text x="465" y="50" text-anchor="middle" fill="#fff" font-weight="600">进程重调度</text><text x="465" y="66" text-anchor="middle" fill="#fff">a_pr, s_pr · 回滚</text>
+    <rect x="580" y="30" width="150" height="48" rx="8" fill="var(--s1)" opacity="0.95"/><text x="655" y="50" text-anchor="middle" fill="#fff" font-weight="600">全局 checkpoint</text><text x="655" y="66" text-anchor="middle" fill="#fff">T_auto, p_s · 回滚</text>
+    <rect x="770" y="30" width="120" height="48" rx="8" fill="var(--s2)" opacity="0.95"/><text x="830" y="50" text-anchor="middle" fill="#fff" font-weight="600">人工</text><text x="830" y="66" text-anchor="middle" fill="#fff">+ T_manual</text>
+    <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M160 54 L200 54"/><path d="M350 54 L390 54"/><path d="M540 54 L580 54"/><path d="M730 54 L770 54"/></g>
+    <text x="180" y="100" text-anchor="middle" fill="var(--muted)">失败：+ t_fail</text><text x="370" y="100" text-anchor="middle" fill="var(--muted)">失败：+ t_fail</text><text x="560" y="100" text-anchor="middle" fill="var(--muted)">失败：+ t_fail</text><text x="750" y="100" text-anchor="middle" fill="var(--muted)">1 − p_s</text>
+    <text x="10" y="18" fill="var(--muted)">先计检测时延 d；每级只对本类中断的一部分适用；失败的级在进入下一级前计入其耗时</text>
+  </g>
+</svg>
+<figcaption>每个部件类的 27 条路径树给出回滚概率、E[停顿·1{回滚}]、E[停顿·1{不回滚}] 与 E[域损失]；按率加权汇总为 λ_rb、λ_p、R_rb、R_p。</figcaption>
+</figure>
+<h3>13.7 静默错误（有限窗口）</h3>
+<div class="formula">ν = λ_sdc (1 − q) · A_run · (1 − P_clear)，P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L)（首个带错 checkpoint 写入前的回滚会清除污染）
+S_k = Γ(k, ν) + (k − 1)(D + R_c)；P(S_k ≤ y) = P(Poisson(νz) ≥ k)，z = y − (k − 1)c
+E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[停顿] = Σ_k ∫_D^c P(S_k ≤ T − x) dx
+正确交付 = [g·(T − E[带错] − E[停顿]) − U·E[N]]/T，U = (τ²/2 + τδ)/(τ + δ)；已检出的静默：带停顿 t_d + G 的回滚事件，或 step 恢复下的仅停顿事件</div>
+<h3>13.8 归因与规划</h3>
+<div class="formula">Shapley：φᵢ = Σ_{S∌i} |S|!(n−|S|−1)!/n! · [v(S ∪ {i}) − v(S)]，Σ φᵢ = v(全部) − v(∅)；交互项 = Δ − Σ 单项收益
+规划器：可行 S ⇔ v(S) ≥ G* 且 v_derated(S) ≥ G*；规划 = 工作量最小；必要 = ∩ 可行 S；(工作量, v) 的 Pareto 前沿；校核 P(窗口 ≥ G*) ≥ 置信</div>
+<h3>13.9 分配与备件</h3>
+<div class="formula">goodput 预算（Young）：L = √(2δ/M) + R/M；保持 R：√(2δ) s + R s² = L*，s = M^{−1/2}；保持 M：R* = M (L* − √(2δ/M))
+正确交付口径：有效目标 = G_d / f_SDC；中断项目标 = 有效目标 / (φ_job (1 − P_blocked)(1 − ℓ))；q*、D* 用二分法求
+可用率分解：ln Aᵢ = (wᵢ/Σw) ln A*；λᵢ = Uᵢ/(MTTRᵢ(1 − Uᵢ))
+热备：满足 P(Binomial(N_nodes, p_daily) ≤ k) ≥ q 的最小 k；Poisson(N λ T_replenish) 分位数；维修流水线 Poisson(N λ f_hw L) 分位数
+推理：u_r = λ_r MTTR_r/(1 + λ_r MTTR_r)；A_any = 1 − u_r^{n+k}；A_cap = Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}</div>
+</section>
+
+<section id="s14">
+<h2>14. 验证与精度</h2>
+<h3>14.1 黄金向量与测试</h3>
+<p>187 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程），计算时不读引擎代码：v1 143 个、v2 26 个、v3 18 个。测试集含 358 个核心测试与 29 个导入器测试；导出的工作簿用独立公式引擎重算；每个页面都在 1280 px 与 375 px、浅色与深色下截图检查。</p>
+<h3>14.2 与参考引擎的交叉校核</h3>
+<p>经审核的参考引擎（单训练作业、30 天离散事件仿真、每方案 4000 次）与 HAC-D 在同一基线上：万卡硬件 MTBF 30 h 并线性外推，τ 300 s，δ 4 s，检测 95 % 在 10 s 否则 60 s，恢复 180 s 成功率 99 % 否则加 2 h 人工。</p>
+<div class="table-wrap"><table>
+  <tr><th>卡数</th><th class="num">参考 A_op</th><th class="num">HAC-D A_op</th><th class="num">参考有效产出（仅中断）</th><th class="num">HAC-D 精确更新</th><th class="num">参考正确交付（三类）</th><th class="num">HAC-D 正确交付</th></tr>
+  <tr><td>10,000</td><td class="num">99.75 %</td><td class="num">99.75 %</td><td class="num">98.3 %</td><td class="num">98.3 %</td><td class="num">93.33 ± 0.26 %</td><td class="num">93.33 %</td></tr>
+  <tr><td>100,000</td><td class="num">97.56 %</td><td class="num">97.55 %</td><td class="num">94.99 %</td><td class="num">94.98 %</td><td class="num">62.56 ± 0.46 %</td><td class="num">62.61 %</td></tr>
+  <tr><td>200,000</td><td class="num">95.24 %</td><td class="num">95.22 %</td><td class="num">91.43 %</td><td class="num">91.45 %</td><td class="num">45.87 ± 0.40 %</td><td class="num">45.66 %</td></tr>
+  <tr><td>500,000</td><td class="num">88.88 %</td><td class="num">88.88 %</td><td class="num">81.84 %</td><td class="num">81.88 %</td><td class="num">25.24 ± 0.26 %</td><td class="num">25.32 %</td></tr>
+</table></div>
+<p>单项机制收益与六机制 Shapley 贡献在参考工具的抽样误差内一致；弹性一项差异最大（10 万卡 0.83 对 0.25 点），因为参考工具的弹性路径使其故障流失去同步（其配对差值误差 ±0.3–0.6 点）。一阶 goodput 在 10 万 / 20 万 / 50 万卡分别低 0.2 / 0.4 / 2.4 点，这正是标记触发时首要值切换为精确更新式的原因。</p>
+</section>
+
+<section id="s15">
+<h2>15. 推荐工作流</h2>
+<figure>
+<svg viewBox="0 0 900 110" role="img" aria-label="跨页面的分析工作流">
+  <g font-size="12" fill="var(--ink)">
+    <g>
+      <rect x="10" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="69" y="45" text-anchor="middle" font-weight="600">1 口径 + 数据</text><text x="69" y="61" text-anchor="middle" fill="var(--muted)">参数库、方案</text>
+      <rect x="156" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="215" y="45" text-anchor="middle" font-weight="600">2 评估</text><text x="215" y="61" text-anchor="middle" fill="var(--muted)">训练作业、推理服务</text>
+      <rect x="302" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="361" y="45" text-anchor="middle" font-weight="600">3 归因</text><text x="361" y="61" text-anchor="middle" fill="var(--muted)">机制、方案对比</text>
+      <rect x="448" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="507" y="45" text-anchor="middle" font-weight="600">4 分配 / 规划</text><text x="507" y="61" text-anchor="middle" fill="var(--muted)">可用性分配、机制</text>
+      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 校核</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">蒙特卡洛</text>
+      <rect x="740" y="26" width="150" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="815" y="45" text-anchor="middle" font-weight="600">6 评审 + 报告</text><text x="815" y="61" text-anchor="middle" fill="var(--muted)">设计评审、导出</text>
+    </g>
+    <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M128 48 L156 48"/><path d="M274 48 L302 48"/><path d="M420 48 L448 48"/><path d="M566 48 L594 48"/><path d="M712 48 L740 48"/></g>
+    <text x="450" y="98" text-anchor="middle" fill="var(--muted)">然后实测（各阶段时间、检出率、故障日志）并回到第 1 步</text>
+  </g>
+</svg>
+<figcaption>逐步流程及跨领域参考见 <code>docs/WORKFLOW.md</code> 与 <code>docs/ALLOCATION_PRACTICE.md</code>。</figcaption>
+</figure>
+<ol>
+  <li><b>先定口径并收集数据</b>：哪个度量（正确有效产出、有效 goodput、A_op、容量可用率）、哪个窗口；尽量用自己日志的故障率，否则用带出处的参数库记录。</li>
+  <li><b>建方案并评估</b>：拓扑与部件类、修复路径、亚健康与静默错误、负载与恢复；阅读训练作业（或推理服务）页与区间标记。</li>
+  <li><b>归因</b>：损失去向（账本）、哪些杠杆重要（Shapley、龙卷风）。</li>
+  <li><b>分配与规划</b>：在可用性分配页分配中断预算；在机制页用降额选出最低工作量的充分机制组合。</li>
+  <li><b>校核</b>：窗口账本仿真给出 P(窗口 ≥ 目标)；寿命或相关性非指数时用作业仿真。</li>
+  <li><b>评审与报告</b>：11 条清单、原始 vs 补偿后度量、导出；然后在生产中实测并循环。</li>
+</ol>
+</section>
+
+<section id="s16">
+<h2>16. 命令行、MCP 与文件</h2>
+<h3>16.1 命令行</h3>
+<div class="table-wrap"><table>
+  <tr><th>命令</th><th>作用</th></tr>
+  <tr><td><code>hacd examples</code>、<code>hacd example &lt;id&gt;</code></td><td>列出 / 打印内置方案</td></tr>
+  <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>评估：可用率、MTBF、goodput、备件、推理、清单</td></tr>
+  <tr><td><code>hacd compare a.json b.json …</code></td><td>并排 KPI</td></tr>
+  <tr><td><code>hacd allocate &lt;s&gt; --goodput 0.9 --basis delivered --method arinc</code></td><td>各类与各阶段预算；静默错误杠杆</td></tr>
+  <tr><td><code>hacd tornado &lt;s&gt; --metric delivered</code></td><td>单因素敏感性</td></tr>
+  <tr><td><code>hacd simulate &lt;s&gt; --reps 100</code></td><td>单元级蒙特卡洛与解析式对比</td></tr>
+  <tr><td><code>hacd ledger &lt;s&gt; --trials 300 --target 0.9</code></td><td>窗口账本仿真与解析式对比</td></tr>
+  <tr><td><code>hacd mechanisms &lt;s&gt; --players D-SDC,R-REPLAY</code></td><td>单项 / 末位加入 / Shapley 收益</td></tr>
+  <tr><td><code>hacd plan &lt;s&gt; --target 0.9 --trials 200</code></td><td>最低工作量可行组合、必要机制、扫描、校核</td></tr>
+  <tr><td><code>hacd measures &lt;s&gt;</code></td><td>原始 vs 补偿后与瀑布</td></tr>
+  <tr><td><code>hacd methods book.xlsx</code>、<code>hacd import-excel book.xlsx --out s.json</code>、<code>hacd export-excel s.json</code></td><td>Excel 方法报告、导入、导出</td></tr>
+  <tr><td><code>hacd schema</code></td><td>方案文件的 JSON Schema</td></tr>
+</table></div>
+<p>所有命令都接受 <code>--json</code>。</p>
+<h3>16.2 MCP 工具</h3>
+<p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>。</p>
+<h3>16.3 内置示例</h3>
+<div class="table-wrap"><table>
+  <tr><th>ID</th><th>方案</th></tr>
+  <tr><td><code>ref-baseline-100k</code></td><td>参考基线，仅硬中断：100,000 卡，万卡 MTBF 30 h，τ 300 s，R 264.5 s，四个来源（HBM / GPU / 网络 / 其他）</td></tr>
+  <tr><td><code>ref-three-classes-100k</code></td><td>同上，加亚健康 2 % 与静默错误 1.4 %（参考工具已确认的基线）</td></tr>
+  <tr><td><code>ascend-cm384</code>、<code>ascend-atlas950</code></td><td>带超节点几何与类比故障率的 CloudMatrix384 与 Atlas 950 训练作业</td></tr>
+  <tr><td><code>ascend-supercluster-100k</code></td><td>由 384-NPU 超节点组成的带备用的推理池</td></tr>
+  <tr><td><code>survey-ex1</code>、<code>survey-ex3</code>、<code>survey-ex4</code></td><td>综述章节的算例（万卡作业、NVL72 域对单节点、N+k 推理）</td></tr>
+  <tr><td><code>nvl72-16k</code></td><td>一个 16k GPU 的 NVL72 设计</td></tr>
+</table></div>
+<h3>16.4 方案 JSON</h3>
+<pre>{ "version": "0.2", "meta": { "name": "…", "basis": [], "description": "…" },
+  "topology": { "gpusPerNode": 8, "nodesPerRack": 32, "racksPerZone": 64, "nvlinkDomainGpus": 8, "superpod": { … } },
+  "components": [ { "id": "gpu", "subsystem": "compute", "countRule": { "per": "gpu" },
+      "failure": { "value": 3.3e-6, "unit": "per_h", "koujing": { "event": "hard_interruption", "denominator": "card_h", "level": "job" }, "provenance": { … } },
+      "repair": { "auto": { "coverage": 1, "successProbability": 0.99, "mttrHours": 0.053 }, "manual": { "mttrHours": 2 } },
+      "subhealth": { … }, "sdc": { "ratePerHour": … }, "mechanisms": { "replay": 0.83, "process": 1, "elastic": 1 } } ],
+  "structure": { "mode": "template", "template": "training-series" },
+  "workload": { "type": "training", "nGpus": 100000, "durationDays": 30, "deltaS": 4, "intervalS": 300 },
+  "recovery": { "mode": "mixture", "detection": { "coverage": 0.95, "autoSeconds": 10, "timeoutSeconds": 60 }, "automatic": { "successProbability": 0.99, "seconds": 180 }, "manual": { "seconds": 7200 } },
+  "sdc": { "detection": { "coverage": 0, "detectSeconds": 1 }, "fallbackDelayHours": 120 },
+  "mechanisms": { "replay": { … }, "elastic": { … }, "process": { … } },
+  "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9 } }</pre>
+<p>完整 JSON Schema 见 <code>docs/scenario.schema.json</code>；工具规范见 <code>docs/SPEC.md</code>。</p>
+</section>
+
+<section id="s17">
+<h2>17. 局限与路线图</h2>
+<ul>
+  <li>解析式假设指数寿命与修复、故障独立（共因只通过 β）；仿真放宽这些假设。</li>
+  <li>机制链的弹性一级是容量模型（一个域不可用，其余继续）；它不是同步训练的性能承诺，且需要机制库列出的前置条件。</li>
+  <li>静默错误与参考工具一样采用固定兜底时延且同一时刻只有一个事件；保留窗口与定位 / 验证成功率尚未作为独立参数。</li>
+  <li>机制库的参数是参考目录的目标值与先验（已标注）；降额是一种约定，不是实测。</li>
+  <li>待办：54 条事件目录的转换器、DP 弹性训练模板、Shapley 的蒙特卡洛置信区间、图片 / 框图导入。</li>
+</ul>
+</section>
+
+<section id="s18">
+<h2>18. 术语表</h2>
+<dl class="kv">
+  <dt>口径</dt><dd>度量基准：一个量的事件类、分母与层级；HAC-D 永不相加不同口径的量</dd>
+  <dt>原始 / 补偿后</dt><dd>固有硬件（无容错）对经冗余、倒换、自动恢复、亚健康策略补偿后</dd>
+  <dt>亚健康</dt><dd>fail-slow：以降低的性能运行的单元</dd>
+  <dt>静默错误（SDC）</dt><dd>无中断的状态污染</dd>
+  <dt>正确有效产出</dt><dd>交付 goodput：窗口结束时保留的正确进度 ÷ 窗口长度</dd>
+  <dt>MTBI / MTBF / MTTR</dt><dd>作业平均中断间隔 / 系统平均故障间隔 / 平均修复时间</dd>
+  <dt>A_op</dt><dd>运行可用率：作业处于运行态的时间占比</dd>
+  <dt>τ、δ、W、R</dt><dd>checkpoint 间隔、暴露保存时间、每次回滚丢失的计算量、恢复时间</dd>
+  <dt>Shapley 贡献</dt><dd>按所有加入顺序平均后分配给某一机制的组合收益份额</dd>
+  <dt>超节点</dt><dd>如 CloudMatrix384 的 scale-up 域（384 NPU、48 节点、12 个计算 + 4 个通信机柜）</dd>
+</dl>
+</section>
+
+<footer>HAC-D v3.1 · 2026-10-11 · 来源：综述章节《AI 集群可靠性建模》；ai-cluster-reliability 审核目录（2026-10-09）；docs/MODEL_REFERENCE.md、docs/ALLOCATION_PRACTICE.md、docs/REFERENCE_COMPARISON_100K_500K.md。截图取自 Web 应用 1280 px 浅色中文界面。</footer>
+</main>
+</div>
+</body>
+</html>
