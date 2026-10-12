@@ -45,3 +45,40 @@ describe('allocation on the delivered-goodput basis', () => {
     expect(e.rateAllocation!.rows).toHaveLength(4);
   });
 });
+
+describe('allocation method weights (v3.3)', () => {
+  const base = referenceBaseline(100000);
+  const tight = { goodputTarget: 0.97, method: 'arinc' as const };
+  const rows = (s: ReturnType<typeof referenceBaseline>, method: 'equal' | 'arinc' | 'agree' | 'feasibility' | 'minimum-effort' | 'cost-optimal') => allocateScenario(s, { ...tight, method }).rateAllocation!.rows.map((r) => r.lambdaAggregate);
+  it('equal, AGREE and feasibility coincide on the reference example and the report says so', () => {
+    const a = allocateScenario(base, tight);
+    expect(a.coincide).toEqual(['equal', 'agree', 'feasibility']);
+    expect(rows(base, 'equal')).toEqual(rows(base, 'agree').map((v) => expect.closeTo(v, 12)));
+    expect(rows(base, 'arinc')[0]).not.toBeCloseTo(rows(base, 'equal')[0], 6);
+  });
+  it('importance and feasibility weights differentiate the methods; a fixed class keeps its rate; cost coefficients move the cost-optimal split', () => {
+    const w = JSON.parse(JSON.stringify(base)) as typeof base;
+    w.components[0].allocation = { importance: 0.5, feasibilityWeight: 4, costA: 3, costB: 2 };
+    w.components[2].allocation = { fixed: true }; // the network class keeps its rate
+    const a = allocateScenario(w, tight);
+    expect(a.coincide).toEqual([]);
+    const agree = rows(w, 'agree');
+    const equal = rows(w, 'equal');
+    expect(agree[0]).not.toBeCloseTo(equal[0], 6);
+    const feas = rows(w, 'feasibility');
+    expect(feas[0] / feas[1]).toBeCloseTo(4 / 2, 9); // weight 4 vs the default 2 for assumed rates
+    const current = base.components[2].failure.value * 100000;
+    for (const m of ['equal', 'arinc', 'agree', 'feasibility', 'minimum-effort', 'cost-optimal'] as const) expect(rows(w, m)[2]).toBeCloseTo(current, 12);
+    const costW = rows(w, 'cost-optimal');
+    const costBase = rows(base, 'cost-optimal');
+    expect(costW[0] / costW[1]).not.toBeCloseTo(costBase[0] / costBase[1], 4);
+  });
+  it('cost-optimal respects the 5 % floors and reports an infeasible budget instead of allocating below them', () => {
+    const a = allocateScenario(base, { goodputTarget: 0.98, method: 'cost-optimal' });
+    expect(a.rateAllocation).toBeDefined();
+    for (const r of a.rateAllocation!.rows) expect(r.lambdaAggregate).toBeGreaterThanOrEqual((r.currentAggregate ?? 0) * 0.05 - 1e-15);
+    const b = allocateScenario(base, { goodputTarget: 0.995, method: 'cost-optimal' });
+    expect(b.rateAllocation).toBeUndefined();
+    expect(b.notes.some((n) => n.includes('Budget below the sum of best-known achievable rates'))).toBe(true);
+  });
+});

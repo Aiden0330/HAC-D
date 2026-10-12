@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allocateScenario, type AllocationMethod, type AllocationBasis } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
+import { useStore } from '../state/store.js';
 import { Kpi, Card, DataTable, Field, NumberInput, Select, Badge } from '../components/ui.js';
 import { fmtPct, fmtDuration, fmtNum, fmtRatePerMillion, fmtHours } from '../lib/format.js';
 
@@ -11,6 +12,7 @@ export function AllocationPage() {
   const { t } = useTranslation();
   const lang = useLang();
   const active = useActive();
+  const updateActive = useStore((st) => st.updateActive);
   const [method, setMethod] = useState<AllocationMethod>('arinc');
   const [goodputTarget, setGoodputTarget] = useState<number>(active?.scenario.targets.goodput ?? 0.97);
   const [availabilityTarget, setAvailabilityTarget] = useState<number>(active?.scenario.targets.availability ?? 0.999);
@@ -50,7 +52,7 @@ export function AllocationPage() {
           <Field label={t('scenario.availabilityTarget')}>
             <NumberInput value={availabilityTarget} step={0.0005} min={0.9} max={0.999999} onChange={setAvailabilityTarget} />
           </Field>
-          <Field label={t('allocation.method')}>
+          <Field label={t('allocation.method')} hint={t(`allocation.methodUses.${method}`)}>
             <Select value={method} onChange={setMethod} options={METHODS.map((m) => ({ value: m, label: t(`allocation.methods.${m}`) }))} />
           </Field>
           {isTraining && (
@@ -60,6 +62,8 @@ export function AllocationPage() {
           )}
         </div>
         {alloc && 'error' in alloc && <div className="callout crit" style={{ marginTop: 8 }}>{alloc.error}</div>}
+        {a && a.coincide && a.coincide.length > 0 && <div className="callout warn" style={{ marginTop: 8 }}>{t('allocation.coincide')} {a.coincide.map((m) => t(`allocation.methods.${m}`)).join(' · ')}</div>}
+        {isTraining && <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('allocation.methodHint')}</div>}
       </Card>
       {a?.sdc && (
         <Card title={t('allocation.sdcTitle')} formula="delivered = effective × f_SDC; effective target = G_d / f_SDC; headline target = effective target / (φ_job (1 − P_blocked)(1 − ℓ)); q* and D* by bisection on the closed form">
@@ -107,6 +111,35 @@ export function AllocationPage() {
           </Card>
         )}
       </div>
+      {isTraining && (
+        <Card title={t('allocation.weightsTitle')} sub={t('allocation.weightsSub')}>
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr><th>{t('common.component')}</th><th>{t('allocation.wCount')}</th><th>{t('allocation.wImportance')}</th><th>{t('allocation.wFeasibility')}</th><th>{t('allocation.wCostA')}</th><th>{t('allocation.wCostB')}</th><th>{t('allocation.wFixed')}</th></tr>
+              </thead>
+              <tbody>
+                {active.scenario.components.filter((c) => c.enabled).map((c) => {
+                  const w = c.allocation ?? {};
+                  const row = active.result.components.find((r) => r.id === c.id);
+                  const set = (patch: Partial<NonNullable<typeof c.allocation>>) => updateActive((sc) => ({ ...sc, components: sc.components.map((q) => (q.id === c.id ? { ...q, allocation: { ...(q.allocation ?? {}), ...patch } } : q)) }));
+                  return (
+                    <tr key={c.id}>
+                      <td>{c.name?.en ?? c.name?.zh ?? c.id}</td>
+                      <td className="num">{row ? row.count.toLocaleString('en-US') : '—'}</td>
+                      <td><NumberInput value={w.importance ?? 1} min={0.01} max={1} step={0.05} onChange={(v) => set({ importance: v })} /></td>
+                      <td><NumberInput value={w.feasibilityWeight ?? (c.failure.provenance?.confidence === 'assumed' ? 2 : 1)} min={0.01} step={0.5} onChange={(v) => set({ feasibilityWeight: v })} /></td>
+                      <td><NumberInput value={w.costA ?? 1} min={0.01} step={0.5} onChange={(v) => set({ costA: v })} /></td>
+                      <td><NumberInput value={w.costB ?? 1} min={0.1} step={0.5} onChange={(v) => set({ costB: v })} /></td>
+                      <td><input type="checkbox" checked={!!w.fixed} onChange={(e) => set({ fixed: e.target.checked })} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
       {a?.unavailability && (
         <Card title={t('allocation.unavailTable')} sub={`A* = ${fmtPct(availabilityTarget, 3)} · ln A_i = (n_i/Σn) ln A*`} formula="U_i = 1 − A_i; λ_i = U_i / (MTTR_i (1 − U_i)); MTTR_i implied = U_i / (λ_i (1 − U_i))">
           <DataTable columns={[t('common.component'), 'A_i', 'U_i', 'λ allowed (aggregate /h)', 'λ allowed per unit (/1e6 h)', 'MTTR implied']} rows={a.unavailability.rows.map((r) => [r.name, fmtPct(r.availability, 5), fmtPct(r.unavailability, 4), r.lambdaAggregate !== undefined ? fmtNum(r.lambdaAggregate, 5) : '—', r.lambdaPerUnit !== undefined ? fmtRatePerMillion(r.lambdaPerUnit) : '—', r.mttrImplied !== undefined ? fmtHours(r.mttrImplied, lang) : '—'])} />

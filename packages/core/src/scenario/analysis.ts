@@ -219,6 +219,8 @@ export type AllocationMethod = 'equal' | 'arinc' | 'agree' | 'feasibility' | 'mi
 
 export interface ScenarioAllocation {
   target: { goodput?: number; availability?: number };
+  /** v3.3 methods that coincide for this scenario's weights */
+  coincide?: AllocationMethod[];
   /** goodput-budget split (training) */
   goodput?: GoodputBudgetResult;
   /** allocation of the required job interruption rate across component classes (fix R, tighten λ) */
@@ -238,18 +240,32 @@ function subsystemsFrom(s: Scenario): Subsystem[] {
     .filter((c) => c.enabled)
     .map((c) => {
       const ci = componentInstances(c, counts);
+      const w = c.allocation ?? {};
       return {
         id: c.id,
         name: c.name?.en ?? c.name?.zh ?? c.id,
         count: ci.total,
         currentLambda: ci.lambda,
-        importance: 1,
-        feasibilityWeight: c.failure.provenance?.confidence === 'assumed' ? 2 : 1,
-        cost: { a: 1, b: 1 },
+        importance: w.importance ?? 1,
+        duty: w.duty ?? 1,
+        feasibilityWeight: w.feasibilityWeight ?? (c.failure.provenance?.confidence === 'assumed' ? 2 : 1),
+        cost: { a: w.costA ?? 1, b: w.costB ?? 1 },
+        minLambda: ci.lambda * (w.minLambdaFactor ?? 0.05),
         mttr: ci.mttr,
-        fixed: false,
+        fixed: w.fixed ?? false,
       };
     });
+}
+
+/** Methods that give the same split for these subsystems (same counts / importance / duty → AGREE = equal; same feasibility weights → feasibility = equal). */
+export function coincidingMethods(subs: Subsystem[]): AllocationMethod[] {
+  const free = subs.filter((x) => !x.fixed);
+  if (free.length < 2) return [];
+  const same = (f: (x: Subsystem) => number) => free.every((x) => Math.abs(f(x) - f(free[0])) < 1e-12 * Math.max(1, Math.abs(f(free[0]))));
+  const out: AllocationMethod[] = ['equal'];
+  if (same((x) => x.count) && same((x) => x.importance ?? 1) && same((x) => x.duty ?? 1)) out.push('agree');
+  if (same((x) => x.feasibilityWeight ?? 1)) out.push('feasibility');
+  return out.length > 1 ? out : [];
 }
 
 function runMethod(method: AllocationMethod, subs: Subsystem[], lambdaSystem: number): AllocationResult {
@@ -259,7 +275,8 @@ function runMethod(method: AllocationMethod, subs: Subsystem[], lambdaSystem: nu
     case 'arinc':
       return arinc(subs, lambdaSystem);
     case 'agree':
-      return agree(subs, lambdaSystem);
+      // AGREE's R_i = 1 − (1 − R*^{n_i/N})/w_i needs R* close to 1: pick the horizon so that λ*·T ≤ 0.1 (the result is rescaled to Σλ_i = λ* anyway)
+      return agree(subs, lambdaSystem, Math.min(24, 0.1 / Math.max(lambdaSystem, 1e-12)));
     case 'feasibility':
       return feasibilityOfImprovement(subs, lambdaSystem);
     case 'minimum-effort':
@@ -334,6 +351,7 @@ export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; av
   const notes: string[] = [];
   const out: ScenarioAllocation = { target: { goodput: opts.goodputTarget ?? s.targets.goodput, availability: opts.availabilityTarget ?? s.targets.availability }, notes };
   const subs = subsystemsFrom(s);
+  out.coincide = coincidingMethods(subs);
   let budgetScenario = s;
   let goodputTarget = out.target.goodput;
   if (s.workload.type === 'training' && r.training && goodputTarget !== undefined && opts.basis === 'delivered') {
@@ -385,7 +403,9 @@ export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; av
     if (Number.isFinite(lambdaJobRequired) && lambdaJobRequired > 0) {
       try {
         out.rateAllocation = runMethod(method, subs, lambdaJobRequired);
-        if (lambdaJobRequired >= r.training.interruptionRatePerHour) notes.push('current interruption rate already meets the goodput target at the current recovery time: the rate table shows how far each class may degrade (allowed rates above the current ones, improvement factors below 1)');
+        if (lambdaJobRequired >= r.training.interruptionRatePerHour) notes.push('current interruption rate already meets the goodput target at the current recovery time: the rate table shows how far each class may degrade (allowed rates above the current ones, improvement factors below 1); minimum-effort and cost-optimal keep the current rates in this case');
+        const co = coincidingMethods(subs);
+        if (co.length) notes.push(`methods that give the same split for this scenario: ${co.join(', ')} (identical unit counts, importance and feasibility weights across classes; edit the class weights to differentiate them)`);
       } catch (e) {
         notes.push(`rate allocation (${method}) failed: ${(e as Error).message}`);
       }

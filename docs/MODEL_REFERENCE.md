@@ -57,6 +57,7 @@ Hot spares = smallest k with P(Binomial(N_nodes, p_daily) ≤ k) ≥ q (ByteRobu
 
 - Series failure-rate budget λ*: equal (λ*/m), ARINC (∝ current), AGREE (Rᵢ = 1 − (1 − R*^{nᵢ/N})/wᵢ, rescaled), feasibility weights, minimum effort (Albert: worst subsystems to a common level), cost-optimal (minimise Σ aᵢ(λᵢ⁰/λᵢ)^{bᵢ} s.t. Σλᵢ = λ*, bisection on the multiplier).
 - Availability target: ln Aᵢ = (wᵢ/Σw)·ln A*; λᵢ = Uᵢ/(MTTRᵢ(1 − Uᵢ)) or MTTR implied.
+- Class weights (v3.3, `component.allocation`): AGREE importance and duty, feasibility weight (default 2 for assumed rates, 1 otherwise), cost coefficients a, b, floor factor (default 5 % of the current rate), `fixed`. With identical counts, importance and feasibility weights the equal, AGREE and feasibility methods coincide (reported); minimum-effort and cost-optimal keep current rates when the budget is already met.
 - Goodput budget: with τ = √(2δM), loss L = √(2δ/M) + R/M. Fix R → solve √(2δ)s + Rs² = L*, s = M^{−1/2}; fix M → R* = M(L* − √(2δ/M)); balanced split by restart share. Stage budgets ∝ current stage times above floors.
 
 ## 8. Monte Carlo (§4.2, AIReSim-style)

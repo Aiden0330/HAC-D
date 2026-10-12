@@ -175,6 +175,21 @@ export const ComponentSchema = z.object({
    */
   sdc: z.object({ ratePerHour: z.number().nonnegative(), provenance: ProvenanceSchema.optional() }).optional(),
   /**
+   * v3.3 weights for the allocation methods (Allocation page): AGREE importance and duty, feasibility-of-improvement weight,
+   * cost-optimal coefficients cost = a·(λ_current/λ)^b, the lowest achievable rate as a fraction of the current one, and
+   * `fixed` to keep the class at its current rate. Defaults: importance 1, duty 1, feasibility 2 for assumed rates else 1,
+   * a = b = 1, floor 5 %.
+   */
+  allocation: z.object({
+    importance: z.number().min(0.01).max(1).optional(),
+    duty: z.number().min(0.01).max(1).optional(),
+    feasibilityWeight: z.number().positive().optional(),
+    costA: z.number().positive().optional(),
+    costB: z.number().positive().optional(),
+    minLambdaFactor: z.number().min(0).max(1).optional(),
+    fixed: z.boolean().optional(),
+  }).optional(),
+  /**
    * v3 mechanism applicability: the fraction of this class's hard interruptions that each recovery mechanism of
    * `scenario.mechanisms` can act on (the reference catalog's per-event replay / process / elastic flags,
    * aggregated per class). Missing = 0 = the mechanism does not apply to this class.
