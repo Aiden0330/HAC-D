@@ -570,10 +570,11 @@ section("§12 Parallel with switchover, first order (`parallel.firstorder.two_ch
 
 
 # ----------------------------------------------------------------------------- §13 standby with switchover
-def standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=True):
+def standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=False):
     """v1 standby chain with the v2 switch-failed recovery 1/T_sf.
-    States j = failed units (up iff j <= n-1) and SW_j (down).  sw_last=True: SW_j for j = 0..n-1 (as specified);
-    sw_last=False: alternative reading without SW_(n-1) (no standby left to switch to)."""
+    States j = failed units (up iff j <= n-1) and SW_j (down) for j = 0..n-2: a switch happens only while a standby
+    exists (spec §13), so the failure of the last working unit (j = n-1) goes straight to j = n at rate lambda.
+    sw_last=True: the former literal reading with SW_(n-1) (kept for diagnosis only)."""
     lam, mu, f, p_sw, T_sf = mpf(lam), mpf(mu), mpf(f), mpf(p_sw), mpf(T_sf)
     ch = Chain(f"§13 standby n={n} f={fl(f)} crews={'inf' if crews is None else crews} SW_last={sw_last}")
     for j in range(n + 1):
@@ -609,19 +610,19 @@ sb_rows = []
 for suffix, n, lam, mu, f, p_sw, T_sf, t_sw_s, crews in STANDBY_CASES:
 
     def run(n=n, lam=lam, mu=mu, f=f, p_sw=p_sw, T_sf=T_sf, t_sw_s=t_sw_s, crews=crews):
-        ch = standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=True)
+        ch = standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=False)
         o = standby_outputs(ch, n, lam, p_sw, t_sw_s)
-        alt = standby_outputs(standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=False), n, lam, p_sw, t_sw_s)
+        alt = standby_outputs(standby_chain(n, lam, mu, f, p_sw, T_sf, crews, sw_last=True), n, lam, p_sw, t_sw_s)
         o["_states"] = len(ch.labels)
         o.update({"_alt_" + key: val for key, val in alt.items()})
         return o
 
     cid = f"standby.v2.{suffix}"
     expected, e, w = both(cid, run)
-    notes = (f"States j = 0..{n} (up iff j <= {n - 1}) and SW_j for j = 0..{n - 1} exactly as described (SW_(n-1) included); "
-             f"from j < n: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; j -> j-1 at min(j, crews)*mu; "
-             f"SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. "
-             f"Alternative reading without SW_(n-1) (no standby left, the last active failure goes straight to j = n at rate lambda): "
+    notes = (f"States j = 0..{n} (up iff j <= {n - 1}) and SW_j for j = 0..{n - 2} (a switch happens only while a standby exists); "
+             f"from j <= n-2: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; from j = n-1: lambda -> n (no switch); "
+             f"j -> j-1 at min(j, crews)*mu; SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. "
+             f"Former literal reading with SW_(n-1) (the last active failure could 'fail to switch' and wait T_sf before its repair): "
              f"A = {g(e['_alt_A'])}, nu = {g(e['_alt_nu'])}, mttf_from_new = {g(e['_alt_mttf_from_new'])} (identical).")
     if mpf(t_sw_s) == 0:
         notes += " t_sw = 0 so U_sw is structurally 0 (tolerance.abs covers it)."
@@ -633,13 +634,13 @@ for suffix, n, lam, mu, f, p_sw, T_sf, t_sw_s, crews in STANDBY_CASES:
         expected, notes + agree(w), abs_tol=1e-12 if mpf(t_sw_s) == 0 else None)
     sb_rows.append((suffix, e["_states"], g(e["A"]), g(e["nu"]), g(e["U_sw"]), g(e["mttf_from_new"]), g(e["_alt_A"]), g(e["_alt_nu"])))
 section("§13 Standby with switchover (`standby.v2.*`)", [
-    "Built from the chain description given with the task (the spec text of §13 only names the two v2 changes): states j = failed "
-    "units 0..n, up iff j <= n-1; switch-down states SW_j for j = 0..n-1; from j < n: standby failures (n-1-j) f lambda -> j+1, "
-    "active failure lambda p_sw -> j+1 and lambda (1-p_sw) -> SW_j; repairs j -> j-1 at min(j, crews) mu; SW_j -> j+1 at 1/T_sf. "
-    "The literal reading keeps SW_(n-1) (an active failure with no standby left can still 'fail to switch' and then waits T_sf "
-    "before the repair of the last unit starts). The alternative reading (no SW_(n-1)) is tabulated for diagnosis; the MTTF is the "
-    "same under both readings because both exits from j = n-1 are down.", ""]
-    + table(sb_rows, ["case", "states", "A", "nu", "U_sw", "mttf_from_new", "A (no SW_(n-1))", "nu (no SW_(n-1))"]))
+    "States j = failed units 0..n, up iff j <= n-1; switch-down states SW_j for j = 0..n-2 only, because a switch happens only "
+    "while a standby exists (spec §13): from j <= n-2 standby failures (n-1-j) f lambda -> j+1, active failure lambda p_sw -> j+1 "
+    "and lambda (1-p_sw) -> SW_j; from j = n-1 the last active failure goes straight to j = n at rate lambda; repairs j -> j-1 at "
+    "min(j, crews) mu; SW_j -> j+1 at 1/T_sf. The former literal reading kept SW_(n-1) (an active failure with no standby left "
+    "could still 'fail to switch' and wait T_sf before the repair of the last unit started); it is tabulated for diagnosis. The "
+    "MTTF is the same under both readings because both exits from j = n-1 are down.", ""]
+    + table(sb_rows, ["case", "states", "A", "nu", "U_sw", "mttf_from_new", "A (literal, SW_(n-1))", "nu (literal, SW_(n-1))"]))
 
 
 # ----------------------------------------------------------------------------- §14 sub-health unit
@@ -680,6 +681,7 @@ def subhealth_measures(ch, phi, phi_min, policy, p_d=None, T_d=None):
            "A_threshold": sum((pi[x] for x in thr_up), mpf(0)),
            "nu_threshold": ch.flux(lambda lab: lab in thr_up, lambda lab: lab not in thr_up),
            "p_H_given_not_down": sh / (pi["U"] + sh),
+           "mttf_from_new": ch.mfpt("U", lambda lab: lab not in thr_up),
            "threshold_up_set": sorted(thr_up)}
     if policy == "isolate":
         out["nu_iso"] = pi["H"] * mpf(p_d) / mpf(T_d)
@@ -693,7 +695,7 @@ G = "subhealth"
 SH_FORMULA = ("CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; "
               "A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); "
               "nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; "
-              "p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H')")
+              "p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'); mttf_from_new = mean first passage U -> complement of the threshold up-set")
 sh_rows = []
 legacy4 = repair("0", "4")
 SH_CASES = [
@@ -704,7 +706,7 @@ SH_CASES = [
 for suffix, lam, rp, lam_sh, D, phi, m, policy, p_d, T_d, phi_min in SH_CASES:
     keys = ["pi_U", "pi_H"] + (["pi_Hp", "pi_I"] if policy == "isolate" else []) + \
            ["pi_Da", "pi_Dm", "A_strict", "A_tolerant", "A_perf", "A_threshold", "nu_threshold"] + \
-           (["nu_iso"] if policy == "isolate" else []) + ["p_H_given_not_down"]
+           (["nu_iso"] if policy == "isolate" else []) + ["p_H_given_not_down", "mttf_from_new"]
 
     def run(lam=lam, rp=rp, lam_sh=lam_sh, D=D, phi=phi, m=m, policy=policy, p_d=p_d, T_d=T_d, phi_min=phi_min, keys=keys):
         ch = subhealth_chain(lam, rp, lam_sh, D, m, policy, p_d, T_d)
@@ -725,6 +727,8 @@ for suffix, lam, rp, lam_sh, D, phi, m, policy, p_d, T_d, phi_min in SH_CASES:
         notes += "c = 0 (legacy repair T_m): pi_Da is structurally 0 (tolerance.abs covers it). "
     if policy == "isolate":
         notes += "nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'). "
+    notes += ("mttf_from_new = mean first passage from U into the complement of the threshold up-set "
+              f"({'= 1/(lambda + lambda_sh) exactly, every exit from U is a failure' if strict else 'shorter than 1/lambda when m > 1 or isolation is detected'}). ")
     add(cid, G, SH_FORMULA,
         {"lambda": fl(mpf(lam)), **repair_inputs(rp), "lambda_sh": fl(mpf(lam_sh)), "D": fl(mpf(D)), "phi": fl(mpf(phi)), "m": fl(mpf(m)),
          "policy": policy, "p_d": None if p_d is None else fl(mpf(p_d)), "T_d": None if T_d is None else fl(mpf(T_d)), "phi_min": fl(mpf(phi_min))},
@@ -1087,10 +1091,11 @@ lines += ["## Ambiguities in the specification and the reading used", "",
           "2. **§11 behaviour inside S(a, m).** The table lists a single exit S(a, m) -> (a, m+1) at 1/T_sf. I followed it literally: while the "
           "switch failure is being recovered, the ongoing automatic/manual repairs of the other units and further failures are frozen. "
           "The failed unit then enters manual repair regardless of c.",
-          "3. **§13 SW_(n-1).** The chain description given with the task defines SW_j for j = 0..n-1, i.e. an active failure with no standby "
-          "left (j = n-1) can still 'fail to switch' and waits T_sf before the last repair starts; the spec's own U_sw sums only j <= n-2 "
-          "('a switch happens only while a standby exists'). I used the literal reading (SW_(n-1) present); the alternative values are in "
-          "the notes of each standby case and in the §13 table (MTTF is identical; A and nu differ).",
+          "3. **§13 SW_(n-1).** The chain description given with the task defined SW_j for j = 0..n-1, i.e. an active failure with no standby "
+          "left (j = n-1) could still 'fail to switch' and wait T_sf before the last repair started, while the spec's own U_sw sums only "
+          "j <= n-2 ('a switch happens only while a standby exists'). Since the model review of 2026-10-11 the primary values use SW_j for "
+          "j = 0..n-2 only (the engine was aligned the same day); the former literal values are kept in the notes of each standby case and "
+          "in the §13 table (MTTF is identical; A and nu differ).",
           "4. **§14 failure frequency under the strict/threshold measure.** 'Flux from the up set (threshold rule) into the down set' makes "
           "every U -> H entry a failure when phi < phi_min. Used as written; nu_threshold for phi >= phi_min counts only transitions into "
           "I/D_a/D_m.",

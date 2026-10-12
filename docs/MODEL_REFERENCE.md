@@ -14,7 +14,7 @@ Every output of HAC-D maps to one of the formulas below. Section numbers refer t
 
 | Block | Availability | Failure frequency ν | MTTF from new |
 |---|---|---|---|
-| leaf, n identical units in series | A₁ⁿ, A₁ = 1/(1 + λ·MTTR) | A·nλ | 1/(nλ) |
+| leaf, n identical units in series | A₁ⁿ, A₁ = 1/(1 + λ·MTTR) | A·nλ | 1/(nλ); with sub-health MTTF_unit/n, MTTF_unit from §14 |
 | series | Π Aᵢ | A·Σ λ_eq,i (λ_eq = ν/A) | 1/Σ(1/MTTFᵢ) |
 | parallel 1-of-n | 1 − Π Uᵢ | Σᵢ νᵢ Π_{j≠i} Uⱼ | product-space CTMC (≤ 10 children) |
 | k-of-n identical, unlimited repair | Σ_{j≤n−k} C(n,j) uʲ (1−u)ⁿ⁻ʲ | π_{n−k}·kλ | birth–death first passage (Fig. 4-3) |
@@ -61,7 +61,7 @@ Hot spares = smallest k with P(Binomial(N_nodes, p_daily) ≤ k) ≥ q (ByteRobu
 
 ## 8. Monte Carlo (§4.2, AIReSim-style)
 
-Event-driven simulation of one synchronous job: units with exponential or mean-matched Weibull lifetimes (age-tracked; lemon fraction with rate multiplier; infant-mortality multiplier), repairs with their distribution, redundant groups (k required of size), β-factor common-cause events with a blast radius (node / rack / zone / cluster), hot-spare pool with replenishment or cluster requeue, fail-slow degradations as capacity factors, periodic checkpoints (interval τ, exposed save δ) with recompute of the lost segment, recovery drawn from the pipeline. Outputs: goodput, MTBI, interruptions/day, blocked fraction, peak spares (P99), degraded loss, with mean, sd, 95 % CI and quantiles; compared with the closed form (disagreement flagged beyond 2 % absolute or 2 CI).
+Event-driven simulation of one synchronous job: units with exponential or mean-matched Weibull lifetimes (age-tracked; lemon fraction with rate multiplier; infant-mortality multiplier), repairs with their distribution, redundant groups (k required of size), β-factor common-cause events with a blast radius (node / rack / zone / cluster), hot-spare pool with replenishment or cluster requeue, fail-slow degradations as capacity factors, periodic checkpoints (interval τ, exposed save δ) with recompute of the lost segment, recovery drawn from the pipeline. A checkpoint is committed only when its exposed save completes: an interruption during the save restarts from the previous checkpoint (the interval and the partial save are lost), as in the renewal and Daly models. Outputs: goodput, MTBI, interruptions/day, blocked fraction, peak spares (P99), degraded loss, with mean, sd, 95 % CI and quantiles; compared with the closed form (disagreement flagged beyond 2 % absolute or 2 CI).
 
 ## 9. Validation
 
@@ -115,7 +115,7 @@ Outputs: `A = Σ_up π`; `ν` = probability flux from up to down states; capacit
 
 ## 13. Standby with switchover (v1 extension)
 
-v1 `standby(n, λ, μ, f, p_sw, crews)` is kept; v2 adds `T_sf` (switch-failed state cleared at `1/T_sf` instead of `μ`) and the micro-outage `U_sw = Σ_{j ≤ n−2} π_j·λ·p_sw·t_sw/3600` (a switch happens only while a standby exists).
+v1 `standby(n, λ, μ, f, p_sw, crews)` is kept; v2 adds `T_sf` (switch-failed state cleared at `1/T_sf` instead of `μ`) and the micro-outage `U_sw = Σ_{j ≤ n−2} π_j·λ·p_sw·t_sw/3600` (a switch happens only while a standby exists). Switch-failed states `SW_j` exist only for `j ≤ n−2`: the failure of the last working unit (`j = n−1`) has no standby to switch to and goes straight to the all-failed state `n` at rate `λ`, so `p_sw` and `T_sf` have no effect for `n = 1`. The MTTF from new is the same under either reading; `A` and `ν` are not (until 2026-10-11 the chain kept an `SW_{n−1}` state, which overstated the unavailability by up to a few per cent).
 
 ## 14. Sub-health unit (亚健康)
 
@@ -137,7 +137,7 @@ States: `U`, `H` (sub-healthy, not yet decided), `H'` (sub-healthy, undetected /
 | I → D_m | (1−s) / T_a | isolate |
 | D_a → U, D_a → D_m, D_m → U | as §10 | both |
 
-Measures: `A_strict = π_U`; `A_tolerant = π_U + π_H + π_H'`; `A_perf = π_U + φ·(π_H + π_H')` (performability); `A_threshold = π_U + [φ ≥ φ_min]·(π_H + π_H')` is the block's reported availability. `I`, `D_a`, `D_m` are down in every measure. Failure frequency = flux from the up set (threshold rule) into the down set. Detected-isolation frequency `ν_iso = π_H·p_d/T_d` per unit. With `m = 1`, `c = 0`, policy tolerate and `φ_min ≤ φ` the unit reduces to the v1 `degradedUnit`.
+Measures: `A_strict = π_U`; `A_tolerant = π_U + π_H + π_H'`; `A_perf = π_U + φ·(π_H + π_H')` (performability); `A_threshold = π_U + [φ ≥ φ_min]·(π_H + π_H')` is the block's reported availability. `I`, `D_a`, `D_m` are down in every measure. Failure frequency = flux from the up set (threshold rule) into the down set. Detected-isolation frequency `ν_iso = π_H·p_d/T_d` per unit. With `m = 1`, `c = 0`, policy tolerate and `φ_min ≤ φ` the unit reduces to the v1 `degradedUnit`. MTTF from new of the unit = mean first passage from `U` into the complement of the threshold up-set: `1/(λ + λ_sh)` when sub-health counts as down, otherwise shorter than `1/λ` by the escalated failures (`m > 1`) and the detected isolations (policy isolate); it equals the mean up time `A/ν` because every repair returns to `U`. A leaf of `c` units reports `MTTF_unit/c` (the exponential-equivalent convention of §2).
 
 Synchronous job of `N` units (straggler law, tolerate): `p_H = (π_H + π_H')/(π_U + π_H + π_H')` (sub-healthy given not down); `P(job slowed) = 1 − (1 − p_H)^N`; job performance factor `E[φ_job] = 1 − P(job slowed)·(1 − φ)` (exact under independence since any slow unit slows the step to φ). Policy isolate adds `N·ν_iso` to the job interruption rate and the undetected share keeps slowing the job.
 
@@ -163,7 +163,7 @@ Full derivations and the comparison with the ai-cluster-reliability tool: `TRAIN
 - **Product form** `A_op · τ/(τ + δ) · (1 − W/M)`.
 - **Exact renewal** `λτ/[(e^{λ(τ+δ)} − 1)(1 + λR)]`, `λ = 1/M`; implied rollback `E[min(X, τ) | X < τ+δ] = [(1 − e^{−λτ})/λ − τe^{−λ(τ+δ)}]/(1 − e^{−λ(τ+δ)})` (→ (τ²/2 + τδ)/(τ+δ) as λ → 0).
 - **Daly full** `τ/(M e^{R/M}(e^{(τ+δ)/M} − 1))` (failures also during recovery).
-- **Headline rule**: first order while its flags are `ok`, otherwise the exact renewal value; the scale table applies the rule per row; blocked spares and the sub-health factor multiply the headline.
+- **Headline rule**: first order while its flags are `ok`, otherwise the exact renewal value; the scale table applies the rule per row, re-evaluating for every N the recovery R(N) from the scale laws (detection and global recovery), the chain and pause-only rates, the checkpoint interval against the row's rollback MTBI, the straggler law `1 − (1 − p_H)^N` and the silent-corruption window, so that a row equals a direct evaluation at that size; blocked spares (as configured) and the sub-health factor multiply the headline.
 
 ## 19. Mechanism chain and mixed event classes (v3, decisions of 2026-10-10)
 
@@ -181,7 +181,7 @@ Code: `sdc/index.ts`, scenario fields `component.sdc.ratePerHour` and `scenario.
 
 - **Episode rate** on the wall clock while clean: `ν = λ_sdc (1 − q) · A_run · (1 − P_clear)`, `P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L)` (a rollback before the first dirty checkpoint is written clears the corruption; phase uniform over *L*).
 - **Alternating renewal**: clean ~ Exp(ν), dirty + pause = `c = D + R_c` deterministic. With `S_k = Γ(k, ν) + (k − 1)c` the start of the k-th episode and `P(S_k ≤ y) = P(Poisson(νz) ≥ k)`, `z = y − (k − 1)c`:
-  `E[N] = Σ_k P(S_k ≤ T)`, `E[dirty] = Σ_k ∫_0^D P(S_k ≤ T − x) dx`, `E[pause] = Σ_k ∫_D^c P(S_k ≤ T − x) dx`, `E[clean] = T − E[dirty] − E[pause]`.
+  `E[N] = Σ_k P(S_k ≤ T)`, `E[dirty] = Σ_k ∫_0^D P(S_k ≤ T − x) dx`, `E[pause] = Σ_k ∫_D^c P(S_k ≤ T − x) dx`, `E[clean] = T − E[dirty] − E[pause]`. When `T/c` exceeds 4000 cycles the stationary fractions replace the sum: clean `1/(1 + νc)`, episodes `ν·clean·T`, rollback `g·dirty + U·episodes`, no terminal discard.
 - **Delivered (正确有效) goodput** `= [g · E[clean] − U · E[N]]/T`, *g* the performance goodput (§19 effective goodput, which already contains detected corruption as events), `U = (τ²/2 + τδ)/(τ + δ)` the compute since the last clean checkpoint lost at the episode start. Rollback at discoveries `g·(E[dirty] − E[tail]) + U·E[N_disc]`, terminal discard `g·E[tail] + U·P(dirty at T)`. Reference factors reported alongside: `(1 − e^{−νT})/(νT)` (no recovery) and `e^{−νT}`.
 - Detected corruption (*q*): without step recovery a rollback event with pause `t_d + G`; with step recovery a pause-only event `t_d + t_rec + t_step` (the volatile clean state keeps the checkpoint phase).
 - Window ledger (closed form): downtime + saves + rollback + slow-down + local loss + blocked + SDC rollback + terminal discard + delivered = 1, decomposed with the headline model.

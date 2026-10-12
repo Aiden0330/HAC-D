@@ -123,7 +123,8 @@ export function sdcDelivery(input: SdcDeliveryInput): SdcDeliveryResult {
     const dirty = episodesPerHour * D;
     const pause = episodesPerHour * Rc;
     const delivered = Math.max(0, g * clean - U * episodesPerHour);
-    return { delivered, factor: g > 0 ? delivered / g : 1, cleanTimeFraction: clean, dirtyTimeFraction: dirty, pauseFraction: pause, expectedEpisodes, expectedDiscovered: expectedEpisodes, pDirtyAtEnd: dirty, rollbackFraction: g * dirty, terminalDiscardFraction: 0, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'stationary', terms: 0 };
+    // rollback at discoveries = compute while dirty + the pre-episode loss of every episode, so that delivered + rollback = g·(1 − pause)
+    return { delivered, factor: g > 0 ? delivered / g : 1, cleanTimeFraction: clean, dirtyTimeFraction: dirty, pauseFraction: pause, expectedEpisodes, expectedDiscovered: expectedEpisodes, pDirtyAtEnd: dirty, rollbackFraction: g * dirty + U * episodesPerHour, terminalDiscardFraction: 0, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'stationary', terms: 0 };
   }
   let expectedEpisodes = 0;
   let expectedDiscovered = 0;

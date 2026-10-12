@@ -1,6 +1,6 @@
 {
  "version": "2.0",
- "generated": "2026-10-09",
+ "generated": "2026-10-11",
  "tool": "python/mpmath (mp.dps=40); numpy LU + scipy null-space cross-check",
  "spec": "docs/MODEL_REFERENCE.md, v2 additions §10–§17",
  "conventions": {
@@ -338,15 +338,15 @@
     "crews": null
    },
    "expected": {
-    "A": 0.9999375660872916,
-    "nu": 5.472295137791148e-05,
-    "U_sw": 2.6255961519705003e-06,
+    "A": 0.9999378148125116,
+    "nu": 5.4722964989739445e-05,
+    "U_sw": 2.625596805063256e-06,
     "mttf_from_new": 18359.090909090908
    },
    "tolerance": {
     "rel": 1e-09
    },
-   "notes": "States j = 0..2 (up iff j <= 1) and SW_j for j = 0..1 exactly as described (SW_(n-1) included); from j < n: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; j -> j-1 at min(j, crews)*mu; SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. Alternative reading without SW_(n-1) (no standby left, the last active failure goes straight to j = n at rate lambda): A = 0.999937814812512, nu = 5.47229649897394e-05, mttf_from_new = 18359.0909090909 (identical). Double-precision (numpy) recomputation of these values agrees to 8.5e-16 relative."
+   "notes": "States j = 0..2 (up iff j <= 1) and SW_j for j = 0..0 (a switch happens only while a standby exists); from j <= n-2: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; from j = n-1: lambda -> n (no switch); j -> j-1 at min(j, crews)*mu; SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. Former literal reading with SW_(n-1) (the last active failure could 'fail to switch' and wait T_sf before its repair): A = 0.999937566087292, nu = 5.47229513779115e-05, mttf_from_new = 18359.0909090909 (identical). Double-precision (numpy) recomputation of these values agrees to 8.5e-16 relative."
   },
   {
    "id": "standby.v2.n3_warm_crews1",
@@ -363,8 +363,8 @@
     "crews": 1
    },
    "expected": {
-    "A": 0.9992005074307275,
-    "nu": 0.00019989957498368042,
+    "A": 0.9992005338422612,
+    "nu": 0.00019989958026755917,
     "U_sw": 0.0,
     "mttf_from_new": 4998.717762003964
    },
@@ -372,12 +372,12 @@
     "rel": 1e-09,
     "abs": 1e-12
    },
-   "notes": "States j = 0..3 (up iff j <= 2) and SW_j for j = 0..2 exactly as described (SW_(n-1) included); from j < n: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; j -> j-1 at min(j, crews)*mu; SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. Alternative reading without SW_(n-1) (no standby left, the last active failure goes straight to j = n at rate lambda): A = 0.999200533842261, nu = 0.000199899580267559, mttf_from_new = 4998.71776200396 (identical). t_sw = 0 so U_sw is structurally 0 (tolerance.abs covers it). Double-precision (numpy) recomputation of these values agrees to 2.9e-15 relative."
+   "notes": "States j = 0..3 (up iff j <= 2) and SW_j for j = 0..1 (a switch happens only while a standby exists); from j <= n-2: (n-1-j)*f*lambda -> j+1, lambda*p_sw -> j+1, lambda*(1-p_sw) -> SW_j; from j = n-1: lambda -> n (no switch); j -> j-1 at min(j, crews)*mu; SW_j -> j+1 at 1/T_sf. U_sw = sum_(j<=n-2) pi_j*lambda*p_sw*t_sw_s/3600. Former literal reading with SW_(n-1) (the last active failure could 'fail to switch' and wait T_sf before its repair): A = 0.999200507430728, nu = 0.00019989957498368, mttf_from_new = 4998.71776200396 (identical). t_sw = 0 so U_sw is structurally 0 (tolerance.abs covers it). Double-precision (numpy) recomputation of these values agrees to 2.9e-15 relative."
   },
   {
    "id": "subhealth.unit.tolerate_phi0.6",
    "group": "subhealth",
-   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H')",
+   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'); mttf_from_new = mean first passage U -> complement of the threshold up-set",
    "inputs": {
     "lambda": 0.001,
     "c": 0.0,
@@ -403,18 +403,19 @@
     "A_perf": 0.9920479011802423,
     "A_threshold": 0.9861545473118448,
     "nu_threshold": 0.005916927283871069,
-    "p_H_given_not_down": 0.009861932938856016
+    "p_H_given_not_down": 0.009861932938856016,
+    "mttf_from_new": 166.66666666666666
    },
    "tolerance": {
     "rel": 1e-09,
     "abs": 1e-12
    },
-   "notes": "Policy tolerate; 3 reachable states (pruned: Hp, I, Da). phi = 0.6 < phi_min = 0.7, so the threshold up-set is {U} and A_threshold = A_strict; nu_threshold is the flux out of that set (it includes the U->H entries, which are failures under the strict measure). c = 0 (legacy repair T_m): pi_Da is structurally 0 (tolerance.abs covers it).  Double-precision (numpy) recomputation of these values agrees to 4.3e-16 relative."
+   "notes": "Policy tolerate; 3 reachable states (pruned: Hp, I, Da). phi = 0.6 < phi_min = 0.7, so the threshold up-set is {U} and A_threshold = A_strict; nu_threshold is the flux out of that set (it includes the U->H entries, which are failures under the strict measure). c = 0 (legacy repair T_m): pi_Da is structurally 0 (tolerance.abs covers it). mttf_from_new = mean first passage from U into the complement of the threshold up-set (= 1/(lambda + lambda_sh) exactly, every exit from U is a failure).  Double-precision (numpy) recomputation of these values agrees to 4.3e-16 relative."
   },
   {
    "id": "subhealth.unit.tolerate_phi0.8",
    "group": "subhealth",
-   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H')",
+   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'); mttf_from_new = mean first passage U -> complement of the threshold up-set",
    "inputs": {
     "lambda": 0.001,
     "c": 0.0,
@@ -440,18 +441,19 @@
     "A_perf": 0.9940123524697082,
     "A_threshold": 0.995976803759174,
     "nu_threshold": 0.0010057990602065031,
-    "p_H_given_not_down": 0.009861932938856016
+    "p_H_given_not_down": 0.009861932938856016,
+    "mttf_from_new": 990.234375
    },
    "tolerance": {
     "rel": 1e-09,
     "abs": 1e-12
    },
-   "notes": "Policy tolerate; 3 reachable states (pruned: Hp, I, Da). phi = 0.8 >= phi_min = 0.7, so the threshold up-set is {H+H'+U} and A_threshold = A_tolerant; nu_threshold is the flux out of that set (U->D and H->D transitions only). c = 0 (legacy repair T_m): pi_Da is structurally 0 (tolerance.abs covers it).  Double-precision (numpy) recomputation of these values agrees to 4.3e-16 relative."
+   "notes": "Policy tolerate; 3 reachable states (pruned: Hp, I, Da). phi = 0.8 >= phi_min = 0.7, so the threshold up-set is {H+H'+U} and A_threshold = A_tolerant; nu_threshold is the flux out of that set (U->D and H->D transitions only). c = 0 (legacy repair T_m): pi_Da is structurally 0 (tolerance.abs covers it). mttf_from_new = mean first passage from U into the complement of the threshold up-set (shorter than 1/lambda when m > 1 or isolation is detected).  Double-precision (numpy) recomputation of these values agrees to 4.3e-16 relative."
   },
   {
    "id": "subhealth.unit.isolate",
    "group": "subhealth",
-   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H')",
+   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'); mttf_from_new = mean first passage U -> complement of the threshold up-set",
    "inputs": {
     "lambda": 0.001,
     "c": 0.9,
@@ -480,12 +482,13 @@
     "A_threshold": 0.9960816471445074,
     "nu_threshold": 0.005976489882867045,
     "nu_iso": 0.00437261478114358,
-    "p_H_given_not_down": 0.0012140310547396995
+    "p_H_given_not_down": 0.0012140310547396995,
+    "mttf_from_new": 166.66666666666666
    },
    "tolerance": {
     "rel": 1e-09
    },
-   "notes": "Policy isolate; 6 reachable states (pruned: none). phi = 0.6 < phi_min = 0.7, so the threshold up-set is {U} and A_threshold = A_strict; nu_threshold is the flux out of that set (it includes the U->H entries, which are failures under the strict measure). nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H').  Double-precision (numpy) recomputation of these values agrees to 1.1e-15 relative."
+   "notes": "Policy isolate; 6 reachable states (pruned: none). phi = 0.6 < phi_min = 0.7, so the threshold up-set is {U} and A_threshold = A_strict; nu_threshold is the flux out of that set (it includes the U->H entries, which are failures under the strict measure). nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'). mttf_from_new = mean first passage from U into the complement of the threshold up-set (= 1/(lambda + lambda_sh) exactly, every exit from U is a failure).  Double-precision (numpy) recomputation of these values agrees to 1.1e-15 relative."
   },
   {
    "id": "subhealth.unit.p_sh_conversion",
@@ -506,7 +509,7 @@
   {
    "id": "subhealth.unit.reduction_to_degraded_unit",
    "group": "subhealth",
-   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H')",
+   "formula": "CTMC §14 (U, H, H', I, D_a, D_m; unreachable states pruned); A_strict = pi_U; A_tolerant = pi_U+pi_H+pi_H'; A_perf = pi_U+phi*(pi_H+pi_H'); A_threshold = pi_U+[phi>=phi_min]*(pi_H+pi_H'); nu_threshold = flux from the threshold up-set to its complement; nu_iso = pi_H*p_d/T_d; p_H_given_not_down = (pi_H+pi_H')/(pi_U+pi_H+pi_H'); mttf_from_new = mean first passage U -> complement of the threshold up-set",
    "inputs": {
     "lambda": 0.001,
     "c": 0.0,

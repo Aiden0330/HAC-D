@@ -218,7 +218,8 @@ function evalLeaf(b: LeafBlock, name: string): BlockResult {
   let tolerant1: number | undefined;
   let autoShare: number | undefined;
   let subhealth: BlockResult['subhealth'];
-  let lambdaOutage = b.lambda;
+  /** MTTF from new of one unit (first passage into the down set; 1/λ for a two-state unit) */
+  let mttf1 = b.lambda > 0 ? 1 / b.lambda : Infinity;
   if (sh) {
     const r = subhealthUnit(b.lambda, repair, sh);
     A1 = r.availability;
@@ -227,7 +228,7 @@ function evalLeaf(b: LeafBlock, name: string): BlockResult {
     strict1 = r.strict;
     tolerant1 = r.tolerant;
     subhealth = { pGivenNotDown: r.pSubhealthGivenNotDown, isolationFrequency: r.isolationFrequency * c, performance: sh.performance };
-    if (r.countsAsDown) lambdaOutage = b.lambda + sh.ratePerHour;
+    mttf1 = r.mttfFromNew;
     notes.push(b.subhealth ? (r.countsAsDown ? 'sub-health counted as down (performance below threshold)' : 'sub-health counted as up (performance at or above threshold)') : 'three-state unit (up / degraded / down)');
     notes.push(...r.warnings);
     if (isDual(repair)) {
@@ -257,7 +258,7 @@ function evalLeaf(b: LeafBlock, name: string): BlockResult {
     kind: 'leaf',
     availability: A,
     failureFrequency: nu,
-    mttfFromNew: lambdaOutage > 0 ? 1 / (c * lambdaOutage) : Infinity,
+    mttfFromNew: Number.isFinite(mttf1) && mttf1 > 0 ? mttf1 / c : Infinity,
     capacity: A * capGivenUp,
     capacityGivenUp: capGivenUp,
     children: [],

@@ -1,6 +1,6 @@
 # HAC-D v2 golden vectors — independent verification report
 
-Generated 2026-10-09 by `compute_golden_v2.py` from `docs/MODEL_REFERENCE.md, v2 additions §10–§17` only (no engine source read). 26 cases in `golden_v2.json`: repair = 4, kofn = 6, parallel = 1, standby = 2, subhealth = 5, straggler = 2, plane = 3, ladder = 1, waterfall = 1, cm384 = 1.
+Generated 2026-10-11 by `compute_golden_v2.py` from `docs/MODEL_REFERENCE.md, v2 additions §10–§17` only (no engine source read). 26 cases in `golden_v2.json`: repair = 4, kofn = 6, parallel = 1, standby = 2, subhealth = 5, straggler = 2, plane = 3, ladder = 1, waterfall = 1, cm384 = 1.
 
 ## Method
 
@@ -12,7 +12,7 @@ Every case is computed twice: once from the mpmath solutions and once from numpy
 
 - Over all 26 cases the double-precision recomputation agrees with the mpmath expected values to 1.6e-13 relative at worst (`kofn.group.n2k1_seta_crews_inf_psw1`, key `mttf_from_new`), about four orders of magnitude below the 1e-9 tolerance.
 - Component level (30 stationary solves): numpy LU max absolute difference 1.3e-16; the max relative difference 1.2e-08 occurs on a state with pi = 2e-11 (§11 kofn n=4 k=2 crews=2 p_sw=1.0, state ('N', 4, 0), pi = 2.443e-11), where double precision has only ~8 significant digits — no expected value is that small. scipy null space: max relative component difference 3.5e-07 (SVD, same tiny-component effect).
-- First passage (11 solves): numpy max relative difference 1.6e-13 (worst: §11 kofn n=2 k=1 crews=inf p_sw=1.0).
+- First passage (19 solves): numpy max relative difference 1.6e-13 (worst: §11 kofn n=2 k=1 crews=inf p_sw=1.0).
 
 | case | max rel diff (numpy vs mpmath) | worst key |
 |---|---|---|
@@ -82,12 +82,12 @@ U_perfect = 2.37665177298222e-05, penalty_switch_failure = 0.000125380264283677,
 
 ## §13 Standby with switchover (`standby.v2.*`)
 
-Built from the chain description given with the task (the spec text of §13 only names the two v2 changes): states j = failed units 0..n, up iff j <= n-1; switch-down states SW_j for j = 0..n-1; from j < n: standby failures (n-1-j) f lambda -> j+1, active failure lambda p_sw -> j+1 and lambda (1-p_sw) -> SW_j; repairs j -> j-1 at min(j, crews) mu; SW_j -> j+1 at 1/T_sf. The literal reading keeps SW_(n-1) (an active failure with no standby left can still 'fail to switch' and then waits T_sf before the repair of the last unit starts). The alternative reading (no SW_(n-1)) is tabulated for diagnosis; the MTTF is the same under both readings because both exits from j = n-1 are down.
+States j = failed units 0..n, up iff j <= n-1; switch-down states SW_j for j = 0..n-2 only, because a switch happens only while a standby exists (spec §13): from j <= n-2 standby failures (n-1-j) f lambda -> j+1, active failure lambda p_sw -> j+1 and lambda (1-p_sw) -> SW_j; from j = n-1 the last active failure goes straight to j = n at rate lambda; repairs j -> j-1 at min(j, crews) mu; SW_j -> j+1 at 1/T_sf. The former literal reading kept SW_(n-1) (an active failure with no standby left could still 'fail to switch' and wait T_sf before the repair of the last unit started); it is tabulated for diagnosis. The MTTF is the same under both readings because both exits from j = n-1 are down.
 
-| case | states | A | nu | U_sw | mttf_from_new | A (no SW_(n-1)) | nu (no SW_(n-1)) |
+| case | states | A | nu | U_sw | mttf_from_new | A (literal, SW_(n-1)) | nu (literal, SW_(n-1)) |
 |---|---|---|---|---|---|---|---|
-| n2_cold_crews_inf | 5 | 0.999937566087292 | 5.47229513779115e-05 | 2.6255961519705e-06 | 18359.0909090909 | 0.999937814812512 | 5.47229649897394e-05 |
-| n3_warm_crews1 | 7 | 0.999200507430728 | 0.00019989957498368 | 0 | 4998.71776200396 | 0.999200533842261 | 0.000199899580267559 |
+| n2_cold_crews_inf | 4 | 0.999937814812512 | 5.47229649897394e-05 | 2.62559680506326e-06 | 18359.0909090909 | 0.999937566087292 | 5.47229513779115e-05 |
+| n3_warm_crews1 | 6 | 0.999200533842261 | 0.000199899580267559 | 0 | 4998.71776200396 | 0.999200507430728 | 0.00019989957498368 |
 
 ## §14 Sub-health unit (`subhealth.unit.*`)
 
@@ -259,7 +259,7 @@ Largest relative difference over all checks: 4.6e-41 (40-digit arithmetic; anyth
 
 1. **§11 capacity of switch-failed states.** The spec defines w = n - a - m for (a, m) and says capacity `proportional` = w/n, `fractional` = min(1, w/k), but does not say what w is in S(a, m), where one more unit has failed and nothing has been repaired. I let S(a, m) inherit w = n - a - m (literal reading); the physically stricter choices would be w - 1 or 0 (group down). No expected value depends on this: the capacity keys are only requested for the p_sw = 1 cases, which have no S states (the switchover cases list their capacity under this reading in the notes, for information).
 2. **§11 behaviour inside S(a, m).** The table lists a single exit S(a, m) -> (a, m+1) at 1/T_sf. I followed it literally: while the switch failure is being recovered, the ongoing automatic/manual repairs of the other units and further failures are frozen. The failed unit then enters manual repair regardless of c.
-3. **§13 SW_(n-1).** The chain description given with the task defines SW_j for j = 0..n-1, i.e. an active failure with no standby left (j = n-1) can still 'fail to switch' and waits T_sf before the last repair starts; the spec's own U_sw sums only j <= n-2 ('a switch happens only while a standby exists'). I used the literal reading (SW_(n-1) present); the alternative values are in the notes of each standby case and in the §13 table (MTTF is identical; A and nu differ).
+3. **§13 SW_(n-1).** The chain description given with the task defined SW_j for j = 0..n-1, i.e. an active failure with no standby left (j = n-1) could still 'fail to switch' and wait T_sf before the last repair started, while the spec's own U_sw sums only j <= n-2 ('a switch happens only while a standby exists'). Since the model review of 2026-10-11 the primary values use SW_j for j = 0..n-2 only (the engine was aligned the same day); the former literal values are kept in the notes of each standby case and in the §13 table (MTTF is identical; A and nu differ).
 4. **§14 failure frequency under the strict/threshold measure.** 'Flux from the up set (threshold rule) into the down set' makes every U -> H entry a failure when phi < phi_min. Used as written; nu_threshold for phi >= phi_min counts only transitions into I/D_a/D_m.
 5. **§16 manual_mean_s.** Taken as the unconditional contribution sum_(manual rungs) P_i t_i (161.28 s), so that auto_mean_s + manual_mean_s = E[T]; the conditional mean given a person is needed would be 14400 s.
 6. **§17 G1 at steps 2-3.** The task says to use the unit's lambda_eq (= nu/A from X's §14 chain) together with the *configured* dual repair (c, s, T_a, T_m) in the §11 chain, while step 1 uses the equivalent two-state unit (c = 0, T_m = MTTR_eq). Under the strict measure lambda_eq = lambda + lambda_sh exactly, but the configured E_R = 0.96 h differs from the unit's MTTR_eq = 0.98664 h (sub-health episodes last D = 1 h, not a dual repair), so the two readings give different A_step2/A_step3 (about 1.4e-6 relative, i.e. at the tolerance); both are in the waterfall table and the case notes. Primary = configured repair (as instructed).

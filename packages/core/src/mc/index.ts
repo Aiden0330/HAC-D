@@ -301,6 +301,8 @@ function runOnce(spec: McJobSpec, rng: Rng): McReplication {
   let t = 0;
   let useful = 0;
   let sinceCkpt = 0;
+  /** hours of the current checkpoint save still to run; the checkpoint is committed only when this reaches 0 */
+  let saveRemaining = 0;
   const interval = spec.intervalS / 3600;
   const delta = spec.deltaS / 3600;
   let sparesInUse = 0;
@@ -315,11 +317,27 @@ function runOnce(spec: McJobSpec, rng: Rng): McReplication {
   let ccfEvents = 0;
   const failuresByClass: Record<string, number> = {};
 
-  /** Run the job for at most dtMax wall hours at `speed`, taking checkpoints; returns wall time used. */
+  /**
+   * Run the job for at most dtMax wall hours at `speed`, taking checkpoints; returns wall time used.
+   * A checkpoint is committed only when its exposed save completes: an interruption during the save restarts from the
+   * previous checkpoint (the whole interval and the partial save are lost), as in the renewal and Daly models.
+   */
   const advance = (dtMax: number, speed: number): number => {
     let remaining = dtMax;
     let used = 0;
     while (remaining > 1e-12 && useful < spec.workHours) {
+      if (saveRemaining > 0) {
+        const sv = Math.min(saveRemaining, remaining);
+        saveRemaining -= sv;
+        ckptOverhead += sv;
+        remaining -= sv;
+        used += sv;
+        if (saveRemaining <= 1e-12) {
+          saveRemaining = 0;
+          sinceCkpt = 0; // checkpoint committed
+        }
+        continue;
+      }
       const workLeft = spec.workHours - useful;
       const toCkpt = Math.min(interval - sinceCkpt, workLeft) / speed; // wall time to next checkpoint or finish
       if (toCkpt <= remaining) {
@@ -331,11 +349,8 @@ function runOnce(spec: McJobSpec, rng: Rng): McReplication {
         used += toCkpt;
         if (useful >= spec.workHours - 1e-12) break;
         if (sinceCkpt >= interval - 1e-12) {
-          sinceCkpt = 0;
-          const save = Math.min(delta, remaining);
-          ckptOverhead += save;
-          remaining -= save;
-          used += save;
+          if (delta > 0) saveRemaining = delta; // enter the save phase; commit when it completes
+          else sinceCkpt = 0;
         }
       } else {
         const w = remaining * speed;
@@ -439,6 +454,7 @@ function runOnce(spec: McJobSpec, rng: Rng): McReplication {
     useful -= recompute; // progress since the last checkpoint is lost
     recomputeHours += recompute;
     sinceCkpt = 0;
+    saveRemaining = 0; // a save in progress is lost with its interval
     const rec = spec.recoverySampler(rng, spec.nGpus) / 3600;
     recoveryHours += rec;
     let wait = 0;

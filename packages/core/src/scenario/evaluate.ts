@@ -12,7 +12,7 @@ import { youngInterval, dalyThreeTerm, dalyExact, saxenaOptimalPeriod, goodputFi
 import { hotSparesBinomial, hotSparesPoisson, repairPipelineSpares, replacementsOverJob } from '../sparing/index.js';
 import { binomCdf } from '../math/special.js';
 import { lostDollarsPerDay, wastedGpuHoursPerDay } from '../cost/index.js';
-import { chainOutcome, emptyMixedRates, addOutcome, addPlainEvents, type ChainParams } from '../mechanisms/chain.js';
+import { chainOutcome, emptyMixedRates, addOutcome, addPlainEvents, type ChainParams, type MixedRates } from '../mechanisms/chain.js';
 import { sdcDelivery, pClearedBeforePersist, type SdcDeliveryResult } from '../sdc/index.js';
 import { computeCounts, buildStructure, interruptionRatePerHour, sdcRatePerHour, replicaComposition, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
 import { designReviewChecklist, type ChecklistItem } from './checklist.js';
@@ -462,33 +462,47 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     const mtbiS = mtbiHours * 3600;
     const recovery = recoveryModel.compose(N);
     const recoveryS = recoveryModel.meanS(N);
-    // v3: split the recovery into the detection delay (charged before any mechanism) and the global recovery that follows
-    let detectS = 0;
-    if (s.recovery.mode === 'mixture') detectS = s.recovery.detection.coverage * s.recovery.detection.autoSeconds + (1 - s.recovery.detection.coverage) * s.recovery.detection.timeoutSeconds;
-    else if (recoveryModel.kind === 'pipeline') detectS = recovery.stages.find((st) => st.name === 'detect')?.meanS ?? 0;
-    const globalS = Math.max(0, recoveryS - detectS);
+    // v3: split the recovery at scale n into the detection delay (charged before any mechanism) and the global recovery that
+    // follows; evaluated per scale-table row so that the recovery scale laws reach every N
+    const tDetMixture = s.recovery.mode === 'mixture' ? s.recovery.detection.coverage * s.recovery.detection.autoSeconds + (1 - s.recovery.detection.coverage) * s.recovery.detection.timeoutSeconds : undefined;
+    const recoveryAt = (n: number): { recoveryS: number; detectS: number; globalS: number } => {
+      const R = n === N ? recoveryS : recoveryModel.meanS(n);
+      let d = 0;
+      if (tDetMixture !== undefined) d = tDetMixture;
+      else if (recoveryModel.kind === 'pipeline') d = (n === N ? recovery : recoveryModel.compose(n)).stages.find((st) => st.name === 'detect')?.meanS ?? 0;
+      return { recoveryS: R, detectS: d, globalS: Math.max(0, R - d) };
+    };
+    const { detectS, globalS } = recoveryAt(N);
 
-    // v3: mechanism chain per class → rollback vs pause-only event classes
+    // v3: mechanism chain per class → rollback vs pause-only event classes; `f` scales every event class with N (scale table)
     const chainParams: ChainParams = { replay: s.mechanisms.replay, elastic: s.mechanisms.elastic, process: s.mechanisms.process };
     const chainActive = !!(s.mechanisms.replay || s.mechanisms.elastic || s.mechanisms.process);
-    let mixed = emptyMixedRates();
+    const sdcTotal = sdcRatePerHour(items);
+    const sdcCoverage = s.sdc.detection.coverage;
+    const sdcDetectedRate = sdcTotal * sdcCoverage;
+    const mixedRatesAt = (f: number, d: number, g: number): MixedRates => {
+      let m = emptyMixedRates();
+      for (const ci of items) {
+        const rate = ci.lambda * ci.total * f;
+        if (rate <= 0) continue;
+        m = addOutcome(m, rate, chainOutcome(d, g, chainParams, ci.applicable));
+      }
+      // a detected sub-healthy unit is switched out after saving the current progress: a pause without rollback
+      if (isolationRate > 0) m = addPlainEvents(m, isolationRate * f, g, false);
+      // immediately detected silent corruption: rollback to the last checkpoint, or redo one step with step recovery
+      if (sdcDetectedRate > 0) {
+        if (s.sdc.stepRecovery) m = addPlainEvents(m, sdcDetectedRate * f, s.sdc.detection.detectSeconds + s.sdc.stepRecovery.recoverSeconds + s.sdc.stepRecovery.stepSeconds, false);
+        else m = addPlainEvents(m, sdcDetectedRate * f, s.sdc.detection.detectSeconds + g, true);
+      }
+      return m;
+    };
+    const mixed = mixedRatesAt(1, detectS, globalS);
     const chainRows: ChainRow[] = [];
     for (const ci of items) {
       const rate = ci.lambda * ci.total;
       if (rate <= 0) continue;
       const o = chainOutcome(detectS, globalS, chainParams, ci.applicable);
-      mixed = addOutcome(mixed, rate, o);
       chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pReplay: o.pReplay, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
-    }
-    // a detected sub-healthy unit is switched out after saving the current progress: a pause without rollback
-    if (isolationRate > 0) mixed = addPlainEvents(mixed, isolationRate, globalS, false);
-    // immediately detected silent corruption: rollback to the last checkpoint, or redo one step with step recovery
-    const sdcTotal = sdcRatePerHour(items);
-    const sdcCoverage = s.sdc.detection.coverage;
-    const sdcDetectedRate = sdcTotal * sdcCoverage;
-    if (sdcDetectedRate > 0) {
-      if (s.sdc.stepRecovery) mixed = addPlainEvents(mixed, sdcDetectedRate, s.sdc.detection.detectSeconds + s.sdc.stepRecovery.recoverSeconds + s.sdc.stepRecovery.stepSeconds, false);
-      else mixed = addPlainEvents(mixed, sdcDetectedRate, s.sdc.detection.detectSeconds + globalS, true);
     }
     const eventRate = mixed.rollbackRatePerHour + mixed.pauseRatePerHour;
     const mtbiEventS = eventRate > 0 ? 3600 / eventRate : Infinity;
@@ -497,14 +511,18 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     const pRollback = eventRate > 0 ? mixed.rollbackRatePerHour / eventRate : 1;
     const localLossFraction = Math.min(1, mixed.localLossSPerHour / 3600);
 
-    // checkpoint interval: protects against rollback events only
-    let tauS: number;
-    if (w.intervalS !== undefined) tauS = w.intervalS;
-    else if (w.intervalModel === 'daly3') tauS = dalyThreeTerm(deltaS, mtbiRollbackS);
-    else if (w.intervalModel === 'dalyExact') tauS = dalyExact(deltaS, mtbiRollbackS);
-    else if (w.intervalModel === 'saxena') tauS = Math.max(1e-9, saxenaOptimalPeriod(mtbiRollbackS, deltaS, mixed.rollbackPauseS) - deltaS);
-    else tauS = youngInterval(deltaS, mtbiRollbackS);
-    if (!Number.isFinite(tauS) || tauS <= 0) tauS = w.intervalS ?? 3600;
+    // checkpoint interval: protects against rollback events only (chosen against the rollback MTBI, per scale-table row too)
+    const intervalFor = (mtbiRb: number, pauseRb: number): number => {
+      let tau: number;
+      if (w.intervalS !== undefined) tau = w.intervalS;
+      else if (w.intervalModel === 'daly3') tau = dalyThreeTerm(w.deltaS, mtbiRb);
+      else if (w.intervalModel === 'dalyExact') tau = dalyExact(w.deltaS, mtbiRb);
+      else if (w.intervalModel === 'saxena') tau = Math.max(1e-9, saxenaOptimalPeriod(mtbiRb, w.deltaS, pauseRb) - w.deltaS);
+      else tau = youngInterval(w.deltaS, mtbiRb);
+      if (!Number.isFinite(tau) || tau <= 0) tau = w.intervalS ?? 3600;
+      return tau;
+    };
+    const tauS = intervalFor(mtbiRollbackS, mixed.rollbackPauseS);
     const recomputeSource: 'tau/2' | 'measured' | 'step' = w.measuredRecomputeS !== undefined ? 'measured' : w.recovery === 'replica' ? 'step' : 'tau/2';
     const recompute = recomputeSource === 'measured' ? w.measuredRecomputeS! : recomputeSource === 'step' ? (w.stepTimeS ?? 0) : tauS / 2;
     const recomputeEffective = pRollback * recompute;
@@ -571,31 +589,39 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
 
     const lambdaPerGpu = lambdaJob / N;
     const scale = scaleTable(lambdaPerGpu, deltaS, (n) => recoveryModel.meanS(n), SCALE_SIZES, w.intervalModel === 'daly3' ? 'daly3' : w.intervalModel === 'dalyExact' ? 'dalyExact' : 'young');
-    const useMixedScale = chainActive || sdcTotal > 0 || isolationRate > 0;
     for (const row of scale) {
-      // v3: every event class scales with N; the chain, the pause-only events and the silent-corruption window are applied per row
+      // every event class scales with N; the recovery R(N) (detection and global recovery from the scale laws), the chain,
+      // the pause-only events, the checkpoint interval, the straggler law and the silent-corruption window are re-evaluated
+      // per row exactly as for the configured size; only the spare-pool blocking stays as configured
       const f = row.nGpus / N;
-      const tauRow = w.intervalS !== undefined ? w.intervalS : row.tauS;
-      const mrRow = renewalGoodputMixed({ tauS: tauRow, deltaS, rollbackRatePerS: (mixed.rollbackRatePerHour * f) / 3600, rollbackPauseS: mixed.rollbackPauseS, pauseRatePerS: (mixed.pauseRatePerHour * f) / 3600, pauseS: mixed.pauseOnlyS });
-      if (useMixedScale || w.intervalS !== undefined) {
-        const mEv = eventRate * f > 0 ? 3600 / (eventRate * f) : Infinity;
-        const foRow = goodputFirstOrder(deltaS, tauRow, mEv, meanPauseS);
-        foRow.terms.recompute = Number.isFinite(mEv) ? (pRollback * (recomputeSource === 'tau/2' ? tauRow / 2 : recompute)) / mEv : 0;
+      const rr = recoveryAt(row.nGpus);
+      const mx = mixedRatesAt(f, rr.detectS, rr.globalS);
+      const evRow = mx.rollbackRatePerHour + mx.pauseRatePerHour;
+      const mEv = evRow > 0 ? 3600 / evRow : Infinity;
+      const mRb = mx.rollbackRatePerHour > 0 ? 3600 / mx.rollbackRatePerHour : Infinity;
+      const pauseRow = evRow > 0 ? (mx.rollbackRatePerHour * mx.rollbackPauseS + mx.pauseRatePerHour * mx.pauseOnlyS) / evRow : rr.recoveryS;
+      const pRbRow = evRow > 0 ? mx.rollbackRatePerHour / evRow : 1;
+      const tauRow = intervalFor(mRb, mx.rollbackPauseS);
+      const foRow = goodputFirstOrder(deltaS, tauRow, mEv, pauseRow);
+      if (recomputeSource !== 'tau/2' || pRbRow < 1) {
+        foRow.terms.recompute = Number.isFinite(mEv) ? (pRbRow * (recomputeSource === 'tau/2' ? tauRow / 2 : recompute)) / mEv : 0;
         foRow.terms.total = foRow.terms.save + foRow.terms.recompute + foRow.terms.restart;
         foRow.goodput = Math.max(0, 1 - foRow.terms.total);
-        const h = headlineGoodput(foRow, mrRow.goodput);
-        row.tauS = tauRow;
-        row.goodput = foRow;
-        row.renewalGoodput = mrRow.goodput;
-        row.headline = h.goodput;
-        row.headlineModel = h.model;
       }
-      const eff = row.headline * (1 - blocked) * performanceFactor * (1 - localLossFraction * f);
+      const mrRow = renewalGoodputMixed({ tauS: tauRow, deltaS, rollbackRatePerS: mx.rollbackRatePerHour / 3600, rollbackPauseS: mx.rollbackPauseS, pauseRatePerS: mx.pauseRatePerHour / 3600, pauseS: mx.pauseOnlyS });
+      const h = headlineGoodput(foRow, mrRow.goodput);
+      row.tauS = tauRow;
+      row.goodput = foRow;
+      row.renewalGoodput = mrRow.goodput;
+      row.headline = h.goodput;
+      row.headlineModel = h.model;
+      const perfRow = 1 - (1 - Math.pow(pNotSlowed, f)) * (1 - minPerformance);
+      const localRow = Math.min(1, mx.localLossSPerHour / 3600);
+      const eff = row.headline * (1 - blocked) * perfRow * (1 - localRow);
       row.effective = eff;
       if (sdcTotal > 0) {
-        const undetectedRow = sdcTotal * f * (1 - sdcCoverage);
-        const nuRow = undetectedRow * mrRow.runningFraction * (1 - pClearedBeforePersist(mixed.rollbackRatePerHour * f, (tauRow + deltaS) / 3600));
-        row.delivered = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600 }).delivered;
+        const nuRow = sdcTotal * f * (1 - sdcCoverage) * mrRow.runningFraction * (1 - pClearedBeforePersist(mx.rollbackRatePerHour, (tauRow + deltaS) / 3600));
+        row.delivered = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: rr.globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600 }).delivered;
       } else row.delivered = eff;
     }
     const nGpuEff = N;
@@ -659,7 +685,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     formulas.chain = 'per class: replay (a_rp, s_rp: pause d + f + t_rp, no rollback) → elastic (a_el, s_el: pause f + t_sync, domain out (d + t_el)/n_dom, no rollback) → process (a_pr, s_pr: pause d + f + t_pr, rollback) → global (pause d + f + R_global, rollback); a_x = applicable fraction, f = failure times of the rungs tried before; λ_rb = Σ λ_i P_rb,i, λ_p = Σ λ_i (1 − P_rb,i)';
     formulas.sdc = 'ν = λ_sdc (1 − q) · A_run · (1 − P_clear), P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L); clean ~ Exp(ν), dirty + pause = D + R_c; delivered = [g·E(clean time) − U·E(episodes)]/T with E(clean) = T − Σ_k ∫ P(S_k ≤ T − x)dx, S_k = Γ(k, ν) + (k − 1)(D + R_c); detected corruption (q): rollback + pause t_d + R_global, or with step recovery a pause t_d + t_rec + t_step without rollback';
     formulas.ledger = 'window shares: downtime + save + rollback + slowdown + local + blocked + SDC rollback + terminal discard + delivered = 1';
-    formulas.scale = 'MTBI(N) = 1/(N·λ_GPU-equivalent), λ_GPU-equivalent = λ_job/N at the configured size (fixed components scaled proportionally); the chain, pause-only events and the silent-corruption window are applied per row';
+    formulas.scale = 'MTBI(N) = 1/(N·λ_GPU-equivalent), λ_GPU-equivalent = λ_job/N at the configured size (fixed components scaled proportionally); per row: R(N) from the recovery scale laws, the chain and pause-only events, the checkpoint interval against the rollback MTBI, the straggler law 1 − (1 − p_H)^N and the silent-corruption window; the spare pool stays as configured';
     formulas.cost = 'wasted GPU·h/day = N × 24 × (1 − delivered goodput); $/day = wasted GPU·h × price';
 
     // spares at node granularity

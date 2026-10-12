@@ -264,9 +264,11 @@ export interface StandbyResult {
 
 /**
  * 1-of-n standby: one active unit (rate λ) and n−1 standbys failing at factor·λ
- * (factor 0 = cold, 1 = hot). On an active failure the switch succeeds with
- * probability pSwitch; a failed switch leaves the system down until a repair
- * (rate μ) completes. Repairs of failed units proceed with `crews` repairers.
+ * (factor 0 = cold, 1 = hot). On an active failure with a standby left the switch
+ * succeeds with probability pSwitch; a failed switch leaves the system down until the
+ * switch-failed state is cleared (rate switchRepairRate, default μ). The failure of the
+ * last working unit has no standby to switch to and takes the system straight to the
+ * all-failed state. Repairs of failed units proceed with `crews` repairers.
  */
 export function standby(
   n: number,
@@ -279,20 +281,24 @@ export function standby(
   switchRepairRate?: number,
 ): StandbyResult {
   if (!(n >= 1)) throw new RangeError('standby: n ≥ 1');
-  // States: j = failed units (0..n) → index j; switch-down states SW_j (j = 0..n−1) → index n+1+j
+  // States: j = failed units (0..n) → index j; switch-down states SW_j (j = 0..n−2, a switch happens only while a
+  // standby exists; docs/MODEL_REFERENCE.md §13) → index n+1+j
   const states: CtmcState[] = [];
   for (let j = 0; j <= n; j++) states.push({ id: `failed_${j}`, up: j <= n - 1, capacity: j <= n - 1 ? 1 : 0 });
-  for (let j = 0; j < n; j++) states.push({ id: `switch_down_${j}`, up: false, capacity: 0 });
+  const sw = pSwitch < 1 ? Math.max(0, n - 1) : 0;
+  for (let j = 0; j < sw; j++) states.push({ id: `switch_down_${j}`, up: false, capacity: 0 });
   const tr: Transition[] = [];
   for (let j = 0; j < n; j++) {
     const standbyRate = (n - 1 - j) * standbyFactor * lambda;
     if (standbyRate > 0) tr.push({ from: j, to: j + 1, rate: standbyRate });
-    tr.push({ from: j, to: j + 1, rate: lambda * pSwitch });
-    if (pSwitch < 1) tr.push({ from: j, to: n + 1 + j, rate: lambda * (1 - pSwitch) });
+    if (j < sw) {
+      tr.push({ from: j, to: j + 1, rate: lambda * pSwitch });
+      tr.push({ from: j, to: n + 1 + j, rate: lambda * (1 - pSwitch) });
+    } else tr.push({ from: j, to: j + 1, rate: lambda }); // perfect switch, or the last working unit: no switch to attempt
   }
   for (let j = 1; j <= n; j++) tr.push({ from: j, to: j - 1, rate: Math.min(j, crews) * mu });
   const swRate = switchRepairRate ?? mu;
-  for (let j = 0; j < n; j++) tr.push({ from: n + 1 + j, to: j + 1, rate: swRate }); // switch repaired; the failed unit is now counted
+  for (let j = 0; j < sw; j++) tr.push({ from: n + 1 + j, to: j + 1, rate: swRate }); // switch repaired; the failed unit is now counted
   const chain = new Ctmc(states, tr);
   let availability = 1;
   let failureFrequency = 0;
@@ -303,13 +309,13 @@ export function standby(
     availability = chain.availability(pi);
     failureFrequency = chain.failureFrequency(pi);
     for (let j = 0; j <= n - 2; j++) switchFrequency += pi[j] * lambda * pSwitch;
-    for (let j = 0; j < n; j++) switchFailedProbability += pi[n + 1 + j];
+    for (let j = 0; j < sw; j++) switchFailedProbability += pi[n + 1 + j];
   } else {
     availability = 0;
   }
   const absorbing = new Set<number>();
   absorbing.add(n);
-  for (let j = 0; j < n; j++) absorbing.add(n + 1 + j);
+  for (let j = 0; j < sw; j++) absorbing.add(n + 1 + j);
   const mttfFromNew = lambda > 0 ? chain.meanTimeToAbsorption(absorbing, 0) : Infinity;
   return { availability, failureFrequency, mttfFromNew, switchFrequency, switchFailedProbability };
 }

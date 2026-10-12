@@ -116,6 +116,7 @@ const subhealth: Handler = (i, raw) => {
     nu_threshold: u.failureFrequency,
     nu_iso: u.isolationFrequency,
     p_H_given_not_down: u.pSubhealthGivenNotDown,
+    mttf_from_new: u.mttfFromNew,
   };
 };
 for (const id of ['subhealth.unit.tolerate_phi0.6', 'subhealth.unit.tolerate_phi0.8', 'subhealth.unit.isolate', 'subhealth.unit.reduction_to_degraded_unit']) handlers[id] = subhealth;

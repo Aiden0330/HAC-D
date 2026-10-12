@@ -357,6 +357,8 @@ export interface SubhealthUnitResult {
   isolationFrequency: number;
   /** P(sub-healthy | not down) */
   pSubhealthGivenNotDown: number;
+  /** mean first passage from U into the down set of the threshold rule, hours (1/(λ + λ_sh) when sub-health counts as down) */
+  mttfFromNew: number;
   warnings: string[];
 }
 
@@ -413,6 +415,19 @@ export function subhealthUnit(lambda: number, repair: DualRepair, sh: Subhealth)
   const at = (i: number) => (i >= 0 ? pi[i] : 0);
   const piSh = at(H) + at(Hp);
   const notDown = at(U) + piSh;
+  // MTTF from new: first passage from U into the down set (escalated failures and detected isolations shorten it below 1/λ)
+  const downSet = new Set<number>();
+  states.forEach((st, i) => {
+    if (!st.up) downSet.add(i);
+  });
+  let mttfFromNew = Infinity;
+  if (downSet.size > 0 && (lambda > 0 || (sh.ratePerHour > 0 && (countsAsDown || isolate)))) {
+    try {
+      mttfFromNew = chain.meanTimeToAbsorption(downSet, U);
+    } catch {
+      mttfFromNew = Infinity;
+    }
+  }
   return {
     piUp: at(U),
     piSubhealth: piSh,
@@ -429,6 +444,7 @@ export function subhealthUnit(lambda: number, repair: DualRepair, sh: Subhealth)
     failureFrequency: chain.failureFrequency(pi),
     isolationFrequency: isolate ? (at(H) * pd) / Td : 0,
     pSubhealthGivenNotDown: notDown > 0 ? piSh / notDown : 0,
+    mttfFromNew,
     warnings,
   };
 }
