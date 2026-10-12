@@ -189,6 +189,108 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
       return c;
     },
   },
+  {
+    id: 'P-PREDICT', name: { zh: '故障预测与预先迁移', en: 'Failure prediction and pre-emptive migration' }, kind: 'detect', status: 'candidate', scope: 'hard',
+    change: { zh: '预测器召回 50 % 的即将发生的中断，在下一个 checkpoint 做计划内迁移（180 s 停顿、不回滚、无检测时延）；精度 80 %，误报按 r(1 − p)/p 增加同样的停顿', en: 'the predictor catches 50 % of impending interruptions, which become planned migrations at the next checkpoint (180 s pause, no rollback, no detection delay); precision 80 %, false alarms add the same pause at r(1 − p)/p per interruption' },
+    prerequisite: { zh: '可用的前兆信号（ECC 趋势、温度、PCIe 降级）与排名式健康评分；备用节点', en: 'leading signals (ECC trend, temperature, PCIe downtraining) and a ranking health score; spare nodes to migrate to' },
+    failure: { zh: '漏报走正常检测与恢复链；误报只付迁移停顿', en: 'misses go through the normal detection and chain; false alarms only cost the migration pause' },
+    confidence: 'HeaRank (64 % of failures in the top 5 % of nodes), Meta ECC-trend (48–72 h, 89–96 %), Clockwork pre-emptive mode: priors, not measured on this cluster',
+    parameters: { recall: 0.5, precision: 0.8, migrationSeconds: 180 },
+    effort: 3,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      c.mechanisms = { ...c.mechanisms, predict: { recall: p.recall, precision: p.precision, migrationSeconds: p.migrationSeconds } };
+      return c;
+    },
+  },
+  {
+    id: 'R-NETFAIL', name: { zh: '容错集合通信 / 多网卡切换', en: 'Fault-tolerant collectives and multi-NIC failover' }, kind: 'recover', status: 'candidate', scope: 'hard',
+    change: { zh: '网卡或链路故障在一次迭代内被集合通信库吸收：95 % 在 2 s 内切换、不回滚、无检测时延；失败耗时 10 s 后进入检测与恢复链', en: 'NIC or link failures are absorbed inside the collective: 95 % fail over in 2 s with no rollback and no detection delay; a failure costs 10 s before the normal detection and chain' },
+    prerequisite: { zh: '多网卡与多路径、支持连接迁移的集合通信库（R²CCL、VCCL 类）；仅对网络类事件', en: 'multi-NIC / multipath fabric and a collective library with connection migration (R²CCL, VCCL class); network-class events only (component applicability netfail)' },
+    failure: { zh: '超时 → 正常恢复链', en: 'timeout → the normal chain' },
+    confidence: 'R²CCL (< 1 % training overhead under NIC failures, 2 servers) and VCCL documentation: priors',
+    parameters: { success: 0.95, successSeconds: 2, failureSeconds: 10 },
+    effort: 3,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      c.mechanisms = { ...c.mechanisms, netfail: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
+      return c;
+    },
+  },
+  {
+    id: 'R-HOTSWAP', name: { zh: '故障卡热替换（零开销 checkpoint）', en: 'Hot-swap of failed devices with zero-overhead checkpoints' }, kind: 'recover', status: 'candidate', scope: 'hard',
+    change: { zh: '卡 / 服务器级中断 90 % 在 180 s 内由备用设备热替换、不回滚；失败 60 s 后进入弹性 / 进程 / 全局', en: 'card / server interruptions are hot-swapped from a spare in 180 s with 90 % success and no rollback; a failure costs 60 s before elastic / process / global' },
+    prerequisite: { zh: '热备卡与状态镜像（零开销 checkpoint 或冗余状态）；仅对卡 / 服务器范围的事件', en: 'hot spare devices and mirrored state (zero-overhead checkpoint or redundant state); card / server scoped events only (component applicability hotswap)' },
+    failure: { zh: '弹性（若启用）→ 进程重调度 → 全局 CKPT → 人工', en: 'elastic (if enabled) → process → global checkpoint → manual' },
+    confidence: 'PHOENIX (2026 preprint) and Clockwork TorchPass (~3 min, vendor claim): priors',
+    parameters: { success: 0.9, successSeconds: 180, failureSeconds: 60 },
+    effort: 4,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      c.mechanisms = { ...c.mechanisms, hotswap: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
+      return c;
+    },
+  },
+  {
+    id: 'C-MEM', name: { zh: '内存 / 分层 checkpoint', en: 'In-memory and tiered checkpointing' }, kind: 'checkpoint', status: 'candidate', scope: 'all',
+    change: { zh: '暴露保存时间降到 0.5 s、每 60 s 一次；从主机 / 邻居内存加载使全局恢复缩短 60 s；主机内存与流量干扰计 1 % 开销', en: 'exposed save time 0.5 s every 60 s; loading from host / peer memory shortens the global recovery by 60 s; host-memory and traffic interference cost 1 % of throughput' },
+    prerequisite: { zh: '主机内存冗余（相邻节点、纠删码）与流量调度；存储带宽', en: 'host-memory redundancy (peer nodes, erasure coding) and traffic scheduling; storage bandwidth' },
+    failure: { zh: '内存副本丢失时回退到远端存储的 checkpoint', en: 'falls back to the remote-storage checkpoint when memory copies are lost' },
+    confidence: 'GEMINI (SOSP\'23, 13× faster recovery), ECCHECK (ICDCS\'25), TierCheck (2026): priors',
+    parameters: { computeSeconds: 60, saveSeconds: 0.5, loadSavingSeconds: 60, overhead: 0.01 },
+    effort: 3,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      if (c.workload.type === 'training') c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
+      if (c.recovery.mode === 'mixture') c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: Math.max(30, c.recovery.automatic.seconds - p.loadSavingSeconds) } };
+      c.mechanisms = { ...c.mechanisms, overheads: { ...(c.mechanisms.overheads ?? {}), 'C-MEM': p.overhead } };
+      return c;
+    },
+  },
+  {
+    id: 'D-SDC-DMR', name: { zh: '双模冗余 / 在线完整性校验（静默）', en: 'Dual modular redundancy / online integrity checks for silent corruption' }, kind: 'detect', status: 'candidate', scope: 'sdc',
+    change: { zh: '静默即时检出率 → 99.9 %（1 s），代价为 8 % 的吞吐（SpareTrain 3–14 %；AEGIS 两段式校验约 1–3 %）', en: 'immediate silent-corruption detection → 99.9 % in 1 s at a throughput cost of 8 % (SpareTrain 3–14 %; AEGIS two-stage checks about 1–3 %)' },
+    prerequisite: { zh: '冗余计算或轻量感知 + 验证两段式校验；空闲算力', en: 'redundant computation or a two-stage sensing + verification check; idle compute' },
+    failure: { zh: '漏检走兜底；校验本身的误报未建模', en: 'misses go to the fallback; false positives of the check are not modelled' },
+    confidence: 'SpareTrain (ICLR\'26, 32 H200), AEGIS (OSDI\'26, 35 M GPU-h): priors',
+    parameters: { coverage: 0.999, detectSeconds: 1, overhead: 0.08 },
+    effort: 4,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      c.sdc = { ...c.sdc, detection: { coverage: Math.max(c.sdc.detection.coverage, p.coverage), detectSeconds: p.detectSeconds } };
+      c.mechanisms = { ...c.mechanisms, overheads: { ...(c.mechanisms.overheads ?? {}), 'D-SDC-DMR': p.overhead } };
+      return c;
+    },
+  },
+  {
+    id: 'H-LEMON', name: { zh: '问题节点（lemon）识别与剔除', en: 'Lemon-node detection and eviction' }, kind: 'physical', status: 'candidate', scope: 'hard',
+    change: { zh: '反复出事的节点移出大作业：中断率 × (1 − share × reduction)，默认占比 10 %、剔除 70 %', en: 'nodes with repeated failures are removed from large jobs: interruption rates × (1 − share × reduction), default share 10 %, reduction 70 %' },
+    prerequisite: { zh: '历史故障与排除记录；容量不被过度剔除耗尽', en: 'failure and exclusion history per node; capacity not starved by aggressive exclusion' },
+    failure: { zh: '—', en: '—' },
+    confidence: 'Meta "Revisiting reliability" (large-job failures 14 % → 4 %): prior share and reduction',
+    parameters: { share: 0.1, reduction: 0.7 },
+    effort: 2,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      const f = 1 - Math.min(1, p.share) * Math.min(1, p.reduction);
+      for (const comp of c.components) comp.failure = { ...comp.failure, value: comp.failure.value * f };
+      return c;
+    },
+  },
+  {
+    id: 'H-SWEEP', name: { zh: '节点离线巡检（亚健康筛查）', en: 'Offline node sweeps for sub-health' }, kind: 'physical', status: 'candidate', scope: 'slow',
+    change: { zh: '上线前巡检剔除慢节点：亚健康进入率 × 0.5、持续时间 × 0.5', en: 'nodes are qualified before joining: sub-health entry rate × 0.5 and duration × 0.5' },
+    prerequisite: { zh: '离线基准（NCCL、GEMM）与在线监控结合；备用节点', en: 'offline benchmarks (NCCL, GEMM) combined with online monitoring; spare nodes' },
+    failure: { zh: '—', en: '—' },
+    confidence: 'Guard (MLSys\'26: step variance 20 % → 1 %, MTTF up): priors',
+    parameters: { rateFactor: 0.5, durationFactor: 0.5 },
+    effort: 2,
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      for (const comp of c.components) if (comp.subhealth) comp.subhealth = { ...comp.subhealth, ratePerHour: (comp.subhealth.ratePerHour ?? 0) * p.rateFactor, durationHours: comp.subhealth.durationHours * p.durationFactor };
+      return c;
+    },
+  },
 ];
 
 export const DEFAULT_PLAYERS = ['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'C-FAST'];
@@ -204,6 +306,10 @@ export function activeMechanisms(s: Scenario): string[] {
   if (s.mechanisms.replay) ids.push('R-REPLAY');
   if (s.mechanisms.process) ids.push('R-PROCESS');
   if (s.mechanisms.elastic) ids.push('R-ELASTIC');
+  if (s.mechanisms.predict) ids.push('P-PREDICT');
+  if (s.mechanisms.netfail) ids.push('R-NETFAIL');
+  if (s.mechanisms.hotswap) ids.push('R-HOTSWAP');
+  for (const id of Object.keys(s.mechanisms.overheads ?? {})) if (!ids.includes(id)) ids.push(id);
   if (s.workload.type === 'training' && s.workload.intervalS !== undefined && s.workload.intervalS <= 60 && s.workload.deltaS <= 1) ids.push('C-FAST');
   return ids;
 }
@@ -220,6 +326,14 @@ export function stripMechanisms(s: Scenario, ids: string[]): Scenario {
   if (ids.includes('R-REPLAY')) c.mechanisms = { ...c.mechanisms, replay: undefined };
   if (ids.includes('R-PROCESS')) c.mechanisms = { ...c.mechanisms, process: undefined };
   if (ids.includes('R-ELASTIC')) c.mechanisms = { ...c.mechanisms, elastic: undefined };
+  if (ids.includes('P-PREDICT')) c.mechanisms = { ...c.mechanisms, predict: undefined };
+  if (ids.includes('R-NETFAIL')) c.mechanisms = { ...c.mechanisms, netfail: undefined };
+  if (ids.includes('R-HOTSWAP')) c.mechanisms = { ...c.mechanisms, hotswap: undefined };
+  if (c.mechanisms.overheads) {
+    const o = { ...c.mechanisms.overheads };
+    for (const id of ids) delete o[id];
+    c.mechanisms = { ...c.mechanisms, overheads: o };
+  }
   return c;
 }
 
@@ -250,6 +364,8 @@ export interface MechanismGain {
   shapley: number;
   /** shapley / (combined − baseline) */
   share: number;
+  /** v3.2: the same gains for every value function (A_op and delivered side by side) */
+  byMetric: Record<AttributionMetric, { single: number; lastAdded: number; shapley: number }>;
 }
 
 export interface MechanismReport {
@@ -305,16 +421,23 @@ export function mechanismReport(s: Scenario, players: string[] = DEFAULT_PLAYERS
   const baseline = values[0];
   const combined = values[total - 1];
   const delta = v(total - 1) - v(0);
+  const metrics: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
   const gains: MechanismGain[] = ids.map((id, i) => {
     const bit = 1 << i;
-    let shapley = 0;
-    for (let mask = 0; mask < total; mask++) {
-      if (mask & bit) continue;
-      const k = popcount(mask);
-      const w = (factorial(k) * factorial(n - k - 1)) / factorial(n);
-      shapley += w * (v(mask | bit) - v(mask));
+    const byMetric = {} as MechanismGain['byMetric'];
+    for (const m of metrics) {
+      const vm = (mask: number) => values[mask][m];
+      let sh = 0;
+      for (let mask = 0; mask < total; mask++) {
+        if (mask & bit) continue;
+        const k = popcount(mask);
+        const w = (factorial(k) * factorial(n - k - 1)) / factorial(n);
+        sh += w * (vm(mask | bit) - vm(mask));
+      }
+      byMetric[m] = { single: vm(bit) - vm(0), lastAdded: vm(total - 1) - vm((total - 1) & ~bit), shapley: sh };
     }
-    return { id, values: values[bit], single: v(bit) - v(0), lastAdded: v(total - 1) - v((total - 1) & ~bit), shapley, share: delta !== 0 ? shapley / delta : 0 };
+    const own = byMetric[metric];
+    return { id, values: values[bit], single: own.single, lastAdded: own.lastAdded, shapley: own.shapley, share: delta !== 0 ? own.shapley / delta : 0, byMetric };
   });
   const sumShapley = gains.reduce((a, g) => a + g.shapley, 0);
   const sumSingle = gains.reduce((a, g) => a + g.single, 0);

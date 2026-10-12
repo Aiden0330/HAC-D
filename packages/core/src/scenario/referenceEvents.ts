@@ -2,7 +2,8 @@
  * The ai-cluster-reliability audited event catalog (catalogs/review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85):
  * 54 events = 18 hardware domains × {interruption, sub-health, silent}; FIT per card-hour equivalent (business-impact rate after
  * existing protection, not device FIT); class budgets interruption 3,333.3 / sub-health 69.0 / silent 48.3 FIT; the flags say which
- * recovery mechanisms can act on the event (replay, process rescheduling, DP elasticity). Values are the catalog's priors (assumed).
+ * recovery mechanisms can act on the event (replay, process rescheduling, DP elasticity); persistence = transient or persistent
+ * (failure prediction targets persistent faults). Values are the catalog's priors (assumed).
  */
 export interface ReferenceEvent {
   id: string;
@@ -12,6 +13,7 @@ export interface ReferenceEvent {
   type: 'hard' | 'slow' | 'sdc';
   fit: number;
   scope: string;
+  persistence: string;
   replay: boolean;
   process: boolean;
   elastic: boolean;
@@ -26,6 +28,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 466.6666666666666,
   "scope": "card",
+  "persistence": "transient",
   "replay": true,
   "process": true,
   "elastic": true
@@ -38,6 +41,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 14.163372859025031,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": true,
   "elastic": true
@@ -50,6 +54,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 41.06280193236715,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -62,6 +67,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 166.6666666666666,
   "scope": "card",
+  "persistence": "transient",
   "replay": true,
   "process": true,
   "elastic": true
@@ -74,6 +80,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 0.8430579082752995,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": true,
   "elastic": true
@@ -86,6 +93,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -98,6 +106,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 199.99999999999997,
   "scope": "card",
+  "persistence": "transient",
   "replay": true,
   "process": true,
   "elastic": true
@@ -110,6 +119,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 4.046677959721438,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": true,
   "elastic": true
@@ -122,6 +132,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 1.0305969095676324,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -134,6 +145,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 169.99999999999994,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -146,6 +158,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 1.719838132881611,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -158,6 +171,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -170,6 +184,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 399.99999999999994,
   "scope": "card",
+  "persistence": "transient",
   "replay": true,
   "process": true,
   "elastic": true
@@ -182,6 +197,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 11.145779669968281,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": true,
   "elastic": true
@@ -194,6 +210,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "card",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -206,6 +223,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 173.33333333333331,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -218,6 +236,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 0.724475678547938,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -230,6 +249,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "card",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -242,6 +262,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 100.00000000000001,
   "scope": "server",
+  "persistence": "transient",
   "replay": true,
   "process": true,
   "elastic": true
@@ -254,6 +275,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 1.7929179740026897,
   "scope": "server",
+  "persistence": "transient",
   "replay": false,
   "process": true,
   "elastic": true
@@ -266,6 +288,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 1.0058431102498928,
   "scope": "server",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -278,6 +301,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 66.66666666666666,
   "scope": "rack",
+  "persistence": "transient",
   "replay": true,
   "process": false,
   "elastic": false
@@ -290,6 +314,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 2.3905572986702532,
   "scope": "rack",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -302,6 +327,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "rack",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -314,6 +340,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 46.666666666666664,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -326,6 +353,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 0.4183475272672943,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -338,6 +366,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0.46939345144995,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -350,6 +379,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 66.66666666666666,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -362,6 +392,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 1.1952786493351266,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -374,6 +405,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0.6705620734999285,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -386,6 +418,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 166.66666666666666,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -398,6 +431,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 2.445824706694272,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -410,6 +444,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -422,6 +457,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 199.99999999999997,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -434,6 +470,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 2.9349896480331257,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -446,6 +483,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -458,6 +496,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 166.66666666666666,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -470,6 +509,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 4.891649413388544,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": true,
   "elastic": true
@@ -482,6 +522,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "server",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -494,6 +535,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 166.66666666666666,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -506,6 +548,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 2.445824706694272,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -518,6 +561,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -530,6 +574,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 99.99999999999999,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -542,6 +587,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 7.337474120082815,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -554,6 +600,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "rack",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -566,6 +613,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 133.33333333333331,
   "scope": "rack",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -578,6 +626,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 0.5869979296066252,
   "scope": "rack",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -590,6 +639,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "rack",
+  "persistence": "transient",
   "replay": false,
   "process": false,
   "elastic": false
@@ -602,6 +652,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 133.33333333333331,
   "scope": "job",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -614,6 +665,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 3.913319530710835,
   "scope": "job",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -626,6 +678,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 0,
   "scope": "job",
+  "persistence": "persistent",
   "replay": false,
   "process": false,
   "elastic": false
@@ -638,6 +691,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "hard",
   "fit": 410.00000000000006,
   "scope": "job",
+  "persistence": "unknown",
   "replay": false,
   "process": false,
   "elastic": false
@@ -650,6 +704,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "slow",
   "fit": 6.016728778467909,
   "scope": "job",
+  "persistence": "unknown",
   "replay": false,
   "process": false,
   "elastic": false
@@ -662,6 +717,7 @@ export const REFERENCE_EVENTS: ReferenceEvent[] = [
   "type": "sdc",
   "fit": 4.0699812668268,
   "scope": "job",
+  "persistence": "unknown",
   "replay": false,
   "process": false,
   "elastic": false

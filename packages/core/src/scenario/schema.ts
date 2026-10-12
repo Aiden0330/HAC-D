@@ -179,7 +179,7 @@ export const ComponentSchema = z.object({
    * `scenario.mechanisms` can act on (the reference catalog's per-event replay / process / elastic flags,
    * aggregated per class). Missing = 0 = the mechanism does not apply to this class.
    */
-  mechanisms: z.object({ replay: z.number().min(0).max(1).optional(), process: z.number().min(0).max(1).optional(), elastic: z.number().min(0).max(1).optional() }).optional(),
+  mechanisms: z.object({ replay: z.number().min(0).max(1).optional(), process: z.number().min(0).max(1).optional(), elastic: z.number().min(0).max(1).optional(), predict: z.number().min(0).max(1).optional(), netfail: z.number().min(0).max(1).optional(), hotswap: z.number().min(0).max(1).optional() }).optional(),
   /** infant mortality: rate multiplier for the first `durationHours` of life (simulation) */
   infant: z.object({ multiplier: z.number().positive(), durationHours: z.number().positive() }).optional(),
   /** lemon units: fraction of units with a higher rate (simulation) */
@@ -343,6 +343,14 @@ export const SdcPolicySchema = z.object({
 
 /** v3 recovery mechanism chain tried before the global checkpoint recovery (docs/MODEL_REFERENCE.md §19). */
 export const MechanismChainSchema = z.object({
+  /** v3.2 failure prediction with pre-emptive migration (recall, precision, migration pause); false alarms add pauses */
+  predict: z.object({ recall: z.number().min(0).max(1).default(0.5), precision: z.number().min(0.01).max(1).default(0.8), migrationSeconds: z.number().nonnegative().default(180) }).optional(),
+  /** v3.2 network failover inside the collective (multi-NIC, fault-tolerant routing): absorbed within an iteration */
+  netfail: z.object({ success: z.number().min(0).max(1).default(0.95), successSeconds: z.number().nonnegative().default(2), failureSeconds: z.number().nonnegative().default(10) }).optional(),
+  /** v3.2 hot-swap of the failed device from a spare with a near-zero-overhead checkpoint: no rollback */
+  hotswap: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(180), failureSeconds: z.number().nonnegative().default(60) }).optional(),
+  /** v3.2 fault-free throughput overhead per mechanism (dual modular redundancy, integrity checks, redundant stages); Σ multiplies the goodput */
+  overheads: z.record(z.string(), z.number().min(0).max(0.99)).optional(),
   /** transient faults re-executed in place: no rollback */
   replay: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(5), failureSeconds: z.number().nonnegative().default(10) }).optional(),
   /** DP-domain elasticity: the faulty domain drops out for recoverSeconds while the others continue; no rollback */

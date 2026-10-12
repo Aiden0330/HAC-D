@@ -273,7 +273,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
 <h2>6. Mechanisms page</h2>
 <figure><img src="img/mechanisms.jpg" alt="Mechanisms page"><figcaption>Mechanisms page: the players to attribute, the plan-to-target card (cheapest feasible set, necessary mechanisms, Pareto front, coverage × recovery scan, ledger verification), then the attribution report and the library table with editable parameters and effort scores.</figcaption></figure>
 <h3>6.1 Mechanism library</h3>
-<p>The twelve mechanisms of the reference catalog, each with the change it makes, its prerequisite, its failure path, the confidence of its parameters and an effort score (1–5) used by the planner. Eight have a scenario transform; the others are informational (already in the baseline or no double credit).</p>
+<p>The twelve mechanisms of the reference catalog plus seven entries added from the literature (v3.2), each with the change it makes, its prerequisite, its failure path, the confidence of its parameters, an effort score (1–5) used by the planner and, where a method costs throughput even without failures, a fault-free overhead that multiplies the goodput. Sixteen have a scenario transform; three are informational (already in the baseline or no double credit). Chain order per interruption: prediction → network failover → replay → hot-swap → elasticity → process rescheduling → global checkpoint recovery → manual.</p>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>Mechanism</th><th>Scenario change (targets of the reference policy)</th><th>Effort</th></tr>
   <tr><td>D-HARD</td><td>interruption detection / timeout fallback</td><td>mixture detection 95 % in 10 s → 99.9 % in 1 s</td><td class="num">2</td></tr>
@@ -287,6 +287,13 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>C-FAST</td><td>faster checkpoints</td><td>τ 300 s / δ 4 s → 60 s / 1 s</td><td class="num">3</td></tr>
   <tr><td>H-PROTECT</td><td>existing optical / power protection</td><td>informational: already in the residual rates</td><td class="num">—</td></tr>
   <tr><td>H-RELIABILITY</td><td>lower hardware failure rates</td><td>optional rate-reduction factor (no blanket assumption)</td><td class="num">4</td></tr>
+  <tr><td>P-PREDICT</td><td>failure prediction with pre-emptive migration</td><td>recall 50 % of impending persistent faults become planned migrations (180 s, no rollback, no detection delay); precision 80 %, false alarms add pauses</td><td class="num">3</td></tr>
+  <tr><td>R-NETFAIL</td><td>fault-tolerant collectives, multi-NIC failover</td><td>network-class failures absorbed inside the collective: 95 % in 2 s, no rollback</td><td class="num">3</td></tr>
+  <tr><td>R-HOTSWAP</td><td>hot-swap of failed devices</td><td>card / server faults replaced from a spare in 180 s with 90 % success, no rollback</td><td class="num">4</td></tr>
+  <tr><td>C-MEM</td><td>in-memory / tiered checkpointing</td><td>δ 0.5 s every 60 s, global recovery −60 s (memory load); 1 % overhead</td><td class="num">3</td></tr>
+  <tr><td>D-SDC-DMR</td><td>dual modular redundancy / online integrity checks</td><td>silent detection 99.9 % in 1 s at an 8 % throughput overhead</td><td class="num">4</td></tr>
+  <tr><td>H-LEMON</td><td>lemon-node eviction</td><td>interruption rates × (1 − 0.1 × 0.7)</td><td class="num">2</td></tr>
+  <tr><td>H-SWEEP</td><td>offline node sweeps</td><td>sub-health entry rate × 0.5, duration × 0.5</td><td class="num">2</td></tr>
 </table></div>
 <h3>6.2 Attribution</h3>
 <p>Select the players and the value function (delivered goodput, effective goodput or A_op), press <b>Attribute</b>: the selected mechanisms are stripped from the scenario (baseline), all 2ⁿ coalitions are evaluated with the closed forms, and the report gives single gains (each alone), last-added gains (added to all the others) and exact Shapley values, which sum to the combined gain. Substitutes (replay, elasticity, process rescheduling) show diminishing returns; complements (detection and step recovery) show up only together.</p>

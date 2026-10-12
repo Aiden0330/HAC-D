@@ -33,6 +33,11 @@ export function derateParameters(p: Record<string, number>, d: DerateSpec = DERA
     if (key.includes('coverage')) out[k] = Math.max(0, v - d.coverageDelta);
     else if (key === 'success') out[k] = Math.max(0, v - d.successDelta);
     else if (key === 'reduction') out[k] = v * d.reductionFactor;
+    else if (key === 'overhead') out[k] = Math.min(0.99, v * d.timeFactor);
+    else if (key === 'recall' || key === 'precision') out[k] = Math.max(0, v - d.successDelta);
+    else if (key === 'ratefactor' || key === 'durationfactor') out[k] = Math.min(1, v + d.coverageDelta);
+    else if (key === 'share') out[k] = v;
+    else if (key === 'loadsavingseconds') out[k] = v / d.timeFactor;
     else if (key === 'computeseconds' || key === 'domains') out[k] = v;
     else if (key.endsWith('seconds')) out[k] = v * d.timeFactor;
     else out[k] = v;

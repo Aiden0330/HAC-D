@@ -265,7 +265,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 <h2>6. 机制页</h2>
 <figure><img src="img-zh/mechanisms.jpg" alt="机制页"><figcaption>机制页：参与归因的机制、按目标规划卡片（最低工作量可行组合、必要机制、Pareto 前沿、检出率 × 恢复时间扫描、账本仿真校核），然后是归因报告与带可编辑参数、工作量分数的机制库表。</figcaption></figure>
 <h3>6.1 机制库</h3>
-<p>参考目录的 12 项机制，各带其变化、前置条件、失败路径、参数置信以及规划器使用的工作量分数（1–5）。其中 8 项有方案变换；其余为说明性（已在基线中或不得重复计收益）。</p>
+<p>参考目录的 12 项机制加上根据文献新增的 7 项（v3.2），各带其变化、前置条件、失败路径、参数置信、规划器使用的工作量分数（1–5），以及（对无故障时也消耗吞吐的方法）乘到 goodput 上的无故障开销。16 项有方案变换；3 项为说明性（已在基线中或不得重复计收益）。每次中断的机制链顺序：预测迁移 → 网络切换 → 重执行 → 热替换 → 弹性 → 进程重调度 → 全局 checkpoint 恢复 → 人工。</p>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>机制</th><th>方案变化（参考策略的目标值）</th><th>工作量</th></tr>
   <tr><td>D-HARD</td><td>中断检测 / 超时兜底</td><td>混合检测 95 % 在 10 s → 99.9 % 在 1 s</td><td class="num">2</td></tr>
@@ -279,6 +279,13 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>C-FAST</td><td>更快的 checkpoint</td><td>τ 300 s / δ 4 s → 60 s / 1 s</td><td class="num">3</td></tr>
   <tr><td>H-PROTECT</td><td>既有光路 / 供电保护</td><td>说明性：已在残余故障率中</td><td class="num">—</td></tr>
   <tr><td>H-RELIABILITY</td><td>降低硬件故障率</td><td>可选的故障率下降比例（不预设）</td><td class="num">4</td></tr>
+  <tr><td>P-PREDICT</td><td>故障预测与预先迁移</td><td>召回 50 % 的即将发生的持久性故障，变为计划内迁移（180 s、不回滚、无检测时延）；精度 80 %，误报增加停顿</td><td class="num">3</td></tr>
+  <tr><td>R-NETFAIL</td><td>容错集合通信 / 多网卡切换</td><td>网络类故障在集合通信内吸收：95 % 在 2 s 内，不回滚</td><td class="num">3</td></tr>
+  <tr><td>R-HOTSWAP</td><td>故障卡热替换</td><td>卡 / 服务器故障 180 s 内由备用设备替换，成功率 90 %，不回滚</td><td class="num">4</td></tr>
+  <tr><td>C-MEM</td><td>内存 / 分层 checkpoint</td><td>δ 0.5 s、每 60 s 一次，全局恢复 −60 s（内存加载）；1 % 开销</td><td class="num">3</td></tr>
+  <tr><td>D-SDC-DMR</td><td>双模冗余 / 在线完整性校验</td><td>静默检出率 99.9 %、1 s，吞吐开销 8 %</td><td class="num">4</td></tr>
+  <tr><td>H-LEMON</td><td>问题节点剔除</td><td>中断率 × (1 − 0.1 × 0.7)</td><td class="num">2</td></tr>
+  <tr><td>H-SWEEP</td><td>节点离线巡检</td><td>亚健康进入率 × 0.5、持续时间 × 0.5</td><td class="num">2</td></tr>
 </table></div>
 <h3>6.2 归因</h3>
 <p>选择参与的机制与价值函数（正确有效产出、有效 goodput 或 A_op），按<b>归因</b>：先把所选机制从方案中剥离（基线），再用解析式评估全部 2ⁿ 个组合，报告单项收益（单独启用）、末位加入收益（加在其余全部之上）与精确 Shapley 贡献（合计等于组合收益）。替代型机制（重执行、弹性、进程重调度）收益递减；互补型机制（检测 + step 恢复）只有一起启用才有收益。</p>

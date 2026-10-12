@@ -168,15 +168,16 @@ export function MechanismsPage() {
           </div>
           <Card formula="φ_i = Σ_S |S|!(n−|S|−1)!/n! · [v(S ∪ {i}) − v(S)] over all coalitions S ∌ i; Σ φ_i = v(all) − v(∅)">
             <DataTable
-              columns={['', t('mechanisms.valueCol'), t('mechanisms.single'), t('mechanisms.lastAdded'), t('mechanisms.shapley'), t('mechanisms.share')]}
+              columns={['', t('mechanisms.valueCol'), t('mechanisms.single'), t('mechanisms.lastAdded'), t('mechanisms.shapley'), t('mechanisms.share'), `A_op ${t('mechanisms.single')}`, `A_op ${t('mechanisms.shapley')}`, `${t('mechanisms.metric_delivered')} ${t('mechanisms.shapley')}`]}
               rows={report.gains
                 .slice()
                 .sort((a, b) => b.shapley - a.shapley)
                 .map((g) => {
                   const m = MECHANISM_LIBRARY.find((x) => x.id === g.id)!;
-                  return [`${g.id} · ${name(m)}`, fmtMetric(g.values[report.metric]), pts(g.single), pts(g.lastAdded), pts(g.shapley), fmtPct(g.share, 1)];
+                  return [`${g.id} · ${name(m)}`, fmtMetric(g.values[report.metric]), pts(g.single), pts(g.lastAdded), pts(g.shapley), fmtPct(g.share, 1), pts(g.byMetric.aOp.single), pts(g.byMetric.aOp.shapley), pts(g.byMetric.delivered.shapley)];
                 })}
             />
+            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('mechanisms.sideBySide')}</div>
             <ul className="plain muted" style={{ fontSize: 12, marginTop: 6 }}>
               {report.notes.map((n) => (
                 <li key={n}>{n}</li>
@@ -228,7 +229,7 @@ export function MechanismsPage() {
                     <td>{m.apply ? <NumberInput value={efforts[m.id] ?? m.effort} min={0} max={10} step={1} onChange={(v) => setEfforts((o) => ({ ...o, [m.id]: v }))} /> : <span className="muted">—</span>}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       {m.apply && (on ? (
-                        <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC'].includes(m.id)}>{t('mechanisms.remove')}</button>
+                        <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP', 'C-MEM', 'D-SDC-DMR'].includes(m.id)}>{t('mechanisms.remove')}</button>
                       ) : (
                         <button type="button" className="btn small" onClick={() => updateActive((s) => applyMechanisms(s, [m.id], overrides))}>{t('mechanisms.apply')}</button>
                       ))}

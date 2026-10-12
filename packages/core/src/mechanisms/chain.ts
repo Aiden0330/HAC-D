@@ -27,8 +27,30 @@ export interface ElasticParams {
   /** short global coordination pause on success */
   syncSeconds: number;
 }
+/** failure prediction with pre-emptive migration: a share `recall` of the class's interruptions is pre-empted by a planned migration */
+export interface PredictParams {
+  recall: number;
+  /** precision of the predictor; false alarms add migration pauses at rate λ·recall·(1 − precision)/precision */
+  precision: number;
+  migrationSeconds: number;
+}
+/** network failover inside the collective (multi-NIC, fault-tolerant routing): absorbed within an iteration */
+export interface NetfailParams {
+  success: number;
+  successSeconds: number;
+  failureSeconds: number;
+}
+/** hot-swap of the failed device from a spare with a near-zero-overhead checkpoint: no rollback */
+export interface HotswapParams {
+  success: number;
+  successSeconds: number;
+  failureSeconds: number;
+}
 export interface ChainParams {
+  predict?: PredictParams;
+  netfail?: NetfailParams;
   replay?: ReplayParams;
+  hotswap?: HotswapParams;
   elastic?: ElasticParams;
   process?: ProcessParams;
 }
@@ -38,9 +60,12 @@ export interface Applicability {
   replay?: number;
   process?: number;
   elastic?: number;
+  predict?: number;
+  netfail?: number;
+  hotswap?: number;
 }
 
-export type ChainOutcomeKind = 'replay' | 'elastic' | 'process' | 'global';
+export type ChainOutcomeKind = 'predict' | 'netfail' | 'replay' | 'hotswap' | 'elastic' | 'process' | 'global';
 
 export interface ChainPath {
   kind: ChainOutcomeKind;
@@ -54,7 +79,10 @@ export interface ChainPath {
 
 export interface ChainOutcome {
   /** probability of each terminal rung */
+  pPredict: number;
+  pNetfail: number;
   pReplay: number;
+  pHotswap: number;
   pElastic: number;
   pProcess: number;
   pGlobal: number;
@@ -73,6 +101,9 @@ export interface ChainOutcome {
 }
 
 export const DEFAULT_CHAIN: Required<ChainParams> = {
+  predict: { recall: 0.5, precision: 0.8, migrationSeconds: 180 },
+  netfail: { success: 0.95, successSeconds: 2, failureSeconds: 10 },
+  hotswap: { success: 0.9, successSeconds: 180, failureSeconds: 60 },
   replay: { success: 0.9, successSeconds: 5, failureSeconds: 10 },
   elastic: { domains: 50, success: 0.98, recoverSeconds: 180, failureSeconds: 120, syncSeconds: 1 },
   process: { success: 0.95, successSeconds: 60, failureSeconds: 120 },
@@ -106,13 +137,24 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
     return next;
   };
   let nodes: Node[] = [{ p: 1, failedS: 0 }];
+  const pd = params.predict;
+  const nf = params.netfail;
   const rp = params.replay;
+  const hs = params.hotswap;
   const el = params.elastic;
   const pr = params.process;
+  const aPd = pd ? clamp01(applicable.predict ?? 1) : 0;
+  const aNf = nf ? clamp01(applicable.netfail) : 0;
   const aRp = rp ? clamp01(applicable.replay) : 0;
+  const aHs = hs ? clamp01(applicable.hotswap) : 0;
   const aEl = el ? clamp01(applicable.elastic) : 0;
   const aPr = pr ? clamp01(applicable.process) : 0;
+  // prediction pre-empts the failure: a planned migration without detection delay or rollback
+  if (pd && aPd > 0) nodes = stage(nodes, aPd, clamp01(pd.recall), (n) => ({ kind: 'predict', probability: n.p, pauseS: n.failedS + pd.migrationSeconds, rollback: false, localLossS: 0 }), 0);
+  // network failover is absorbed inside the collective: no detection delay
+  if (nf && aNf > 0) nodes = stage(nodes, aNf, clamp01(nf.success), (n) => ({ kind: 'netfail', probability: n.p, pauseS: n.failedS + nf.successSeconds, rollback: false, localLossS: 0 }), nf.failureSeconds);
   if (rp && aRp > 0) nodes = stage(nodes, aRp, clamp01(rp.success), (n) => ({ kind: 'replay', probability: n.p, pauseS: detectS + n.failedS + rp.successSeconds, rollback: false, localLossS: 0 }), rp.failureSeconds);
+  if (hs && aHs > 0) nodes = stage(nodes, aHs, clamp01(hs.success), (n) => ({ kind: 'hotswap', probability: n.p, pauseS: detectS + n.failedS + hs.successSeconds, rollback: false, localLossS: 0 }), hs.failureSeconds);
   if (el && aEl > 0) {
     const domains = Math.max(1, el.domains);
     nodes = stage(nodes, aEl, clamp01(el.success), (n) => ({ kind: 'elastic', probability: n.p, pauseS: n.failedS + el.syncSeconds, rollback: false, localLossS: Math.max(0, detectS + el.recoverSeconds - el.syncSeconds) / domains }), el.failureSeconds);
@@ -120,9 +162,12 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
   if (pr && aPr > 0) nodes = stage(nodes, aPr, clamp01(pr.success), (n) => ({ kind: 'process', probability: n.p, pauseS: detectS + n.failedS + pr.successSeconds, rollback: true, localLossS: 0 }), pr.failureSeconds);
   for (const n of nodes) if (n.p > 0) paths.push({ kind: 'global', probability: n.p, pauseS: detectS + n.failedS + globalS, rollback: true, localLossS: 0 });
   // merge identical terminal kinds for a compact report while keeping the exact expectations
-  let pReplay = 0, pElastic = 0, pProcess = 0, pGlobal = 0, pRollback = 0, meanPauseS = 0, pauseRollbackS = 0, pauseNoRollbackS = 0, localLossS = 0;
+  let pPredict = 0, pNetfail = 0, pReplay = 0, pHotswap = 0, pElastic = 0, pProcess = 0, pGlobal = 0, pRollback = 0, meanPauseS = 0, pauseRollbackS = 0, pauseNoRollbackS = 0, localLossS = 0;
   for (const p of paths) {
-    if (p.kind === 'replay') pReplay += p.probability;
+    if (p.kind === 'predict') pPredict += p.probability;
+    else if (p.kind === 'netfail') pNetfail += p.probability;
+    else if (p.kind === 'replay') pReplay += p.probability;
+    else if (p.kind === 'hotswap') pHotswap += p.probability;
     else if (p.kind === 'elastic') pElastic += p.probability;
     else if (p.kind === 'process') pProcess += p.probability;
     else pGlobal += p.probability;
@@ -134,7 +179,7 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
     } else pauseNoRollbackS += p.probability * p.pauseS;
   }
   const trivial = paths.length === 1 && paths[0].kind === 'global';
-  return { pReplay, pElastic, pProcess, pGlobal, pRollback, meanPauseS, pauseRollbackS, pauseNoRollbackS, localLossS, paths, trivial };
+  return { pPredict, pNetfail, pReplay, pHotswap, pElastic, pProcess, pGlobal, pRollback, meanPauseS, pauseRollbackS, pauseNoRollbackS, localLossS, paths, trivial };
 }
 
 /** Aggregate several event classes (rate-weighted) into job-level rollback / pause-only rates. */
@@ -174,7 +219,7 @@ export function addOutcome(acc: MixedRates, ratePerHour: number, o: ChainOutcome
 /** Add a plain event class: every event rolls back (rollback = true) or only pauses, with a fixed pause. */
 export function addPlainEvents(acc: MixedRates, ratePerHour: number, pauseS: number, rollback: boolean): MixedRates {
   return addOutcome(acc, ratePerHour, {
-    pReplay: 0, pElastic: 0, pProcess: 0, pGlobal: rollback ? 1 : 0, pRollback: rollback ? 1 : 0,
+    pPredict: 0, pNetfail: 0, pReplay: 0, pHotswap: 0, pElastic: 0, pProcess: 0, pGlobal: rollback ? 1 : 0, pRollback: rollback ? 1 : 0,
     meanPauseS: pauseS, pauseRollbackS: rollback ? pauseS : 0, pauseNoRollbackS: rollback ? 0 : pauseS, localLossS: 0, paths: [], trivial: true,
   });
 }

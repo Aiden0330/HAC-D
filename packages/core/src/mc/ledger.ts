@@ -31,7 +31,7 @@ export interface LedgerClassSpec {
   /** job-level silent-corruption rate per running hour */
   sdcRatePerHour: number;
   slow?: LedgerSlowSpec;
-  applicable: { replay: number; process: number; elastic: number };
+  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number };
 }
 
 export interface LedgerSpec {
@@ -43,6 +43,8 @@ export interface LedgerSpec {
   /** global recovery sampler factory: seconds for one recovery once reached (automatic attempt and manual fallback) */
   globalRecovery: (rng: Rng) => () => number;
   chain: ChainParams;
+  /** fault-free throughput overhead of the enabled mechanisms (fraction of compute) */
+  overhead?: number;
   sdc: { coverage: number; detectSeconds: number; fallbackDelayHours: number; step?: { stepSeconds: number; recoverSeconds: number } };
   classes: LedgerClassSpec[];
 }
@@ -58,6 +60,8 @@ export interface LedgerAccount {
   rollbackSdc: number;
   terminalInvalid: number;
   localLoss: number;
+  /** fault-free overhead of mechanisms */
+  overhead: number;
 }
 
 export interface LedgerClassAccount {
@@ -78,7 +82,7 @@ export interface LedgerReplication {
   /** 1 − downtime/T */
   operationalAvailability: number;
   ledger: LedgerAccount;
-  counts: { hard: number; slow: number; sdc: number; manual: number; sdcEpisodes: number; replay: number; elastic: number; process: number; global: number; isolations: number };
+  counts: { hard: number; slow: number; sdc: number; manual: number; sdcEpisodes: number; replay: number; elastic: number; process: number; global: number; isolations: number; predicted: number; falseAlarms: number; netfail: number; hotswap: number };
   byClass: Record<string, LedgerClassAccount>;
   unresolvedAtEnd: boolean;
 }
@@ -123,8 +127,13 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   let downUntil = 0;
   const slows: { cls: number; detected: boolean; until: number }[] = [];
   const locals: { domain: number; until: number; cls: number }[] = [];
-  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, terminalInvalid: 0, localLoss: 0 };
-  const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0 };
+  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, terminalInvalid: 0, localLoss: 0, overhead: 0 };
+  const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0, predicted: 0, falseAlarms: 0, netfail: 0, hotswap: 0 };
+  const overheadFrac = Math.min(0.99, Math.max(0, spec.overhead ?? 0));
+  // false alarms of the predictor: a separate Poisson stream of planned migrations on the running clock
+  const pd = spec.chain.predict;
+  const falseAlarmRate = pd ? classes.reduce((a, c) => a + c.hardRatePerHour * c.applicable.predict * pd.recall * (1 - pd.precision) / Math.max(pd.precision, 0.01), 0) : 0;
+  let nextFalseAlarm = falseAlarmRate > 0 ? rng.exponential(falseAlarmRate) : Infinity;
   const byClass: Record<string, LedgerClassAccount> = {};
   const acct = (i: number) => (byClass[classes[i].id] ??= emptyAccount());
   let current = 0;
@@ -163,6 +172,19 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const chainRecovery = (delayS: number, cls: LedgerClassSpec) => {
     let failed = 0;
     const ch = spec.chain;
+    if (ch.predict && cls.applicable.predict > 0 && tech.uniform() < cls.applicable.predict && tech.uniform() < ch.predict.recall) {
+      counts.predicted++;
+      pause(0, ch.predict.migrationSeconds);
+      return;
+    }
+    if (ch.netfail && cls.applicable.netfail > 0 && tech.uniform() < cls.applicable.netfail) {
+      if (tech.uniform() < ch.netfail.success) {
+        counts.netfail++;
+        pause(0, failed + ch.netfail.successSeconds);
+        return;
+      }
+      failed += ch.netfail.failureSeconds;
+    }
     if (ch.replay && cls.applicable.replay > 0 && tech.uniform() < cls.applicable.replay) {
       if (tech.uniform() < ch.replay.success) {
         counts.replay++;
@@ -170,6 +192,14 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
         return;
       }
       failed += ch.replay.failureSeconds;
+    }
+    if (ch.hotswap && cls.applicable.hotswap > 0 && tech.uniform() < cls.applicable.hotswap) {
+      if (tech.uniform() < ch.hotswap.success) {
+        counts.hotswap++;
+        pause(delayS, failed + ch.hotswap.successSeconds);
+        return;
+      }
+      failed += ch.hotswap.failureSeconds;
     }
     if (ch.elastic && cls.applicable.elastic > 0 && tech.uniform() < cls.applicable.elastic) {
       if (tech.uniform() < ch.elastic.success) {
@@ -215,7 +245,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     let slowFactor = 1;
     for (const s of slows) slowFactor *= classes[s.cls].slow!.performance;
     const localFactor = 1 - locals.length / domains;
-    const factor = slowFactor * localFactor;
+    const factor = slowFactor * localFactor * (1 - overheadFrac);
     if (commits) {
       cp = progress + (commits * tau - Math.min(phase, tau)) * factor;
       cpDirty = !!dirty;
@@ -225,6 +255,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     ledger.save += Math.max(0, dt - compute);
     const slowLoss = compute * (1 - slowFactor);
     const localLoss = compute * slowFactor * (1 - localFactor);
+    ledger.overhead += compute * slowFactor * localFactor * overheadFrac;
     ledger.slowdown += slowLoss;
     ledger.localLoss += localLoss;
     for (const s of slows) acct(s.cls).slowdown += slowLoss / slows.length;
@@ -237,12 +268,20 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   while (t < T - 1e-9 && guard++ < 50_000_000) {
     const up = t >= downUntil - 1e-9;
     const nextFault = up ? t + remaining : Infinity;
-    let next = Math.min(T, nextFault, up ? Infinity : downUntil, dirty ? dirty.discover : Infinity);
+    const nextAlarm = up ? t + nextFalseAlarm : Infinity;
+    let next = Math.min(T, nextFault, nextAlarm, up ? Infinity : downUntil, dirty ? dirty.discover : Infinity);
     for (const s of slows) next = Math.min(next, s.until);
     for (const l of locals) next = Math.min(next, l.until);
-    advance(Math.max(0, next - t));
+    const dtAdv = Math.max(0, next - t);
+    advance(dtAdv);
+    if (t >= downUntil - 1e-9 && Number.isFinite(nextFalseAlarm)) nextFalseAlarm = Math.max(0, nextFalseAlarm - dtAdv);
     t = next;
     if (t >= T - 1e-9) break;
+    if (nextAlarm <= t + 1e-9 && pd) {
+      counts.falseAlarms++;
+      pause(0, pd.migrationSeconds);
+      nextFalseAlarm = rng.exponential(falseAlarmRate);
+    }
     if (dirty && dirty.discover <= t + 1e-9) {
       current = dirty.cls;
       rollback(cleanCp, 'sdc');
@@ -310,7 +349,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const correct = dirty ? cleanCp : progress;
   ledger.terminalInvalid = progress - correct;
   if (dirty) acct(dirty.cls).terminalInvalid += ledger.terminalInvalid;
-  const accounted = correct + ledger.downtime + ledger.save + ledger.slowdown + ledger.rollback + ledger.terminalInvalid + ledger.localLoss;
+  const accounted = correct + ledger.downtime + ledger.save + ledger.slowdown + ledger.rollback + ledger.terminalInvalid + ledger.localLoss + ledger.overhead;
   if (Math.abs(accounted - T) > 1e-6 * Math.max(1, T)) throw new Error(`ledger does not conserve time: ${accounted - T}`);
   return {
     horizonH: T,
@@ -378,7 +417,7 @@ export function simulateLedgerReplications(spec: LedgerSpec, from: number, count
 export function summarizeLedger(rows: LedgerReplication[], seed: number | string, target?: number): LedgerSummary {
   const n = rows.length;
   const T = rows[0]?.horizonH ?? 0;
-  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'terminalInvalid', 'localLoss'];
+  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'terminalInvalid', 'localLoss', 'overhead'];
   const ledger = Object.fromEntries(keys.map((k) => [k, rows.reduce((a, r) => a + r.ledger[k], 0) / (n * T || 1)])) as LedgerSummary['ledger'];
   ledger.delivered = rows.reduce((a, r) => a + r.delivered, 0) / (n || 1);
   const countKeys = Object.keys(rows[0]?.counts ?? {}) as (keyof LedgerReplication['counts'])[];

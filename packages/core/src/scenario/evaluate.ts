@@ -140,6 +140,10 @@ export interface TrainingKpis {
   pauseOnlyS: number;
   /** compute lost in degraded DP domains (elastic recovery), fraction of job time */
   localLossFraction: number;
+  /** v3.2 fault-free throughput overhead of the enabled mechanisms (Σ scenario.mechanisms.overheads) */
+  overheadFraction: number;
+  /** v3.2 planned migrations that were false alarms of the predictor, per hour */
+  falseAlarmRatePerHour: number;
   /** running-time share A_run = 1/(1 + λ_rb R_rb + λ_p R_p) (operational availability before SDC episode pauses) */
   runningFraction: number;
   mixedRenewal: MixedRenewalResult;
@@ -156,8 +160,11 @@ export interface ChainRow {
   name: string;
   ratePerHour: number;
   share: number;
-  applicable: { replay: number; process: number; elastic: number };
+  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number };
+  pPredict: number;
+  pNetfail: number;
   pReplay: number;
+  pHotswap: number;
   pElastic: number;
   pProcess: number;
   pGlobal: number;
@@ -187,6 +194,8 @@ export interface TrainingLedger {
   slowdown: number;
   local: number;
   blocked: number;
+  /** v3.2 fault-free overhead of mechanisms (redundant computation, integrity checks) */
+  overhead: number;
   sdcRollback: number;
   terminal: number;
   delivered: number;
@@ -475,11 +484,16 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     const { detectS, globalS } = recoveryAt(N);
 
     // v3: mechanism chain per class → rollback vs pause-only event classes; `f` scales every event class with N (scale table)
-    const chainParams: ChainParams = { replay: s.mechanisms.replay, elastic: s.mechanisms.elastic, process: s.mechanisms.process };
-    const chainActive = !!(s.mechanisms.replay || s.mechanisms.elastic || s.mechanisms.process);
+    const chainParams: ChainParams = { predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process };
+    const chainActive = !!(s.mechanisms.replay || s.mechanisms.elastic || s.mechanisms.process || s.mechanisms.predict || s.mechanisms.netfail || s.mechanisms.hotswap);
+    const overheadFraction = Math.min(0.99, Object.values(s.mechanisms.overheads ?? {}).reduce((a, b) => a + b, 0));
     const sdcTotal = sdcRatePerHour(items);
     const sdcCoverage = s.sdc.detection.coverage;
     const sdcDetectedRate = sdcTotal * sdcCoverage;
+    // false alarms of the predictor: planned migrations that were not needed (pause-only), r(1 − p)/p per predicted-applicable interruption
+    const falseAlarmRate = s.mechanisms.predict
+      ? items.reduce((a, ci) => a + ci.lambda * ci.total * ci.applicable.predict * s.mechanisms.predict!.recall * (1 - s.mechanisms.predict!.precision) / Math.max(s.mechanisms.predict!.precision, 0.01), 0)
+      : 0;
     const mixedRatesAt = (f: number, d: number, g: number): MixedRates => {
       let m = emptyMixedRates();
       for (const ci of items) {
@@ -487,6 +501,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
         if (rate <= 0) continue;
         m = addOutcome(m, rate, chainOutcome(d, g, chainParams, ci.applicable));
       }
+      if (falseAlarmRate > 0 && s.mechanisms.predict) m = addPlainEvents(m, falseAlarmRate * f, s.mechanisms.predict.migrationSeconds, false);
       // a detected sub-healthy unit is switched out after saving the current progress: a pause without rollback
       if (isolationRate > 0) m = addPlainEvents(m, isolationRate * f, g, false);
       // immediately detected silent corruption: rollback to the last checkpoint, or redo one step with step recovery
@@ -502,7 +517,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       const rate = ci.lambda * ci.total;
       if (rate <= 0) continue;
       const o = chainOutcome(detectS, globalS, chainParams, ci.applicable);
-      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pReplay: o.pReplay, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
+      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
     }
     const eventRate = mixed.rollbackRatePerHour + mixed.pauseRatePerHour;
     const mtbiEventS = eventRate > 0 ? 3600 / eventRate : Infinity;
@@ -545,7 +560,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     if (head.model === 'exact-renewal') warnings.push(`first-order goodput flags ${fo.validity}: the headline uses the exact renewal model (${(renewal * 100).toFixed(2)} % vs first-order ${(fo.goodput * 100).toFixed(2)} %)`);
     const pool = findBlock(result, 'node-pool');
     const blocked = pool ? pool.unavailability : 0;
-    const effective = head.goodput * (1 - blocked) * performanceFactor * (1 - localLossFraction);
+    const effective = head.goodput * (1 - blocked) * performanceFactor * (1 - localLossFraction) * (1 - overheadFraction);
     smallParameter = fo.smallParameter;
     restartRatio = fo.restartRatio;
     warnings.push(...fo.warnings);
@@ -582,6 +597,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       slowdown: computeFrac * (1 - performanceFactor),
       local: computeFrac * performanceFactor * localLossFraction,
       blocked: computeFrac * performanceFactor * (1 - localLossFraction) * blocked,
+      overhead: computeFrac * performanceFactor * (1 - localLossFraction) * (1 - blocked) * overheadFraction,
       sdcRollback: sdc ? sdc.delivery.rollbackFraction : 0,
       terminal: sdc ? sdc.delivery.terminalDiscardFraction : 0,
       delivered,
@@ -669,6 +685,8 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       rollbackPauseS: mixed.rollbackPauseS,
       pauseOnlyS: mixed.pauseOnlyS,
       localLossFraction,
+      overheadFraction,
+      falseAlarmRatePerHour: falseAlarmRate,
       runningFraction: aRun,
       mixedRenewal,
       chain: { active: chainActive, params: chainParams, rows: chainRows, detectS, globalS },
@@ -681,10 +699,10 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     formulas.goodput = 'first order: 1 − δ/τ − (P_rb·W + R̄)/M_ev with W = τ/2 (or one step / measured), R̄ = rate-weighted pause per event; exact renewal (mixed): λ_rb τ/[(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)] (pause-only events do not restart the interval); Daly full: τ/(M e^{R/M}(e^{(τ+δ)/M} − 1)) × 1/(1 + λ_p R_p); product: A_run·τ/(τ+δ)·(1 − P_rb W/M_ev), A_run = 1/(1 + λ_rb R_rb + λ_p R_p); headline = first order while (τ+δ)/M and R/M are small, else exact renewal';
     formulas.mttr = recoveryModel.kind === 'mixture' ? 'R = T_det + T_auto + (1 − p_s)·T_manual, T_det = p_d·t_auto + (1 − p_d)·t_timeout (detection by automation or timeout; a failed automatic attempt is charged before manual recovery)' : recoveryModel.kind === 'ladder' ? 'R = Σ_i P_i·t_i, P_i = Π_{j<i}(1 − s_j)' : 'R = Σ stages with scale laws';
     formulas.recovery = recoveryModel.kind === 'ladder' ? 'R(N) = E[T] = Σ_i P_i·t_i(N), P_i = Π_{j<i}(1 − s_j) (recovery ladder; last rung manual); recompute = τ/2 (periodic checkpoint) or one step (replica)' : 'R(N) = Σ stages ①–⑤ with scale laws; recompute = τ/2 (periodic checkpoint) or one step (replica)';
-    if (anySubhealth) formulas.goodputSubhealth = 'effective goodput = goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local); a detected sub-healthy unit is isolated after saving progress: ν_iso pause-only events (R_global, no rollback)';
-    formulas.chain = 'per class: replay (a_rp, s_rp: pause d + f + t_rp, no rollback) → elastic (a_el, s_el: pause f + t_sync, domain out (d + t_el)/n_dom, no rollback) → process (a_pr, s_pr: pause d + f + t_pr, rollback) → global (pause d + f + R_global, rollback); a_x = applicable fraction, f = failure times of the rungs tried before; λ_rb = Σ λ_i P_rb,i, λ_p = Σ λ_i (1 − P_rb,i)';
+    if (anySubhealth) formulas.goodputSubhealth = 'effective goodput = goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local) × (1 − o_mech); a detected sub-healthy unit is isolated after saving progress: ν_iso pause-only events (R_global, no rollback)';
+    formulas.chain = 'per class: predict (recall r: planned migration t_mig, no detection delay, no rollback; false alarms r(1 − p)/p per interruption) → netfail (a_nf, s_nf: pause f + t_nf inside the collective, no rollback) → replay (a_rp, s_rp: pause d + f + t_rp, no rollback) → hotswap (a_hs, s_hs: pause d + f + t_hs, no rollback) → elastic (a_el, s_el: pause f + t_sync, domain out (d + t_el)/n_dom, no rollback) → process (a_pr, s_pr: pause d + f + t_pr, rollback) → global (pause d + f + R_global, rollback); a_x = applicable fraction, f = failure times of the rungs tried before; λ_rb = Σ λ_i P_rb,i, λ_p = Σ λ_i (1 − P_rb,i)';
     formulas.sdc = 'ν = λ_sdc (1 − q) · A_run · (1 − P_clear), P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L); clean ~ Exp(ν), dirty + pause = D + R_c; delivered = [g·E(clean time) − U·E(episodes)]/T with E(clean) = T − Σ_k ∫ P(S_k ≤ T − x)dx, S_k = Γ(k, ν) + (k − 1)(D + R_c); detected corruption (q): rollback + pause t_d + R_global, or with step recovery a pause t_d + t_rec + t_step without rollback';
-    formulas.ledger = 'window shares: downtime + save + rollback + slowdown + local + blocked + SDC rollback + terminal discard + delivered = 1';
+    formulas.ledger = 'window shares: downtime + save + rollback + slowdown + local + blocked + overhead + SDC rollback + terminal discard + delivered = 1; overhead = fault-free throughput cost of the enabled mechanisms';
     formulas.scale = 'MTBI(N) = 1/(N·λ_GPU-equivalent), λ_GPU-equivalent = λ_job/N at the configured size (fixed components scaled proportionally); per row: R(N) from the recovery scale laws, the chain and pause-only events, the checkpoint interval against the rollback MTBI, the straggler law 1 − (1 − p_H)^N and the silent-corruption window; the spare pool stays as configured';
     formulas.cost = 'wasted GPU·h/day = N × 24 × (1 − delivered goodput); $/day = wasted GPU·h × price';
 

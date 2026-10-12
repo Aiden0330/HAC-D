@@ -253,6 +253,50 @@ function SdcMechanismsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
       </div>
       <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.mechTitle')}</h3>
       <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>{t('scenario.mechNote')}</div>
+      <div className="grid cols-3" style={{ gap: 12, marginBottom: 12 }}>
+        <div>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+            <input type="checkbox" checked={!!m.predict} onChange={(e) => setMech((q) => ({ ...q, predict: e.target.checked ? { recall: 0.5, precision: 0.8, migrationSeconds: 180 } : undefined }))} />
+            {t('scenario.mechPredict')}
+          </label>
+          {m.predict && (
+            <div className="form-grid" style={{ marginTop: 6 }}>
+              <Field label={t('scenario.mechRecall')}><NumberInput value={m.predict.recall} min={0} max={1} step={0.05} onChange={(v) => setMech((q) => ({ ...q, predict: { ...q.predict!, recall: v } }))} /></Field>
+              <Field label={t('scenario.mechPrecision')}><NumberInput value={m.predict.precision} min={0.01} max={1} step={0.05} onChange={(v) => setMech((q) => ({ ...q, predict: { ...q.predict!, precision: v } }))} /></Field>
+              <Field label={t('scenario.mechMigrationS')}><NumberInput value={m.predict.migrationSeconds} min={0} onChange={(v) => setMech((q) => ({ ...q, predict: { ...q.predict!, migrationSeconds: v } }))} /></Field>
+            </div>
+          )}
+        </div>
+        <div>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+            <input type="checkbox" checked={!!m.netfail} onChange={(e) => setMech((q) => ({ ...q, netfail: e.target.checked ? { success: 0.95, successSeconds: 2, failureSeconds: 10 } : undefined }))} />
+            {t('scenario.mechNetfail')}
+          </label>
+          {m.netfail && (
+            <div className="form-grid" style={{ marginTop: 6 }}>
+              <Field label={t('scenario.mechSuccess')}><NumberInput value={m.netfail.success} min={0} max={1} step={0.01} onChange={(v) => setMech((q) => ({ ...q, netfail: { ...q.netfail!, success: v } }))} /></Field>
+              <Field label={t('scenario.mechSuccessS')}><NumberInput value={m.netfail.successSeconds} min={0} onChange={(v) => setMech((q) => ({ ...q, netfail: { ...q.netfail!, successSeconds: v } }))} /></Field>
+              <Field label={t('scenario.mechFailureS')}><NumberInput value={m.netfail.failureSeconds} min={0} onChange={(v) => setMech((q) => ({ ...q, netfail: { ...q.netfail!, failureSeconds: v } }))} /></Field>
+            </div>
+          )}
+        </div>
+        <div>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
+            <input type="checkbox" checked={!!m.hotswap} onChange={(e) => setMech((q) => ({ ...q, hotswap: e.target.checked ? { success: 0.9, successSeconds: 180, failureSeconds: 60 } : undefined }))} />
+            {t('scenario.mechHotswap')}
+          </label>
+          {m.hotswap && (
+            <div className="form-grid" style={{ marginTop: 6 }}>
+              <Field label={t('scenario.mechSuccess')}><NumberInput value={m.hotswap.success} min={0} max={1} step={0.01} onChange={(v) => setMech((q) => ({ ...q, hotswap: { ...q.hotswap!, success: v } }))} /></Field>
+              <Field label={t('scenario.mechSuccessS')}><NumberInput value={m.hotswap.successSeconds} min={0} onChange={(v) => setMech((q) => ({ ...q, hotswap: { ...q.hotswap!, successSeconds: v } }))} /></Field>
+              <Field label={t('scenario.mechFailureS')}><NumberInput value={m.hotswap.failureSeconds} min={0} onChange={(v) => setMech((q) => ({ ...q, hotswap: { ...q.hotswap!, failureSeconds: v } }))} /></Field>
+            </div>
+          )}
+        </div>
+      </div>
+      {m.overheads && Object.keys(m.overheads).length > 0 && (
+        <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t('scenario.mechOverheads')}: {Object.entries(m.overheads).map(([k, v]) => `${k} ${(v * 100).toFixed(1)} %`).join(' · ')} · {t('scenario.mechOverheadHint')}</div>
+      )}
       <div className="grid cols-3" style={{ gap: 12 }}>
         <div>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
@@ -573,9 +617,9 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
                             {c.sdc && <NumberInput value={c.sdc.ratePerHour} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, sdc: { ...q.sdc!, ratePerHour: v } }))} />}
                             <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.applicability')}</h4>
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                              {(['replay', 'process', 'elastic'] as const).map((k) => (
+                              {(['replay', 'process', 'elastic', 'predict', 'netfail', 'hotswap'] as const).map((k) => (
                                 <Field key={k} label={t(`scenario.appl${k[0].toUpperCase()}${k.slice(1)}`)}>
-                                  <NumberInput value={c.mechanisms?.[k] ?? 0} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, mechanisms: { ...(q.mechanisms ?? {}), [k]: v } }))} />
+                                  <NumberInput value={c.mechanisms?.[k] ?? (k === 'predict' ? 1 : 0)} min={0} max={1} step={0.05} onChange={(v) => setComp(c.id, (q) => ({ ...q, mechanisms: { ...(q.mechanisms ?? {}), [k]: v } }))} />
                                 </Field>
                               ))}
                             </div>

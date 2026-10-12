@@ -20,7 +20,7 @@ describe('mechanism chain', () => {
     expect(o.pGlobal).toBe(1);
     expect(o.pRollback).toBe(1);
     expect(o.meanPauseS).toBeCloseTo(264.5, 12);
-    const full = chainOutcome(12.5, 252, DEFAULT_CHAIN, { replay: 0.831, process: 1, elastic: 1 });
+    const full = chainOutcome(12.5, 252, { replay: DEFAULT_CHAIN.replay, elastic: DEFAULT_CHAIN.elastic, process: DEFAULT_CHAIN.process }, { replay: 0.831, process: 1, elastic: 1 });
     expect(full.pReplay + full.pElastic + full.pProcess + full.pGlobal).toBeCloseTo(1, 12);
     expect(full.pReplay).toBeCloseTo(0.831 * 0.9, 12);
     expect(full.pElastic).toBeCloseTo((1 - 0.831 * 0.9) * 0.98, 12);
@@ -130,7 +130,7 @@ function toySpec(over: Partial<LedgerSpec> = {}): LedgerSpec {
     globalRecovery: (rng) => () => 180 + (rng.uniform() < 0.99 ? 0 : 7200),
     chain: {},
     sdc: { coverage: 0, detectSeconds: 1, fallbackDelayHours: 120 },
-    classes: [{ id: 'card', hardRatePerHour: 1 / 3, sdcRatePerHour: (1 / 3) * (0.014 / 0.966), applicable: { replay: 0, process: 0, elastic: 0 }, slow: { ratePerHour: (1 / 3) * (0.02 / 0.966), detectProbability: 0.95, detectDelayH: 5 / 60, lifetimeH: 24, performance: 0.95, policy: 'isolate' } }],
+    classes: [{ id: 'card', hardRatePerHour: 1 / 3, sdcRatePerHour: (1 / 3) * (0.014 / 0.966), applicable: { replay: 0, process: 0, elastic: 0, predict: 1, netfail: 0, hotswap: 0 }, slow: { ratePerHour: (1 / 3) * (0.02 / 0.966), detectProbability: 0.95, detectDelayH: 5 / 60, lifetimeH: 24, performance: 0.95, policy: 'isolate' } }],
     ...over,
   };
 }
@@ -144,7 +144,7 @@ describe('finite-window ledger simulation', () => {
     expect(r.byClass.card.events).toBe(r.counts.hard + r.counts.slow + r.counts.sdc);
   });
   it('without faults only the periodic saves are lost', () => {
-    const r = runLedgerOnce(toySpec({ classes: [{ id: 'x', hardRatePerHour: 0, sdcRatePerHour: 0, applicable: { replay: 0, process: 0, elastic: 0 } }] }), new Rng(1), new Rng(2));
+    const r = runLedgerOnce(toySpec({ classes: [{ id: 'x', hardRatePerHour: 0, sdcRatePerHour: 0, applicable: { replay: 0, process: 0, elastic: 0, predict: 1, netfail: 0, hotswap: 0 } }] }), new Rng(1), new Rng(2));
     expect(r.correctH).toBeCloseTo(720 - Math.floor((720 * 3600) / 304) * (4 / 3600), 6);
     expect(r.operationalAvailability).toBe(1);
   });
@@ -249,9 +249,9 @@ describe('scenario-level v3 (reference three-class baseline)', () => {
 });
 
 describe('mechanism library and attribution', () => {
-  it('has the twelve reference mechanisms with transforms for the eight parameterised ones', () => {
-    expect(MECHANISM_LIBRARY.map((m) => m.id)).toEqual(['D-HARD', 'D-SLOW', 'D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'R-CKPT', 'R-MANUAL', 'C-FAST', 'H-PROTECT', 'H-RELIABILITY']);
-    expect(MECHANISM_LIBRARY.filter((m) => m.apply).map((m) => m.id)).toEqual(['D-HARD', 'D-SLOW', 'D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'C-FAST', 'H-RELIABILITY']);
+  it('has the twelve reference mechanisms plus the seven v3.2 entries, with transforms for the parameterised ones', () => {
+    expect(MECHANISM_LIBRARY.map((m) => m.id)).toEqual(['D-HARD', 'D-SLOW', 'D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'R-CKPT', 'R-MANUAL', 'C-FAST', 'H-PROTECT', 'H-RELIABILITY', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP', 'C-MEM', 'D-SDC-DMR', 'H-LEMON', 'H-SWEEP']);
+    expect(MECHANISM_LIBRARY.filter((m) => !m.apply).map((m) => m.id)).toEqual(['R-CKPT', 'R-MANUAL', 'H-PROTECT']);
   });
   it('Shapley values sum to the combined gain; single gains carry an interaction term', () => {
     const rep = mechanismReport(referenceThreeClasses(100000));

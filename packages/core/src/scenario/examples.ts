@@ -339,13 +339,14 @@ export function ascendSupercluster(npus = 100000, spareSupernodes = 3): Scenario
  * Mechanism applicability of the four sources, aggregated from the reference's 54-event catalog
  * (catalogs/review-2026-10-09/inputs.json, FIT-weighted per source): the share of a source's interruptions that
  * replay / process rescheduling / DP elasticity can act on, and each source's share of the silent-corruption budget
- * (AI Core carries 85 % of it, so 87 % of the silent events sit in the accelerator source).
+ * (AI Core carries 85 % of it, so 87 % of the silent events sit in the accelerator source). v3.2: predict = share of persistent
+ * card / server faults (what ECC-trend and health-score predictors target), netfail = network class, hotswap = card / server scope.
  */
 export const REFERENCE_SOURCES = [
-  { id: 'hbm', subsystem: 'memory', share: 0.172, sdcShare: 0.0, mechanisms: { replay: 0.698, process: 1, elastic: 1 }, name: { zh: 'HBM / 片上内存（17.2 %）', en: 'HBM / on-package memory (17.2 %)' } },
-  { id: 'gpu', subsystem: 'compute', share: 0.301, sdcShare: 0.87134, mechanisms: { replay: 0.831, process: 1, elastic: 1 }, name: { zh: '加速卡本体（30.1 %）', en: 'Faulty accelerator (30.1 %)' } },
-  { id: 'network', subsystem: 'network', share: 0.084, sdcShare: 0.04443, mechanisms: { replay: 0.595, process: 0.357, elastic: 0.357 }, name: { zh: '网络交换机 / 线缆（8.4 %）', en: 'Network switch / cable (8.4 %)' } },
-  { id: 'other', subsystem: 'other', share: 0.443, sdcShare: 0.08423, mechanisms: { replay: 0, process: 0.361, elastic: 0.361 }, name: { zh: '其他来源（44.3 %）', en: 'Other sources (44.3 %)' } },
+  { id: 'hbm', subsystem: 'memory', share: 0.172, sdcShare: 0.0, mechanisms: { replay: 0.698, process: 1, elastic: 1, predict: 0.302, netfail: 0, hotswap: 1 }, name: { zh: 'HBM / 片上内存（17.2 %）', en: 'HBM / on-package memory (17.2 %)' } },
+  { id: 'gpu', subsystem: 'compute', share: 0.301, sdcShare: 0.87134, mechanisms: { replay: 0.831, process: 1, elastic: 1, predict: 0.169, netfail: 0, hotswap: 1 }, name: { zh: '加速卡本体（30.1 %）', en: 'Faulty accelerator (30.1 %)' } },
+  { id: 'network', subsystem: 'network', share: 0.084, sdcShare: 0.04443, mechanisms: { replay: 0.595, process: 0.357, elastic: 0.357, predict: 0, netfail: 1, hotswap: 0.357 }, name: { zh: '网络交换机 / 线缆（8.4 %）', en: 'Network switch / cable (8.4 %)' } },
+  { id: 'other', subsystem: 'other', share: 0.443, sdcShare: 0.08423, mechanisms: { replay: 0, process: 0.361, elastic: 0.361, predict: 0.361, netfail: 0, hotswap: 0.361 }, name: { zh: '其他来源（44.3 %）', en: 'Other sources (44.3 %)' } },
 ] as const;
 
 /** Fault-class shares of the reference baseline: interruption 96.6 %, sub-health 2 %, silent 1.4 % of all events. */
@@ -426,7 +427,7 @@ export function referenceCatalog(npus = 100000): Scenario {
     const rate = e.fit / 1e9;
     const base = { id: e.id, name: { zh: `${e.domain} · ${e.description}`, en: `${e.domainId} ${e.type} · ${e.description}` }, subsystem: 'other' as const, countRule: { per: 'gpu' as const, factor: 1 } };
     const provenance = { source: 'ai-cluster-reliability audited catalog (review-2026-10-09): business-impact FIT per card-hour, class budgets fixed, priors to be audited', confidence: 'assumed' as const, derivation: `${e.fit.toFixed(3)} FIT → ${rate.toExponential(3)} per card-hour` };
-    if (e.type === 'hard') return { ...base, failure: { value: rate, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance }, repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } }, mechanisms: { replay: e.replay ? 1 : 0, process: e.process ? 1 : 0, elastic: e.elastic ? 1 : 0 } };
+    if (e.type === 'hard') return { ...base, failure: { value: rate, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance }, repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } }, mechanisms: { replay: e.replay ? 1 : 0, process: e.process ? 1 : 0, elastic: e.elastic ? 1 : 0, predict: e.persistence === 'persistent' && (e.scope === 'card' || e.scope === 'server') ? 1 : 0, netfail: ['NIC', 'OPT', 'BOXIO', 'FABRIC'].includes(e.domainId) ? 1 : 0, hotswap: e.elastic ? 1 : 0 } };
     if (e.type === 'slow') return { ...base, failure: { value: 0, unit: 'per_h' as const, provenance }, repair: { mttrHours: 1 }, subhealth: { ratePerHour: rate, durationHours: 24, performance: 0.95, escalationMultiplier: 1, policy: 'isolate' as const, detection: { probability: 0.95, delayHours: 5 / 60 } } };
     return { ...base, failure: { value: 0, unit: 'per_h' as const, provenance }, repair: { mttrHours: 1 }, sdc: { ratePerHour: rate, provenance } };
   });

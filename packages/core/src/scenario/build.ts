@@ -143,7 +143,7 @@ export interface ComponentInstances {
   /** v3 silent-corruption rate per unit-hour (0 when the class produces none) */
   sdcLambda: number;
   /** v3 fraction of this class's hard interruptions each chain mechanism applies to */
-  applicable: { replay: number; process: number; elastic: number };
+  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number };
 }
 
 export function componentInstances(c: Component, counts: Counts, subhealthThreshold = SUBHEALTH_THRESHOLD_DEFAULT): ComponentInstances {
@@ -213,7 +213,7 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
     repair,
     subhealth: componentSubhealth(c, subhealthThreshold),
     sdcLambda: c.sdc?.ratePerHour ?? 0,
-    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0 },
+    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0, predict: c.mechanisms?.predict ?? 1, netfail: c.mechanisms?.netfail ?? 0, hotswap: c.mechanisms?.hotswap ?? 0 },
   };
 }
 

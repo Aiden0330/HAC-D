@@ -68,7 +68,7 @@ export function TrainingPage() {
         <Kpi label={t('training.operational')} value={fmtPct(tr.operationalAvailability, 3)} note={`A_op = 1/(1 + λ_rb R_rb + λ_p R_p) · ${t('training.aopNote')}`} />
         <Kpi label={t('common.mtbi')} value={fmtDuration(tr.mtbiS, lang)} note={`${fmtNum(tr.interruptionsPerDay, 1)} ${t('common.interruptions_per_day')}`} />
         <Kpi label={t('common.recovery')} value={fmtDuration(tr.recoveryS, lang)} note={tr.ladder ? `${t('training.pManual')} ${fmtPct(tr.ladder.pManual, 2)} · ${tr.recoveryKind === 'mixture' ? t('scenario.mixtureMode') : tr.recoveryId}` : `${t('training.dominant')}: ${tr.recovery.dominant ?? '—'}`} />
-        <Kpi label={t('training.eventRate')} value={fmtNum(tr.eventRatePerHour, 3)} note={`${t('training.rollbackEvents')} ${fmtPct(tr.pRollback, 1)} · ${t('training.pauseOnlyEvents')} ${fmtPct(1 - tr.pRollback, 1)} · ${t('training.meanPauseAll')} ${fmtDuration(tr.meanPauseS, lang)}`} />
+        <Kpi label={t('training.eventRate')} value={fmtNum(tr.eventRatePerHour, 3)} note={`${t('training.rollbackEvents')} ${fmtPct(tr.pRollback, 1)} · ${t('training.pauseOnlyEvents')} ${fmtPct(1 - tr.pRollback, 1)} · ${t('training.meanPauseAll')} ${fmtDuration(tr.meanPauseS, lang)}${tr.overheadFraction > 0 ? ` · ${t('training.ledger_overhead')} ${fmtPct(tr.overheadFraction, 1)}` : ''}${tr.falseAlarmRatePerHour > 0 ? ` · ${t('training.falseAlarms')} ${tr.falseAlarmRatePerHour.toExponential(2)}/h` : ''}`} />
         <Kpi label={t('common.interval')} value={fmtDuration(tr.tauS, lang)} note={tr.intervalModel} />
         <Kpi label={t('common.lost_per_day')} value={fmtMoney(tr.lostDollarsPerDay)} note={`${fmtInt(tr.wastedGpuHoursPerDay)} ${t('common.wasted')}`} />
         <Kpi label={t('training.wall')} value={fmtNum(tr.wallClockDays, 1)} note={`${fmtNum(tr.expectedInterruptions, 0)} interruptions · P(no interruption 24 h) ${fmtPct(tr.pNoInterruption24h, 1)}`} />
@@ -107,6 +107,7 @@ export function TrainingPage() {
               { label: t('training.restart'), value: fo.terms.restart },
               ...(tr.blockedProbability > 0 ? [{ label: t('training.blocked'), value: tr.blockedProbability }] : []),
               ...(tr.localLossFraction > 0 ? [{ label: t('training.ledger_local'), value: tr.localLossFraction }] : []),
+              ...(tr.overheadFraction > 0 ? [{ label: t('training.ledger_overhead'), value: tr.overheadFraction }] : []),
             ]}
             format={(v) => fmtPct(v, 2)}
           />
@@ -127,6 +128,7 @@ export function TrainingPage() {
             ...(tr.ledger.slowdown > 0 ? [{ label: t('training.ledger_slowdown'), value: tr.ledger.slowdown }] : []),
             ...(tr.ledger.local > 0 ? [{ label: t('training.ledger_local'), value: tr.ledger.local }] : []),
             ...(tr.ledger.blocked > 0 ? [{ label: t('training.ledger_blocked'), value: tr.ledger.blocked }] : []),
+            ...(tr.ledger.overhead > 0 ? [{ label: t('training.ledger_overhead'), value: tr.ledger.overhead }] : []),
             ...(tr.ledger.sdcRollback > 0 ? [{ label: t('training.ledger_sdcRollback'), value: tr.ledger.sdcRollback }] : []),
             ...(tr.ledger.terminal > 0 ? [{ label: t('training.ledger_terminal'), value: tr.ledger.terminal }] : []),
           ]}
@@ -149,8 +151,8 @@ export function TrainingPage() {
       )}
       <Card title={t('training.chainTitle')} sub={tr.chain.active ? `${t('training.detectGlobal')}: ${fmtDuration(tr.detectS, lang)} · ${fmtDuration(tr.globalRecoveryS, lang)}` : t('training.chainInactive')} formula={result.formulas.chain}>
         <DataTable
-          columns={[t('common.component'), t('training.chainRate'), t('training.applicable'), t('training.pReplay'), t('training.pElastic'), t('training.pProcess'), t('training.pGlobal'), t('training.pRollback'), t('training.meanPause'), t('training.localLoss')]}
-          rows={tr.chain.rows.map((r) => [r.name, r.ratePerHour.toExponential(2), `${fmtNum(r.applicable.replay, 2)} / ${fmtNum(r.applicable.process, 2)} / ${fmtNum(r.applicable.elastic, 2)}`, fmtPct(r.pReplay, 1), fmtPct(r.pElastic, 1), fmtPct(r.pProcess, 1), fmtPct(r.pGlobal, 1), fmtPct(r.pRollback, 1), fmtDuration(r.meanPauseS, lang), `${fmtNum(r.localLossS, 2)} s`])}
+          columns={[t('common.component'), t('training.chainRate'), t('training.applicable'), t('training.pPredict'), t('training.pNetfail'), t('training.pReplay'), t('training.pHotswap'), t('training.pElastic'), t('training.pProcess'), t('training.pGlobal'), t('training.pRollback'), t('training.meanPause'), t('training.localLoss')]}
+          rows={tr.chain.rows.map((r) => [r.name, r.ratePerHour.toExponential(2), `${fmtNum(r.applicable.replay, 2)} / ${fmtNum(r.applicable.process, 2)} / ${fmtNum(r.applicable.elastic, 2)}`, fmtPct(r.pPredict, 1), fmtPct(r.pNetfail, 1), fmtPct(r.pReplay, 1), fmtPct(r.pHotswap, 1), fmtPct(r.pElastic, 1), fmtPct(r.pProcess, 1), fmtPct(r.pGlobal, 1), fmtPct(r.pRollback, 1), fmtDuration(r.meanPauseS, lang), `${fmtNum(r.localLossS, 2)} s`])}
         />
       </Card>
       {tr.subhealth && (

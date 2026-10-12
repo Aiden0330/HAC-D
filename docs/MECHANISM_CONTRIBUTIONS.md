@@ -97,3 +97,35 @@ node --import tsx packages/cli/src/main.ts mechanisms three.json --metric aOp --
 node --import tsx packages/cli/src/main.ts example ref-catalog-100k > catalog.json
 node --import tsx packages/cli/src/main.ts mechanisms catalog.json --metric aOp
 ```
+
+## 7. The seven entries added from the literature (v3.2), on the 54-event catalog
+
+Parameters are the library defaults (priors); A_op is unaffected by overheads, delivered goodput carries them. Prediction applies to persistent card / server faults only (30 % of HBM, 17 % of accelerator, 36 % of "other" interruptions in the catalog); network failover to the NIC / optical / IO-board / fabric events; hot-swap to card / server events.
+
+| Mechanism (alone) | 100k ΔA_op | 100k Δeffective | 100k Δdelivered | 500k ΔA_op | 500k Δeffective | 500k Δdelivered |
+|---|---:|---:|---:|---:|---:|---:|
+| P-PREDICT | +0.046 | +0.231 | +0.103 | +0.190 | +0.951 | +0.097 |
+| R-NETFAIL | +0.185 | +0.304 | +0.137 | +0.771 | +1.181 | +0.116 |
+| R-HOTSWAP | +0.345 | +1.189 | +0.529 | +1.449 | +4.943 | +0.479 |
+| C-MEM | +0.546 | +1.207 | +0.449 | +2.303 | +5.533 | +0.248 |
+| D-SDC-DMR (8 % overhead) | −0.015 | −7.629 | +24.457 | −0.101 | −6.714 | +49.334 |
+| H-LEMON | +0.163 | +0.269 | +0.121 | +0.682 | +1.041 | +0.103 |
+| H-SWEEP | +0.022 | +0.054 | +0.031 | +0.091 | +0.212 | +0.048 |
+
+Exact Shapley values over ten players (D-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, P-PREDICT, R-NETFAIL, R-HOTSWAP, D-SDC-DMR, C-MEM, H-LEMON; 1,024 coalitions, 34 s), A_op / delivered, points:
+
+| Player | 100k A_op | 100k delivered | 500k A_op | 500k delivered |
+|---|---:|---:|---:|---:|
+| R-REPLAY | +0.457 | +0.436 | +2.013 | +1.471 |
+| R-ELASTIC | +0.453 | +0.456 | +2.018 | +1.255 |
+| R-PROCESS | +0.269 | +0.171 | +1.174 | +0.420 |
+| C-MEM | +0.255 | +0.136 | +1.121 | +1.163 |
+| R-NETFAIL | +0.113 | +0.115 | +0.499 | +0.388 |
+| H-LEMON | +0.101 | +0.098 | +0.444 | +0.336 |
+| D-SDC | −0.007 | +15.228 | −0.050 | +26.174 |
+| D-SDC-DMR | −0.007 | +9.879 | −0.051 | +28.429 |
+| P-PREDICT | −0.070 | −0.026 | −0.324 | −0.152 |
+| R-HOTSWAP | −0.234 | −0.052 | −1.084 | −0.471 |
+| combined gain | +1.331 | +26.442 | +5.759 | +59.012 |
+
+Two readings matter for allocation. First, D-SDC and D-SDC-DMR are substitutes for the same loss line: alone each is worth 24 to 49 points of delivered goodput, together the second adds little, and DMR's 8 % fault-free overhead then shows as a net cost on the effective goodput. Second, prediction and hot-swap have positive gains alone but negative Shapley values once replay and elasticity are in the set: they sit earlier in the chain and take events that replay (5 s) or elasticity (1 s sync) would have handled with a shorter pause, and prediction adds false-alarm migrations. They pay only where their pause is shorter than the rung they displace or where they cover faults the others cannot (persistent faults before they happen, card replacement when no DP redundancy exists). The planner's Pareto front and last-added gains make this visible before a mechanism is adopted.
