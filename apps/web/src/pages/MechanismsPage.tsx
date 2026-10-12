@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, type MechanismReport, type AttributionMetric, type MechanismPlan } from '@hac-d/core';
+import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, evaluateScenario, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
 import { useStore } from '../state/store.js';
-import { useActive, useLang } from '../hooks.js';
+import { useLang } from '../hooks.js';
 import { compute } from '../worker/client.js';
 import { Kpi, Card, DataTable, Field, Select, Badge, NumberInput } from '../components/ui.js';
 import { Tornado } from '../charts/Tornado.js';
@@ -14,14 +14,34 @@ const METRICS: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
 export function MechanismsPage() {
   const { t } = useTranslation();
   const lang = useLang();
-  const active = useActive();
-  const updateActive = useStore((s) => s.updateActive);
+  const scenarios = useStore((s) => s.scenarios);
+  const activeId = useStore((s) => s.activeId);
+  const replaceScenario = useStore((s) => s.replaceScenario);
+  // the page attributes on the 54-event reference catalog by default (per-event mechanism flags reproduce combinations
+  // exactly); any scenario can be chosen here; the other pages keep working on the active scenario
+  const catalogId = scenarios.find((x) => x.meta.id?.startsWith('ref-catalog'))?.meta.id;
+  const [chosenId, setChosenId] = useState<string | undefined>(undefined);
+  const targetId = chosenId && scenarios.some((x) => x.meta.id === chosenId) ? chosenId : catalogId ?? activeId;
+  const scenario: Scenario | undefined = scenarios.find((x) => x.meta.id === targetId);
+  const scenarioKey = scenario ? JSON.stringify(scenario) : '';
+  const active = useMemo(() => {
+    if (!scenario) return undefined;
+    try {
+      return { scenario, result: evaluateScenario(scenario) };
+    } catch (e) {
+      return { scenario, result: undefined, error: (e as Error).message };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scenarioKey]);
+  const updateActive = (fn: (s: Scenario) => Scenario) => {
+    if (scenario?.meta.id) replaceScenario(scenario.meta.id, fn(scenario));
+  };
   const [players, setPlayers] = useState<string[]>(DEFAULT_PLAYERS);
   const [metric, setMetric] = useState<AttributionMetric>('delivered');
   const [overrides, setOverrides] = useState<Record<string, Record<string, number>>>({});
   const [report, setReport] = useState<MechanismReport | null>(null);
   const [plan, setPlan] = useState<MechanismPlan | null>(null);
-  const [planTarget, setPlanTarget] = useState<number>(active?.scenario.targets.goodput ?? 0.9);
+  const [planTarget, setPlanTarget] = useState<number>(scenario?.targets.goodput ?? 0.9);
   const [derate, setDerate] = useState(true);
   const [verify, setVerify] = useState(true);
   const [trials, setTrials] = useState(200);
@@ -30,9 +50,9 @@ export function MechanismsPage() {
   const [planning, setPlanning] = useState(false);
   const [running, setRunning] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const scenarioKey = active ? JSON.stringify(active.scenario) : '';
   useEffect(() => { setReport(null); setPlan(null); }, [scenarioKey]);
   const inScenario = useMemo(() => (active && !active.error ? activeMechanisms(active.scenario) : []), [active]);
+  const fractional = useMemo(() => (scenario ? scenario.components.some((c) => c.enabled && c.mechanisms && Object.values(c.mechanisms).some((v) => typeof v === 'number' && v > 0 && v < 1)) : false), [scenario]);
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
   if (active.scenario.workload.type !== 'training') return <div className="callout">{t('mechanisms.notTraining')}</div>;
   const applicable = MECHANISM_LIBRARY.filter((m) => m.apply);
@@ -85,6 +105,14 @@ export function MechanismsPage() {
         <h1>{t('mechanisms.title')}</h1>
         <span className="sub">{t('mechanisms.sub')}</span>
       </div>
+      <Card>
+        <div className="form-grid">
+          <Field label={t('mechanisms.scenarioFor')} hint={t('mechanisms.defaultCatalog')}>
+            <Select value={targetId ?? ''} onChange={setChosenId} options={scenarios.map((x) => ({ value: x.meta.id!, label: `${x.meta.name}${x.meta.id === activeId ? ` (${t('mechanisms.activeTag')})` : ''}` }))} />
+          </Field>
+        </div>
+        {fractional && <div className="callout warn" style={{ marginTop: 8 }}>{t('mechanisms.fractionWarn')}</div>}
+      </Card>
       <Card title={t('mechanisms.players')} sub={t('mechanisms.hint')}>
         <div className="btn-row">
           {applicable.map((m) => (
