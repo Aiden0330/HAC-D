@@ -77,3 +77,7 @@ Exact Shapley values at 100,000 cards (points of delivered goodput): HAC-D D-SDC
 HAC-D's own ledger simulation (`simulateScenarioLedger`, 200 trials) on the same baseline: 94.0 ± 1.1, 63.9 ± 2.0, 46.2 ± 1.8, 24.8 ± 1.2 % — consistent with both the reference and the closed forms, with the same ledger shape (downtime, saves, hard rollback, slow-down, SDC rollback, terminal discard). Reproduce with `node --import tsx scripts/ref-compare-v3.ts 200`.
 
 What remains different: the reference's 54-event granularity (HAC-D aggregates to the four sources), its finite-horizon Monte Carlo with confidence intervals for every coalition (HAC-D attributes with closed forms and offers the ledger simulation per scenario), and its target scans (HAC-D: Allocation page and tornado).
+
+## 6. Mechanism contributions to A_op and the per-event catalog (2026-10-12)
+
+Single-mechanism contributions to operational availability agree with the reference within 0.01 points at 10k–500k cards (replay +3.54 / +3.54, process +4.49 / +4.49, elasticity +6.67 / +6.67, interruption detection +0.42 / +0.42 at 500k; full tables in `docs/MECHANISM_CONTRIBUTIONS.md`). Combinations need per-event applicability: the four-source example's fractions are independent within a source and over-credit the six-mechanism set (A_op 99.30 vs the reference 99.10 at 100k, 96.60 vs 95.67 at 500k); the new `ref-catalog-100k` example (54 classes with the catalog's own flags) reproduces the reference combined scenario (99.100 / 95.656 A_op; delivered 94.79 / 82.63 vs 94.72 ± 0.19 / 82.79 ± 0.34).

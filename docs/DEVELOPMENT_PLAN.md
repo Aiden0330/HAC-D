@@ -381,4 +381,4 @@ Open after v2: image / diagram import (adapter onto the TopologyDraft IR), Monte
 | V5 Reference reproduction | done | `ref-three-classes-100k`; delivered within the reference CI at four scales (`docs/REFERENCE_COMPARISON_100K_500K.md` §5) |
 | Tests | 349 core (18 files incl. `golden_v3`, `v3_models`) + 29 importers | `npm test` |
 
-Open after v3: 54-event catalog converter (class budgets, per-event applicability), DP-elastic *template* (F5) beside the chain rung, Monte Carlo confidence intervals for Shapley (ledger over coalitions), target scans (coverage × recovery time), image / diagram import.
+Open after v3: DP-elastic *template* (F5) beside the chain rung, Monte Carlo confidence intervals for Shapley (ledger over coalitions), image / diagram import. Done since: target scans (planner, v3.1); 54-event catalog as the built-in example `ref-catalog-100k` with per-event applicability (2026-10-12, `docs/MECHANISM_CONTRIBUTIONS.md`).

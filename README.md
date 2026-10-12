@@ -10,7 +10,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 - **Specification**: `docs/SPEC.md` (requirements, data model, KPIs and 口径, interfaces, validation); scenario JSON Schema `docs/scenario.schema.json`.
 - **Workflows**: `docs/WORKFLOW.md` (analysis workflow A1–A10, development workflow B1–B8); allocation practice `docs/ALLOCATION_PRACTICE.md`.
 - **Skills**: `docs/SKILLS.md` lists the Claude Code skills in `.claude/skills` (model-check, release-check, scenario-review, allocate-to-target, reference-compare, add-parameter, build-manual).
-- **Models**: `docs/MODEL_REFERENCE.md`; comparisons `docs/REFERENCE_COMPARISON_100K_500K.md`, `docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`.
+- **Models**: `docs/MODEL_REFERENCE.md`; comparisons `docs/REFERENCE_COMPARISON_100K_500K.md`, `docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`; mechanism contributions, formula factors and further methods `docs/MECHANISM_CONTRIBUTIONS.md` (example `ref-catalog-100k`, 54 events with per-event mechanism flags).
 
 ## Quick start
 

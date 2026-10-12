@@ -497,6 +497,7 @@ inference: u_r = λ_r MTTR_r/(1 + λ_r MTTR_r);  A_any = 1 − u_r^{n+k};  A_cap
   <tr><th>ID</th><th>Scenario</th></tr>
   <tr><td><code>ref-baseline-100k</code></td><td>reference baseline, hard interruptions only: 100,000 cards, MTBF 30 h at 10k, τ 300 s, R 264.5 s, four sources (HBM / GPU / network / other)</td></tr>
   <tr><td><code>ref-three-classes-100k</code></td><td>the same with sub-health 2 % and silent corruption 1.4 % of events (the reference's confirmed baseline)</td></tr>
+  <tr><td><code>ref-catalog-100k</code></td><td>the same baseline at catalog granularity: 54 classes (18 domains × three fault classes) with per-event replay / process / elastic flags, for mechanism combinations</td></tr>
   <tr><td><code>ascend-cm384</code>, <code>ascend-atlas950</code></td><td>CloudMatrix384 and Atlas 950 training jobs with supernode geometry and analogue rates</td></tr>
   <tr><td><code>ascend-supercluster-100k</code></td><td>inference pool of 384-NPU supernodes with spares</td></tr>
   <tr><td><code>survey-ex1</code>, <code>survey-ex3</code>, <code>survey-ex4</code></td><td>the survey chapter's worked examples (10k-card job, NVL72 domain vs node, N+k inference)</td></tr>

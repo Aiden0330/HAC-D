@@ -51,7 +51,7 @@ Web 应用：「方案」页 → 加载示例（九个内置方案）→ 其他�
 - 规范：`docs/SPEC.md`；方案 JSON Schema `docs/scenario.schema.json`。
 - 工作流：`docs/WORKFLOW.md`（分析工作流 A1–A10、开发工作流 B1–B8）；分配实践 `docs/ALLOCATION_PRACTICE.md`。
 - 技能：`docs/SKILLS.md`（`.claude/skills` 中的 model-check、release-check、scenario-review、allocate-to-target、reference-compare、add-parameter、build-manual）。
-- 模型：`docs/MODEL_REFERENCE.md`；对比 `docs/REFERENCE_COMPARISON_100K_500K.md`、`docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`；昇腾来源 `docs/ASCEND_SOURCES.md`。
+- 模型：`docs/MODEL_REFERENCE.md`；对比 `docs/REFERENCE_COMPARISON_100K_500K.md`、`docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`；各机制对可用率的贡献、公式因子与更多方法 `docs/MECHANISM_CONTRIBUTIONS.md`（示例 `ref-catalog-100k`，54 条事件、逐事件机制标志）；昇腾来源 `docs/ASCEND_SOURCES.md`。
 
 ## 目录结构
 

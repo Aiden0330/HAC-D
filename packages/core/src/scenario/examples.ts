@@ -1,5 +1,6 @@
 /** Example scenarios mirroring the survey's worked examples (Tables 6-5 to 6-8) and an NVL72 design. */
 import { parseScenario, type Scenario, type ScenarioInput } from './schema.js';
+import { REFERENCE_EVENTS } from './referenceEvents.js';
 
 const LLAMA3_GPU_PROVENANCE = {
   source: 'The Llama 3 Herd of Models (interruption table) / Epoch AI reverse-inference',
@@ -414,9 +415,43 @@ export function referenceThreeClasses(npus = 100000): Scenario {
   return parseScenario(input);
 }
 
+/**
+ * The reference baseline at catalog granularity: one component class per audited event (54 = 18 domains × three classes),
+ * each hard event carrying its own replay / process / elastic flags. Use it for mechanism combinations: the four-source example
+ * treats the applicability fractions of a source as independent, which over-credits coalitions (0.2 pt A_op at 100k cards,
+ * 0.9 pt at 500k); the catalog build reproduces the reference's combined scenario exactly.
+ */
+export function referenceCatalog(npus = 100000): Scenario {
+  const components: ScenarioInput['components'] = REFERENCE_EVENTS.map((e) => {
+    const rate = e.fit / 1e9;
+    const base = { id: e.id, name: { zh: `${e.domain} · ${e.description}`, en: `${e.domainId} ${e.type} · ${e.description}` }, subsystem: 'other' as const, countRule: { per: 'gpu' as const, factor: 1 } };
+    const provenance = { source: 'ai-cluster-reliability audited catalog (review-2026-10-09): business-impact FIT per card-hour, class budgets fixed, priors to be audited', confidence: 'assumed' as const, derivation: `${e.fit.toFixed(3)} FIT → ${rate.toExponential(3)} per card-hour` };
+    if (e.type === 'hard') return { ...base, failure: { value: rate, unit: 'per_h' as const, koujing: { event: 'hard_interruption', denominator: 'card_h', level: 'job' as const }, provenance }, repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } }, mechanisms: { replay: e.replay ? 1 : 0, process: e.process ? 1 : 0, elastic: e.elastic ? 1 : 0 } };
+    if (e.type === 'slow') return { ...base, failure: { value: 0, unit: 'per_h' as const, provenance }, repair: { mttrHours: 1 }, subhealth: { ratePerHour: rate, durationHours: 24, performance: 0.95, escalationMultiplier: 1, policy: 'isolate' as const, detection: { probability: 0.95, delayHours: 5 / 60 } } };
+    return { ...base, failure: { value: 0, unit: 'per_h' as const, provenance }, repair: { mttrHours: 1 }, sdc: { ratePerHour: rate, provenance } };
+  });
+  return parseScenario({
+    meta: {
+      id: `ref-catalog-${Math.round(npus / 1000)}k`,
+      name: `Reference catalog, 54 events — ${npus.toLocaleString('en-US')} cards (per-event mechanism flags)`,
+      basis: ['ai-cluster-reliability-main catalogs/review-2026-10-09 inputs.json (54 events, class budgets, mechanism flags)', 'docs/MECHANISM_CONTRIBUTIONS.md'],
+      description: 'The three-class reference baseline at the granularity of the audited catalog: 18 hardware domains × (interruption, sub-health, silent), each interruption event with its own replay / process / elastic applicability. Same job-level totals as the four-source example; reproduces the reference tool\'s mechanism combinations exactly because the flags are per event rather than independent fractions per source.',
+    },
+    topology: { gpusPerNode: 8, nodesPerRack: 32, racksPerZone: 64, nvlinkDomainGpus: 8 },
+    components,
+    structure: { mode: 'template', template: 'training-series' },
+    workload: { type: 'training', nGpus: npus, durationDays: 30, deltaS: 4, intervalS: 300, intervalModel: 'young' },
+    recovery: { mode: 'mixture', detection: { coverage: 0.95, autoSeconds: 10, timeoutSeconds: 60 }, automatic: { successProbability: 0.99, seconds: 180 }, manual: { seconds: 7200 } },
+    sdc: { detection: { coverage: 0, detectSeconds: 1 }, fallbackDelayHours: 120 },
+    targets: { goodput: 0.9 },
+    assumptions: ['fixed checkpoint interval 300 s to match the reference', 'event FITs are business-impact rates after the existing protection (no double credit for H-PROTECT)', 'sub-health and silent events are attached to classes without an interruption rate of their own'],
+  });
+}
+
 export const EXAMPLES: Record<string, () => Scenario> = {
   'ref-baseline-100k': () => referenceBaseline(100000),
   'ref-three-classes-100k': () => referenceThreeClasses(100000),
+  'ref-catalog-100k': () => referenceCatalog(100000),
   'ascend-cm384': cloudMatrix384Training,
   'ascend-atlas950': atlas950Training,
   'ascend-supercluster-100k': () => ascendSupercluster(100000, 3),

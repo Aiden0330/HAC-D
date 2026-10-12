@@ -489,6 +489,7 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   <tr><th>ID</th><th>方案</th></tr>
   <tr><td><code>ref-baseline-100k</code></td><td>参考基线，仅硬中断：100,000 卡，万卡 MTBF 30 h，τ 300 s，R 264.5 s，四个来源（HBM / GPU / 网络 / 其他）</td></tr>
   <tr><td><code>ref-three-classes-100k</code></td><td>同上，加亚健康 2 % 与静默错误 1.4 %（参考工具已确认的基线）</td></tr>
+  <tr><td><code>ref-catalog-100k</code></td><td>同一基线的目录粒度版本：54 个部件类（18 个域 × 三类故障），逐事件的重执行 / 进程 / 弹性标志，用于机制组合</td></tr>
   <tr><td><code>ascend-cm384</code>、<code>ascend-atlas950</code></td><td>带超节点几何与类比故障率的 CloudMatrix384 与 Atlas 950 训练作业</td></tr>
   <tr><td><code>ascend-supercluster-100k</code></td><td>由 384-NPU 超节点组成的带备用的推理池</td></tr>
   <tr><td><code>survey-ex1</code>、<code>survey-ex3</code>、<code>survey-ex4</code></td><td>综述章节的算例（万卡作业、NVL72 域对单节点、N+k 推理）</td></tr>
