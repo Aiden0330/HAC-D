@@ -366,6 +366,12 @@ export const MechanismChainSchema = z.object({
   hotswap: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(180), failureSeconds: z.number().nonnegative().default(60) }).optional(),
   /** v3.2 fault-free throughput overhead per mechanism (dual modular redundancy, integrity checks, redundant stages); Σ multiplies the goodput */
   overheads: z.record(z.string(), z.number().min(0).max(0.99)).optional(),
+  /**
+   * v3.4 record of the library mechanisms applied to this scenario: the parameters used, the order of application and the
+   * values each transform replaced (null = the field was absent; multiplicative changes as factors), so that removing a
+   * mechanism restores the scenario exactly and re-applying one replaces its previous application instead of compounding.
+   */
+  applied: z.record(z.string(), z.object({ order: z.number().int().nonnegative(), parameters: z.record(z.string(), z.number()), previous: z.record(z.string(), z.unknown()) })).optional(),
   /** transient faults re-executed in place: no rollback */
   replay: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(5), failureSeconds: z.number().nonnegative().default(10) }).optional(),
   /** DP-domain elasticity: the faulty domain drops out for recoverSeconds while the others continue; no rollback */

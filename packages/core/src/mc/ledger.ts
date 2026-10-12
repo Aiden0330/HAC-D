@@ -91,7 +91,7 @@ function emptyAccount(): LedgerClassAccount {
   return { events: 0, recoveries: 0, downtime: 0, rollback: 0, slowdown: 0, localLoss: 0, terminalInvalid: 0 };
 }
 
-/** One replication. `rng` drives arrivals and detection, `tech` the mechanism outcomes (common random numbers across coalitions). */
+/** One replication. `rng` drives arrivals and detection only; `tech` drives the mechanism outcomes, the global recovery draws and (through a derived stream) the predictor's false alarms, so that coalitions share the fault history (common random numbers). */
 export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerReplication {
   const T = spec.horizonH;
   const tau = spec.tauS / 3600;
@@ -105,7 +105,8 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const slowTotal = slowRates.reduce((a, b) => a + b, 0);
   const sdcTotal = sdcRates.reduce((a, b) => a + b, 0);
   const rate = hardTotal + slowTotal + sdcTotal;
-  const recovery = spec.globalRecovery(rng);
+  // the global recovery draws come from the mechanism stream: a rung that avoids a global recovery must not shift the arrivals
+  const recovery = spec.globalRecovery(tech);
   const pick = (rates: number[], total: number): number => {
     let v = rng.uniform() * total;
     for (let i = 0; i < rates.length; i++) {
@@ -133,7 +134,10 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   // false alarms of the predictor: a separate Poisson stream of planned migrations on the running clock
   const pd = spec.chain.predict;
   const falseAlarmRate = pd ? classes.reduce((a, c) => a + c.hardRatePerHour * c.applicable.predict * pd.recall * (1 - pd.precision) / Math.max(pd.precision, 0.01), 0) : 0;
-  let nextFalseAlarm = falseAlarmRate > 0 ? rng.exponential(falseAlarmRate) : Infinity;
+  // the alarms get their own stream (seeded from the mechanism stream, one draw whether or not a predictor is on) so that the
+  // arrival stream, i.e. the fault history, is identical across coalitions with and without the predictor
+  const alarmRng = new Rng(tech.nextU32());
+  let nextFalseAlarm = falseAlarmRate > 0 ? alarmRng.exponential(falseAlarmRate) : Infinity;
   const byClass: Record<string, LedgerClassAccount> = {};
   const acct = (i: number) => (byClass[classes[i].id] ??= emptyAccount());
   let current = 0;
@@ -280,7 +284,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     if (nextAlarm <= t + 1e-9 && pd) {
       counts.falseAlarms++;
       pause(0, pd.migrationSeconds);
-      nextFalseAlarm = rng.exponential(falseAlarmRate);
+      nextFalseAlarm = alarmRng.exponential(falseAlarmRate);
     }
     if (dirty && dirty.discover <= t + 1e-9) {
       current = dirty.cls;

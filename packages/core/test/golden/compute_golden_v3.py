@@ -42,16 +42,16 @@ def mixed_renewal(tau_s, delta_s, lam_rb_per_h, R_rb_s, lam_p_per_h, R_p_s):
         "pauseOnlyFraction": float(run_per_interval * lamp * Rp / wall),
     }
 
+CHAIN_ORDER = ["predict", "netfail", "replay", "hotswap", "elastic", "process"]
+
 def chain(detect_s, global_s, params, applicable):
-    """Enumerate replay → elastic → process → global recursively."""
-    rungs = []
-    if params.get("replay") and applicable.get("replay", 0) > 0:
-        rungs.append(("replay", applicable["replay"], params["replay"]))
-    if params.get("elastic") and applicable.get("elastic", 0) > 0:
-        rungs.append(("elastic", applicable["elastic"], params["elastic"]))
-    if params.get("process") and applicable.get("process", 0) > 0:
-        rungs.append(("process", applicable["process"], params["process"]))
-    acc = {"pReplay": 0.0, "pElastic": 0.0, "pProcess": 0.0, "pGlobal": 0.0, "pRollback": 0.0, "meanPauseS": 0.0, "pauseRollbackS": 0.0, "pauseNoRollbackS": 0.0, "localLossS": 0.0}
+    """Enumerate predict → netfail → replay → hotswap → elastic → process → global recursively (spec §19 and §19.1).
+    predict: recall r turns the event into a planned migration (pause f + t_mig, no detection delay, no rollback); a miss
+    costs nothing. netfail: absorbed inside the collective (pause f + t_nf, no detection delay, no rollback). hotswap:
+    pause d + f + t_hs, no rollback. A rung's applicable fraction must be given explicitly (missing = 0)."""
+    rungs = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in CHAIN_ORDER if params.get(kind) and applicable.get(kind, 0.0) > 0]
+    acc = {"pPredict": 0.0, "pNetfail": 0.0, "pReplay": 0.0, "pHotswap": 0.0, "pElastic": 0.0, "pProcess": 0.0, "pGlobal": 0.0,
+           "pRollback": 0.0, "meanPauseS": 0.0, "pauseRollbackS": 0.0, "pauseNoRollbackS": 0.0, "localLossS": 0.0}
     def terminal(kind, p, pause, rollback, local):
         acc["p" + kind[0].upper() + kind[1:]] += p
         acc["meanPauseS"] += p * pause
@@ -71,9 +71,18 @@ def chain(detect_s, global_s, params, applicable):
         # not applicable
         rec(i + 1, p * (1 - frac), failed)
         tried = p * frac
+        if kind == "predict":
+            r = prm["recall"]
+            terminal("predict", tried * r, failed + prm["migrationSeconds"], False, 0.0)
+            rec(i + 1, tried * (1 - r), failed)  # a missed prediction charges no time
+            return
         s = prm["success"]
-        if kind == "replay":
+        if kind == "netfail":
+            terminal("netfail", tried * s, failed + prm["successSeconds"], False, 0.0)
+        elif kind == "replay":
             terminal("replay", tried * s, detect_s + failed + prm["successSeconds"], False, 0.0)
+        elif kind == "hotswap":
+            terminal("hotswap", tried * s, detect_s + failed + prm["successSeconds"], False, 0.0)
         elif kind == "elastic":
             d = prm["domains"]
             terminal("elastic", tried * s, failed + prm["syncSeconds"], False, max(0.0, detect_s + prm["recoverSeconds"] - prm["syncSeconds"]) / d)
@@ -137,6 +146,16 @@ for cid, (d, g, params, app) in {
     "chain.replay_only": (12.5, 252, {"replay": P["replay"]}, {"replay": 0.7}),
     "chain.process_only_zero_detect": (0, 300, {"process": P["process"]}, {"process": 1}),
     "chain.none": (12.5, 252, {}, {"replay": 1, "process": 1, "elastic": 1}),
+}.items():
+    cases.append({"id": cid, "group": "chain", "inputs": {"detectS": d, "globalS": g, "params": params, "applicable": app}, "expected": chain(d, g, params, app), "tolerance": {"rel": 1e-12, "abs": 1e-15}})
+
+# v3.2 rungs (spec §19.1): predict → netfail → replay → hotswap → elastic → process → global
+P32 = {**P, "predict": {"recall": 0.5, "precision": 0.8, "migrationSeconds": 180}, "netfail": {"success": 0.95, "successSeconds": 2, "failureSeconds": 10}, "hotswap": {"success": 0.9, "successSeconds": 180, "failureSeconds": 60}}
+for cid, (d, g, params, app) in {
+    "chain.v32_full": (12.5, 252, P32, {"predict": 0.3, "netfail": 0.2, "replay": 0.831, "hotswap": 1, "elastic": 1, "process": 1}),
+    "chain.v32_predict_hotswap": (12.5, 252, {"predict": P32["predict"], "hotswap": P32["hotswap"]}, {"predict": 1, "hotswap": 0.5}),
+    "chain.v32_netfail_partial_timeout": (60, 300, {"netfail": P32["netfail"], "replay": P["replay"]}, {"netfail": 0.6, "replay": 0.4}),
+    "chain.v32_all_applicable_full_recall": (12.5, 252, {**P32, "predict": {"recall": 1, "precision": 0.5, "migrationSeconds": 120}}, {"predict": 1, "netfail": 1, "replay": 1, "hotswap": 1, "elastic": 1, "process": 1}),
 }.items():
     cases.append({"id": cid, "group": "chain", "inputs": {"detectS": d, "globalS": g, "params": params, "applicable": app}, "expected": chain(d, g, params, app), "tolerance": {"rel": 1e-12, "abs": 1e-15}})
 

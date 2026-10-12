@@ -6,7 +6,7 @@
  * all 2^n coalitions, every coalition evaluated with the closed forms (delivered goodput by default).
  */
 import type { Scenario } from '../scenario/schema.js';
-import { evaluateScenario } from '../scenario/evaluate.js';
+import { evaluateScenario, resolvePipeline } from '../scenario/evaluate.js';
 import { cloneScenario } from '../scenario/analysis.js';
 
 export type MechanismKind = 'detect' | 'recover' | 'checkpoint' | 'physical';
@@ -33,6 +33,94 @@ export interface MechanismDef {
   apply?: (s: Scenario, p: Record<string, number>) => Scenario;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Applied records (docs/MODEL_REFERENCE.md §22.4): every transform stores what it replaced so that removal is its     */
+/* exact inverse and re-application replaces instead of compounding.                                                  */
+/* ---------------------------------------------------------------------- */
+
+type Previous = Record<string, unknown>;
+type AppliedRecord = NonNullable<Scenario['mechanisms']['applied']>[string];
+
+const orNull = <T>(v: T | undefined): T | null => (v === undefined ? null : v);
+const fromNull = <T>(v: unknown): T | undefined => (v === null || v === undefined ? undefined : (v as T));
+
+/** Store the parameters used, the application order and the replaced values on the scenario. */
+function recordApplied(c: Scenario, id: string, parameters: Record<string, number>, previous: Previous): Scenario {
+  const applied: Record<string, AppliedRecord> = { ...(c.mechanisms.applied ?? {}) };
+  const order = Object.values(applied).reduce((a, r) => Math.max(a, r.order + 1), 0);
+  applied[id] = { order, parameters: { ...parameters }, previous };
+  c.mechanisms = { ...c.mechanisms, applied };
+  return c;
+}
+
+/** Undo one record: replaced values are written back (null = the field was absent), multiplicative changes are divided out. */
+function restorePrevious(c: Scenario, prev: Previous): void {
+  for (const [key, v] of Object.entries(prev)) {
+    switch (key) {
+      case 'workload.intervalS':
+        if (c.workload.type === 'training') c.workload = { ...c.workload, intervalS: fromNull<number>(v) };
+        break;
+      case 'workload.deltaS':
+        if (c.workload.type === 'training' && typeof v === 'number') c.workload = { ...c.workload, deltaS: v };
+        break;
+      case 'recovery':
+        c.recovery = v as Scenario['recovery'];
+        break;
+      case 'recovery.automatic.seconds':
+        if (c.recovery.mode === 'mixture' && typeof v === 'number') c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: v } };
+        break;
+      case 'recovery.detection':
+        if (c.recovery.mode === 'mixture') c.recovery = { ...c.recovery, detection: v as Extract<Scenario['recovery'], { mode: 'mixture' }>['detection'] };
+        break;
+      case 'sdc.detection':
+        c.sdc = { ...c.sdc, detection: v as Scenario['sdc']['detection'] };
+        break;
+      case 'sdc.stepRecovery':
+        c.sdc = { ...c.sdc, stepRecovery: fromNull<Scenario['sdc']['stepRecovery']>(v) };
+        break;
+      case 'overheads':
+        c.mechanisms = { ...c.mechanisms, overheads: fromNull<Record<string, number>>(v) };
+        break;
+      case 'mechanisms.replay':
+      case 'mechanisms.process':
+      case 'mechanisms.elastic':
+      case 'mechanisms.predict':
+      case 'mechanisms.netfail':
+      case 'mechanisms.hotswap': {
+        const m = { ...c.mechanisms } as Record<string, unknown>;
+        m[key.slice('mechanisms.'.length)] = fromNull(v);
+        c.mechanisms = m as Scenario['mechanisms'];
+        break;
+      }
+      case 'rateFactor':
+        if (typeof v === 'number' && v > 0) for (const comp of c.components) comp.failure = { ...comp.failure, value: comp.failure.value / v };
+        break;
+      case 'subhealthRateFactor':
+        if (typeof v === 'number' && v > 0) for (const comp of c.components) if (comp.subhealth?.ratePerHour !== undefined) comp.subhealth = { ...comp.subhealth, ratePerHour: comp.subhealth.ratePerHour / v };
+        break;
+      case 'subhealthDurationFactor':
+        if (typeof v === 'number' && v > 0) for (const comp of c.components) if (comp.subhealth) comp.subhealth = { ...comp.subhealth, durationHours: comp.subhealth.durationHours / v };
+        break;
+      case 'subhealthDetection': {
+        const map = v as Record<string, { policy: unknown; detection: unknown }>;
+        for (const comp of c.components) {
+          const p = map[comp.id];
+          if (p && comp.subhealth) comp.subhealth = { ...comp.subhealth, policy: fromNull<'tolerate' | 'isolate'>(p.policy) ?? 'tolerate', detection: fromNull<NonNullable<typeof comp.subhealth>['detection']>(p.detection) };
+        }
+        break;
+      }
+    }
+  }
+}
+
+/** Mechanisms that only switch a block on, so that they can be removed exactly even without an applied record. */
+const SWITCHABLE = ['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP'];
+
+/** Whether `stripMechanisms` removes the mechanism exactly: an applied record exists, or the mechanism only switches a block on. */
+export function isStrippable(s: Scenario, id: string): boolean {
+  return !!s.mechanisms.applied?.[id] || SWITCHABLE.includes(id);
+}
+
 export const MECHANISM_LIBRARY: MechanismDef[] = [
   {
     id: 'D-HARD', name: { zh: '中断检测 / 超时兜底', en: 'Interruption detection / timeout fallback' }, kind: 'detect', status: 'baseline', scope: 'hard',
@@ -45,8 +133,10 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     apply: (s, p) => {
       if (s.recovery.mode !== 'mixture') return s;
       const c = cloneScenario(s);
-      if (c.recovery.mode === 'mixture') c.recovery.detection = { ...c.recovery.detection, coverage: p.coverage, autoSeconds: p.detectSeconds };
-      return c;
+      if (c.recovery.mode !== 'mixture') return c;
+      const previous: Previous = { 'recovery.detection': { ...c.recovery.detection } };
+      c.recovery = { ...c.recovery, detection: { ...c.recovery.detection, coverage: p.coverage, autoSeconds: p.detectSeconds } };
+      return recordApplied(c, 'D-HARD', p, previous);
     },
   },
   {
@@ -59,8 +149,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { coverage: 0.99, detectSeconds: 30 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { subhealthDetection: Object.fromEntries(c.components.filter((x) => x.subhealth).map((x) => [x.id, { policy: orNull(x.subhealth!.policy), detection: orNull(x.subhealth!.detection) }])) };
       for (const comp of c.components) if (comp.subhealth) comp.subhealth = { ...comp.subhealth, policy: comp.subhealth.policy ?? 'isolate', detection: { probability: p.coverage, delayHours: p.detectSeconds / 3600 } };
-      return c;
+      return recordApplied(c, 'D-SLOW', p, previous);
     },
   },
   {
@@ -73,8 +164,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { coverage: 0.95, detectSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'sdc.detection': { ...c.sdc.detection } };
       c.sdc = { ...c.sdc, detection: { coverage: p.coverage, detectSeconds: p.detectSeconds } };
-      return c;
+      return recordApplied(c, 'D-SDC', p, previous);
     },
   },
   {
@@ -87,8 +179,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { stepSeconds: 1, recoverSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'sdc.stepRecovery': orNull(c.sdc.stepRecovery) };
       c.sdc = { ...c.sdc, stepRecovery: { stepSeconds: p.stepSeconds, recoverSeconds: p.recoverSeconds } };
-      return c;
+      return recordApplied(c, 'R-SDC', p, previous);
     },
   },
   {
@@ -101,8 +194,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { success: 0.9, successSeconds: 5, failureSeconds: 10 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.replay': orNull(c.mechanisms.replay) };
       c.mechanisms = { ...c.mechanisms, replay: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
-      return c;
+      return recordApplied(c, 'R-REPLAY', p, previous);
     },
   },
   {
@@ -115,8 +209,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { success: 0.95, successSeconds: 60, failureSeconds: 120 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.process': orNull(c.mechanisms.process) };
       c.mechanisms = { ...c.mechanisms, process: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
-      return c;
+      return recordApplied(c, 'R-PROCESS', p, previous);
     },
   },
   {
@@ -129,8 +224,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { domains: 50, success: 0.98, recoverSeconds: 180, failureSeconds: 120, syncSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.elastic': orNull(c.mechanisms.elastic) };
       c.mechanisms = { ...c.mechanisms, elastic: { domains: Math.max(1, Math.round(p.domains)), success: p.success, recoverSeconds: p.recoverSeconds, failureSeconds: p.failureSeconds, syncSeconds: p.syncSeconds } };
-      return c;
+      return recordApplied(c, 'R-ELASTIC', p, previous);
     },
   },
   {
@@ -161,8 +257,10 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     parameters: { computeSeconds: 60, saveSeconds: 1 },
     apply: (s, p) => {
       const c = cloneScenario(s);
-      if (c.workload.type === 'training') c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
-      return c;
+      if (c.workload.type !== 'training') return c;
+      const previous: Previous = { 'workload.intervalS': orNull(c.workload.intervalS), 'workload.deltaS': c.workload.deltaS };
+      c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
+      return recordApplied(c, 'C-FAST', p, previous);
     },
   },
   {
@@ -185,8 +283,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     apply: (s, p) => {
       if (!(p.reduction > 0)) return s;
       const c = cloneScenario(s);
-      for (const comp of c.components) comp.failure = { ...comp.failure, value: comp.failure.value * (1 - Math.min(0.999, p.reduction)) };
-      return c;
+      const f = 1 - Math.min(0.999, p.reduction);
+      for (const comp of c.components) comp.failure = { ...comp.failure, value: comp.failure.value * f };
+      return recordApplied(c, 'H-RELIABILITY', p, { rateFactor: f });
     },
   },
   {
@@ -199,8 +298,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     effort: 3,
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.predict': orNull(c.mechanisms.predict) };
       c.mechanisms = { ...c.mechanisms, predict: { recall: p.recall, precision: p.precision, migrationSeconds: p.migrationSeconds } };
-      return c;
+      return recordApplied(c, 'P-PREDICT', p, previous);
     },
   },
   {
@@ -213,8 +313,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     effort: 3,
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.netfail': orNull(c.mechanisms.netfail) };
       c.mechanisms = { ...c.mechanisms, netfail: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
-      return c;
+      return recordApplied(c, 'R-NETFAIL', p, previous);
     },
   },
   {
@@ -227,8 +328,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     effort: 4,
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'mechanisms.hotswap': orNull(c.mechanisms.hotswap) };
       c.mechanisms = { ...c.mechanisms, hotswap: { success: p.success, successSeconds: p.successSeconds, failureSeconds: p.failureSeconds } };
-      return c;
+      return recordApplied(c, 'R-HOTSWAP', p, previous);
     },
   },
   {
@@ -241,10 +343,24 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     effort: 3,
     apply: (s, p) => {
       const c = cloneScenario(s);
-      if (c.workload.type === 'training') c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
-      if (c.recovery.mode === 'mixture') c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: Math.max(30, c.recovery.automatic.seconds - p.loadSavingSeconds) } };
+      const previous: Previous = {};
+      if (c.workload.type === 'training') {
+        previous['workload.intervalS'] = orNull(c.workload.intervalS);
+        previous['workload.deltaS'] = c.workload.deltaS;
+        c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
+      }
+      if (c.recovery.mode === 'mixture') {
+        previous['recovery.automatic.seconds'] = c.recovery.automatic.seconds;
+        c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: Math.max(30, c.recovery.automatic.seconds - p.loadSavingSeconds) } };
+      } else if (c.recovery.mode === 'preset' || c.recovery.mode === 'pipeline') {
+        // loading from host / peer memory shortens the checkpoint-load stage (a preset is resolved into explicit stages); ladders carry no load stage
+        previous.recovery = c.recovery;
+        const stages = resolvePipeline(c).stages.map((st) => (st.name === 'load' && typeof st.value === 'number' ? { ...st, value: Math.max(0, st.value - p.loadSavingSeconds) } : { ...st }));
+        c.recovery = { mode: 'pipeline', stages: stages as Extract<Scenario['recovery'], { mode: 'pipeline' }>['stages'] };
+      }
+      previous.overheads = orNull(c.mechanisms.overheads);
       c.mechanisms = { ...c.mechanisms, overheads: { ...(c.mechanisms.overheads ?? {}), 'C-MEM': p.overhead } };
-      return c;
+      return recordApplied(c, 'C-MEM', p, previous);
     },
   },
   {
@@ -257,9 +373,10 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     effort: 4,
     apply: (s, p) => {
       const c = cloneScenario(s);
+      const previous: Previous = { 'sdc.detection': { ...c.sdc.detection }, overheads: orNull(c.mechanisms.overheads) };
       c.sdc = { ...c.sdc, detection: { coverage: Math.max(c.sdc.detection.coverage, p.coverage), detectSeconds: p.detectSeconds } };
       c.mechanisms = { ...c.mechanisms, overheads: { ...(c.mechanisms.overheads ?? {}), 'D-SDC-DMR': p.overhead } };
-      return c;
+      return recordApplied(c, 'D-SDC-DMR', p, previous);
     },
   },
   {
@@ -274,7 +391,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
       const c = cloneScenario(s);
       const f = 1 - Math.min(1, p.share) * Math.min(1, p.reduction);
       for (const comp of c.components) comp.failure = { ...comp.failure, value: comp.failure.value * f };
-      return c;
+      return recordApplied(c, 'H-LEMON', p, { rateFactor: f });
     },
   },
   {
@@ -288,7 +405,7 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     apply: (s, p) => {
       const c = cloneScenario(s);
       for (const comp of c.components) if (comp.subhealth) comp.subhealth = { ...comp.subhealth, ratePerHour: (comp.subhealth.ratePerHour ?? 0) * p.rateFactor, durationHours: comp.subhealth.durationHours * p.durationFactor };
-      return c;
+      return recordApplied(c, 'H-SWEEP', p, { subhealthRateFactor: p.rateFactor, subhealthDurationFactor: p.durationFactor });
     },
   },
 ];
@@ -310,29 +427,46 @@ export function activeMechanisms(s: Scenario): string[] {
   if (s.mechanisms.netfail) ids.push('R-NETFAIL');
   if (s.mechanisms.hotswap) ids.push('R-HOTSWAP');
   for (const id of Object.keys(s.mechanisms.overheads ?? {})) if (!ids.includes(id)) ids.push(id);
-  if (s.workload.type === 'training' && s.workload.intervalS !== undefined && s.workload.intervalS <= 60 && s.workload.deltaS <= 1) ids.push('C-FAST');
+  if (s.workload.type === 'training' && s.workload.intervalS !== undefined && s.workload.intervalS <= 60 && s.workload.deltaS <= 1 && !ids.includes('C-FAST')) ids.push('C-FAST');
+  for (const id of Object.keys(s.mechanisms.applied ?? {})) if (!ids.includes(id)) ids.push(id);
   return ids;
 }
 
 /**
- * Remove the given mechanisms from a scenario so that an attribution baseline does not already contain them.
- * Detection targets (D-HARD, D-SLOW) and the checkpoint settings (C-FAST) cannot be undone without knowing the
- * previous values: they are left as configured and the report notes it.
+ * Remove the given mechanisms from a scenario (the attribution baseline, the Remove button of the Mechanisms page).
+ * Mechanisms applied through the library carry an applied record: every record is undone in reverse order of application
+ * and the ones that stay are re-applied with their recorded parameters, so removal is the exact inverse of application
+ * (docs/MODEL_REFERENCE.md §22.4). Without a record (scenario written by hand) the mechanism is switched off and the
+ * settings it changed stay as configured; the attribution report notes it.
  */
 export function stripMechanisms(s: Scenario, ids: string[]): Scenario {
-  const c = cloneScenario(s);
-  if (ids.includes('D-SDC')) c.sdc = { ...c.sdc, detection: { ...c.sdc.detection, coverage: 0 } };
-  if (ids.includes('R-SDC')) c.sdc = { ...c.sdc, stepRecovery: undefined };
-  if (ids.includes('R-REPLAY')) c.mechanisms = { ...c.mechanisms, replay: undefined };
-  if (ids.includes('R-PROCESS')) c.mechanisms = { ...c.mechanisms, process: undefined };
-  if (ids.includes('R-ELASTIC')) c.mechanisms = { ...c.mechanisms, elastic: undefined };
-  if (ids.includes('P-PREDICT')) c.mechanisms = { ...c.mechanisms, predict: undefined };
-  if (ids.includes('R-NETFAIL')) c.mechanisms = { ...c.mechanisms, netfail: undefined };
-  if (ids.includes('R-HOTSWAP')) c.mechanisms = { ...c.mechanisms, hotswap: undefined };
-  if (c.mechanisms.overheads) {
-    const o = { ...c.mechanisms.overheads };
-    for (const id of ids) delete o[id];
-    c.mechanisms = { ...c.mechanisms, overheads: o };
+  let c = cloneScenario(s);
+  const records = Object.entries(c.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order);
+  if (records.length) {
+    for (const [, rec] of [...records].reverse()) restorePrevious(c, rec.previous);
+    c.mechanisms = { ...c.mechanisms, applied: undefined };
+    for (const [id, rec] of records) {
+      if (ids.includes(id)) continue;
+      const m = MECHANISM_LIBRARY.find((x) => x.id === id);
+      if (m?.apply) c = m.apply(c, rec.parameters);
+    }
+  }
+  const recorded = new Set(records.map(([id]) => id));
+  for (const id of ids) {
+    if (recorded.has(id)) continue;
+    if (id === 'D-SDC') c.sdc = { ...c.sdc, detection: { ...c.sdc.detection, coverage: 0 } };
+    else if (id === 'R-SDC') c.sdc = { ...c.sdc, stepRecovery: undefined };
+    else if (id === 'R-REPLAY') c.mechanisms = { ...c.mechanisms, replay: undefined };
+    else if (id === 'R-PROCESS') c.mechanisms = { ...c.mechanisms, process: undefined };
+    else if (id === 'R-ELASTIC') c.mechanisms = { ...c.mechanisms, elastic: undefined };
+    else if (id === 'P-PREDICT') c.mechanisms = { ...c.mechanisms, predict: undefined };
+    else if (id === 'R-NETFAIL') c.mechanisms = { ...c.mechanisms, netfail: undefined };
+    else if (id === 'R-HOTSWAP') c.mechanisms = { ...c.mechanisms, hotswap: undefined };
+    if (c.mechanisms.overheads && id in c.mechanisms.overheads) {
+      const o = { ...c.mechanisms.overheads };
+      delete o[id];
+      c.mechanisms = { ...c.mechanisms, overheads: o };
+    }
   }
   return c;
 }
@@ -388,6 +522,8 @@ export function applyMechanisms(s: Scenario, ids: string[], parameters: Record<s
   // apply in library order so that dependencies (e.g. D-SDC before R-SDC) are deterministic
   for (const m of MECHANISM_LIBRARY) {
     if (!ids.includes(m.id) || !m.apply) continue;
+    // a mechanism already applied is removed first, so that re-applying it replaces its previous application instead of compounding
+    if (out.mechanisms.applied?.[m.id]) out = stripMechanisms(out, [m.id]);
     out = m.apply(out, { ...m.parameters, ...(parameters[m.id] ?? {}) });
   }
   return out;
@@ -450,7 +586,11 @@ export function mechanismReport(s: Scenario, players: string[] = DEFAULT_PLAYERS
     if (m.requires?.some((r) => !ids.includes(r))) notes.push(`${id} requires ${m.requires.join(', ')}: without it the mechanism has no effect`);
   }
   const already = activeMechanisms(s).filter((id) => ids.includes(id));
-  if (already.length) notes.push(`baseline = the scenario without ${already.join(', ')} (stripped before the enumeration; detection targets and checkpoint settings cannot be stripped and stay as configured)`);
+  if (already.length) {
+    const exact = already.filter((id) => isStrippable(s, id));
+    const partial = already.filter((id) => !isStrippable(s, id));
+    notes.push(`baseline = the scenario without ${already.join(', ')} (removed before the enumeration${exact.length ? `; ${exact.join(', ')} restored exactly from the applied records` : ''}${partial.length ? `; ${partial.join(', ')} carry no applied record, so only their switches are turned off and the settings they changed stay as configured` : ''})`);
+  }
   return { metric, players: ids, baseline, combined, delta, gains, coalitions: total, residual: sumShapley - delta, interaction: delta - sumSingle, notes };
 }
 

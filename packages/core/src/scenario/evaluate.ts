@@ -633,7 +633,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
       row.headlineModel = h.model;
       const perfRow = 1 - (1 - Math.pow(pNotSlowed, f)) * (1 - minPerformance);
       const localRow = Math.min(1, mx.localLossSPerHour / 3600);
-      const eff = row.headline * (1 - blocked) * perfRow * (1 - localRow);
+      const eff = row.headline * (1 - blocked) * perfRow * (1 - localRow) * (1 - overheadFraction);
       row.effective = eff;
       if (sdcTotal > 0) {
         const nuRow = sdcTotal * f * (1 - sdcCoverage) * mrRow.runningFraction * (1 - pClearedBeforePersist(mx.rollbackRatePerHour, (tauRow + deltaS) / 3600));

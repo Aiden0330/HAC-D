@@ -156,7 +156,10 @@
     }
    },
    "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
     "pReplay": 0.7479,
+    "pHotswap": 0.0,
     "pElastic": 0.24705800000000003,
     "pProcess": 0.004789900000000004,
     "pGlobal": 0.0002521000000000005,
@@ -203,7 +206,10 @@
     }
    },
    "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
     "pReplay": 0.0,
+    "pHotswap": 0.0,
     "pElastic": 0.35378,
     "pProcess": 0.221621149,
     "pGlobal": 0.424598851,
@@ -236,7 +242,10 @@
     }
    },
    "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
     "pReplay": 0.63,
+    "pHotswap": 0.0,
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 0.37,
@@ -269,7 +278,10 @@
     }
    },
    "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
     "pReplay": 0.0,
+    "pHotswap": 0.0,
     "pElastic": 0.0,
     "pProcess": 0.95,
     "pGlobal": 0.050000000000000044,
@@ -298,7 +310,10 @@
     }
    },
    "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
     "pReplay": 0.0,
+    "pHotswap": 0.0,
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 1.0,
@@ -306,6 +321,226 @@
     "meanPauseS": 264.5,
     "pauseRollbackS": 264.5,
     "pauseNoRollbackS": 0.0,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v32_full",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     },
+     "predict": {
+      "recall": 0.5,
+      "precision": 0.8,
+      "migrationSeconds": 180
+     },
+     "netfail": {
+      "success": 0.95,
+      "successSeconds": 2,
+      "failureSeconds": 10
+     },
+     "hotswap": {
+      "success": 0.9,
+      "successSeconds": 180,
+      "failureSeconds": 60
+     }
+    },
+    "applicable": {
+     "predict": 0.3,
+     "netfail": 0.2,
+     "replay": 0.831,
+     "hotswap": 1,
+     "elastic": 1,
+     "process": 1
+    }
+   },
+   "expected": {
+    "pPredict": 0.15,
+    "pNetfail": 0.16149999999999998,
+    "pReplay": 0.51492915,
+    "pHotswap": 0.15621376500000003,
+    "pElastic": 0.017009943299999993,
+    "pProcess": 0.00032978461500000016,
+    "pGlobal": 1.735708500000003e-05,
+    "pRollback": 0.00034714170000000027,
+    "meanPauseS": 68.19322861856998,
+    "pauseRollbackS": 0.09425583377000009,
+    "pauseNoRollbackS": 68.09897278479998,
+    "localLossS": 0.06514808283899999
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v32_predict_hotswap",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "predict": {
+      "recall": 0.5,
+      "precision": 0.8,
+      "migrationSeconds": 180
+     },
+     "hotswap": {
+      "success": 0.9,
+      "successSeconds": 180,
+      "failureSeconds": 60
+     }
+    },
+    "applicable": {
+     "predict": 1,
+     "hotswap": 0.5
+    }
+   },
+   "expected": {
+    "pPredict": 0.5,
+    "pNetfail": 0.0,
+    "pReplay": 0.0,
+    "pHotswap": 0.225,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.275,
+    "pRollback": 0.275,
+    "meanPauseS": 207.55,
+    "pauseRollbackS": 74.2375,
+    "pauseNoRollbackS": 133.3125,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v32_netfail_partial_timeout",
+   "group": "chain",
+   "inputs": {
+    "detectS": 60,
+    "globalS": 300,
+    "params": {
+     "netfail": {
+      "success": 0.95,
+      "successSeconds": 2,
+      "failureSeconds": 10
+     },
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     }
+    },
+    "applicable": {
+     "netfail": 0.6,
+     "replay": 0.4
+    }
+   },
+   "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.57,
+    "pReplay": 0.15480000000000005,
+    "pHotswap": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.2752,
+    "pRollback": 0.2752,
+    "meanPauseS": 110.74600000000001,
+    "pauseRollbackS": 99.436,
+    "pauseNoRollbackS": 11.310000000000004,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v32_all_applicable_full_recall",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     },
+     "predict": {
+      "recall": 1,
+      "precision": 0.5,
+      "migrationSeconds": 120
+     },
+     "netfail": {
+      "success": 0.95,
+      "successSeconds": 2,
+      "failureSeconds": 10
+     },
+     "hotswap": {
+      "success": 0.9,
+      "successSeconds": 180,
+      "failureSeconds": 60
+     }
+    },
+    "applicable": {
+     "predict": 1,
+     "netfail": 1,
+     "replay": 1,
+     "hotswap": 1,
+     "elastic": 1,
+     "process": 1
+    }
+   },
+   "expected": {
+    "pPredict": 1.0,
+    "pNetfail": 0.0,
+    "pReplay": 0.0,
+    "pHotswap": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.0,
+    "pRollback": 0.0,
+    "meanPauseS": 120.0,
+    "pauseRollbackS": 0.0,
+    "pauseNoRollbackS": 120.0,
     "localLossS": 0.0
    },
    "tolerance": {

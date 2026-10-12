@@ -127,7 +127,7 @@ export function agree(subs: Subsystem[], lambdaSystem: number, horizonHours = 24
     const w = s.importance ?? 1;
     const duty = s.duty ?? 1;
     const Ri = 1 - (1 - Math.pow(Rstar, s.count / N)) / w;
-    if (!(Ri > 0)) throw new RangeError(`AGREE: subsystem ${s.id} gets a non-positive reliability; lower the importance or the budget`);
+    if (!(Ri > 0)) throw new RangeError(`AGREE: subsystem ${s.id} gets a non-positive reliability (1 − R*^{n_i/N} exceeds its importance weight); raise its importance weight, or lower the budget or the horizon`);
     agg[i] = -Math.log(Ri) / (duty * horizonHours);
     weights[i] = s.count / N;
   }

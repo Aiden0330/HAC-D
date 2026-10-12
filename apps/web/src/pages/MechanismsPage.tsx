@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, evaluateScenario, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
+import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute } from '../worker/client.js';
@@ -257,7 +257,7 @@ export function MechanismsPage() {
                     <td>{m.apply ? <NumberInput value={efforts[m.id] ?? m.effort} min={0} max={10} step={1} onChange={(v) => setEfforts((o) => ({ ...o, [m.id]: v }))} /> : <span className="muted">—</span>}</td>
                     <td style={{ whiteSpace: 'nowrap' }}>
                       {m.apply && (on ? (
-                        <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP', 'C-MEM', 'D-SDC-DMR'].includes(m.id)}>{t('mechanisms.remove')}</button>
+                        <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!isStrippable(active.scenario, m.id)}>{t('mechanisms.remove')}</button>
                       ) : (
                         <button type="button" className="btn small" onClick={() => updateActive((s) => applyMechanisms(s, [m.id], overrides))}>{t('mechanisms.apply')}</button>
                       ))}

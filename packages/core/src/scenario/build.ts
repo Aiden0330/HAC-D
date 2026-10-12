@@ -213,7 +213,8 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
     repair,
     subhealth: componentSubhealth(c, subhealthThreshold),
     sdcLambda: c.sdc?.ratePerHour ?? 0,
-    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0, predict: c.mechanisms?.predict ?? 1, netfail: c.mechanisms?.netfail ?? 0, hotswap: c.mechanisms?.hotswap ?? 0 },
+    // a missing flag means the mechanism does not apply to this class (every rung, prediction included)
+    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0, predict: c.mechanisms?.predict ?? 0, netfail: c.mechanisms?.netfail ?? 0, hotswap: c.mechanisms?.hotswap ?? 0 },
   };
 }
 

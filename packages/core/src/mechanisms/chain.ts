@@ -143,7 +143,7 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
   const hs = params.hotswap;
   const el = params.elastic;
   const pr = params.process;
-  const aPd = pd ? clamp01(applicable.predict ?? 1) : 0;
+  const aPd = pd ? clamp01(applicable.predict) : 0; // missing flag = not predictable, like every other rung
   const aNf = nf ? clamp01(applicable.netfail) : 0;
   const aRp = rp ? clamp01(applicable.replay) : 0;
   const aHs = hs ? clamp01(applicable.hotswap) : 0;
