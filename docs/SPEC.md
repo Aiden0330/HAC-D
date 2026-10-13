@@ -30,7 +30,7 @@ HAC-D models the availability, MTBF, MTTR and goodput of AI training and inferen
 - Web app static (Vite + React), computation in a Web Worker, bilingual zh / en, light and dark, usable at 1280 px and 375 px without horizontal overflow; results recompute after every edit.
 - Core is pure TypeScript without DOM dependencies; CLI and MCP reuse it unchanged.
 - Verification: independent Python goldens for closed forms (187), unit tests (358 core + 29 importers), reference cross-check, screenshot checks; a change is not "working" until these pass.
-- Performance: closed-form evaluation in milliseconds; Shapley over ≤ 10 players and the planner in the browser; simulations chunked with progress.
+- Performance: closed-form evaluation in milliseconds; Shapley over ≤ 10 players (1,024 coalitions, about a second on the 54-event catalog because the value function evaluates the training block only, `evaluateScenario(s, { structure: false })`) and the planner in the browser, both with a progress counter and a Cancel that restarts the compute worker; simulations chunked with progress.
 
 ## 4. Data model
 

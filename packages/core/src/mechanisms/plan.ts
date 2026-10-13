@@ -9,7 +9,7 @@
 import type { Scenario } from '../scenario/schema.js';
 import { evaluateScenario } from '../scenario/evaluate.js';
 import { cloneScenario } from '../scenario/analysis.js';
-import { simulateScenarioLedger } from '../mc/ledgerFromScenario.js';
+import { buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, type LedgerReplication } from '../mc/ledgerFromScenario.js';
 import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, mechanismById, applyMechanisms, stripMechanisms, mechanismValues, type AttributionMetric, type MechanismValues } from './index.js';
 
 export interface DerateSpec {
@@ -93,6 +93,8 @@ export interface MechanismPlan {
   notes: string[];
 }
 
+export type PlanPhase = 'coalitions' | 'scan' | 'verify';
+
 export interface PlanOptions {
   target?: number;
   players?: string[];
@@ -107,6 +109,8 @@ export interface PlanOptions {
   scan?: boolean | { coverages: number[]; recoverySeconds: number[] };
   /** ledger simulation of the plan: P(window ≥ target) must be ≥ confidence */
   verify?: { trials: number; seed?: number | string; confidence?: number };
+  /** progress per phase: coalitions evaluated (nominal + derated count as one), scan cells, ledger windows */
+  onProgress?: (done: number, total: number, phase: PlanPhase) => void;
 }
 
 function paramsFor(id: string, overrides?: Record<string, Record<string, number>>): Record<string, number> {
@@ -133,12 +137,14 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
   const total = 1 << n;
   const baseline = mechanismValues(base);
   const coalitions: PlanCoalition[] = [];
+  const step = Math.max(1, Math.floor(total / 64));
   for (let mask = 0; mask < total; mask++) {
     const sel = ids.filter((_, i) => mask & (1 << i));
     const value = mechanismValues(applyMechanisms(base, sel, nominalParams))[metric];
     const derated = derate ? mechanismValues(applyMechanisms(base, sel, deratedParams))[metric] : value;
     const effort = sel.reduce((a, id) => a + effortOf(id), 0);
     coalitions.push({ ids: sel, effort, value, derated, feasible: value >= target && derated >= target, margin: value - target });
+    if (opts.onProgress && ((mask + 1) % step === 0 || mask + 1 === total)) opts.onProgress(mask + 1, total, 'coalitions');
   }
   const feasible = coalitions.filter((c) => c.feasible);
   feasible.sort((a, b) => a.effort - b.effort || b.margin - a.margin);
@@ -164,18 +170,28 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
     const planned = applyMechanisms(base, planIds, nominalParams);
     const cells: PlanScanCell[] = [];
     const isMixture = planned.recovery.mode === 'mixture';
+    const scanTotal = grid.coverages.length * (isMixture ? grid.recoverySeconds.length : 1);
     for (const q of grid.coverages)
       for (const sec of isMixture ? grid.recoverySeconds : [NaN]) {
         const c = cloneScenario(planned);
         c.sdc = { ...c.sdc, detection: { ...c.sdc.detection, coverage: q } };
         if (isMixture && c.recovery.mode === 'mixture') c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: sec } };
-        cells.push({ coverage: q, recoverySeconds: sec, value: evaluateScenario(c).training![metric === 'delivered' ? 'deliveredGoodput' : metric === 'effective' ? 'effectiveGoodput' : 'operationalAvailability'] });
+        cells.push({ coverage: q, recoverySeconds: sec, value: evaluateScenario(c, { structure: false }).training![metric === 'delivered' ? 'deliveredGoodput' : metric === 'effective' ? 'effectiveGoodput' : 'operationalAvailability'] });
+        opts.onProgress?.(cells.length, scanTotal, 'scan');
       }
     out.scan = { coverages: grid.coverages, recoverySeconds: isMixture ? grid.recoverySeconds : [], cells, basis: `${planIds.join(' + ') || 'baseline'}; immediate silent-corruption detection coverage × automatic recovery attempt (s)${isMixture ? '' : ' (recovery axis needs the MTTR mixture)'}` };
   }
   if (opts.verify && plan) {
     const planned = applyMechanisms(base, plan.ids, nominalParams);
-    const sim = simulateScenarioLedger(planned, { trials: opts.verify.trials, seed: opts.verify.seed ?? 1, target });
+    const run = buildLedgerRun(planned, { trials: opts.verify.trials, seed: opts.verify.seed ?? 1, target });
+    const rows: LedgerReplication[] = [];
+    const chunk = Math.max(1, Math.min(25, Math.ceil(run.trials / 20)));
+    for (let from = 0; from < run.trials; from += chunk) {
+      const n = Math.min(chunk, run.trials - from);
+      rows.push(...simulateLedgerReplications(run.spec, from, n, run.seed));
+      opts.onProgress?.(rows.length, run.trials, 'verify');
+    }
+    const sim = finishLedgerRun(run, summarizeLedger(rows, run.seed, run.target));
     const confidence = opts.verify.confidence ?? 0.9;
     const p = sim.summary.pAtLeastTarget ?? 0;
     out.verification = { trials: opts.verify.trials, mean: sim.summary.delivered.mean, ci95: sim.summary.delivered.ci95, p05: sim.summary.delivered.p05, pAtLeastTarget: p, confidence, passes: p >= confidence };

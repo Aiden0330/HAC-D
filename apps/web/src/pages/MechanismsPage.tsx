@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useLang } from '../hooks.js';
-import { compute } from '../worker/client.js';
+import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
 import { Kpi, Card, DataTable, Field, Select, Badge, NumberInput } from '../components/ui.js';
 import { Tornado } from '../charts/Tornado.js';
 import { Heatmap } from '../charts/Heatmap.js';
@@ -49,7 +49,10 @@ export function MechanismsPage() {
   const [efforts, setEfforts] = useState<Record<string, number>>({});
   const [planning, setPlanning] = useState(false);
   const [running, setRunning] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number; phase?: string } | null>(null);
+  const [err, setErr] = useState<{ text: string; tone: 'crit' | 'info' } | null>(null);
+  const fail = (e: unknown) => setErr(e instanceof ComputeCancelled ? { text: t('mechanisms.cancelled'), tone: 'info' } : { text: (e as Error).message, tone: 'crit' });
+  const busy = running || planning;
   useEffect(() => { setReport(null); setPlan(null); }, [scenarioKey]);
   const inScenario = useMemo(() => (active && !active.error ? activeMechanisms(active.scenario) : []), [active]);
   const fractional = useMemo(() => (scenario ? scenario.components.some((c) => c.enabled && c.mechanisms && Object.values(c.mechanisms).some((v) => typeof v === 'number' && v > 0 && v < 1)) : false), [scenario]);
@@ -58,44 +61,42 @@ export function MechanismsPage() {
   const applicable = MECHANISM_LIBRARY.filter((m) => m.apply);
   const name = (m: (typeof MECHANISM_LIBRARY)[number]) => (lang === 'zh' ? m.name.zh : m.name.en);
   const toggle = (id: string) => setPlayers((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const checkPlayers = () => {
+    if (players.length === 0) setErr({ text: t('mechanisms.noPlayers'), tone: 'crit' });
+    else if (players.length > 10) setErr({ text: t('mechanisms.tooMany'), tone: 'crit' });
+    else return true;
+    return false;
+  };
   const run = async () => {
-    if (players.length === 0) {
-      setErr(t('mechanisms.noPlayers'));
-      return;
-    }
-    if (players.length > 10) {
-      setErr(t('mechanisms.tooMany'));
-      return;
-    }
+    if (!checkPlayers()) return;
     setRunning(true);
     setErr(null);
+    setProgress({ done: 0, total: 1 << players.length });
     try {
-      setReport(await compute().mechanisms(active.scenario, players, { metric, parameters: overrides }));
+      setReport(await compute().mechanisms(active.scenario, players, { metric, parameters: overrides }, progressCallback((done: number, total: number) => setProgress({ done, total }))));
     } catch (e) {
-      setErr((e as Error).message);
+      fail(e);
     } finally {
       setRunning(false);
+      setProgress(null);
     }
   };
   const runPlan = async () => {
-    if (players.length === 0) {
-      setErr(t('mechanisms.noPlayers'));
-      return;
-    }
-    if (players.length > 10) {
-      setErr(t('mechanisms.tooMany'));
-      return;
-    }
+    if (!checkPlayers()) return;
     setPlanning(true);
     setErr(null);
+    setProgress({ done: 0, total: 1 << players.length, phase: 'coalitions' });
     try {
-      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: overrides, effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }));
+      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: overrides, effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }, progressCallback((done: number, total: number, phase: string) => setProgress({ done, total, phase }))));
     } catch (e) {
-      setErr((e as Error).message);
+      fail(e);
     } finally {
       setPlanning(false);
+      setProgress(null);
     }
   };
+  const progressText = () => (progress ? ` ${progress.phase ? t(`mechanisms.phase_${progress.phase}`) + ' ' : ''}${progress.done} / ${progress.total}` : '');
+  const cancelButton = <button type="button" className="btn" onClick={cancelCompute}>{t('mechanisms.cancel')}</button>;
   const fmtMetric = (v: number) => fmtPct(v, 2);
   const pts = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(3)} pt`;
   const base = report ? report.baseline[report.metric] : 0;
@@ -126,11 +127,14 @@ export function MechanismsPage() {
             <Select value={metric} onChange={setMetric} options={METRICS.map((m) => ({ value: m, label: t(`mechanisms.metric_${m}`) }))} />
           </Field>
           <div className="field" style={{ justifyContent: 'end' }}>
-            <button type="button" className="btn primary" disabled={running} onClick={run}>{running ? t('mechanisms.running') : t('mechanisms.run')}</button>
+            <div className="btn-row">
+              <button type="button" className="btn primary" disabled={busy} onClick={run}>{running ? t('mechanisms.running') + progressText() : t('mechanisms.run')}</button>
+              {running && cancelButton}
+            </div>
           </div>
         </div>
-        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>● {t('mechanisms.inScenario')}</div>
-        {err && <div className="callout crit" style={{ marginTop: 8 }}>{err}</div>}
+        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>● {t('mechanisms.inScenario')} · {t('mechanisms.oneJob')}</div>
+        {err && <div className={`callout ${err.tone === 'crit' ? 'crit' : ''}`} style={{ marginTop: 8 }}>{err.text}</div>}
       </Card>
       <Card title={t('mechanisms.planTitle')} sub={t('mechanisms.planSub')} formula="min Σ effort_i s.t. v(S) ≥ G* and v_derated(S) ≥ G*; necessary = ∩ feasible S; Pareto over (effort, v)">
         <div className="form-grid">
@@ -144,7 +148,10 @@ export function MechanismsPage() {
           {verify && <Field label={t('mechanisms.planTrials')}><NumberInput value={trials} min={20} max={5000} step={50} onChange={setTrials} /></Field>}
           {verify && <Field label={t('mechanisms.planConfidence')}><NumberInput value={confidence} min={0.5} max={0.999} step={0.01} onChange={setConfidence} /></Field>}
           <div className="field" style={{ justifyContent: 'end' }}>
-            <button type="button" className="btn primary" disabled={planning} onClick={runPlan}>{planning ? t('mechanisms.planning') : t('mechanisms.planRun')}</button>
+            <div className="btn-row">
+              <button type="button" className="btn primary" disabled={busy} onClick={runPlan}>{planning ? t('mechanisms.planning') + progressText() : t('mechanisms.planRun')}</button>
+              {planning && cancelButton}
+            </div>
           </div>
         </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('mechanisms.planEffortHint')}</div>

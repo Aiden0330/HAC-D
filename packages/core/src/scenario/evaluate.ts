@@ -257,6 +257,19 @@ export interface EvaluationResult {
   formulas: Record<string, string>;
 }
 
+export interface ScenarioEvaluateOptions {
+  /**
+   * false: skip the block-structure evaluation (RBD, compensation waterfall, importance measures, cut sets) and return
+   * only the workload-level results (`training`, `inference`, `spares`, `components`, checklist, formulas). The mechanism
+   * attribution, the planner and the ledger simulation read `training` only; on the 54-event catalog this is several
+   * times faster than the full evaluation. The numbers that are returned are identical to the full evaluation.
+   */
+  structure?: boolean;
+}
+
+/** `evaluateScenario(s, { structure: false })`: everything except the block-structure results. */
+export type WorkloadEvaluation = Omit<EvaluationResult, 'structure' | 'system' | 'importance' | 'cutSets'>;
+
 export const SCALE_SIZES = [1024, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 1000000];
 
 export function resolvePipeline(s: Scenario): Pipeline {
@@ -342,7 +355,7 @@ function measureOf(r: BlockResult): Measure {
   return { availability: r.availability, unavailability: r.unavailability, mtbfHours: r.mtbf, equivalentMttrHours: r.equivalentMttr, failureFrequencyPerHour: r.failureFrequency, capacityAvailability: r.capacity };
 }
 
-function componentRows(items: ComponentInstances[], totalRate: number): ComponentRow[] {
+function componentRows(items: ComponentInstances[], totalRate: number, subhealthOf: (ci: ComponentInstances) => ReturnType<typeof subhealthUnit> | undefined): ComponentRow[] {
   return items
     .map((ci) => ({
       id: ci.component.id,
@@ -357,7 +370,7 @@ function componentRows(items: ComponentInstances[], totalRate: number): Componen
       mttrManualHours: ci.repair.manualMttrH,
       autoCoverage: isDual(ci.repair) ? ci.repair.coverage : undefined,
       autoSuccess: isDual(ci.repair) ? ci.repair.successProbability : undefined,
-      subhealthProbability: ci.subhealth ? subhealthUnit(ci.lambda, ci.repair, ci.subhealth).pSubhealthGivenNotDown : undefined,
+      subhealthProbability: subhealthOf(ci)?.pSubhealthGivenNotDown,
       subhealthPerformance: ci.subhealth?.performance,
       subhealthPolicy: ci.subhealth?.policy,
       confidence: ci.component.failure.provenance?.confidence,
@@ -389,16 +402,31 @@ function nodeLambda(items: ComponentInstances[], counts: Counts): number {
     .reduce((a, ci) => a + (ci.lambda * ci.total) / counts.nodes, 0);
 }
 
-export function evaluateScenario(s: Scenario): EvaluationResult {
+export function evaluateScenario(s: Scenario): EvaluationResult;
+export function evaluateScenario(s: Scenario, opts: { structure: false }): WorkloadEvaluation;
+export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions): EvaluationResult | WorkloadEvaluation;
+export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}): EvaluationResult | WorkloadEvaluation {
+  const withStructure = opts.structure !== false;
   const warnings: string[] = [];
   const formulas: Record<string, string> = {};
   const counts = computeCounts(s);
   const built = buildStructure(s, counts);
   const root = built.root;
-  const result = evalRbd(root);
+  const result = withStructure ? evalRbd(root) : undefined;
   const items = built.items;
   const hardwareRate = interruptionRatePerHour(items);
-  const components = componentRows(items, hardwareRate);
+  // the unit-level sub-health chain is solved once per class (component rows, straggler law and isolation rate share it)
+  const subhealthCache = new Map<ComponentInstances, ReturnType<typeof subhealthUnit>>();
+  const subhealthOf = (ci: ComponentInstances) => {
+    if (!ci.subhealth) return undefined;
+    let r = subhealthCache.get(ci);
+    if (!r) {
+      r = subhealthUnit(ci.lambda, ci.repair, ci.subhealth);
+      subhealthCache.set(ci, r);
+    }
+    return r;
+  };
+  const components = componentRows(items, hardwareRate, subhealthOf);
 
   // v2: sub-health at unit level (straggler law, isolation interruptions) and repair-path accounting
   let pNotSlowed = 1;
@@ -408,7 +436,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
   for (const ci of items) {
     if (!ci.subhealth) continue;
     anySubhealth = true;
-    const r = subhealthUnit(ci.lambda, ci.repair, ci.subhealth);
+    const r = subhealthOf(ci)!;
     pNotSlowed *= Math.pow(1 - r.pSubhealthGivenNotDown, ci.total);
     isolationRate += r.isolationFrequency * ci.total;
     minPerformance = Math.min(minPerformance, ci.subhealth.performance);
@@ -419,8 +447,8 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
   const lambdaWeighted = items.reduce((a, ci) => a + ci.lambda * ci.total, 0);
   const humanFraction = lambdaWeighted > 0 ? items.reduce((a, ci) => a + ci.lambda * ci.total * repairHumanFraction(ci.repair), 0) / lambdaWeighted : 1;
 
-  const comp = compensationWaterfall(root);
-  const system: SystemKpis = {
+  const comp = withStructure ? compensationWaterfall(root) : undefined;
+  const system: SystemKpis | undefined = result && comp ? {
     availability: result.availability,
     capacityAvailability: result.capacity,
     unavailability: result.unavailability,
@@ -442,7 +470,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     autoDowntimeShare: result.autoDowntimeShare,
     humanFraction,
     approximate: !!result.approximate,
-  };
+  } : undefined;
   formulas.availability = 'A_sys = Π A_i (series); k-of-n: Σ_{j≤n−k} C(n,j) u^j (1−u)^{n−j}, u = λ·MTTR/(1+λ·MTTR); parallel: 1 − Π(1−A_i)';
   formulas.mtbf = 'MTBF = A_sys / ν_sys, ν_sys = steady-state system failure frequency; equivalent MTTR = (1 − A_sys)/ν_sys';
   formulas.measures = 'original (原始): every unit fault is an outage repaired manually, λ_o = λ + λ_sh, E[R_o] = (λT_m + λ_sh D)/(λ + λ_sh), redundancy removed; compensated (补偿后): redundancy, switchover, automatic recovery and the sub-health policy as configured; waterfall enables them in that order';
@@ -453,7 +481,7 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
   const recoveryModel = resolveRecovery(s);
   const assumptions = [...s.assumptions, ...built.notes, 'failures of different components are independent (common cause only through declared β factors)', 'closed forms assume exponential lifetimes and repairs; non-exponential inputs need the Monte Carlo module'];
   if (anySubhealth) assumptions.push('job-level sub-health uses the straggler law with the lowest performance factor among sub-healthy classes (conservative)');
-  if (system.approximate) warnings.push('a first-order switchover correction or a reduced repair model was used in at least one block (see block notes)');
+  if (system?.approximate) warnings.push('a first-order switchover correction or a reduced repair model was used in at least one block (see block notes)');
 
   let training: TrainingKpis | undefined;
   let inference: InferenceKpis | undefined;
@@ -558,7 +586,9 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     const product = Number.isFinite(mtbiEventS) ? Math.max(0, aRun * (tauS / (tauS + deltaS)) * (1 - recomputeEffective / mtbiEventS)) : tauS / (tauS + deltaS);
     const head = headlineGoodput(fo, renewal);
     if (head.model === 'exact-renewal') warnings.push(`first-order goodput flags ${fo.validity}: the headline uses the exact renewal model (${(renewal * 100).toFixed(2)} % vs first-order ${(fo.goodput * 100).toFixed(2)} %)`);
-    const pool = findBlock(result, 'node-pool');
+    // P_blocked = unavailability of the hot-spare node pool; without the full structure evaluation only that block is solved
+    const poolBlock = result ? undefined : listBlocks(root).find((b) => b.id === 'node-pool');
+    const pool = result ? findBlock(result, 'node-pool') : poolBlock ? evalRbd(poolBlock) : undefined;
     const blocked = pool ? pool.unavailability : 0;
     const effective = head.goodput * (1 - blocked) * performanceFactor * (1 - localLossFraction) * (1 - overheadFraction);
     smallParameter = fo.smallParameter;
@@ -765,8 +795,8 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     if (w.spareReplicas < kReq) warnings.push(`configured spare replicas (${w.spareReplicas}) below the ${kReq} needed for the ${(w.capacityTarget * 100).toFixed(3)} % capacity target`);
   }
 
-  const imp = importance(root);
-  const cs = cutSets(root, 2000);
+  const imp = withStructure ? importance(root) : undefined;
+  const cs = withStructure ? cutSets(root, 2000) : undefined;
   const stageNames = new Set(recoveryModel.pipeline ? recoveryModel.pipeline.stages.map((st) => st.name) : ['detect', 'localize', 'remediate', 'restart', 'load']);
   const checklist = designReviewChecklist(s, {
     smallParameter,
@@ -781,7 +811,9 @@ export function evaluateScenario(s: Scenario): EvaluationResult {
     anyFailslow: items.some((ci) => !!ci.subhealth),
     monetised: s.costs.pricePerGpuHour > 0,
   });
-  if (listBlocks(root).length > 400) warnings.push('large structure: importance measures evaluated for every block may be slow');
+  if (withStructure && listBlocks(root).length > 400) warnings.push('large structure: importance measures evaluated for every block may be slow');
 
-  return { scenarioName: s.meta.name, counts, structure: { root, result, notes: built.notes }, system, components, training, inference, spares, importance: imp, cutSets: cs, checklist, assumptions, warnings, formulas };
+  const workload: WorkloadEvaluation = { scenarioName: s.meta.name, counts, components, training, inference, spares, checklist, assumptions, warnings, formulas };
+  if (!withStructure || !result || !system || !imp || !cs) return workload;
+  return { ...workload, structure: { root, result, notes: built.notes }, system, importance: imp, cutSets: cs };
 }

@@ -530,7 +530,7 @@ export function applyMechanisms(s: Scenario, ids: string[], parameters: Record<s
 }
 
 export function mechanismValues(s: Scenario): MechanismValues {
-  const r = evaluateScenario(s).training;
+  const r = evaluateScenario(s, { structure: false }).training;
   if (!r) throw new Error('mechanism attribution needs a training workload');
   return { delivered: r.deliveredGoodput, effective: r.effectiveGoodput, aOp: r.operationalAvailability, mtbiHours: r.mtbiHours, recoveryS: r.recoveryS };
 }
@@ -541,7 +541,14 @@ const factorial = (n: number): number => (n < 2 ? 1 : n * factorial(n - 1));
  * Single, last-added and exact Shapley gains of the selected players (closed forms, all 2^n coalitions).
  * Players without an `apply` are ignored; a player whose requirement is absent from the coalition contributes 0 there.
  */
-export function mechanismReport(s: Scenario, players: string[] = DEFAULT_PLAYERS, opts: { metric?: AttributionMetric; parameters?: Record<string, Record<string, number>> } = {}): MechanismReport {
+export interface MechanismReportOptions {
+  metric?: AttributionMetric;
+  parameters?: Record<string, Record<string, number>>;
+  /** called about 64 times over the enumeration with the coalitions evaluated so far */
+  onProgress?: (done: number, total: number) => void;
+}
+
+export function mechanismReport(s: Scenario, players: string[] = DEFAULT_PLAYERS, opts: MechanismReportOptions = {}): MechanismReport {
   const metric = opts.metric ?? 'delivered';
   const ids = players.filter((id) => !!mechanismById(id).apply);
   if (ids.length > 12) throw new Error('at most 12 players (4096 coalitions)');
@@ -549,9 +556,11 @@ export function mechanismReport(s: Scenario, players: string[] = DEFAULT_PLAYERS
   const total = 1 << n;
   const base = stripMechanisms(s, ids);
   const values: MechanismValues[] = new Array(total);
+  const step = Math.max(1, Math.floor(total / 64));
   for (let mask = 0; mask < total; mask++) {
     const sel = ids.filter((_, i) => mask & (1 << i));
     values[mask] = mechanismValues(applyMechanisms(base, sel, opts.parameters));
+    if (opts.onProgress && ((mask + 1) % step === 0 || mask + 1 === total)) opts.onProgress(mask + 1, total);
   }
   const v = (mask: number) => values[mask][metric];
   const baseline = values[0];

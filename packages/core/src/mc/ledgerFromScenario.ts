@@ -82,7 +82,7 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
 }
 
 export function buildLedgerRun(s: Scenario, opts: LedgerRunOptions = {}): LedgerRun {
-  const ev = evaluateScenario(s);
+  const ev = evaluateScenario(s, { structure: false });
   if (!ev.training) throw new Error('the ledger simulation needs a training workload');
   const tr = ev.training;
   return {
