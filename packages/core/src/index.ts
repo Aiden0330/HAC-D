@@ -21,4 +21,6 @@ export * from './mechanisms/chain.js';
 export * from './mechanisms/index.js';
 export * from './mechanisms/plan.js';
 export * from './sdc/index.js';
+export * from './math/stats.js';
+export * from './fit/incidents.js';
 export * from './library/index.js';

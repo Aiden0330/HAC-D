@@ -80,4 +80,6 @@ What remains different: the reference's 54-event granularity (HAC-D aggregates t
 
 ## 6. Mechanism contributions to A_op and the per-event catalog (2026-10-12)
 
+See also `docs/TOOL_COMPARISON.md` (2026-10-12): the three-way comparison with the reference engine's versions V1–V4 and with ReMAP, including the exact reproduction of the V1 closed form (`scripts/ref-compare-v1.ts`).
+
 Single-mechanism contributions to operational availability agree with the reference within 0.01 points at 10k–500k cards (replay +3.54 / +3.54, process +4.49 / +4.49, elasticity +6.67 / +6.67, interruption detection +0.42 / +0.42 at 500k; full tables in `docs/MECHANISM_CONTRIBUTIONS.md`). Combinations need per-event applicability: the four-source example's fractions are independent within a source and over-credit the six-mechanism set (A_op 99.30 vs the reference 99.10 at 100k, 96.60 vs 95.67 at 500k); the new `ref-catalog-100k` example (54 classes with the catalog's own flags) reproduces the reference combined scenario (99.100 / 95.656 A_op; delivered 94.79 / 82.63 vs 94.72 ± 0.19 / 82.79 ± 0.34).

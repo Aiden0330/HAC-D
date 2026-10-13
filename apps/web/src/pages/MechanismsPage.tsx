@@ -161,11 +161,12 @@ export function MechanismsPage() {
               {plan.plan ? (
                 <Kpi label={t('mechanisms.planChosen')} value={plan.plan.ids.join(' + ') || '∅'} note={`${t('mechanisms.effort')} ${plan.plan.effort} · ${t('mechanisms.planValue')} ${fmtMetric(plan.plan.value)} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.plan.derated)} · ${t('mechanisms.planMargin')} ${(plan.plan.margin * 100).toFixed(2)} pt`} hero />
               ) : (
-                <Kpi label={t('mechanisms.planNone')} value={fmtMetric(plan.maxValue)} note={`${t('mechanisms.planMax')} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.maxDerated)}`} tone="bad" hero />
+                <Kpi label={t('mechanisms.planNone')} value={fmtMetric(plan.maxValue)} note={`${t('mechanisms.planMax')} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.maxDerated)}${plan.bounds.provenInfeasible ? ` · ${t('mechanisms.planProven')}` : ''}`} tone="bad" hero />
               )}
               <Kpi label={t('mechanisms.planNecessary')} value={plan.necessary.join(', ') || '—'} note={`${plan.feasibleCount} / ${plan.coalitions.length} ${t('mechanisms.planFeasible')}`} />
               <Kpi label={t('mechanisms.baseline')} value={fmtMetric(plan.baseline[plan.metric])} note={`${t('mechanisms.planTarget')} ${fmtMetric(plan.target)}`} />
-              {plan.verification && <Kpi label={t('mechanisms.planVerification')} value={`${t('mechanisms.planPTarget')} ${fmtPct(plan.verification.pAtLeastTarget, 1)}`} note={`${t('mechanisms.planMean')} ${fmtPct(plan.verification.mean, 2)} ± ${fmtPct(plan.verification.ci95, 2)} · P5 ${fmtPct(plan.verification.p05, 1)} · ${plan.verification.trials} ${t('simulate.trials')}`} tone={plan.verification.passes ? undefined : 'warn'} />}
+              <Kpi label={t('mechanisms.planBound')} value={fmtMetric(plan.bounds.finiteWindow)} note={`${t('mechanisms.planBoundNote')} ${fmtPct(plan.bounds.dutyCycle, 3)} · ${plan.bounds.bestIds.join(' + ') || '∅'}`} tone={plan.bounds.provenInfeasible ? 'bad' : undefined} />
+              {plan.verification && <Kpi label={t('mechanisms.planVerification')} value={`${t('mechanisms.planPTarget')} ${fmtPct(plan.verification.pAtLeastTarget, 1)} · ${t('mechanisms.verdict_' + plan.verification.verdict)}`} note={`${t('mechanisms.wilson')} ${fmtPct(plan.verification.pLow, 1)} – ${fmtPct(plan.verification.pHigh, 1)} · ${t('mechanisms.planMean')} ${fmtPct(plan.verification.mean, 2)} ± ${fmtPct(plan.verification.ci95, 2)} · P5 ${fmtPct(plan.verification.p05, 1)} · ${plan.verification.trials} ${t('simulate.trials')}`} tone={plan.verification.verdict === 'supported' ? undefined : plan.verification.verdict === 'below' ? 'bad' : 'warn'} />}
             </div>
             <div className="grid cols-2">
               <Card title={t('mechanisms.planPareto')}>

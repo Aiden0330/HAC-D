@@ -43,13 +43,25 @@ def mixed_renewal(tau_s, delta_s, lam_rb_per_h, R_rb_s, lam_p_per_h, R_p_s):
     }
 
 CHAIN_ORDER = ["predict", "netfail", "replay", "hotswap", "elastic", "process"]
+DELAYED_RUNGS = ["replay", "hotswap", "elastic", "process"]
 
-def chain(detect_s, global_s, params, applicable):
+def rung_order(order):
+    """v3.5: the given detection-delayed rungs first (unknown / duplicate names ignored), then the missing ones in the default order."""
+    out = []
+    for r in (order or []):
+        if r in DELAYED_RUNGS and r not in out:
+            out.append(r)
+    for r in DELAYED_RUNGS:
+        if r not in out:
+            out.append(r)
+    return ["predict", "netfail"] + out
+
+def chain(detect_s, global_s, params, applicable, order=None):
     """Enumerate predict → netfail → replay → hotswap → elastic → process → global recursively (spec §19 and §19.1).
     predict: recall r turns the event into a planned migration (pause f + t_mig, no detection delay, no rollback); a miss
     costs nothing. netfail: absorbed inside the collective (pause f + t_nf, no detection delay, no rollback). hotswap:
     pause d + f + t_hs, no rollback. A rung's applicable fraction must be given explicitly (missing = 0)."""
-    rungs = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in CHAIN_ORDER if params.get(kind) and applicable.get(kind, 0.0) > 0]
+    rungs = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in rung_order(order) if params.get(kind) and applicable.get(kind, 0.0) > 0]
     acc = {"pPredict": 0.0, "pNetfail": 0.0, "pReplay": 0.0, "pHotswap": 0.0, "pElastic": 0.0, "pProcess": 0.0, "pGlobal": 0.0,
            "pRollback": 0.0, "meanPauseS": 0.0, "pauseRollbackS": 0.0, "pauseNoRollbackS": 0.0, "localLossS": 0.0}
     def terminal(kind, p, pause, rollback, local):
@@ -106,10 +118,10 @@ def sdc_delivery(T, nu, D, Rc, g, U):
     J = (x[:-1] * e[:-1] - x[1:] * e[1:]) + (e[:-1] - e[1:]) / nu - x[:-1] * I0
     I1 = J / h
     W0 = I0 - I1
-    def solve(base):
+    def solve_grid(base_idx):
         m = np.zeros(n + 1)
         for i in range(n + 1):
-            s = base(x[i])
+            s = base_idx(i)
             jmax = i - C
             if jmax > 0:
                 # m[i-C-j] for j = 0..jmax-1 → indices i-C, i-C-1, ..., 1 ; m[i-C-j-1] → i-C-1, ..., 0
@@ -117,12 +129,42 @@ def sdc_delivery(T, nu, D, Rc, g, U):
                 lower = m[i - C - jmax : i - C][::-1]
                 s += float(np.dot(upper, W0[:jmax]) + np.dot(lower, I1[:jmax]))
             m[i] = s
-        return m[n]
+        return m
+    def solve(base):
+        return solve_grid(lambda i: base(x[i]))[n]
+    def simpson(q, h):
+        """composite Simpson over the grid values q (odd interval counts end with the 3/8 rule)"""
+        m = len(q) - 1
+        if m <= 0:
+            return 0.0
+        if m == 1:
+            return h * (q[0] + q[1]) / 2
+        if m % 2 == 0:
+            return h / 3 * (q[0] + q[-1] + 4 * q[1:-1:2].sum() + 2 * q[2:-1:2].sum())
+        head = simpson(q[: m - 2], h) if m - 3 >= 0 else 0.0
+        return head + 3 * h / 8 * (q[m - 3] + 3 * q[m - 2] + 3 * q[m - 1] + q[m])
     clean = solve(lambda t: (1 - math.exp(-nu * t)) / nu)          # E[clean time in [0, t]]
     episodes = solve(lambda t: 1 - math.exp(-nu * t))                # E[# episodes started]
     discovered = solve(lambda t: (1 - math.exp(-nu * (t - D))) if t > D else 0.0)  # E[# discovered]
     delivered = (g * clean - U * episodes) / T
-    return {"delivered": delivered, "cleanTimeFraction": clean / T, "expectedEpisodes": episodes, "expectedDiscovered": discovered}
+    # v3.5 discard-all rule: F(t) = e^{-νt} g t + ∫_0^{t-c} ν e^{-νx} [g x − U + F(t − x − c)] dx (the window delivers only when it
+    # ends clean; an episode that starts at x and does not finish by t delivers nothing), same renewal recursion as above
+    # the work before the first episode counts only if the remaining window ends clean: F(t) = e^{-νt} g t
+    # + ∫_0^{t-c} ν e^{-νx} [(g x − U)·Pc(t − x − c) + F(t − x − c)] dx with Pc(t) = e^{-νt} + ∫ ν e^{-νx} Pc(t − x − c) dx
+    pc = solve_grid(lambda i: math.exp(-nu * x[i]))
+    def analytic_idx(i):
+        t = x[i]
+        base = math.exp(-nu * t) * g * t
+        j = i - C
+        if j <= 0:
+            return base
+        xs = x[: j + 1]
+        q = nu * np.exp(-nu * xs) * (g * xs - U) * pc[j::-1]
+        return base + simpson(q, h)
+    discard = solve_grid(analytic_idx)[n] / T
+    p_clean_end = pc[n]
+    return {"delivered": delivered, "cleanTimeFraction": clean / T, "expectedEpisodes": episodes, "expectedDiscovered": discovered,
+            "deliveredDiscardAll": discard, "pUnresolvedAtEnd": 1 - p_clean_end}
 
 def p_clear(lam_rb_per_h, L_h):
     lam, L = mpf(lam_rb_per_h), mpf(L_h)
@@ -168,12 +210,20 @@ for cid, (T, nu, D, Rc, g, U) in {
 }.items():
     cases.append({"id": cid, "group": "sdc", "inputs": {"horizonH": T, "nuPerWallHour": nu, "fallbackDelayH": D, "episodePauseH": Rc, "cleanGoodput": g, "preEpisodeLossH": U}, "expected": sdc_delivery(T, nu, D, Rc, g, U), "tolerance": {"rel": 2e-6}})
 
+# v3.5 configurable order of the detection-delayed rungs
+for cid, (d, g, params, app, order) in {
+    "chain.order_process_first": (12.5, 252, P, {"replay": 1, "process": 1, "elastic": 1}, ["process", "replay", "elastic"]),
+    "chain.order_elastic_hotswap_partial": (12.5, 252, P32, {"predict": 0.3, "netfail": 0.2, "replay": 0.831, "hotswap": 1, "elastic": 1, "process": 1}, ["elastic", "hotswap"]),
+    "chain.order_unknown_names_ignored": (60, 300, P, {"replay": 0.5, "process": 0.5, "elastic": 0.5}, ["global", "process", "process"]),
+}.items():
+    cases.append({"id": cid, "group": "chain", "inputs": {"detectS": d, "globalS": g, "params": params, "applicable": app, "order": order}, "expected": chain(d, g, params, app, order), "tolerance": {"rel": 1e-12, "abs": 1e-15}})
+
 for cid, (lam, L) in {"pclear.100k": (1 / 3, 304 / 3600), "pclear.500k": (1 / 0.6, 304 / 3600), "pclear.tiny": (1e-4, 304 / 3600)}.items():
     cases.append({"id": cid, "group": "pclear", "inputs": {"rollbackRatePerHour": lam, "periodH": L}, "expected": {"p": p_clear(lam, L)}, "tolerance": {"rel": 1e-9}})
 
 out = {
-    "version": "3.0",
-    "generated": "2026-10-10",
+    "version": "3.5",
+    "generated": "2026-10-13",
     "tool": "python/mpmath (mp.dps=30) quadrature; renewal equations on a grid with exact exponential kernel",
     "spec": "docs/MODEL_REFERENCE.md §19 (mechanism chain, mixed renewal), §20 (silent-corruption delivery)",
     "cases": cases,

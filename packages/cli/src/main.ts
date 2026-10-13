@@ -23,6 +23,7 @@ import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
   mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY, planToTarget,
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
+  rateFromCounts, unitRateFromCounts,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
@@ -181,6 +182,11 @@ switch (cmd) {
       console.log(`loss budget ${pct(a.goodput.lossBudget)} · current ${pct(a.goodput.current.loss)}`);
       console.log(`keep R, tighten λ: MTBI ≥ ${formatDuration(a.goodput.fixRecovery.requiredMtbiS)} (×${a.goodput.fixRecovery.improvementFactor.toFixed(2)})`);
       console.log(`keep λ, tighten R: R ≤ ${a.goodput.fixRate.requiredRecoveryS > 0 ? formatDuration(a.goodput.fixRate.requiredRecoveryS) : 'infeasible'}`);
+    }
+    if (a.lossBudget) {
+      const lb = a.lossBudget;
+      console.log(`\n## Loss budget over the window ledger (${lb.method}): allowed ${pct(lb.totalAllowed)} = ${lb.totalAllowedHours.toFixed(1)} h of ${lb.windowHours} h · current ${pct(lb.totalCurrent)} = ${lb.totalCurrentHours.toFixed(1)} h`);
+      printTable([['line', 'current', 'weight', 'allowed', 'excess', 'levers'], ...lb.rows.map((r) => [r.line, `${pct(r.current)} (${r.currentHours.toFixed(1)} h)`, pct(r.weight, 1), `${pct(r.allowed)} (${r.allowedHours.toFixed(1)} h)`, `${r.excess >= 0 ? '+' : ''}${(r.excess * 100).toFixed(2)} pt (${r.excessHours.toFixed(1)} h)`, r.lever])]);
     }
     if (a.sdc) {
       console.log(`delivered basis: current ${pct(a.sdc.currentDelivered)} → target ${pct(a.sdc.deliveredTarget)}; delivery factor ${a.sdc.factor.toFixed(4)}; effective target ${pct(a.sdc.effectiveTarget)}; reachable by hardware alone ${pct(a.sdc.maxDeliveredByHardware)} (${a.sdc.feasibleByHardware ? 'feasible' : 'NOT feasible'})`);
@@ -348,7 +354,7 @@ switch (cmd) {
       break;
     }
     const L = r.summary;
-    console.log(`${r.disagrees ? 'DISAGREES' : 'agrees'} with closed form: delivered ${pct(L.delivered.mean, 3)} ± ${pct(L.delivered.ci95, 3)} vs ${pct(r.closedForm.delivered, 3)}; A_op ${pct(L.operationalAvailability.mean, 3)} vs ${pct(r.closedForm.operationalAvailability, 3)}${L.pAtLeastTarget !== undefined ? `; P(≥ ${pct(L.target ?? 0, 0)}) ${pct(L.pAtLeastTarget, 1)}` : ''}; P(dirty at end) ${pct(L.pUnresolvedAtEnd, 1)}`);
+    console.log(`${r.disagrees ? 'DISAGREES' : 'agrees'} with closed form: delivered ${pct(L.delivered.mean, 3)} ± ${pct(L.delivered.ci95, 3)} vs ${pct(r.closedForm.delivered, 3)}; A_op ${pct(L.operationalAvailability.mean, 3)} vs ${pct(r.closedForm.operationalAvailability, 3)}${L.pAtLeastTarget !== undefined ? `; P(≥ ${pct(L.target ?? 0, 0)}) ${pct(L.pAtLeastTarget, 1)}` : ''}; P(unresolved at end) ${pct(L.pUnresolvedAtEnd, 1)}${L.pAtLeastTargetInterval ? `; Wilson 95 % [${pct(L.pAtLeastTargetInterval.low, 1)}, ${pct(L.pAtLeastTargetInterval.high, 1)}]` : ''}; CI = Student-t 95 %`);
     printTable([
       ['ledger share', 'Monte Carlo', 'closed form'],
       ['delivered', pct(L.ledger.delivered, 3), pct(r.closedForm.ledger.delivered, 3)],
@@ -376,17 +382,35 @@ switch (cmd) {
       out(p);
       break;
     }
-    console.log(`target ${pct(p.target)} (${p.metric}); baseline ${pct(p.baseline[p.metric])}; ${p.feasibleCount}/${p.coalitions.length} feasible coalitions; all on: ${pct(p.maxValue)} nominal / ${pct(p.maxDerated)} derated`);
+    console.log(`target ${pct(p.target)} (${p.metric}); baseline ${pct(p.baseline[p.metric])}; ${p.feasibleCount}/${p.coalitions.length} feasible coalitions; all on: ${pct(p.maxValue)} nominal / ${pct(p.maxDerated)} derated; no-fault bound ${pct(p.bounds.finiteWindow, 3)} (duty cycle ${pct(p.bounds.dutyCycle, 3)}, ${p.bounds.bestIds.join(' + ') || 'baseline'})${p.bounds.provenInfeasible ? ' → PROVEN INFEASIBLE by the checkpoint saves' : ''}`);
     if (p.plan) console.log(`plan: ${p.plan.ids.join(' + ') || '(nothing needed)'} · effort ${p.plan.effort} · ${pct(p.plan.value)} nominal / ${pct(p.plan.derated)} derated · necessary: ${p.necessary.join(', ') || '—'}`);
     printTable([['coalition (Pareto front)', 'effort', 'nominal', 'derated', 'margin'], ...p.pareto.map((c) => [c.ids.join(' + ') || '∅', String(c.effort), pct(c.value), pct(c.derated), `${(c.margin * 100).toFixed(2)} pt${c.feasible ? ' ✓' : ''}`])]);
     if (p.scan && p.scan.recoverySeconds.length) {
       console.log(`\n## Scan: ${p.scan.basis}`);
       printTable([['recovery s \\ coverage', ...p.scan.coverages.map((q) => pct(q, 1))], ...p.scan.recoverySeconds.map((sec) => [String(sec), ...p.scan!.coverages.map((q) => pct(p.scan!.cells.find((c) => c.coverage === q && c.recoverySeconds === sec)!.value))])]);
     }
-    if (p.verification) console.log(`verification: mean ${pct(p.verification.mean)} ± ${pct(p.verification.ci95)}, P5 ${pct(p.verification.p05)}, P(window ≥ target) ${pct(p.verification.pAtLeastTarget, 1)} → ${p.verification.passes ? 'passes' : 'FAILS'} at confidence ${pct(p.verification.confidence, 0)}`);
+    if (p.verification) console.log(`verification: mean ${pct(p.verification.mean)} ± ${pct(p.verification.ci95)} (Student-t), P5 ${pct(p.verification.p05)}, P(window ≥ target) ${pct(p.verification.pAtLeastTarget, 1)} [Wilson ${pct(p.verification.pLow, 1)}–${pct(p.verification.pHigh, 1)}] vs confidence ${pct(p.verification.confidence, 0)} → ${p.verification.verdict.toUpperCase()}`);
     for (const n of p.notes) console.log(`- ${n}`);
     break;
   }
+  case 'rate': {
+    const events = Number(files[0]);
+    const exposure = flag('units') && flag('hours') ? undefined : Number(files[1]);
+    if (!Number.isInteger(events) || events < 0 || (exposure === undefined && !(flag('units') && flag('hours'))) || (exposure !== undefined && !(exposure > 0))) {
+      console.error('usage: hacd rate <events> <exposureUnitHours> [--confidence 0.95] [--json]   or   hacd rate <events> --units N --hours H [--confidence 0.95] [--json]');
+      process.exit(1);
+    }
+    const confidence = flag('confidence') ? Number(flag('confidence')) : 0.95;
+    const r = exposure !== undefined ? rateFromCounts(events, exposure, confidence) : unitRateFromCounts(events, Number(flag('units')), Number(flag('hours')), confidence);
+    if (json) {
+      out(r);
+      break;
+    }
+    console.log(`${r.events} events over ${r.exposureHours.toExponential(3)} unit-hours: λ ${r.ratePerHour.toExponential(4)} /h = ${r.fit.toFixed(2)} FIT, MTBF ${Number.isFinite(r.mtbfHours) ? formatDuration(r.mtbfHours * 3600) : '∞'}`);
+    console.log(`${(r.confidence * 100).toFixed(1)} % ${r.method === 'garwood-exact' ? 'Garwood interval' : 'one-sided upper bound'}: [${r.lower.fit.toFixed(2)}, ${r.upper.fit.toFixed(2)}] FIT = [${r.lower.ratePerHour.toExponential(4)}, ${r.upper.ratePerHour.toExponential(4)}] /h`);
+    for (const n of r.notes) console.log(`- ${n}`);
+    break;
+  }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | rate <events> <unitHours> | schema> [--json]');
 }

@@ -10,6 +10,7 @@ import type { Scenario } from '../scenario/schema.js';
 import { evaluateScenario } from '../scenario/evaluate.js';
 import { cloneScenario } from '../scenario/analysis.js';
 import { buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, type LedgerReplication } from '../mc/ledgerFromScenario.js';
+import { proportionEstimate, proportionVerdict } from '../math/stats.js';
 import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, mechanismById, applyMechanisms, stripMechanisms, mechanismValues, type AttributionMetric, type MechanismValues } from './index.js';
 
 export interface DerateSpec {
@@ -53,6 +54,22 @@ export interface PlanCoalition {
   feasible: boolean;
   /** value − target (nominal) */
   margin: number;
+  /** v3.5 no-fault upper bound of the value with this coalition's checkpoint settings (finite window); 1 for A_op */
+  bound: number;
+}
+
+/**
+ * v3.5 checkpoint bounds (docs/MODEL_REFERENCE.md §22.2): without any fault the window still pays the saves, so goodput
+ * ≤ (⌊S/L⌋τ + min(S mod L, τ))/S over a window of S seconds (L = τ + δ), and ≤ τ/L in the long run (the duty cycle). In
+ * HAC-D's models step recovery never skips a save, so the bound holds for every mechanism set with these settings.
+ */
+export function checkpointBounds(tauS: number, deltaS: number, horizonH: number): { dutyCycle: number; finiteWindow: number } {
+  const L = tauS + deltaS;
+  if (!(L > 0) || !(tauS > 0)) return { dutyCycle: 1, finiteWindow: 1 };
+  const S = horizonH * 3600;
+  if (!(S > 0)) return { dutyCycle: tauS / L, finiteWindow: tauS / L };
+  const full = Math.floor(S / L);
+  return { dutyCycle: tauS / L, finiteWindow: (full * tauS + Math.min(S - full * L, tauS)) / S };
 }
 
 export interface PlanScanCell {
@@ -64,11 +81,18 @@ export interface PlanScanCell {
 export interface PlanVerification {
   trials: number;
   mean: number;
+  /** Student-t 95 % half-width of the mean */
   ci95: number;
   p05: number;
   pAtLeastTarget: number;
+  /** v3.5 Wilson 95 % bounds of P(window ≥ target) */
+  pLow: number;
+  pHigh: number;
   confidence: number;
+  /** point estimate ≥ confidence */
   passes: boolean;
+  /** supported: the Wilson lower bound reaches the confidence; below: the upper bound misses it; uncertain: more windows needed */
+  verdict: 'supported' | 'uncertain' | 'below';
 }
 
 export interface MechanismPlan {
@@ -87,6 +111,8 @@ export interface MechanismPlan {
   /** the best value reachable with every player on */
   maxValue: number;
   maxDerated: number;
+  /** v3.5 no-fault bounds of the best checkpoint settings among the coalitions: a target above the finite-window bound is proven infeasible */
+  bounds: { bestIds: string[]; dutyCycle: number; finiteWindow: number; provenInfeasible: boolean };
   derate: DerateSpec | null;
   scan?: { coverages: number[]; recoverySeconds: number[]; cells: PlanScanCell[]; basis: string };
   verification?: PlanVerification;
@@ -140,10 +166,12 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
   const step = Math.max(1, Math.floor(total / 64));
   for (let mask = 0; mask < total; mask++) {
     const sel = ids.filter((_, i) => mask & (1 << i));
-    const value = mechanismValues(applyMechanisms(base, sel, nominalParams))[metric];
+    const nominal = mechanismValues(applyMechanisms(base, sel, nominalParams));
+    const value = nominal[metric];
     const derated = derate ? mechanismValues(applyMechanisms(base, sel, deratedParams))[metric] : value;
     const effort = sel.reduce((a, id) => a + effortOf(id), 0);
-    coalitions.push({ ids: sel, effort, value, derated, feasible: value >= target && derated >= target, margin: value - target });
+    const bound = metric === 'aOp' ? 1 : checkpointBounds(nominal.tauS, nominal.deltaS, nominal.horizonH).finiteWindow;
+    coalitions.push({ ids: sel, effort, value, derated, feasible: value >= target && derated >= target, margin: value - target, bound });
     if (opts.onProgress && ((mask + 1) % step === 0 || mask + 1 === total)) opts.onProgress(mask + 1, total, 'coalitions');
   }
   const feasible = coalitions.filter((c) => c.feasible);
@@ -155,7 +183,14 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
     .filter((c) => !coalitions.some((o) => o !== c && o.effort <= c.effort && o.value >= c.value && (o.effort < c.effort || o.value > c.value)))
     .sort((a, b) => a.effort - b.effort);
   const all = coalitions[total - 1];
-  if (!plan) notes.push(`no coalition of ${ids.join(', ')} reaches ${(target * 100).toFixed(1)} % (best ${(all.value * 100).toFixed(2)} % nominal, ${(all.derated * 100).toFixed(2)} % derated with every player on): raise detection coverage or shorten recovery beyond the library targets (see the scan), or change the hardware / checkpoint parameters`);
+  // no-fault bounds: the coalition with the best checkpoint settings caps what any mechanism set can deliver
+  const bestBound = coalitions.reduce((a, c) => (c.bound > a.bound ? c : a), coalitions[0]);
+  const bestNominal = mechanismValues(applyMechanisms(base, bestBound.ids, nominalParams));
+  const bb = metric === 'aOp' ? { dutyCycle: 1, finiteWindow: 1 } : checkpointBounds(bestNominal.tauS, bestNominal.deltaS, bestNominal.horizonH);
+  const provenInfeasible = target > bb.finiteWindow + 1e-12;
+  const bounds = { bestIds: bestBound.ids, dutyCycle: bb.dutyCycle, finiteWindow: bb.finiteWindow, provenInfeasible };
+  if (provenInfeasible) notes.push(`proven infeasible: even without any fault the checkpoint saves cap the window at ${(bb.finiteWindow * 100).toFixed(3)} % (duty cycle τ/(τ+δ) = ${(bb.dutyCycle * 100).toFixed(3)} % with the best checkpoint settings, ${bestBound.ids.join(' + ') || 'baseline'}); the target ${(target * 100).toFixed(2)} % needs a longer interval or a shorter save (C-FAST, C-MEM, a different checkpoint design) before any fault-management mechanism can help`);
+  if (!plan) notes.push(`no coalition of ${ids.join(', ')} reaches ${(target * 100).toFixed(1)} % (best ${(all.value * 100).toFixed(2)} % nominal, ${(all.derated * 100).toFixed(2)} % derated with every player on)${provenInfeasible ? '' : ': not a proof of infeasibility (no-fault bound ' + (bb.finiteWindow * 100).toFixed(2) + ' %); raise detection coverage or shorten recovery beyond the library targets (see the scan), or change the hardware / checkpoint parameters'}`);
   else {
     notes.push(`cheapest feasible set: ${plan.ids.join(' + ') || '(none needed)'} at effort ${plan.effort}: ${(plan.value * 100).toFixed(2)} % nominal, ${(plan.derated * 100).toFixed(2)} % derated vs target ${(target * 100).toFixed(1)} %`);
     if (necessary.length) notes.push(`necessary (in every feasible set): ${necessary.join(', ')}`);
@@ -163,7 +198,7 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
     if (rejectedByDerate.length) notes.push(`${rejectedByDerate.length} coalition(s) meet the target nominally but not after derating the assumed parameters (coverage −${(derate!.coverageDelta * 100).toFixed(0)} pts, success −${(derate!.successDelta * 100).toFixed(0)} pts, times ×${derate!.timeFactor})`);
   }
   if (derate) notes.push('derating applies to the mechanism parameters of the library (targets and priors in the reference catalog); the scenario\'s own baseline values are not derated');
-  const out: MechanismPlan = { target, metric, players: ids, baseline, coalitions, feasibleCount: feasible.length, plan, necessary, pareto, maxValue: all.value, maxDerated: all.derated, derate, notes };
+  const out: MechanismPlan = { target, metric, players: ids, baseline, coalitions, feasibleCount: feasible.length, plan, necessary, pareto, maxValue: all.value, maxDerated: all.derated, bounds, derate, notes };
   if (opts.scan) {
     const grid = typeof opts.scan === 'object' ? opts.scan : { coverages: [0.9, 0.95, 0.99, 0.995, 1], recoverySeconds: [180, 120, 60, 30, 0] };
     const planIds = plan ? plan.ids : ids;
@@ -194,8 +229,10 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
     const sim = finishLedgerRun(run, summarizeLedger(rows, run.seed, run.target));
     const confidence = opts.verify.confidence ?? 0.9;
     const p = sim.summary.pAtLeastTarget ?? 0;
-    out.verification = { trials: opts.verify.trials, mean: sim.summary.delivered.mean, ci95: sim.summary.delivered.ci95, p05: sim.summary.delivered.p05, pAtLeastTarget: p, confidence, passes: p >= confidence };
-    notes.push(`ledger simulation of the plan (${opts.verify.trials} windows): mean ${(sim.summary.delivered.mean * 100).toFixed(2)} % ± ${(sim.summary.delivered.ci95 * 100).toFixed(2)}, P(window ≥ target) ${(p * 100).toFixed(1)} % ${p >= confidence ? '≥' : '<'} ${(confidence * 100).toFixed(0)} % confidence`);
+    const est = sim.summary.pAtLeastTargetInterval ?? proportionEstimate(Math.round(p * opts.verify.trials), opts.verify.trials);
+    const verdict = proportionVerdict(est, confidence);
+    out.verification = { trials: opts.verify.trials, mean: sim.summary.delivered.mean, ci95: sim.summary.delivered.ci95, p05: sim.summary.delivered.p05, pAtLeastTarget: p, pLow: est.low, pHigh: est.high, confidence, passes: p >= confidence, verdict };
+    notes.push(`ledger simulation of the plan (${opts.verify.trials} windows): mean ${(sim.summary.delivered.mean * 100).toFixed(2)} % ± ${(sim.summary.delivered.ci95 * 100).toFixed(2)} (Student-t), P(window ≥ target) ${(p * 100).toFixed(1)} % [Wilson ${(est.low * 100).toFixed(1)}–${(est.high * 100).toFixed(1)} %] vs ${(confidence * 100).toFixed(0)} % confidence: ${verdict}${verdict === 'uncertain' ? ' (more windows needed to decide)' : ''}`);
   }
   return out;
 }

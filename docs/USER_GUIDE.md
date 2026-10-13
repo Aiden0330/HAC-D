@@ -101,3 +101,23 @@ The Mechanisms page has its own scenario selector and defaults to the 54-event r
 
 ### Allocation methods and class weights (v3.3)
 The six methods differ only in how the job-level budget is split across classes; the KPI tiles are the same for every method. Equal, AGREE and feasibility coincide whenever every class has the same unit count, importance and feasibility weight (the reference examples), and minimum-effort and cost-optimal keep the current rates when the budget is already met; the page says which methods coincide. The "Class weights used by the methods" table lets you set the AGREE importance, the feasibility weight, the cost coefficients a and b, and mark classes as fixed; the values are saved in the scenario (`component.allocation`).
+
+## v3.5 additions (2026-10-13): from the comparison with the reference engine and ReMAP
+
+### Terminal rule of the silent-corruption window
+The Scenario page's silent-corruption policy has a **Terminal rule**: *keep the last clean checkpoint* (the audited review engine, default) or *discard the whole window if it ends unresolved* (the reference V4 and ReMAP legacy `delivery` rule). The Training page's silent-corruption card shows the rule, the delivered goodput under the other rule and P(unresolved at end); the ledger simulation applies the rule per window. The two rules are different metrics: never compare them as one number (`docs/MODEL_REFERENCE.md` §20.1).
+
+### Rung order
+The mechanism chain editor lists the detection-delayed rungs (replay, hot-swap, elastic, process) in the order they are tried; ↑ moves a rung earlier. Prediction and network failover always act first (§19.2).
+
+### Intervals and verdicts
+Simulation means now carry Student-t 95 % half-widths and type-7 quantiles; P(window ≥ target) and P(unresolved at end) carry Wilson intervals. The planner's verification says *supported* when the Wilson lower bound reaches the confidence, *below* when the upper bound misses it, *uncertain* otherwise (§21.1).
+
+### Loss budget on the Allocation page
+With a delivered target the Allocation page shows the loss budget over the window ledger: (1 − G*) × window split over the nine ledger lines proportionally to the current ledger, equally, or by custom weights, with current, allowed, excess and the levers that move each line (§7.1). `hacd allocate` prints the same table; `allocate_scenario` takes `lossMethod` and `lossWeights`.
+
+### Proof of infeasibility in the planner
+Every coalition carries its no-fault bound (the checkpoint saves alone cap the window at (⌊S/L⌋τ + min(S mod L, τ))/S); a target above the best bound is reported as *proven infeasible by the checkpoint saves* instead of "not found" (§22.5).
+
+### Failure rates from incident counts
+The component details carry *Rate from incident counts*: events over units × hours observed give the rate, FIT, MTBF and the exact Garwood interval (zero events: the one-sided upper bound −ln(1 − c)/E, used as the rate); *Use as measured rate* writes it into the class with provenance `measured` and the derivation. Also `hacd rate <events> <unitHours>` and the MCP tool `estimate_rate` (§23).

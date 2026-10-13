@@ -1,6 +1,6 @@
 {
- "version": "3.0",
- "generated": "2026-10-10",
+ "version": "3.5",
+ "generated": "2026-10-13",
  "tool": "python/mpmath (mp.dps=30) quadrature; renewal equations on a grid with exact exponential kernel",
  "spec": "docs/MODEL_REFERENCE.md \u00a719 (mechanism chain, mixed renewal), \u00a720 (silent-corruption delivery)",
  "cases": [
@@ -563,7 +563,9 @@
     "delivered": 0.6262516008398917,
     "cleanTimeFraction": 0.6611498988162753,
     "expectedEpisodes": 2.212101777455447,
-    "expectedDiscovered": 1.8543086154546828
+    "expectedDiscovered": 1.8543086154546828,
+    "deliveredDiscardAll": 0.4137118730373498,
+    "pUnresolvedAtEnd": 0.3580020127007556
    },
    "tolerance": {
     "rel": 2e-06
@@ -584,7 +586,9 @@
     "delivered": 0.24139274006324823,
     "cleanTimeFraction": 0.2963899847652541,
     "expectedEpisodes": 4.579580932604896,
-    "expectedDiscovered": 3.85757029815207
+    "expectedDiscovered": 3.85757029815207,
+    "deliveredDiscardAll": 0.07071175637769504,
+    "pUnresolvedAtEnd": 0.7224389834422511
    },
    "tolerance": {
     "rel": 2e-06
@@ -605,7 +609,9 @@
     "delivered": 0.6108517163989938,
     "cleanTimeFraction": 0.6793279764223685,
     "expectedEpisodes": 9.78232286048211,
-    "expectedDiscovered": 9.464755292914516
+    "expectedDiscovered": 9.464755292914516,
+    "deliveredDiscardAll": 0.4149688394701822,
+    "pUnresolvedAtEnd": 0.32432432432432423
    },
    "tolerance": {
     "rel": 2e-06
@@ -626,7 +632,9 @@
     "delivered": 0.9693323868505198,
     "cleanTimeFraction": 0.98911871767897,
     "expectedEpisodes": 0.07121654767288585,
-    "expectedDiscovered": 0.05936575716942741
+    "expectedDiscovered": 0.05936575716942741,
+    "deliveredDiscardAll": 0.9587845241021093,
+    "pUnresolvedAtEnd": 0.011857707509881465
    },
    "tolerance": {
     "rel": 2e-06
@@ -647,10 +655,194 @@
     "delivered": 0.6549607987511554,
     "cleanTimeFraction": 0.7714497040649653,
     "expectedEpisodes": 9.257396448779582,
-    "expectedDiscovered": 9.028550294933439
+    "expectedDiscovered": 9.028550294933439,
+    "deliveredDiscardAll": 0.5052799267893815,
+    "pUnresolvedAtEnd": 0.23076923076922373
    },
    "tolerance": {
     "rel": 2e-06
+   }
+  },
+  {
+   "id": "chain.order_process_first",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     }
+    },
+    "applicable": {
+     "replay": 1,
+     "process": 1,
+     "elastic": 1
+    },
+    "order": [
+     "process",
+     "replay",
+     "elastic"
+    ]
+   },
+   "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
+    "pReplay": 0.04500000000000004,
+    "pHotswap": 0.0,
+    "pElastic": 0.004900000000000003,
+    "pProcess": 0.95,
+    "pGlobal": 0.00010000000000000015,
+    "pRollback": 0.9501,
+    "meanPauseS": 75.75585000000001,
+    "pauseRollbackS": 68.92645,
+    "pauseNoRollbackS": 6.829400000000006,
+    "localLossS": 0.018767000000000013
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.order_elastic_hotswap_partial",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     },
+     "predict": {
+      "recall": 0.5,
+      "precision": 0.8,
+      "migrationSeconds": 180
+     },
+     "netfail": {
+      "success": 0.95,
+      "successSeconds": 2,
+      "failureSeconds": 10
+     },
+     "hotswap": {
+      "success": 0.9,
+      "successSeconds": 180,
+      "failureSeconds": 60
+     }
+    },
+    "applicable": {
+     "predict": 0.3,
+     "netfail": 0.2,
+     "replay": 0.831,
+     "hotswap": 1,
+     "elastic": 1,
+     "process": 1
+    },
+    "order": [
+     "elastic",
+     "hotswap"
+    ]
+   },
+   "expected": {
+    "pPredict": 0.15,
+    "pNetfail": 0.16149999999999998,
+    "pReplay": 0.0010298583000000006,
+    "pHotswap": 0.012393000000000008,
+    "pElastic": 0.6747299999999999,
+    "pProcess": 0.00032978461500000016,
+    "pGlobal": 1.7357085000000026e-05,
+    "pRollback": 0.00034714170000000027,
+    "meanPauseS": 32.25315249101999,
+    "pauseRollbackS": 0.09425583377000007,
+    "pauseNoRollbackS": 32.158896657250004,
+    "localLossS": 2.5842159
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.order_unknown_names_ignored",
+   "group": "chain",
+   "inputs": {
+    "detectS": 60,
+    "globalS": 300,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     }
+    },
+    "applicable": {
+     "replay": 0.5,
+     "process": 0.5,
+     "elastic": 0.5
+    },
+    "order": [
+     "global",
+     "process",
+     "process"
+    ]
+   },
+   "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
+    "pReplay": 0.23625000000000002,
+    "pHotswap": 0.0,
+    "pElastic": 0.14148749999999996,
+    "pProcess": 0.475,
+    "pGlobal": 0.14726250000000002,
+    "pRollback": 0.6222624999999999,
+    "meanPauseS": 129.1212375,
+    "pauseRollbackS": 111.33637500000002,
+    "pauseNoRollbackS": 17.784862500000003,
+    "localLossS": 0.6763102500000001
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
    }
   },
   {

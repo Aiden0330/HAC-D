@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { allocateScenario, type AllocationMethod, type AllocationBasis } from '@hac-d/core';
+import { allocateScenario, type AllocationMethod, type AllocationBasis, type LossBudgetMethod, type LedgerLossLine } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
 import { useStore } from '../state/store.js';
 import { Kpi, Card, DataTable, Field, NumberInput, Select, Badge } from '../components/ui.js';
@@ -19,15 +19,17 @@ export function AllocationPage() {
   const [restartShare, setRestartShare] = useState(0.5);
   const hasSdc = !!active?.result?.training?.sdc;
   const [basisChoice, setBasis] = useState<AllocationBasis | undefined>(undefined);
+  const [lossMethod, setLossMethod] = useState<LossBudgetMethod>('proportional');
+  const [lossWeights, setLossWeights] = useState<Partial<Record<LedgerLossLine, number>>>({});
   const basis: AllocationBasis = basisChoice ?? (hasSdc ? 'delivered' : 'effective');
   const alloc = useMemo(() => {
     if (!active || active.error) return undefined;
     try {
-      return allocateScenario(active.scenario, { goodputTarget, availabilityTarget, method, restartShare, basis });
+      return allocateScenario(active.scenario, { goodputTarget, availabilityTarget, method, restartShare, basis, lossMethod, lossWeights });
     } catch (e) {
       return { error: (e as Error).message };
     }
-  }, [active, goodputTarget, availabilityTarget, method, restartShare, basis]);
+  }, [active, goodputTarget, availabilityTarget, method, restartShare, basis, lossMethod, lossWeights]);
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
   const isTraining = active.scenario.workload.type === 'training';
   const a = alloc && !('error' in alloc) ? alloc : undefined;
@@ -76,6 +78,50 @@ export function AllocationPage() {
           </div>
         </Card>
       )}
+      {a?.lossBudget && (() => {
+        const lb = a.lossBudget;
+        return (
+          <Card title={t('allocation.lossTitle')} sub={t('allocation.lossSub')} formula="allowed_i = (1 − G*) × w_i, Σ w_i = 1; excess_i = current_i − allowed_i; current_i from the closed-form window ledger">
+            <div className="form-grid">
+              <Field label={t('allocation.lossMethod')}>
+                <Select value={lossMethod} onChange={(v) => setLossMethod(v as LossBudgetMethod)} options={[{ value: 'proportional', label: t('allocation.lossProportional') }, { value: 'equal', label: t('allocation.lossEqual') }, { value: 'custom', label: t('allocation.lossCustom') }]} />
+              </Field>
+              <Kpi label={t('allocation.lossTotal')} value={`${fmtPct(lb.totalAllowed, 2)} · ${fmtNum(lb.totalAllowedHours, 1)} h`} note={`${t('allocation.lossCurrentTotal')} ${fmtPct(lb.totalCurrent, 2)} · ${fmtNum(lb.totalCurrentHours, 1)} h / ${lb.windowHours} h`} tone={lb.totalCurrent > lb.totalAllowed ? 'warn' : undefined} />
+            </div>
+            <div className="table-wrap" style={{ marginTop: 8 }}>
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>{t('allocation.lossLine')}</th>
+                    <th>{t('allocation.lossCurrent')}</th>
+                    <th>{t('allocation.lossWeight')}</th>
+                    <th>{t('allocation.lossAllowed')}</th>
+                    <th>{t('allocation.lossExcess')}</th>
+                    <th>{t('allocation.lossLever')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lb.rows.map((r) => (
+                    <tr key={r.line}>
+                      <td style={{ whiteSpace: 'nowrap' }}>{t(`training.ledger_${r.line}`, { defaultValue: r.line })}</td>
+                      <td className="num">{fmtPct(r.current, 2)} · {fmtNum(r.currentHours, 1)} h</td>
+                      <td className="num">{lossMethod === 'custom' ? <NumberInput value={lossWeights[r.line] ?? Number(r.weight.toFixed(3))} min={0} step={0.05} onChange={(v) => setLossWeights((w) => ({ ...w, [r.line]: v }))} /> : fmtPct(r.weight, 1)}</td>
+                      <td className="num">{fmtPct(r.allowed, 2)} · {fmtNum(r.allowedHours, 1)} h</td>
+                      <td className="num">{r.excess > 1e-9 ? <b>+{(r.excess * 100).toFixed(2)} pt · {fmtNum(r.excessHours, 1)} h</b> : `${(r.excess * 100).toFixed(2)} pt · ${fmtNum(r.excessHours, 1)} h`}</td>
+                      <td style={{ fontSize: 11, minWidth: 220 }}>{lang === 'zh' ? t(`allocation.lever_${r.line}`) : r.lever}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ul className="plain muted" style={{ fontSize: 12, marginTop: 6 }}>
+              {lb.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </Card>
+        );
+      })()}
       {a?.goodput && (
         <>
           <div className="kpi-row">

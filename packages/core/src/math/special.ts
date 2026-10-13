@@ -248,3 +248,162 @@ export function normalQuantile(p: number): number {
   x -= u / (1 + (x * u) / 2);
   return x;
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// v3.5: incomplete gamma / beta, chi-square and Student-t quantiles, Wilson interval (docs/MODEL_REFERENCE.md §21, §23)
+
+function gammaSeriesP(a: number, x: number, gln: number): number {
+  let ap = a;
+  let sum = 1 / a;
+  let del = sum;
+  for (let n = 0; n < 2000; n++) {
+    ap += 1;
+    del *= x / ap;
+    sum += del;
+    if (Math.abs(del) < Math.abs(sum) * 1e-16) break;
+  }
+  return sum * Math.exp(-x + a * Math.log(x) - gln);
+}
+function gammaContinuedFractionQ(a: number, x: number, gln: number): number {
+  const tiny = 1e-300;
+  let b = x + 1 - a;
+  let c = 1 / tiny;
+  let d = 1 / b;
+  let h = d;
+  for (let i = 1; i < 2000; i++) {
+    const an = -i * (i - a);
+    b += 2;
+    d = an * d + b;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = b + an / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d;
+    const del = d * c;
+    h *= del;
+    if (Math.abs(del - 1) < 1e-16) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - gln) * h;
+}
+
+/** Regularized lower incomplete gamma P(a, x) = γ(a, x)/Γ(a) (series for x < a + 1, Lentz continued fraction otherwise). */
+export function regularizedGammaP(a: number, x: number): number {
+  if (!(a > 0)) throw new RangeError(`regularizedGammaP: a must be > 0, got ${a}`);
+  if (!(x >= 0)) throw new RangeError(`regularizedGammaP: x must be ≥ 0, got ${x}`);
+  if (x === 0) return 0;
+  const gln = lgamma(a);
+  return x < a + 1 ? Math.min(1, gammaSeriesP(a, x, gln)) : Math.max(0, 1 - gammaContinuedFractionQ(a, x, gln));
+}
+
+/** Regularized upper incomplete gamma Q(a, x) = 1 − P(a, x), accurate in the tail. */
+export function regularizedGammaQ(a: number, x: number): number {
+  if (!(a > 0)) throw new RangeError(`regularizedGammaQ: a must be > 0, got ${a}`);
+  if (!(x >= 0)) throw new RangeError(`regularizedGammaQ: x must be ≥ 0, got ${x}`);
+  if (x === 0) return 1;
+  const gln = lgamma(a);
+  return x < a + 1 ? Math.max(0, 1 - gammaSeriesP(a, x, gln)) : Math.min(1, gammaContinuedFractionQ(a, x, gln));
+}
+
+/** x with P(a, x) = p (bisection on the monotone CDF of Gamma(a, 1)). */
+export function gammaPInverse(a: number, p: number): number {
+  if (!(a > 0)) throw new RangeError(`gammaPInverse: a must be > 0, got ${a}`);
+  if (p <= 0) return 0;
+  if (p >= 1) return Infinity;
+  let lo = 0;
+  let hi = Math.max(1, a + 10 * Math.sqrt(a) + 10);
+  while (regularizedGammaP(a, hi) < p) hi *= 2;
+  for (let i = 0; i < 300; i++) {
+    const mid = (lo + hi) / 2;
+    if (regularizedGammaP(a, mid) < p) lo = mid;
+    else hi = mid;
+    if (hi - lo <= 1e-15 * Math.max(1, hi)) break;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Chi-square quantile χ²_p(df) = 2·P⁻¹(df/2, p). */
+export function chiSquareQuantile(p: number, df: number): number {
+  if (!(df > 0)) throw new RangeError(`chiSquareQuantile: df must be > 0, got ${df}`);
+  return 2 * gammaPInverse(df / 2, p);
+}
+
+function betaContinuedFraction(x: number, a: number, b: number): number {
+  const tiny = 1e-300;
+  const qab = a + b;
+  const qap = a + 1;
+  const qam = a - 1;
+  let c = 1;
+  let d = 1 - (qab * x) / qap;
+  if (Math.abs(d) < tiny) d = tiny;
+  d = 1 / d;
+  let h = d;
+  for (let m = 1; m <= 2000; m++) {
+    const m2 = 2 * m;
+    let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = 1 + aa / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d;
+    h *= d * c;
+    aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < tiny) d = tiny;
+    c = 1 + aa / c;
+    if (Math.abs(c) < tiny) c = tiny;
+    d = 1 / d;
+    const del = d * c;
+    h *= del;
+    if (Math.abs(del - 1) < 1e-16) break;
+  }
+  return h;
+}
+
+/** Regularized incomplete beta I_x(a, b) (continued fraction with the symmetry transformation). */
+export function regularizedBeta(x: number, a: number, b: number): number {
+  if (!(a > 0) || !(b > 0)) throw new RangeError(`regularizedBeta: a, b must be > 0, got ${a}, ${b}`);
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const front = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - (lgamma(a) + lgamma(b) - lgamma(a + b)));
+  if (x < (a + 1) / (a + b + 2)) return Math.min(1, (front * betaContinuedFraction(x, a, b)) / a);
+  return Math.max(0, 1 - (front * betaContinuedFraction(1 - x, b, a)) / b);
+}
+
+/** Student-t CDF with df degrees of freedom. */
+export function studentTCdf(t: number, df: number): number {
+  if (!(df > 0)) throw new RangeError(`studentTCdf: df must be > 0, got ${df}`);
+  if (!Number.isFinite(t)) return t > 0 ? 1 : 0;
+  const tail = 0.5 * regularizedBeta(df / (df + t * t), df / 2, 0.5);
+  return t >= 0 ? 1 - tail : tail;
+}
+
+/** Student-t quantile (bisection on the CDF; the normal quantile for df > 10⁶). */
+export function studentTQuantile(p: number, df: number): number {
+  if (!(df > 0)) throw new RangeError(`studentTQuantile: df must be > 0, got ${df}`);
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return Infinity;
+  if (df > 1e6) return normalQuantile(p);
+  const z = normalQuantile(p);
+  let lo = Math.min(z, 0) - 1;
+  let hi = Math.max(z, 0) + 1;
+  while (studentTCdf(lo, df) > p) lo = lo * 2 - 1;
+  while (studentTCdf(hi, df) < p) hi = hi * 2 + 1;
+  for (let i = 0; i < 300; i++) {
+    const mid = (lo + hi) / 2;
+    if (studentTCdf(mid, df) < p) lo = mid;
+    else hi = mid;
+    if (hi - lo <= 1e-14 * Math.max(1, Math.abs(hi))) break;
+  }
+  return (lo + hi) / 2;
+}
+
+/** Wilson score interval for a binomial proportion k/n at the given confidence level (two-sided). */
+export function wilsonInterval(k: number, n: number, confidence = 0.95): { low: number; high: number } {
+  if (!(n > 0)) return { low: 0, high: 1 };
+  const z = normalQuantile(1 - (1 - confidence) / 2);
+  const p = k / n;
+  const z2 = z * z;
+  const denom = 1 + z2 / n;
+  const centre = (p + z2 / (2 * n)) / denom;
+  const half = (z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / denom;
+  return { low: Math.max(0, centre - half), high: Math.min(1, centre + half) };
+}

@@ -75,8 +75,9 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
     detection,
     globalRecovery,
     chain: { predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process },
+    chainOrder: s.mechanisms.order,
     overhead: Object.values(s.mechanisms.overheads ?? {}).reduce((a, b) => a + b, 0),
-    sdc: { coverage: s.sdc.detection.coverage, detectSeconds: s.sdc.detection.detectSeconds, fallbackDelayHours: s.sdc.fallbackDelayHours, step: s.sdc.stepRecovery },
+    sdc: { coverage: s.sdc.detection.coverage, detectSeconds: s.sdc.detection.detectSeconds, fallbackDelayHours: s.sdc.fallbackDelayHours, terminalRule: s.sdc.terminalRule, step: s.sdc.stepRecovery },
     classes,
   };
 }

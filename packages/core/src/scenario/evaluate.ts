@@ -184,6 +184,8 @@ export interface SdcKpis {
   fallbackDelayH: number;
   episodePauseS: number;
   stepRecovery: boolean;
+  /** v3.5 terminal rule of the window (retain the last clean checkpoint, or discard the whole window when it ends unresolved) */
+  terminalRule: 'retain-last-clean' | 'discard-all';
   delivery: SdcDeliveryResult;
 }
 
@@ -527,7 +529,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       for (const ci of items) {
         const rate = ci.lambda * ci.total * f;
         if (rate <= 0) continue;
-        m = addOutcome(m, rate, chainOutcome(d, g, chainParams, ci.applicable));
+        m = addOutcome(m, rate, chainOutcome(d, g, chainParams, ci.applicable, s.mechanisms.order));
       }
       if (falseAlarmRate > 0 && s.mechanisms.predict) m = addPlainEvents(m, falseAlarmRate * f, s.mechanisms.predict.migrationSeconds, false);
       // a detected sub-healthy unit is switched out after saving the current progress: a pause without rollback
@@ -544,7 +546,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     for (const ci of items) {
       const rate = ci.lambda * ci.total;
       if (rate <= 0) continue;
-      const o = chainOutcome(detectS, globalS, chainParams, ci.applicable);
+      const o = chainOutcome(detectS, globalS, chainParams, ci.applicable, s.mechanisms.order);
       chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
     }
     const eventRate = mixed.rollbackRatePerHour + mixed.pauseRatePerHour;
@@ -606,10 +608,11 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       const undetected = sdcTotal * (1 - sdcCoverage);
       const pClear = pClearedBeforePersist(mixed.rollbackRatePerHour, periodH);
       const nu = undetected * aRun * (1 - pClear);
-      const d = sdcDelivery({ horizonH, nuPerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: globalS / 3600, cleanGoodput: effective, preEpisodeLossH });
+      const d = sdcDelivery({ horizonH, nuPerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: globalS / 3600, cleanGoodput: effective, preEpisodeLossH, terminalRule: s.sdc.terminalRule });
       delivered = d.delivered;
       aOp = aRun * (1 - d.pauseFraction);
-      sdc = { ratePerHour: sdcTotal, coverage: sdcCoverage, detectedRatePerHour: sdcDetectedRate, undetectedRatePerHour: undetected, pClearedBeforePersist: pClear, episodeRatePerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseS: globalS, stepRecovery: !!s.sdc.stepRecovery, delivery: d };
+      sdc = { ratePerHour: sdcTotal, coverage: sdcCoverage, detectedRatePerHour: sdcDetectedRate, undetectedRatePerHour: undetected, pClearedBeforePersist: pClear, episodeRatePerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseS: globalS, stepRecovery: !!s.sdc.stepRecovery, terminalRule: s.sdc.terminalRule, delivery: d };
+      if (s.sdc.terminalRule === 'discard-all') assumptions.push('terminal rule discard-all (reference V4 / ReMAP legacy delivery): a window that ends inside a corruption episode delivers nothing; the retain-last-clean value is reported alongside and the two are different metrics');
       if (sdcCoverage <= 0) warnings.push(`silent corruption is not detected immediately: ${(d.expectedEpisodes).toFixed(2)} expected episodes in ${horizonH} h, each discovered after ${s.sdc.fallbackDelayHours} h; delivered goodput ${(delivered * 100).toFixed(2)} % vs performance goodput ${(effective * 100).toFixed(2)} %`);
       assumptions.push('silent corruption: Poisson on the running clock; the first undetected event opens an episode (later ones change nothing); clean durations exponential on the wall clock, discovery after a fixed delay; the job keeps the rate-weighted recovery for the episode pause; a rollback before the first dirty checkpoint clears the corruption');
     }
@@ -667,7 +670,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       row.effective = eff;
       if (sdcTotal > 0) {
         const nuRow = sdcTotal * f * (1 - sdcCoverage) * mrRow.runningFraction * (1 - pClearedBeforePersist(mx.rollbackRatePerHour, (tauRow + deltaS) / 3600));
-        row.delivered = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: rr.globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600 }).delivered;
+        row.delivered = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: rr.globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600, terminalRule: s.sdc.terminalRule }).delivered;
       } else row.delivered = eff;
     }
     const nGpuEff = N;
@@ -730,8 +733,8 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     formulas.mttr = recoveryModel.kind === 'mixture' ? 'R = T_det + T_auto + (1 − p_s)·T_manual, T_det = p_d·t_auto + (1 − p_d)·t_timeout (detection by automation or timeout; a failed automatic attempt is charged before manual recovery)' : recoveryModel.kind === 'ladder' ? 'R = Σ_i P_i·t_i, P_i = Π_{j<i}(1 − s_j)' : 'R = Σ stages with scale laws';
     formulas.recovery = recoveryModel.kind === 'ladder' ? 'R(N) = E[T] = Σ_i P_i·t_i(N), P_i = Π_{j<i}(1 − s_j) (recovery ladder; last rung manual); recompute = τ/2 (periodic checkpoint) or one step (replica)' : 'R(N) = Σ stages ①–⑤ with scale laws; recompute = τ/2 (periodic checkpoint) or one step (replica)';
     if (anySubhealth) formulas.goodputSubhealth = 'effective goodput = goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local) × (1 − o_mech); a detected sub-healthy unit is isolated after saving progress: ν_iso pause-only events (R_global, no rollback)';
-    formulas.chain = 'per class: predict (recall r: planned migration t_mig, no detection delay, no rollback; false alarms r(1 − p)/p per interruption) → netfail (a_nf, s_nf: pause f + t_nf inside the collective, no rollback) → replay (a_rp, s_rp: pause d + f + t_rp, no rollback) → hotswap (a_hs, s_hs: pause d + f + t_hs, no rollback) → elastic (a_el, s_el: pause f + t_sync, domain out (d + t_el)/n_dom, no rollback) → process (a_pr, s_pr: pause d + f + t_pr, rollback) → global (pause d + f + R_global, rollback); a_x = applicable fraction, f = failure times of the rungs tried before; λ_rb = Σ λ_i P_rb,i, λ_p = Σ λ_i (1 − P_rb,i)';
-    formulas.sdc = 'ν = λ_sdc (1 − q) · A_run · (1 − P_clear), P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L); clean ~ Exp(ν), dirty + pause = D + R_c; delivered = [g·E(clean time) − U·E(episodes)]/T with E(clean) = T − Σ_k ∫ P(S_k ≤ T − x)dx, S_k = Γ(k, ν) + (k − 1)(D + R_c); detected corruption (q): rollback + pause t_d + R_global, or with step recovery a pause t_d + t_rec + t_step without rollback';
+    formulas.chain = 'per class (detection-delayed rungs in the configured order, default replay → hotswap → elastic → process): predict (recall r: planned migration t_mig, no detection delay, no rollback; false alarms r(1 − p)/p per interruption) → netfail (a_nf, s_nf: pause f + t_nf inside the collective, no rollback) → replay (a_rp, s_rp: pause d + f + t_rp, no rollback) → hotswap (a_hs, s_hs: pause d + f + t_hs, no rollback) → elastic (a_el, s_el: pause f + t_sync, domain out (d + t_el)/n_dom, no rollback) → process (a_pr, s_pr: pause d + f + t_pr, rollback) → global (pause d + f + R_global, rollback); a_x = applicable fraction, f = failure times of the rungs tried before; λ_rb = Σ λ_i P_rb,i, λ_p = Σ λ_i (1 − P_rb,i)';
+    formulas.sdc = 'ν = λ_sdc (1 − q) · A_run · (1 − P_clear), P_clear = 1 − (1 − e^{−λ_rb L})/(λ_rb L); clean ~ Exp(ν), dirty + pause = D + R_c; delivered = [g·E(clean time) − U·E(episodes)]/T with E(clean) = T − Σ_k ∫ P(S_k ≤ T − x)dx, S_k = Γ(k, ν) + (k − 1)(D + R_c); detected corruption (q): rollback + pause t_d + R_global, or with step recovery a pause t_d + t_rec + t_step without rollback; terminal rule retain-last-clean: the undiscovered tail is discarded; discard-all: delivered = Σ_n Poisson(n; ν(T − nc))·[g(T − nc) − U n]/T (the window delivers nothing unless it ends clean)';
     formulas.ledger = 'window shares: downtime + save + rollback + slowdown + local + blocked + overhead + SDC rollback + terminal discard + delivered = 1; overhead = fault-free throughput cost of the enabled mechanisms';
     formulas.scale = 'MTBI(N) = 1/(N·λ_GPU-equivalent), λ_GPU-equivalent = λ_job/N at the configured size (fixed components scaled proportionally); per row: R(N) from the recovery scale laws, the chain and pause-only events, the checkpoint interval against the rollback MTBI, the straggler law 1 − (1 − p_H)^N and the silent-corruption window; the spare pool stays as configured';
     formulas.cost = 'wasted GPU·h/day = N × 24 × (1 − delivered goodput); $/day = wasted GPU·h × price';

@@ -9,7 +9,9 @@
  * finite-window expectations are sums over the episode count k of Gamma(k, ν) shifted by (k − 1)c.
  * Times in hours.
  */
-import { poissonSf } from '../math/special.js';
+import { poissonSf, lgamma } from '../math/special.js';
+
+export type SdcTerminalRule = 'retain-last-clean' | 'discard-all';
 
 export interface SdcDeliveryInput {
   /** window length T (hours) */
@@ -24,11 +26,19 @@ export interface SdcDeliveryInput {
   cleanGoodput: number;
   /** work lost before the corruption: compute since the last clean checkpoint, hours (≈ (τ²/2 + τδ)/(τ+δ)) */
   preEpisodeLossH: number;
+  /** terminal rule (default retain-last-clean): discard-all delivers nothing when the window ends inside an episode (dirty or in its recovery pause) */
+  terminalRule?: SdcTerminalRule;
 }
 
 export interface SdcDeliveryResult {
-  /** E[correct work]/T: the delivered (正确有效) share of the window */
+  /** E[correct work]/T: the delivered (正确有效) share of the window under the terminal rule */
   delivered: number;
+  terminalRule: SdcTerminalRule;
+  /** delivered under each rule: retain the last clean checkpoint (window work minus episode losses and the tail), or discard the whole window when it ends unresolved */
+  deliveredRetained: number;
+  deliveredDiscardAll: number;
+  /** P(the window ends inside an episode: dirty or in its recovery pause) = 1 − Σ_n Poisson(n; ν(T − nc)) */
+  pUnresolvedAtEnd: number;
   /** multiplicative factor delivered / g */
   factor: number;
   cleanTimeFraction: number;
@@ -50,6 +60,32 @@ export interface SdcDeliveryResult {
   method: 'exact-renewal-sum' | 'stationary';
   /** episodes enumerated */
   terms: number;
+}
+
+/**
+ * Delivered share under the discard-all rule: the window ends clean with exactly n completed episodes with probability
+ * Poisson(n; ν(T − nc)) (the clean time T − nc of a window with n episodes is a Poisson count argument because the
+ * episode starts are Gamma(n, ν) shifted by (n − 1)c and the next clean period must outlast the remainder), and then
+ * the delivered work is g(T − nc) − U·n; every other outcome delivers 0.
+ */
+function discardAllDelivered(T: number, nu: number, c: number, g: number, U: number): { delivered: number; pClean: number } {
+  let delivered = 0;
+  let pClean = 0;
+  const nMax = c > 0 ? Math.floor(T / c) : 0;
+  for (let n = 0; n <= nMax; n++) {
+    const y = T - n * c;
+    if (y < 0) break;
+    const mu = nu * y;
+    const logP = mu > 0 ? -mu + n * Math.log(mu) - lgamma(n + 1) : n === 0 ? 0 : -Infinity;
+    const p = Math.exp(logP);
+    if (p < 1e-300) {
+      if (n > 0 && mu > 0 && n > mu) break;
+      continue;
+    }
+    pClean += p;
+    delivered += p * Math.max(0, g * y - U * n);
+  }
+  return { delivered: delivered / T, pClean: Math.min(1, pClean) };
 }
 
 /** P(S_k ≤ y) for S_k = Gamma(k, ν) + (k − 1)c: the k-th episode has started by y. */
@@ -103,12 +139,13 @@ export function sdcDelivery(input: SdcDeliveryInput): SdcDeliveryResult {
   const Rc = Math.max(0, input.episodePauseH);
   const g = Math.max(0, input.cleanGoodput);
   const U = Math.max(0, input.preEpisodeLossH);
+  const rule: SdcTerminalRule = input.terminalRule ?? 'retain-last-clean';
   const c = D + Rc;
   const cTime = nu * T > 1e-9 ? -Math.expm1(-nu * T) / (nu * T) : 1;
   const pCleanWindow = Math.exp(-nu * T);
   const stationaryClean = 1 / (1 + nu * c);
   if (!(T > 0) || nu <= 0 || g <= 0) {
-    return { delivered: g, factor: 1, cleanTimeFraction: 1, dirtyTimeFraction: 0, pauseFraction: 0, expectedEpisodes: 0, expectedDiscovered: 0, pDirtyAtEnd: 0, rollbackFraction: 0, terminalDiscardFraction: 0, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'exact-renewal-sum', terms: 0 };
+    return { delivered: g, terminalRule: rule, deliveredRetained: g, deliveredDiscardAll: g, pUnresolvedAtEnd: 0, factor: 1, cleanTimeFraction: 1, dirtyTimeFraction: 0, pauseFraction: 0, expectedEpisodes: 0, expectedDiscovered: 0, pDirtyAtEnd: 0, rollbackFraction: 0, terminalDiscardFraction: 0, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'exact-renewal-sum', terms: 0 };
   }
   // number of episodes with non-negligible probability
   const mu = nu * T;
@@ -122,9 +159,12 @@ export function sdcDelivery(input: SdcDeliveryInput): SdcDeliveryResult {
     const expectedEpisodes = episodesPerHour * T;
     const dirty = episodesPerHour * D;
     const pause = episodesPerHour * Rc;
-    const delivered = Math.max(0, g * clean - U * episodesPerHour);
+    const deliveredRetained = Math.max(0, g * clean - U * episodesPerHour);
+    // discard-all with many short cycles: the end state is independent of the accumulated work to first order
+    const deliveredDiscardAll = deliveredRetained * clean;
+    const delivered = rule === 'discard-all' ? deliveredDiscardAll : deliveredRetained;
     // rollback at discoveries = compute while dirty + the pre-episode loss of every episode, so that delivered + rollback = g·(1 − pause)
-    return { delivered, factor: g > 0 ? delivered / g : 1, cleanTimeFraction: clean, dirtyTimeFraction: dirty, pauseFraction: pause, expectedEpisodes, expectedDiscovered: expectedEpisodes, pDirtyAtEnd: dirty, rollbackFraction: g * dirty + U * episodesPerHour, terminalDiscardFraction: 0, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'stationary', terms: 0 };
+    return { delivered, terminalRule: rule, deliveredRetained, deliveredDiscardAll, pUnresolvedAtEnd: 1 - clean, factor: g > 0 ? delivered / g : 1, cleanTimeFraction: clean, dirtyTimeFraction: dirty, pauseFraction: pause, expectedEpisodes, expectedDiscovered: expectedEpisodes, pDirtyAtEnd: dirty, rollbackFraction: g * dirty + U * episodesPerHour, terminalDiscardFraction: deliveredRetained - delivered, cTimeNoRecovery: cTime, pCleanWindow, stationaryCleanFraction: stationaryClean, method: 'stationary', terms: 0 };
   }
   let expectedEpisodes = 0;
   let expectedDiscovered = 0;
@@ -132,6 +172,7 @@ export function sdcDelivery(input: SdcDeliveryInput): SdcDeliveryResult {
   let pauseH = 0;
   let tailDirtyH = 0;
   let pDirtyAtEnd = 0;
+  let pInEpisodeAtEnd = 0;
   for (let k = 1; k <= K; k++) {
     const pk = pStarted(k, T, nu, c);
     if (pk < 1e-14 && k > 1) break;
@@ -139,16 +180,25 @@ export function sdcDelivery(input: SdcDeliveryInput): SdcDeliveryResult {
     const pDisc = pStarted(k, T - D, nu, c);
     expectedDiscovered += pDisc;
     pDirtyAtEnd += pk - pDisc; // started but not discovered by T
+    pInEpisodeAtEnd += pk - pStarted(k, T - c, nu, c); // started, episode (dirty + pause) not over by T
     dirtyH += integral(k, 0, D, T, nu, c);
     pauseH += integral(k, D, c, T, nu, c);
     tailDirtyH += expectedTailDirty(k, T, D, nu, c);
   }
   const cleanH = Math.max(0, T - dirtyH - pauseH);
-  const delivered = Math.max(0, (g * cleanH - U * expectedEpisodes) / T);
+  const deliveredRetained = Math.max(0, (g * cleanH - U * expectedEpisodes) / T);
+  const discard = discardAllDelivered(T, nu, c, g, U);
+  const deliveredDiscardAll = Math.min(deliveredRetained, discard.delivered);
+  const delivered = rule === 'discard-all' ? deliveredDiscardAll : deliveredRetained;
   const rollbackH = g * (dirtyH - tailDirtyH) + U * expectedDiscovered;
-  const terminalH = g * tailDirtyH + U * pDirtyAtEnd;
+  // terminal discard: the undiscovered tail (retain-last-clean) plus, under discard-all, the retained work of the windows that end unresolved
+  const terminalH = g * tailDirtyH + U * pDirtyAtEnd + (deliveredRetained - delivered) * T;
   return {
     delivered,
+    terminalRule: rule,
+    deliveredRetained,
+    deliveredDiscardAll,
+    pUnresolvedAtEnd: Math.min(1, Math.max(0, pInEpisodeAtEnd)),
     factor: g > 0 ? delivered / g : 1,
     cleanTimeFraction: cleanH / T,
     dirtyTimeFraction: dirtyH / T,

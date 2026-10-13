@@ -16,6 +16,7 @@ import {
   EXAMPLES, parseScenario, evaluateScenario, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario, scenarioJsonSchema, filterLibrary,
   mechanismReport, simulateScenarioLedger, MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, planToTarget,
   type Library, type AllocationMethod, type TornadoMetric, type AttributionMetric,
+  rateFromCounts, unitRateFromCounts, type LossBudgetMethod, type LedgerLossLine,
 } from '@hac-d/core';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -54,8 +55,8 @@ server.registerTool(
 
 server.registerTool(
   'allocate_scenario',
-  { description: 'Allocate a goodput and/or availability target to subsystem budgets: allowed interruption rate per component class (ARINC/AGREE/equal/feasibility/minimum-effort/cost-optimal), allowed time per recovery stage, availability split.', inputSchema: { scenario: scenarioArg, goodputTarget: z.number().min(0).max(1).optional(), availabilityTarget: z.number().min(0).max(1).optional(), method: z.enum(['equal', 'arinc', 'agree', 'feasibility', 'minimum-effort', 'cost-optimal']).optional(), restartShare: z.number().min(0).max(1).optional(), basis: z.enum(['effective', 'delivered']).optional() } },
-  async ({ scenario, goodputTarget, availabilityTarget, method, restartShare, basis }) => text(allocateScenario(toScenario(scenario), { goodputTarget, availabilityTarget, method: method as AllocationMethod | undefined, restartShare, basis })),
+  { description: 'Allocate a goodput and/or availability target to subsystem budgets: allowed interruption rate per component class (ARINC/AGREE/equal/feasibility/minimum-effort/cost-optimal), allowed time per recovery stage, availability split, and (training, delivered basis) the loss budget over the window ledger: (1 − target) split over the ledger lines proportionally / equally / by custom weights, allowed vs current per line with the levers that move each line.', inputSchema: { scenario: scenarioArg, goodputTarget: z.number().min(0).max(1).optional(), availabilityTarget: z.number().min(0).max(1).optional(), method: z.enum(['equal', 'arinc', 'agree', 'feasibility', 'minimum-effort', 'cost-optimal']).optional(), restartShare: z.number().min(0).max(1).optional(), basis: z.enum(['effective', 'delivered']).optional(), lossMethod: z.enum(['proportional', 'equal', 'custom']).optional(), lossWeights: z.record(z.string(), z.number().min(0)).optional() } },
+  async ({ scenario, goodputTarget, availabilityTarget, method, restartShare, basis, lossMethod, lossWeights }) => text(allocateScenario(toScenario(scenario), { goodputTarget, availabilityTarget, method: method as AllocationMethod | undefined, restartShare, basis, lossMethod: lossMethod as LossBudgetMethod | undefined, lossWeights: lossWeights as Partial<Record<LedgerLossLine, number>> | undefined })),
 );
 
 server.registerTool(
@@ -136,6 +137,15 @@ server.registerTool(
   'plan_mechanisms',
   { description: 'Choose the fault-management mechanisms that reach a goodput target: evaluates every coalition of the candidate mechanisms with the closed forms (nominal and with the mechanism parameters derated: coverage −5 pts, success −8 pts, times ×1.5), returns the cheapest feasible coalition by effort score, the necessary mechanisms, the effort–value Pareto front, a silent-corruption-coverage × recovery-time scan and an optional ledger-simulation verification of P(window ≥ target).', inputSchema: { scenario: scenarioArg, target: z.number().min(0).max(1).optional(), players: z.array(z.string()).max(10).optional(), metric: z.enum(['delivered', 'effective', 'aOp']).optional(), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional(), effort: z.record(z.string(), z.number()).optional(), derate: z.boolean().optional(), scan: z.boolean().optional(), verifyTrials: z.number().int().min(0).max(5000).optional(), confidence: z.number().min(0).max(1).optional() } },
   async ({ scenario, target, players, metric, parameters, effort, derate, scan, verifyTrials, confidence }) => text(planToTarget(toScenario(scenario), { target, players, metric: metric as AttributionMetric | undefined, parameters, effort, derate: derate === false ? null : undefined, scan: scan ?? true, verify: verifyTrials ? { trials: verifyTrials, confidence } : undefined })),
+);
+
+server.registerTool(
+  'estimate_rate',
+  { description: 'Failure rate of a component class from incident counts: events over an exposure in unit-hours (or units × hours) → rate per unit-hour, FIT, MTBF with the exact Garwood confidence interval; zero events give the one-sided upper bound −ln(1 − c)/E. Counts must be de-duplicated business-impact events of one class; put the result into component.failure with provenance confidence "measured".', inputSchema: { events: z.number().int().min(0), exposureHours: z.number().positive().optional(), units: z.number().positive().optional(), hours: z.number().positive().optional(), confidence: z.number().min(0.5).max(0.9999).optional() } },
+  async ({ events, exposureHours, units, hours, confidence }) => {
+    if (exposureHours === undefined && (units === undefined || hours === undefined)) throw new Error('give exposureHours, or units and hours');
+    return text(exposureHours !== undefined ? rateFromCounts(events, exposureHours, confidence) : unitRateFromCounts(events, units!, hours!, confidence));
+  },
 );
 
 const transport = new StdioServerTransport();

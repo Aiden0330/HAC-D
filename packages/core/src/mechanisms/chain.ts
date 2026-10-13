@@ -67,6 +67,18 @@ export interface Applicability {
 
 export type ChainOutcomeKind = 'predict' | 'netfail' | 'replay' | 'hotswap' | 'elastic' | 'process' | 'global';
 
+/** The detection-delayed rungs whose order can be configured (prediction and network failover act before detection and always come first). */
+export type ChainRung = 'replay' | 'hotswap' | 'elastic' | 'process';
+export const DEFAULT_RUNG_ORDER: readonly ChainRung[] = ['replay', 'hotswap', 'elastic', 'process'];
+
+/** Order in which the rungs are tried: the given rungs first (unknown names and duplicates ignored), then the missing ones in the default order, so every rung is tried once. */
+export function rungOrder(order?: readonly string[]): ChainRung[] {
+  const out: ChainRung[] = [];
+  for (const r of order ?? []) if ((DEFAULT_RUNG_ORDER as readonly string[]).includes(r) && !out.includes(r as ChainRung)) out.push(r as ChainRung);
+  for (const r of DEFAULT_RUNG_ORDER) if (!out.includes(r)) out.push(r);
+  return out;
+}
+
 export interface ChainPath {
   kind: ChainOutcomeKind;
   probability: number;
@@ -121,7 +133,7 @@ function clamp01(x: number | undefined): number {
  * f + sync on success, the domain stays out for d + f + t_el), process (pause d + f + t_pr, rollback), global
  * (pause d + f + globalS, rollback), where f accumulates the failure times of the rungs tried before.
  */
-export function chainOutcome(detectS: number, globalS: number, params: ChainParams, applicable: Applicability = {}): ChainOutcome {
+export function chainOutcome(detectS: number, globalS: number, params: ChainParams, applicable: Applicability = {}, order?: readonly string[]): ChainOutcome {
   const paths: ChainPath[] = [];
   type Node = { p: number; failedS: number };
   const stage = (nodes: Node[], frac: number, success: number, onSuccess: (n: Node) => ChainPath, failureS: number): Node[] => {
@@ -153,13 +165,15 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
   if (pd && aPd > 0) nodes = stage(nodes, aPd, clamp01(pd.recall), (n) => ({ kind: 'predict', probability: n.p, pauseS: n.failedS + pd.migrationSeconds, rollback: false, localLossS: 0 }), 0);
   // network failover is absorbed inside the collective: no detection delay
   if (nf && aNf > 0) nodes = stage(nodes, aNf, clamp01(nf.success), (n) => ({ kind: 'netfail', probability: n.p, pauseS: n.failedS + nf.successSeconds, rollback: false, localLossS: 0 }), nf.failureSeconds);
-  if (rp && aRp > 0) nodes = stage(nodes, aRp, clamp01(rp.success), (n) => ({ kind: 'replay', probability: n.p, pauseS: detectS + n.failedS + rp.successSeconds, rollback: false, localLossS: 0 }), rp.failureSeconds);
-  if (hs && aHs > 0) nodes = stage(nodes, aHs, clamp01(hs.success), (n) => ({ kind: 'hotswap', probability: n.p, pauseS: detectS + n.failedS + hs.successSeconds, rollback: false, localLossS: 0 }), hs.failureSeconds);
-  if (el && aEl > 0) {
-    const domains = Math.max(1, el.domains);
-    nodes = stage(nodes, aEl, clamp01(el.success), (n) => ({ kind: 'elastic', probability: n.p, pauseS: n.failedS + el.syncSeconds, rollback: false, localLossS: Math.max(0, detectS + el.recoverSeconds - el.syncSeconds) / domains }), el.failureSeconds);
+  // the detection-delayed rungs in the configured order (default replay → hotswap → elastic → process)
+  for (const rung of rungOrder(order)) {
+    if (rung === 'replay' && rp && aRp > 0) nodes = stage(nodes, aRp, clamp01(rp.success), (n) => ({ kind: 'replay', probability: n.p, pauseS: detectS + n.failedS + rp.successSeconds, rollback: false, localLossS: 0 }), rp.failureSeconds);
+    else if (rung === 'hotswap' && hs && aHs > 0) nodes = stage(nodes, aHs, clamp01(hs.success), (n) => ({ kind: 'hotswap', probability: n.p, pauseS: detectS + n.failedS + hs.successSeconds, rollback: false, localLossS: 0 }), hs.failureSeconds);
+    else if (rung === 'elastic' && el && aEl > 0) {
+      const domains = Math.max(1, el.domains);
+      nodes = stage(nodes, aEl, clamp01(el.success), (n) => ({ kind: 'elastic', probability: n.p, pauseS: n.failedS + el.syncSeconds, rollback: false, localLossS: Math.max(0, detectS + el.recoverSeconds - el.syncSeconds) / domains }), el.failureSeconds);
+    } else if (rung === 'process' && pr && aPr > 0) nodes = stage(nodes, aPr, clamp01(pr.success), (n) => ({ kind: 'process', probability: n.p, pauseS: detectS + n.failedS + pr.successSeconds, rollback: true, localLossS: 0 }), pr.failureSeconds);
   }
-  if (pr && aPr > 0) nodes = stage(nodes, aPr, clamp01(pr.success), (n) => ({ kind: 'process', probability: n.p, pauseS: detectS + n.failedS + pr.successSeconds, rollback: true, localLossS: 0 }), pr.failureSeconds);
   for (const n of nodes) if (n.p > 0) paths.push({ kind: 'global', probability: n.p, pauseS: detectS + n.failedS + globalS, rollback: true, localLossS: 0 });
   // merge identical terminal kinds for a compact report while keeping the exact expectations
   let pPredict = 0, pNetfail = 0, pReplay = 0, pHotswap = 0, pElastic = 0, pProcess = 0, pGlobal = 0, pRollback = 0, meanPauseS = 0, pauseRollbackS = 0, pauseNoRollbackS = 0, localLossS = 0;

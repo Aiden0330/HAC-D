@@ -932,6 +932,41 @@
               "ratePerHour"
             ]
           },
+          "allocation": {
+            "type": "object",
+            "properties": {
+              "importance": {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 1
+              },
+              "duty": {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 1
+              },
+              "feasibilityWeight": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "costA": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "costB": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "minLambdaFactor": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "fixed": {
+                "type": "boolean"
+              }
+            }
+          },
           "mechanisms": {
             "type": "object",
             "properties": {
@@ -946,6 +981,21 @@
                 "maximum": 1
               },
               "elastic": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "predict": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "netfail": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "hotswap": {
                 "type": "number",
                 "minimum": 0,
                 "maximum": 1
@@ -2117,6 +2167,14 @@
               "minimum": 0
             }
           }
+        },
+        "terminalRule": {
+          "default": "retain-last-clean",
+          "type": "string",
+          "enum": [
+            "retain-last-clean",
+            "discard-all"
+          ]
         }
       }
     },
@@ -2124,6 +2182,130 @@
       "default": {},
       "type": "object",
       "properties": {
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "replay",
+              "hotswap",
+              "elastic",
+              "process"
+            ]
+          }
+        },
+        "predict": {
+          "type": "object",
+          "properties": {
+            "recall": {
+              "default": 0.5,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "precision": {
+              "default": 0.8,
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 1
+            },
+            "migrationSeconds": {
+              "default": 180,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "netfail": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "default": 0.95,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "successSeconds": {
+              "default": 2,
+              "type": "number",
+              "minimum": 0
+            },
+            "failureSeconds": {
+              "default": 10,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "hotswap": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "default": 0.9,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "successSeconds": {
+              "default": 180,
+              "type": "number",
+              "minimum": 0
+            },
+            "failureSeconds": {
+              "default": 60,
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "overheads": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 0.99
+          }
+        },
+        "applied": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "order": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "parameters": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number"
+                }
+              },
+              "previous": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "order",
+              "parameters",
+              "previous"
+            ]
+          }
+        },
         "replay": {
           "type": "object",
           "properties": {

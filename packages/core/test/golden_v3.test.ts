@@ -29,12 +29,12 @@ function compute(c: GoldenCase): Record<string, number> {
       return { goodput: r.goodput, runningFraction: r.runningFraction, saveFraction: r.saveFraction, rollbackFraction: r.rollbackFraction, rollbackPauseFraction: r.rollbackPauseFraction, pauseOnlyFraction: r.pauseOnlyFraction };
     }
     case 'chain': {
-      const o = chainOutcome(i.detectS, i.globalS, c.inputs.params as ChainParams, c.inputs.applicable as Applicability);
+      const o = chainOutcome(i.detectS, i.globalS, c.inputs.params as ChainParams, c.inputs.applicable as Applicability, c.inputs.order as string[] | undefined);
       return { pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, pauseRollbackS: o.pauseRollbackS, pauseNoRollbackS: o.pauseNoRollbackS, localLossS: o.localLossS };
     }
     case 'sdc': {
       const d = sdcDelivery({ horizonH: i.horizonH, nuPerWallHour: i.nuPerWallHour, fallbackDelayH: i.fallbackDelayH, episodePauseH: i.episodePauseH, cleanGoodput: i.cleanGoodput, preEpisodeLossH: i.preEpisodeLossH });
-      return { delivered: d.delivered, cleanTimeFraction: d.cleanTimeFraction, expectedEpisodes: d.expectedEpisodes, expectedDiscovered: d.expectedDiscovered };
+      return { delivered: d.delivered, cleanTimeFraction: d.cleanTimeFraction, expectedEpisodes: d.expectedEpisodes, expectedDiscovered: d.expectedDiscovered, deliveredDiscardAll: d.deliveredDiscardAll, pUnresolvedAtEnd: d.pUnresolvedAtEnd };
     }
     case 'pclear':
       return { p: pClearedBeforePersist(i.rollbackRatePerHour, i.periodH) };

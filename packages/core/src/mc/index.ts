@@ -6,6 +6,7 @@
  * periodic checkpoints with recompute, and recovery times drawn from the MTTR pipeline.
  * Time unit inside the simulator: hours.
  */
+import { summaryStat } from '../math/stats.js';
 import { Rng } from '../math/rng.js';
 import { sample, sampleResidual, weibullFromMean, exponentialFromMean, type Distribution } from '../math/distributions.js';
 
@@ -91,13 +92,7 @@ export interface McSummary {
 }
 
 export function stat(xs: number[]): Stat {
-  const n = xs.length;
-  if (n === 0) return { mean: NaN, sd: NaN, ci95: NaN, p05: NaN, p50: NaN, p95: NaN };
-  const mean = xs.reduce((a, x) => a + x, 0) / n;
-  const sd = n > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean) ** 2, 0) / (n - 1)) : 0;
-  const s = [...xs].sort((a, b) => a - b);
-  const q = (p: number) => s[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
-  return { mean, sd, ci95: (1.96 * sd) / Math.sqrt(n), p05: q(0.05), p50: q(0.5), p95: q(0.95) };
+  return summaryStat(xs);
 }
 
 /* ------------------------------ event heap ------------------------------ */

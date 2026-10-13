@@ -354,10 +354,18 @@ export const SdcPolicySchema = z.object({
   fallbackDelayHours: z.number().positive().default(120),
   /** volatile clean step state: a detected corruption redoes at most stepSeconds and recovers in recoverSeconds */
   stepRecovery: z.object({ stepSeconds: z.number().nonnegative().default(1), recoverSeconds: z.number().nonnegative().default(1) }).optional(),
+  /**
+   * v3.5 what happens to the work of a window that ends with an unresolved corruption: keep the last clean checkpoint
+   * (the audited review engine, HAC-D's default) or discard the whole window (the reference V4 engine and ReMAP's legacy
+   * `delivery`: delivered = 0 when the month ends contaminated). The two rules are different metrics (docs/MODEL_REFERENCE.md §20.1).
+   */
+  terminalRule: z.enum(['retain-last-clean', 'discard-all']).default('retain-last-clean'),
 });
 
 /** v3 recovery mechanism chain tried before the global checkpoint recovery (docs/MODEL_REFERENCE.md §19). */
 export const MechanismChainSchema = z.object({
+  /** v3.5 order in which the detection-delayed rungs are tried (prediction and network failover always come first); missing rungs follow in the default order replay → hotswap → elastic → process */
+  order: z.array(z.enum(['replay', 'hotswap', 'elastic', 'process'])).optional(),
   /** v3.2 failure prediction with pre-emptive migration (recall, precision, migration pause); false alarms add pauses */
   predict: z.object({ recall: z.number().min(0).max(1).default(0.5), precision: z.number().min(0.01).max(1).default(0.8), migrationSeconds: z.number().nonnegative().default(180) }).optional(),
   /** v3.2 network failover inside the collective (multi-NIC, fault-tolerant routing): absorbed within an iteration */

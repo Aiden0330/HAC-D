@@ -44,6 +44,7 @@ Web 应用：「方案」页 → 加载示例（九个内置方案）→ 其他�
 - v2.1（2026-10-10）：MTTR 混合、精确更新 / 乘积 / Daly 模型、首要值规则、A_op、参考基线示例。
 - v3：静默错误交付模型、恢复机制链与混合更新式、窗口账本仿真、机制库与精确 Shapley 归因；与参考引擎在 1 万–50 万卡上的正确有效产出一致（93.3 / 62.6 / 45.7 / 25.3 % 对 93.33 / 62.56 / 45.87 / 25.24 %）。
 - v3.1（2026-10-11）：正确交付口径的分配、机制规划器、分配实践说明、用户手册、规范与工作流文档、Claude Code 技能。
+- v3.5（2026-10-13）：来自与参考引擎、ReMAP 的三方对比（`docs/TOOL_COMPARISON.md`，`scripts/ref-compare-v1.ts` 以机器精度复现参考工具 V1 闭式结果）：静默错误窗口的期末规则（保留最后干净检查点 / 期末未解决则整窗口清零，V4 口径，闭式解经独立递推与账本仿真验证）、Student-t 半宽与 Wilson 区间及规划器的 支持 / 不确定 / 未达到 判定、分配页的账本损失预算（按比例 / 均分 / 自定义权重，逐项杠杆）、基于检查点无故障上界的不可达证明、可配置的恢复梯级顺序、由事件计数估计故障率（精确 Garwood 区间；`hacd rate`、`estimate_rate`、部件编辑器）。
 
 ## 文档
 
@@ -51,7 +52,7 @@ Web 应用：「方案」页 → 加载示例（九个内置方案）→ 其他�
 - 规范：`docs/SPEC.md`；方案 JSON Schema `docs/scenario.schema.json`。
 - 工作流：`docs/WORKFLOW.md`（分析工作流 A1–A10、开发工作流 B1–B8）；分配实践 `docs/ALLOCATION_PRACTICE.md`。
 - 技能：`docs/SKILLS.md`（`.claude/skills` 中的 model-check、release-check、scenario-review、allocate-to-target、reference-compare、add-parameter、build-manual）。
-- 模型：`docs/MODEL_REFERENCE.md`；对比 `docs/REFERENCE_COMPARISON_100K_500K.md`、`docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`；各机制对可用率的贡献、公式因子与更多方法 `docs/MECHANISM_CONTRIBUTIONS.md`（示例 `ref-catalog-100k`，54 条事件、逐事件机制标志）；昇腾来源 `docs/ASCEND_SOURCES.md`。
+- 模型：`docs/MODEL_REFERENCE.md`；对比 `docs/REFERENCE_COMPARISON_100K_500K.md`、`docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`；各机制对可用率的贡献、公式因子与更多方法 `docs/MECHANISM_CONTRIBUTIONS.md`（示例 `ref-catalog-100k`，54 条事件、逐事件机制标志）；与参考引擎、ReMAP 的三方对比（公式、口径、机制、分配、统计）`docs/TOOL_COMPARISON.md`（`scripts/ref-compare-v1.ts` 以机器精度复现参考工具第一版闭式结果）；昇腾来源 `docs/ASCEND_SOURCES.md`。
 
 ## 目录结构
 

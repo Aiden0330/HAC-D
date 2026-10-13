@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow } from '@hac-d/core';
+import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow, rungOrder, unitRateFromCounts } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
@@ -238,6 +238,9 @@ function SdcMechanismsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
         <Field label={t('scenario.sdcCoverage')}><NumberInput value={s.sdc.detection.coverage} min={0} max={1} step={0.01} onChange={(v) => setSdc((q) => ({ ...q, detection: { ...q.detection, coverage: v } }))} /></Field>
         <Field label={t('scenario.sdcDetectS')}><NumberInput value={s.sdc.detection.detectSeconds} min={0} onChange={(v) => setSdc((q) => ({ ...q, detection: { ...q.detection, detectSeconds: v } }))} /></Field>
         <Field label={t('scenario.sdcFallback')}><NumberInput value={s.sdc.fallbackDelayHours} min={0.001} onChange={(v) => setSdc((q) => ({ ...q, fallbackDelayHours: v }))} /></Field>
+        <Field label={t('scenario.sdcTerminal')}>
+          <Select value={s.sdc.terminalRule} onChange={(v) => setSdc((q) => ({ ...q, terminalRule: v as Scenario['sdc']['terminalRule'] }))} options={[{ value: 'retain-last-clean', label: t('scenario.sdcTerminalRetain') }, { value: 'discard-all', label: t('scenario.sdcTerminalDiscard') }]} />
+        </Field>
         <Field label={t('scenario.sdcStep')}>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13, padding: '6px 0' }}>
             <input type="checkbox" checked={!!s.sdc.stepRecovery} onChange={(e) => setSdc((q) => ({ ...q, stepRecovery: e.target.checked ? { stepSeconds: 1, recoverSeconds: 1 } : undefined }))} />
@@ -253,6 +256,18 @@ function SdcMechanismsEditor({ s, upd }: { s: Scenario; upd: Upd }) {
       </div>
       <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.mechTitle')}</h3>
       <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>{t('scenario.mechNote')}</div>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 12 }}>
+        <span className="muted">{t('scenario.chainOrder')}:</span>
+        {rungOrder(m.order).map((r, i, arr) => (
+          <span key={r} className="btn small" style={{ cursor: 'default' }}>
+            {i + 1}. {r}
+            {i > 0 && (
+              <button type="button" className="btn small" style={{ marginLeft: 4, padding: '0 4px' }} title={t('scenario.chainOrderHint')} onClick={() => { const next = [...arr]; [next[i - 1], next[i]] = [next[i], next[i - 1]]; setMech((q) => ({ ...q, order: next })); }}>↑</button>
+            )}
+          </span>
+        ))}
+        <span className="muted" style={{ fontSize: 11 }}>{t('scenario.chainOrderHint')}</span>
+      </div>
       <div className="grid cols-3" style={{ gap: 12, marginBottom: 12 }}>
         <div>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
@@ -477,6 +492,7 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
   const lang = useLang();
   const [open, setOpen] = useState<Set<string>>(new Set());
   const [anchor, setAnchor] = useState<Record<string, { n: number; h: number }>>({});
+  const [incident, setIncident] = useState<Record<string, { events: number; units: number; hours: number; confidence: number }>>({});
   const toggle = (id: string) => setOpen((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const setComp = (id: string, fn: (c: Component) => Component) => upd((x) => ({ ...x, components: x.components.map((c) => (c.id === id ? fn(c) : c)) }));
   const add = () =>
@@ -609,6 +625,36 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
                               <NumberInput value={anchor[c.id]?.h ?? 30} min={0.001} onChange={(v) => setAnchor((a) => ({ ...a, [c.id]: { n: a[c.id]?.n ?? 10000, h: v } }))} />
                               <button type="button" className="btn small" onClick={() => { const a = anchor[c.id] ?? { n: 10000, h: 30 }; setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value: a.n * a.h, unit: 'mtbf_h', provenance: { source: 'fleet MTBF anchor', confidence: 'assumed', ...q.failure.provenance, derivation: `${a.n} units × ${a.h} h fleet MTBF → per-unit MTBF ${(a.n * a.h).toLocaleString('en-US')} h` } } }))}}>{t('common.apply')}</button>
                             </div>
+                            <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.rateFromCounts')}</h4>
+                            <div className="muted" style={{ fontSize: 11, marginBottom: 4 }}>{t('scenario.rateFromCountsHint')}</div>
+                            {(() => {
+                              const inc = incident[c.id] ?? { events: 0, units: Math.max(1, Math.round(row?.count ?? 1000)), hours: 720, confidence: 0.95 };
+                              const setInc = (patch: Partial<typeof inc>) => setIncident((a) => ({ ...a, [c.id]: { ...inc, ...patch } }));
+                              let est: ReturnType<typeof unitRateFromCounts> | undefined;
+                              try {
+                                est = unitRateFromCounts(Math.max(0, Math.round(inc.events)), inc.units, inc.hours, inc.confidence);
+                              } catch {
+                                est = undefined;
+                              }
+                              return (
+                                <>
+                                  <div style={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <NumberInput value={inc.events} min={0} step={1} onChange={(v) => setInc({ events: v })} />
+                                    <span className="muted" style={{ fontSize: 11 }}>{t('scenario.rateEvents')} /</span>
+                                    <NumberInput value={inc.units} min={1} step={1} onChange={(v) => setInc({ units: v })} />
+                                    <span className="muted" style={{ fontSize: 11 }}>{t('scenario.rateUnits')} ×</span>
+                                    <NumberInput value={inc.hours} min={0.001} onChange={(v) => setInc({ hours: v })} />
+                                    <span className="muted" style={{ fontSize: 11 }}>{t('scenario.rateHours')} ·</span>
+                                    <NumberInput value={inc.confidence} min={0.5} max={0.9999} step={0.01} onChange={(v) => setInc({ confidence: v })} />
+                                    <span className="muted" style={{ fontSize: 11 }}>{t('scenario.rateConfidence')}</span>
+                                    {est && (
+                                      <button type="button" className="btn small" onClick={() => { const e = est!; const value = e.method === 'zero-event-upper-bound' ? e.upper.fit : e.fit; setComp(c.id, (q) => ({ ...q, failure: { ...q.failure, value, unit: 'FIT', provenance: { ...(q.failure.provenance ?? {}), source: 'incident counts', confidence: 'measured', derivation: `${e.events} events over ${e.units} units × ${e.hours} h = ${e.exposureHours.toExponential(3)} unit-hours: ${e.fit.toFixed(2)} FIT, ${(e.confidence * 100).toFixed(0)} % ${e.method === 'zero-event-upper-bound' ? 'one-sided upper bound' : 'Garwood interval'} [${e.lower.fit.toFixed(2)}, ${e.upper.fit.toFixed(2)}] FIT${e.method === 'zero-event-upper-bound' ? ' (upper bound used as the rate)' : ''}` } } })); }}>{t('scenario.rateApply')}</button>
+                                    )}
+                                  </div>
+                                  {est && <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>λ {est.ratePerHour.toExponential(3)} /h · {est.fit.toFixed(1)} FIT · MTBF {Number.isFinite(est.mtbfHours) ? est.mtbfHours.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' h' : '∞'} · {est.method === 'zero-event-upper-bound' ? t('scenario.rateUpper') : t('scenario.rateInterval')} [{est.lower.fit.toFixed(1)}, {est.upper.fit.toFixed(1)}] FIT ({est.method})</div>}
+                                </>
+                              );
+                            })()}
                             <h4 style={{ margin: '12px 0 6px', fontSize: 13 }}>{t('scenario.sdcComponent')}</h4>
                             <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13 }}>
                               <input type="checkbox" checked={!!c.sdc} onChange={(e) => setComp(c.id, (q) => ({ ...q, sdc: e.target.checked ? { ratePerHour: Math.max(1e-12, (row?.lambdaPerUnitPerHour ?? 1e-6) * 0.014 / 0.966) } : undefined }))} />

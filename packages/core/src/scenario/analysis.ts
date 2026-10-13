@@ -2,7 +2,7 @@
  * Scenario-level analyses used by the UI, CLI and MCP: option comparison, tornado sensitivity,
  * allocation from a goodput or availability target, and quick option variants.
  */
-import { evaluateScenario, type EvaluationResult } from './evaluate.js';
+import { type TrainingLedger, evaluateScenario, type EvaluationResult } from './evaluate.js';
 import { computeCounts, componentInstances } from './build.js';
 import type { Scenario } from './schema.js';
 import { tornado, type TornadoRow } from '../sensitivity/index.js';
@@ -217,8 +217,85 @@ export function tornadoForScenario(s: Scenario, metric: TornadoMetric = 'goodput
 
 export type AllocationMethod = 'equal' | 'arinc' | 'agree' | 'feasibility' | 'minimum-effort' | 'cost-optimal';
 
+/** v3.5 loss budget over the window ledger (docs/MODEL_REFERENCE.md §7): (1 − G*) split over the loss lines by weight. */
+export type LedgerLossLine = Exclude<keyof TrainingLedger, 'delivered'>;
+export const LEDGER_LOSS_LINES: LedgerLossLine[] = ['downtime', 'save', 'rollback', 'slowdown', 'local', 'blocked', 'overhead', 'sdcRollback', 'terminal'];
+export type LossBudgetMethod = 'proportional' | 'equal' | 'custom';
+export const LOSS_LEVERS: Record<LedgerLossLine, string> = {
+  downtime: 'detection coverage and time (D-HARD); automatic recovery time and success (R-CKPT, C-MEM); rungs that avoid the global recovery (R-REPLAY, R-NETFAIL, R-HOTSWAP, R-ELASTIC, P-PREDICT); lower interruption rates (H-RELIABILITY, H-LEMON)',
+  save: 'checkpoint save time δ and interval τ (C-FAST, C-MEM)',
+  rollback: 'checkpoint interval τ (C-FAST); rungs without rollback (R-REPLAY, R-NETFAIL, R-HOTSWAP, R-ELASTIC)',
+  slowdown: 'sub-health detection and isolation (D-SLOW); fewer and shorter episodes (H-SWEEP)',
+  local: 'elastic domain count and recovery time (R-ELASTIC)',
+  blocked: 'hot-spare pool size and replenishment time',
+  overhead: 'fault-free overhead of the enabled mechanisms (C-MEM, D-SDC-DMR)',
+  sdcRollback: 'immediate silent-corruption detection (D-SDC, D-SDC-DMR) and step recovery (R-SDC)',
+  terminal: 'immediate detection coverage and the fallback discovery delay (D-SDC); the terminal rule',
+};
+export interface LossBudgetRow {
+  line: LedgerLossLine;
+  /** current loss (fraction of the window, and hours) */
+  current: number;
+  currentHours: number;
+  weight: number;
+  allowed: number;
+  allowedHours: number;
+  /** current − allowed (positive: over budget) */
+  excess: number;
+  excessHours: number;
+  lever: string;
+}
+export interface LossBudget {
+  target: number;
+  windowHours: number;
+  method: LossBudgetMethod;
+  totalAllowed: number;
+  totalAllowedHours: number;
+  totalCurrent: number;
+  totalCurrentHours: number;
+  rows: LossBudgetRow[];
+  notes: string[];
+}
+
+export function lossBudget(ledger: TrainingLedger, target: number, windowHours: number, opts: { method?: LossBudgetMethod; weights?: Partial<Record<LedgerLossLine, number>> } = {}): LossBudget {
+  const notes: string[] = [];
+  const current = Object.fromEntries(LEDGER_LOSS_LINES.map((k) => [k, Math.max(0, ledger[k])])) as Record<LedgerLossLine, number>;
+  const totalCurrent = LEDGER_LOSS_LINES.reduce((a, k) => a + current[k], 0);
+  const totalAllowed = Math.max(0, 1 - target);
+  let method: LossBudgetMethod = opts.method ?? 'proportional';
+  const equalWeights = () => {
+    const active = LEDGER_LOSS_LINES.filter((k) => current[k] > 0);
+    const set = active.length ? active : LEDGER_LOSS_LINES;
+    return Object.fromEntries(LEDGER_LOSS_LINES.map((k) => [k, set.includes(k) ? 1 / set.length : 0])) as Record<LedgerLossLine, number>;
+  };
+  let weights: Record<LedgerLossLine, number> = equalWeights();
+  if (method === 'custom') {
+    const raw = Object.fromEntries(LEDGER_LOSS_LINES.map((k) => [k, Math.max(0, opts.weights?.[k] ?? 0)])) as Record<LedgerLossLine, number>;
+    const sum = LEDGER_LOSS_LINES.reduce((a, k) => a + raw[k], 0);
+    if (sum > 0) weights = Object.fromEntries(LEDGER_LOSS_LINES.map((k) => [k, raw[k] / sum])) as Record<LedgerLossLine, number>;
+    else {
+      method = 'proportional';
+      notes.push('custom weights sum to zero: proportional weights used instead');
+    }
+  }
+  if (method === 'proportional') {
+    if (totalCurrent > 0) weights = Object.fromEntries(LEDGER_LOSS_LINES.map((k) => [k, current[k] / totalCurrent])) as Record<LedgerLossLine, number>;
+    else notes.push('no current loss: equal weights over every line');
+  }
+  const rows: LossBudgetRow[] = LEDGER_LOSS_LINES.map((k) => {
+    const allowed = totalAllowed * weights[k];
+    return { line: k, current: current[k], currentHours: current[k] * windowHours, weight: weights[k], allowed, allowedHours: allowed * windowHours, excess: current[k] - allowed, excessHours: (current[k] - allowed) * windowHours, lever: LOSS_LEVERS[k] };
+  });
+  notes.push(`loss budget (1 − ${(target * 100).toFixed(2)} %) = ${(totalAllowed * 100).toFixed(2)} % of the ${windowHours} h window = ${(totalAllowed * windowHours).toFixed(1)} h, split ${method === 'proportional' ? 'in proportion to the current ledger' : method === 'equal' ? 'equally over the lines with a current loss' : 'by the given weights'}; the lines are mutually exclusive shares of the window (closed-form ledger), so the split is an accounting target, not a proof that each line can be reached independently`);
+  if (totalCurrent > totalAllowed) notes.push(`current losses ${(totalCurrent * 100).toFixed(2)} % exceed the budget by ${((totalCurrent - totalAllowed) * windowHours).toFixed(1)} h; the lines over their allowance point at the levers to use first`);
+  else notes.push(`current losses ${(totalCurrent * 100).toFixed(2)} % are within the budget: lines under their allowance may degrade by the slack shown`);
+  return { target, windowHours, method, totalAllowed, totalAllowedHours: totalAllowed * windowHours, totalCurrent, totalCurrentHours: totalCurrent * windowHours, rows, notes };
+}
+
 export interface ScenarioAllocation {
   target: { goodput?: number; availability?: number };
+  /** v3.5 loss budget over the window ledger (training, delivered target) */
+  lossBudget?: LossBudget;
   /** v3.3 methods that coincide for this scenario's weights */
   coincide?: AllocationMethod[];
   /** goodput-budget split (training) */
@@ -345,11 +422,16 @@ function bisectDown(f: (x: number) => number, lo: number, hi: number, target: nu
   return lo;
 }
 
-export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; availabilityTarget?: number; method?: AllocationMethod; restartShare?: number; basis?: AllocationBasis } = {}): ScenarioAllocation {
+export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; availabilityTarget?: number; method?: AllocationMethod; restartShare?: number; basis?: AllocationBasis; lossMethod?: LossBudgetMethod; lossWeights?: Partial<Record<LedgerLossLine, number>> } = {}): ScenarioAllocation {
   const method = opts.method ?? 'arinc';
   let r = evaluateScenario(s);
   const notes: string[] = [];
   const out: ScenarioAllocation = { target: { goodput: opts.goodputTarget ?? s.targets.goodput, availability: opts.availabilityTarget ?? s.targets.availability }, notes };
+  // v3.5 loss budget on the current (unmodified) ledger: the ledger closes on the delivered goodput, so it is compared with the
+  // delivered target (the effective basis with silent corruption would mix two 口径 and is skipped)
+  if (s.workload.type === 'training' && r.training && out.target.goodput !== undefined && (opts.basis === 'delivered' || !r.training.sdc)) {
+    out.lossBudget = lossBudget(r.training.ledger, out.target.goodput, s.workload.durationDays * 24, { method: opts.lossMethod, weights: opts.lossWeights });
+  }
   const subs = subsystemsFrom(s);
   out.coincide = coincidingMethods(subs);
   let budgetScenario = s;

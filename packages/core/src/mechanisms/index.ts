@@ -485,6 +485,10 @@ export interface MechanismValues {
   aOp: number;
   mtbiHours: number;
   recoveryS: number;
+  /** checkpoint settings and window of the evaluated scenario (for the no-fault bounds of the planner) */
+  tauS: number;
+  deltaS: number;
+  horizonH: number;
 }
 
 export interface MechanismGain {
@@ -532,7 +536,8 @@ export function applyMechanisms(s: Scenario, ids: string[], parameters: Record<s
 export function mechanismValues(s: Scenario): MechanismValues {
   const r = evaluateScenario(s, { structure: false }).training;
   if (!r) throw new Error('mechanism attribution needs a training workload');
-  return { delivered: r.deliveredGoodput, effective: r.effectiveGoodput, aOp: r.operationalAvailability, mtbiHours: r.mtbiHours, recoveryS: r.recoveryS };
+  const w = s.workload as Extract<Scenario['workload'], { type: 'training' }>;
+  return { delivered: r.deliveredGoodput, effective: r.effectiveGoodput, aOp: r.operationalAvailability, mtbiHours: r.mtbiHours, recoveryS: r.recoveryS, tauS: r.tauS, deltaS: w.deltaS, horizonH: w.durationDays * 24 };
 }
 
 const factorial = (n: number): number => (n < 2 ? 1 : n * factorial(n - 1));

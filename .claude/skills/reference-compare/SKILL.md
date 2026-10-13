@@ -12,6 +12,8 @@ Scripts:
 - `node --import tsx scripts/ref-compare.ts 20` runs HAC-D closed forms and the unit-level Monte Carlo on the hard-only and sub-health baselines.
 - `node --import tsx scripts/ref-compare-v3.ts 200` runs HAC-D three-class closed forms, the ledger simulation, single mechanisms and the six-player Shapley at 10k–500k against the published means.
 
+The reference's version-1 closed form is HAC-D's exact renewal: `node --import tsx scripts/ref-compare-v1.ts` must agree to machine precision (docs/TOOL_COMPARISON.md §3.3). ReMAP (`remap/remap-main/`, untracked) vendors the same engines, so no separate numeric check is needed for it; docs/TOOL_COMPARISON.md lists its additions.
+
 Expectations (docs/REFERENCE_COMPARISON_100K_500K.md): hard-only exact renewal within 0.05 pt of the reference useful throughput; A_op within 0.01 pt; three-class delivered goodput inside the reference CI (93.33 / 62.56 / 45.87 / 25.24 ± 0.26–0.46 at 10k / 100k / 200k / 500k); single-mechanism gains within the reference's paired CI except elasticity, whose reference deltas carry ±0.3–0.6 pt because its mechanism stream desynchronises the fault stream.
 
 When a number moves outside these bands after a change: check 口径 first (running-clock vs wall-clock rates, what "rollback" includes), then the finite-window effects (episode pauses, terminal discard), then the model (docs/MODEL_REFERENCE.md §19–§21). Record the new table in the comparison document.

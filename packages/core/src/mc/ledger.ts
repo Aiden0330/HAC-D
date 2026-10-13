@@ -7,6 +7,9 @@
  * Semantics follow the audited ai-cluster-reliability engine (catalogs/review-2026-10-09/engine.cjs) so the two
  * tools can be cross-checked on one scenario. Time unit inside: hours; faults arrive on the running clock.
  */
+import { rungOrder } from '../mechanisms/chain.js';
+import { summaryStat, proportionEstimate, type SummaryStat, type ProportionEstimate } from '../math/stats.js';
+import type { SdcTerminalRule } from '../sdc/index.js';
 import { Rng } from '../math/rng.js';
 import type { ChainParams } from '../mechanisms/chain.js';
 
@@ -45,7 +48,9 @@ export interface LedgerSpec {
   chain: ChainParams;
   /** fault-free throughput overhead of the enabled mechanisms (fraction of compute) */
   overhead?: number;
-  sdc: { coverage: number; detectSeconds: number; fallbackDelayHours: number; step?: { stepSeconds: number; recoverSeconds: number } };
+  sdc: { coverage: number; detectSeconds: number; fallbackDelayHours: number; step?: { stepSeconds: number; recoverSeconds: number }; terminalRule?: SdcTerminalRule };
+  /** v3.5 order of the detection-delayed rungs (default replay → hotswap → elastic → process) */
+  chainOrder?: readonly string[];
   classes: LedgerClassSpec[];
 }
 
@@ -125,6 +130,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   let cpDirty = false;
   let phase = 0;
   let dirty: { discover: number; cls: number } | null = null;
+  let sdcRecoveryUntil = 0; // end of the recovery pause of the last discovered episode (discard-all counts it as unresolved)
   let downUntil = 0;
   const slows: { cls: number; detected: boolean; until: number }[] = [];
   const locals: { domain: number; until: number; cls: number }[] = [];
@@ -189,46 +195,46 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       }
       failed += ch.netfail.failureSeconds;
     }
-    if (ch.replay && cls.applicable.replay > 0 && tech.uniform() < cls.applicable.replay) {
-      if (tech.uniform() < ch.replay.success) {
-        counts.replay++;
-        pause(delayS, failed + ch.replay.successSeconds);
-        return;
+    // the detection-delayed rungs in the configured order (default replay → hotswap → elastic → process)
+    for (const rung of rungOrder(spec.chainOrder)) {
+      if (rung === 'replay' && ch.replay && cls.applicable.replay > 0 && tech.uniform() < cls.applicable.replay) {
+        if (tech.uniform() < ch.replay.success) {
+          counts.replay++;
+          pause(delayS, failed + ch.replay.successSeconds);
+          return;
+        }
+        failed += ch.replay.failureSeconds;
+      } else if (rung === 'hotswap' && ch.hotswap && cls.applicable.hotswap > 0 && tech.uniform() < cls.applicable.hotswap) {
+        if (tech.uniform() < ch.hotswap.success) {
+          counts.hotswap++;
+          pause(delayS, failed + ch.hotswap.successSeconds);
+          return;
+        }
+        failed += ch.hotswap.failureSeconds;
+      } else if (rung === 'elastic' && ch.elastic && cls.applicable.elastic > 0 && tech.uniform() < cls.applicable.elastic) {
+        if (tech.uniform() < ch.elastic.success) {
+          counts.elastic++;
+          acct(current).recoveries++;
+          const domain = Math.floor(tech.uniform() * Math.max(1, ch.elastic.domains));
+          const until = t + (delayS + failed + ch.elastic.recoverSeconds) / 3600;
+          const active = locals.find((x) => x.domain === domain);
+          if (active) {
+            if (until > active.until) active.until = until;
+          } else locals.push({ domain, until, cls: current });
+          globalPause(failed + ch.elastic.syncSeconds);
+          return;
+        }
+        failed += ch.elastic.failureSeconds;
+      } else if (rung === 'process' && ch.process && cls.applicable.process > 0 && tech.uniform() < cls.applicable.process) {
+        if (tech.uniform() < ch.process.success) {
+          counts.process++;
+          rollback(cp, 'hard');
+          if (!cpDirty) dirty = null;
+          pause(delayS, failed + ch.process.successSeconds);
+          return;
+        }
+        failed += ch.process.failureSeconds;
       }
-      failed += ch.replay.failureSeconds;
-    }
-    if (ch.hotswap && cls.applicable.hotswap > 0 && tech.uniform() < cls.applicable.hotswap) {
-      if (tech.uniform() < ch.hotswap.success) {
-        counts.hotswap++;
-        pause(delayS, failed + ch.hotswap.successSeconds);
-        return;
-      }
-      failed += ch.hotswap.failureSeconds;
-    }
-    if (ch.elastic && cls.applicable.elastic > 0 && tech.uniform() < cls.applicable.elastic) {
-      if (tech.uniform() < ch.elastic.success) {
-        counts.elastic++;
-        acct(current).recoveries++;
-        const domain = Math.floor(tech.uniform() * Math.max(1, ch.elastic.domains));
-        const until = t + (delayS + failed + ch.elastic.recoverSeconds) / 3600;
-        const active = locals.find((x) => x.domain === domain);
-        if (active) {
-          if (until > active.until) active.until = until;
-        } else locals.push({ domain, until, cls: current });
-        globalPause(failed + ch.elastic.syncSeconds);
-        return;
-      }
-      failed += ch.elastic.failureSeconds;
-    }
-    if (ch.process && cls.applicable.process > 0 && tech.uniform() < cls.applicable.process) {
-      if (tech.uniform() < ch.process.success) {
-        counts.process++;
-        rollback(cp, 'hard');
-        if (!cpDirty) dirty = null;
-        pause(delayS, failed + ch.process.successSeconds);
-        return;
-      }
-      failed += ch.process.failureSeconds;
     }
     rollback(cp, 'hard');
     // a rollback before the first dirty checkpoint was written clears the corruption
@@ -294,6 +300,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       dirty = null;
       counts.sdcEpisodes++;
       pause(0, null);
+      sdcRecoveryUntil = downUntil;
     }
     for (let i = locals.length - 1; i >= 0; i--) if (locals[i].until <= t + 1e-9) locals.splice(i, 1);
     let isolate = false;
@@ -350,9 +357,14 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       remaining = arrival();
     }
   }
-  const correct = dirty ? cleanCp : progress;
+  // terminal rule: retain-last-clean keeps the last clean checkpoint of a window that ends dirty; discard-all delivers nothing
+  // when the window ends inside an episode (dirty, or still in the recovery pause of the last discovery)
+  const discardAll = spec.sdc.terminalRule === 'discard-all';
+  const unresolved = !!dirty || sdcRecoveryUntil > T + 1e-9;
+  const correct = dirty ? (discardAll ? 0 : cleanCp) : discardAll && unresolved ? 0 : progress;
   ledger.terminalInvalid = progress - correct;
   if (dirty) acct(dirty.cls).terminalInvalid += ledger.terminalInvalid;
+  else if (ledger.terminalInvalid > 0) acct(current).terminalInvalid += ledger.terminalInvalid;
   const accounted = correct + ledger.downtime + ledger.save + ledger.slowdown + ledger.rollback + ledger.terminalInvalid + ledger.localLoss + ledger.overhead;
   if (Math.abs(accounted - T) > 1e-6 * Math.max(1, T)) throw new Error(`ledger does not conserve time: ${accounted - T}`);
   return {
@@ -363,18 +375,12 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     ledger,
     counts,
     byClass,
-    unresolvedAtEnd: !!dirty,
+    unresolvedAtEnd: unresolved,
   };
 }
 
-export interface LedgerStat {
-  mean: number;
-  sd: number;
-  ci95: number;
-  p05: number;
-  p50: number;
-  p95: number;
-}
+/** mean, sample sd, Student-t 95 % half-width, type-7 quantiles (docs/MODEL_REFERENCE.md §21) */
+export type LedgerStat = SummaryStat;
 
 export interface LedgerSummary {
   trials: number;
@@ -389,19 +395,13 @@ export interface LedgerSummary {
   pUnresolvedAtEnd: number;
   /** share of replications with delivered ≥ target (when a target is given) */
   pAtLeastTarget?: number;
+  /** v3.5 Wilson 95 % interval of that share */
+  pAtLeastTargetInterval?: ProportionEstimate;
   target?: number;
   values: number[];
 }
 
-function statOf(xs: number[]): LedgerStat {
-  const n = xs.length;
-  if (!n) return { mean: NaN, sd: NaN, ci95: NaN, p05: NaN, p50: NaN, p95: NaN };
-  const mean = xs.reduce((a, b) => a + b, 0) / n;
-  const sd = n > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean) ** 2, 0) / (n - 1)) : 0;
-  const s = [...xs].sort((a, b) => a - b);
-  const q = (p: number) => s[Math.min(n - 1, Math.max(0, Math.round(p * (n - 1))))];
-  return { mean, sd, ci95: (1.96 * sd) / Math.sqrt(n), p05: q(0.05), p50: q(0.5), p95: q(0.95) };
-}
+const statOf = summaryStat;
 
 /** Seeds of replication i: arrivals and mechanism outcomes use separate streams so coalitions share the fault history. */
 export function ledgerSeeds(seed: number | string, i: number): { rng: Rng; tech: Rng } {
@@ -450,6 +450,7 @@ export function summarizeLedger(rows: LedgerReplication[], seed: number | string
     byClass,
     pUnresolvedAtEnd: rows.filter((r) => r.unresolvedAtEnd).length / (n || 1),
     pAtLeastTarget: target !== undefined ? values.filter((v) => v >= target).length / (n || 1) : undefined,
+    pAtLeastTargetInterval: target !== undefined && n > 0 ? proportionEstimate(values.filter((v) => v >= target).length, n) : undefined,
     target,
     values,
   };

@@ -90,9 +90,9 @@ export function SimulatePage() {
               {' '}{t('simulate.mc')} {fmtPct(L.delivered.mean, 2)} ± {fmtPct(L.delivered.ci95, 2)} vs {t('simulate.closedForm')} {fmtPct(cf.delivered, 2)} ({t('simulate.delta')} {fmtPct(led.delta.delivered, 2)}) · {t('simulate.aop')} {fmtPct(L.operationalAvailability.mean, 3)} vs {fmtPct(cf.operationalAvailability, 3)}
             </div>
             <div className="kpi-row">
-              <Kpi label={`${t('simulate.delivered')} (${t('simulate.mc')})`} value={fmtPct(L.delivered.mean, 2)} note={`${t('simulate.ci')} ± ${fmtPct(L.delivered.ci95, 2)} · P5 ${fmtPct(L.delivered.p05, 1)} · P50 ${fmtPct(L.delivered.p50, 1)} · P95 ${fmtPct(L.delivered.p95, 1)}`} hero />
+              <Kpi label={`${t('simulate.delivered')} (${t('simulate.mc')})`} value={fmtPct(L.delivered.mean, 2)} note={`${t('simulate.ci')} ± ${fmtPct(L.delivered.ci95, 2)} (${t('simulate.tCi')}) · P5 ${fmtPct(L.delivered.p05, 1)} · P50 ${fmtPct(L.delivered.p50, 1)} · P95 ${fmtPct(L.delivered.p95, 1)}`} hero />
               <Kpi label={t('simulate.aop')} value={fmtPct(L.operationalAvailability.mean, 3)} note={`${t('simulate.closedForm')} ${fmtPct(cf.operationalAvailability, 3)}`} />
-              {L.pAtLeastTarget !== undefined && <Kpi label={`${t('simulate.pTarget')} ${fmtPct(L.target ?? 0, 0)}`} value={fmtPct(L.pAtLeastTarget, 1)} tone={L.pAtLeastTarget < 0.5 ? 'warn' : undefined} />}
+              {L.pAtLeastTarget !== undefined && <Kpi label={`${t('simulate.pTarget')} ${fmtPct(L.target ?? 0, 0)}`} value={fmtPct(L.pAtLeastTarget, 1)} note={L.pAtLeastTargetInterval ? `${t('simulate.wilson')} ${fmtPct(L.pAtLeastTargetInterval.low, 1)} – ${fmtPct(L.pAtLeastTargetInterval.high, 1)}` : undefined} tone={L.pAtLeastTarget < 0.5 ? 'warn' : undefined} />}
               <Kpi label={t('simulate.unresolved')} value={fmtPct(L.pUnresolvedAtEnd, 1)} note={`${t('simulate.episodes')} ${fmtNum(L.counts.sdcEpisodes, 2)}`} />
               <Kpi label={t('simulate.counts')} value={`${fmtNum(L.counts.hard, 0)} / ${fmtNum(L.counts.slow, 1)} / ${fmtNum(L.counts.sdc, 1)}`} note={`hard / slow / silent · ${t('simulate.manual')} ${fmtNum(L.counts.manual, 2)} · replay ${fmtNum(L.counts.replay, 1)} · elastic ${fmtNum(L.counts.elastic, 1)} · process ${fmtNum(L.counts.process, 1)}`} />
             </div>

@@ -10,7 +10,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 - **Specification**: `docs/SPEC.md` (requirements, data model, KPIs and 口径, interfaces, validation); scenario JSON Schema `docs/scenario.schema.json`.
 - **Workflows**: `docs/WORKFLOW.md` (analysis workflow A1–A10, development workflow B1–B8); allocation practice `docs/ALLOCATION_PRACTICE.md`.
 - **Skills**: `docs/SKILLS.md` lists the Claude Code skills in `.claude/skills` (model-check, release-check, scenario-review, allocate-to-target, reference-compare, add-parameter, build-manual).
-- **Models**: `docs/MODEL_REFERENCE.md`; comparisons `docs/REFERENCE_COMPARISON_100K_500K.md`, `docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`; mechanism contributions, formula factors and further methods `docs/MECHANISM_CONTRIBUTIONS.md` (example `ref-catalog-100k`, 54 events with per-event mechanism flags).
+- **Models**: `docs/MODEL_REFERENCE.md`; comparisons `docs/REFERENCE_COMPARISON_100K_500K.md`, `docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`; mechanism contributions, formula factors and further methods `docs/MECHANISM_CONTRIBUTIONS.md` (example `ref-catalog-100k`, 54 events with per-event mechanism flags); three-tool comparison with the reference engine and ReMAP (formulas, 口径, mechanisms, allocation, statistics) `docs/TOOL_COMPARISON.md` (`scripts/ref-compare-v1.ts` reproduces the reference's version-1 closed form to machine precision).
 
 ## Quick start
 
@@ -58,6 +58,14 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - **Window-ledger Monte Carlo** (`mc/ledger.ts`): the reference engine's semantics (three fault classes, chain, clean-checkpoint retention, terminal discard) with a conserved ledger, CI, quantiles and P(≥ target); Simulate page default mode.
 - Example `ref-three-classes-100k` (the reference's confirmed baseline) and `scripts/ref-compare-v3.ts` for the cross-check; `docs/MODEL_REFERENCE.md` §19–§22, `docs/REFERENCE_COMPARISON_100K_500K.md` §5.
 - **Allocation with mechanisms** (v3.1): the Allocation page accepts a delivered-goodput target (feasibility by hardware alone, required silent-corruption detection and fallback delay), and the Mechanisms page plans the cheapest feasible mechanism set by effort score with derated parameters, necessary mechanisms, a coverage × recovery scan and a ledger verification of P(window ≥ target); practice notes in `docs/ALLOCATION_PRACTICE.md`.
+
+## v3.5 (2026-10-13): from the comparison with the reference engine and ReMAP
+
+- **Terminal rule** of the silent-corruption window: keep the last clean checkpoint (default) or discard the whole window if it ends unresolved (the reference V4 / ReMAP `delivery` rule), closed form by a Poisson-count identity, validated against an independent renewal recursion and the ledger simulation; both values always reported.
+- **Statistics**: Student-t half-widths and type-7 quantiles for every simulation mean; Wilson intervals for P(window ≥ target) with a supported / uncertain / below verdict in the planner.
+- **Loss budget** over the window ledger on the Allocation page, `hacd allocate` and `allocate_scenario` (proportional / equal / custom weights, levers per line).
+- **Proof of infeasibility** in the planner from the checkpoint no-fault bound; **configurable rung order**; **incident-count rate estimation** with exact Garwood intervals (`hacd rate`, `estimate_rate`, component editor).
+- `docs/TOOL_COMPARISON.md` sets HAC-D against the reference engine's V1–V4 and ReMAP (`scripts/ref-compare-v1.ts` reproduces the V1 closed form to machine precision); `docs/MODEL_REFERENCE.md` §20.1, §19.2, §21.1, §22.5, §7.1, §23.
 
 ## Layout
 
