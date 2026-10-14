@@ -82,3 +82,19 @@ describe('allocation method weights (v3.3)', () => {
     expect(b.notes.some((n) => n.includes('Budget below the sum of best-known achievable rates'))).toBe(true);
   });
 });
+
+describe('v3.6: target out of reach of detection alone', () => {
+  it('budgets at q = 1 with a meaningful interruption budget and an explicit note', async () => {
+    const { EXAMPLES } = await import('../src/index.js');
+    const a = allocateScenario(EXAMPLES['ref-catalog-100k'](), { goodputTarget: 0.95, basis: 'delivered', method: 'arinc' });
+    expect(a.sdc).toBeDefined();
+    expect(a.sdc!.feasibleByHardware).toBe(false);
+    expect(a.sdc!.requiredCoverage).toBeUndefined();
+    expect(a.sdc!.coverageUsed).toBe(1);
+    expect(a.sdc!.effectiveTarget).toBeLessThan(0.96);
+    expect(a.notes.some((n) => n.includes('out of reach even with 100 % immediate detection') && n.includes('assume q = 1'))).toBe(true);
+    const factor = a.rateAllocation!.rows.find((r) => r.id === 'CORE-hard')!.improvementFactor!;
+    expect(factor).toBeGreaterThan(1);
+    expect(factor).toBeLessThan(2);
+  });
+});

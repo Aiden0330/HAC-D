@@ -134,10 +134,10 @@
 <h3>1.2 架构</h3>
 <div class="table-wrap"><table>
   <tr><th>包</th><th>作用</th><th>说明</th></tr>
-  <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付、机制链与机制库、规划器、备件、MTTR、分配、敏感性、成本、蒙特卡洛、方案 schema 与示例、参数库（635 条）</td></tr>
-  <tr><td><code>apps/web</code></td><td>Vite + React 静态应用</td><td>中英双语、浅 / 深色，计算在 Web Worker 中，共 11 个页面</td></tr>
+  <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付（两种期末规则）、机制链（可配置梯级顺序）与机制库、带检查点上界的规划器、备件、MTTR、带损失预算的分配、敏感性、成本、带 Student-t 与 Wilson 统计的蒙特卡洛、事件计数估计故障率（Garwood）、ReMAP 事件库导入、方案 schema 与示例、参数库（635 条）</td></tr>
+  <tr><td><code>apps/web</code></td><td>Vite + React 静态应用</td><td>中英双语、浅 / 深色，计算在 Web Worker 中，共 11 个页面（精简模式显示 6 个）</td></tr>
   <tr><td><code>packages/cli</code></td><td>命令行 <code>hacd</code></td><td>与 Web 应用同一套函数，输出表格或 JSON</td></tr>
-  <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 17 个工具（评估、对比、分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器）</td></tr>
+  <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 18 个工具（评估、对比、含损失预算的分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器、事件计数估计故障率）</td></tr>
   <tr><td><code>packages/importers</code></td><td>Excel 导入 / 导出</td><td>公式方法识别、拓扑提取、对账、含公式的工作簿导出</td></tr>
 </table></div>
 </section>
@@ -146,10 +146,10 @@
 <h2>2. 快速开始</h2>
 <pre>npm install                      # Node ≥ 20，npm workspaces
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 358 个核心测试 + 29 个导入器测试（含黄金向量）
+npm test                         # 517 个核心测试 + 29 个导入器测试（含黄金向量）
 node --import tsx packages/cli/src/main.ts examples        # 命令行
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务</pre>
-<p>Web 应用中：「方案」→ <b>加载示例</b>（九个内置方案，见 §16.3）→ 其他页面在每次编辑后自动重算，没有「重新计算」步骤。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。方案保存在浏览器本地存储；<b>导出 JSON</b> 保存一个方案，<b>导入 JSON</b> 读入，<b>恢复内置</b> 重置示例。</p>
+<p>Web 应用中：「方案」→ <b>加载示例</b>（十个内置方案，见 §16.3）→ 其他页面在每次编辑后自动重算，没有「重新计算」步骤。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。方案保存在浏览器本地存储；<b>导出 JSON</b> 保存一个方案，<b>导入 JSON</b> 读入，<b>恢复内置</b> 重置示例。</p>
 <figure class="narrow"><img src="img-zh/training-mobile.jpg" alt="375 px 宽度下的训练作业页"><figcaption>每个页面都按 1280 px 与 375 px 两种宽度排版；图表都有「表格」按钮可读取精确数值。</figcaption></figure>
 </section>
 
@@ -297,8 +297,29 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s7">
 <h2>7. 可用性分配页</h2>
-<figure><img src="img-zh/allocation.jpg" alt="可用性分配页"><figcaption>正确交付口径下的分配页：静默错误卡片（仅靠硬件可达性、所需检出率与兜底时延、对应的有效目标）、损失预算卡片、说明、各部件类允许的故障率与各恢复阶段允许的时间。</figcaption></figure>
-<h3>7.1 方法</h3>
+<figure><img src="img-zh/allocation.jpg" alt="可用性分配页"><figcaption>正确交付口径下的分配页（54 条事件目录、100,000 卡、目标 90 %）：静默错误卡片（仅靠硬件可达性、所需检出率与兜底时延、对应的有效目标）、带杠杆的窗口账本损失预算、与方法无关的预算卡片、说明、各部件类允许的故障率、各恢复阶段允许的时间、方法所用的类别权重与可用率分解。</figcaption></figure>
+<p>本页把目标转换为需求：需要多高的静默错误检出率、允许损失如何按账本项拆分、每个部件类允许多大的中断率、每个恢复阶段允许多长时间，以及（设定可用率目标时）每类可贡献的不可用度。所有结果随编辑即时重算；页面上只有下表的输入控件。</p>
+<h3>7.1 输入</h3>
+<div class="table-wrap"><table>
+  <tr><th>控件</th><th>含义</th><th>典型值</th></tr>
+  <tr><td>goodput 目标 G*</td><td>作业在窗口内须达到的正确交付（或有效）goodput</td><td>10 万–20 万卡 0.90；ReMAP 目标表为 1 万 / 10 万 / 20 万 / 50 万卡 0.99 / 0.95 / 0.90 / 0.80</td></tr>
+  <tr><td>目标口径</td><td><b>正确有效产出</b>（方案含静默错误时默认）或<b>有效 goodput</b>（仅性能）</td><td>正确有效产出</td></tr>
+  <tr><td>可用率目标 A*</td><td>按类分解的硬件级可用率（§7.2 第 6 项）</td><td>0.999</td></tr>
+  <tr><td>方法</td><td>中断预算在各类之间的拆分方式（§7.3）</td><td>ARINC</td></tr>
+  <tr><td>重启项占比</td><td>均衡分配中给恢复项的预算份额</td><td>0.5</td></tr>
+  <tr><td>拆分方式（损失预算卡片）</td><td>按当前账本比例、在有损失的项上均分、或自定义权重（表中可编辑）</td><td>按比例</td></tr>
+  <tr><td>类别权重表</td><td>AGREE 重要度、可改进性权重、成本系数 a 与 b、固定类；保存在方案中</td><td>1 · 假设值 2 · 1, 1 · 无</td></tr>
+</table></div>
+<h3>7.2 页面自上而下算什么</h3>
+<ol>
+  <li><b>静默错误与正确交付目标</b>（正确交付口径）。正确交付目标 G_d 除以交付系数 f = 正确交付 ÷ 有效，再除以亚健康 / 备件 / 域损失系数 φ，得到有效目标与中断项目标。卡片先问<em>仅靠硬件</em>能否达到 G_d（所有故障率 → 0、静默策略不变）；若不能，则报告硬件不变时达到目标所需的最小即时检出率 q*、检出率不变时所需的最长兜底发现时延 D*，并以检出率提高到 q* 计算下方预算。若 q = 1 仍达不到，预算按 q = 1 计算，显示中断侧还须补足多少（说明中会写明）。</li>
+  <li><b>窗口账本损失预算。</b>允许损失 (1 − G*) × 窗口（百分比与小时）按所选权重拆到九个账本项（停机、checkpoint 保存、回滚、亚健康降速、弹性域损失、备件耗尽、机制开销、静默回滚、期末判废）；每项给出当前、允许、超出与驱动该项的杠杆。拆分是记账目标，不证明各项能独立达到。</li>
+  <li><b>预算卡片</b>（与方法无关，Young 间隔下的一阶式）：损失预算 1 − G_中断 与当前硬中断损失对比；<em>保持 R、压缩 λ</em> 给出所需 MTBI 与改进倍数；<em>保持 λ、压缩 R</em> 给出所需恢复时间；均衡分配按重启项占比分配预算。当前损失已在预算内时卡片显示余量（倍数小于 1）。</li>
+  <li><b>各部件类允许的故障率</b>：所需作业中断率 λ* 按方法拆分；每类列出当前合计率、分配率、每单元允许率（每 10⁶ 单元·小时）、改进倍数（当前 ÷ 分配；小于 1 表示可以恶化）与可行性标记（ok，或比该类已知最优值更严）。</li>
+  <li><b>各恢复阶段允许的时间</b>：所需恢复时间按各阶段（检测、自动尝试、人工份额，或流水线各阶段）当前时间超出下限的部分按比例拆分。</li>
+  <li><b>可用率目标分解</b>（设定 A* 时）：各类 ln Aᵢ = (wᵢ/Σw) ln A*，并给出对应的允许故障率与 MTTR。</li>
+</ol>
+<h3>7.3 方法</h3>
 <div class="table-wrap"><table>
   <tr><th>方法</th><th>规则</th><th>适用情形</th></tr>
   <tr><td>等分</td><td>λᵢ* = λ*/m</td><td>对子系统没有信息</td></tr>
@@ -306,23 +327,57 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>AGREE</td><td>Rᵢ = 1 − (1 − R*^{nᵢ/N}) / wᵢ，复杂度 × 重要度 × 工作时间</td><td>已知模块数与重要度权重</td></tr>
   <tr><td>可改进性</td><td>按可改进程度加权（假设值权重更大）</td><td>置信参差不齐</td></tr>
   <tr><td>最小努力（Albert）</td><td>只把最差的类拉到同一水平</td><td>少数类占主导</td></tr>
-  <tr><td>成本最优</td><td>在 Σ λᵢ = λ* 下最小化 Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ}（拉格朗日）</td><td>各类有成本曲线</td></tr>
+  <tr><td>成本最优</td><td>在 Σ λᵢ = λ* 下最小化 Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ}（拉格朗日，下限为当前率的 5 %）</td><td>各类有成本曲线</td></tr>
 </table></div>
-<p>各方法只在各类之间的分配上不同；作业级预算卡片与方法无关。当各类的单元数、重要度与可改进性权重都相同时，等分、AGREE 与可改进性加权结果一致（页面会提示）；预算已满足时最小努力与成本最优保持当前故障率。页面上的部件类权重表可设置重要度、可改进性权重、成本系数与固定类；数值保存在方案中。</p>
-<h3>7.2 goodput 预算与目标口径</h3>
-<p>在 Young 间隔下一阶损失为 L = √(2δ/M) + R/M。给定目标 G*，本页求解所需 MTBI（保持 R）、所需恢复时间（保持 λ）与均衡分配，再把所需中断率分配给各类、所需恢复时间分配给各阶段。有余量时表格显示各类可以恶化到何种程度（改进倍数小于 1）。</p>
-<p><b>正确交付口径</b>（方案含静默错误时为默认）把正确交付目标 G_d 换算为有效目标与中断项目标（÷ 交付系数 ÷ 亚健康系数）；先检查仅靠硬件能否达到（故障率 → 0 且静默策略不变），若不能，则报告达到目标所需的最小即时检出率 q* 与最长兜底时延 D*，并以检出率提高到 q* 计算预算。</p>
-<h3>7.3 算例：5 万卡达到 90 %</h3>
+<p>各方法只在各类之间的拆分上不同；预算卡片、损失预算与阶段预算与方法无关。当各类的单元数、重要度与可改进性权重都相同时，等分、AGREE 与可改进性加权结果一致（页面会提示）；预算已满足时最小努力与成本最优保持当前故障率。要让方法有差别，请编辑类别权重表：提高某类的重要度使其在 AGREE 中获得更多预算，给假设值更高的可改进性权重，为成本最优设置成本系数，把无法改进的类标为固定。</p>
+<h3>7.4 读表</h3>
+<ul>
+  <li>某类的改进倍数 ×1.6 表示其中断率须降到今天的 1/1.6；×0.98 表示可以增加 2 %。</li>
+  <li>"tighter-than-best-known" 表示分配的率低于参数库中该类已知的最优值：把预算挪给其他类（权重、固定），或改用机制。</li>
+  <li>损失预算的"超出"列指出先攻哪一项：10 万卡的事件目录上，仅静默回滚一项就超出允许值 21 点，所以检测（D-SDC）排在任何硬件改动之前。</li>
+  <li>有余量时（当前损失 ≤ 预算）：故障率表给出各类可恶化的程度，阶段表给出允许的时间；两者都可作为验收限值。</li>
+</ul>
+<h3>7.5 算例 A：54 条事件目录、100,000 卡、正确交付 90 %</h3>
 <div class="table-wrap"><table>
   <tr><th>量</th><th class="num">值</th></tr>
-  <tr><td>当前正确有效产出（q = 0，D = 120 h）</td><td class="num">76.7 %</td></tr>
-  <tr><td>仅靠硬件可达</td><td class="num">77.9 %</td></tr>
-  <tr><td>所需即时检出率（硬件不变）</td><td class="num">71.5 %</td></tr>
-  <tr><td>或所需兜底时延（q = 0）</td><td class="num">32 h</td></tr>
-  <tr><td>采用参考的 95 % 检出率后</td><td class="num">95.4 %</td></tr>
-  <tr><td>此时允许的中断率（ARINC，保持 R）</td><td class="num">×4，MTBI ≥ 1.49 h</td></tr>
-  <tr><td>或允许的恢复时间（保持 λ）</td><td class="num">≤ 24 min</td></tr>
+  <tr><td>当前正确有效产出（q = 0，D = 120 h）</td><td class="num">62.61 %</td></tr>
+  <tr><td>仅靠硬件可达</td><td class="num">64.30 % → 不可行</td></tr>
+  <tr><td>所需即时检出率 q*（硬件不变）/ 所需兜底时延 D*（q = 0）</td><td class="num">89.81 % / 11.3 h</td></tr>
+  <tr><td>q* 下的交付系数 → 有效目标 → 中断项目标</td><td class="num">0.9504 → 94.69 % → 94.73 %</td></tr>
+  <tr><td>账本损失预算：允许 vs 当前</td><td class="num">10 % = 72 h 对 37.39 % = 269 h</td></tr>
+  <tr><td>超出最多的项</td><td class="num">静默回滚 +21.45 点（154 h）、期末判废 +2.07 点、停机 +1.84 点</td></tr>
+  <tr><td>q* 下的预算卡片：允许 vs 当前硬中断损失</td><td class="num">5.27 % 对 5.25 %（有余量）</td></tr>
+  <tr><td>保持 R：MTBI ≥ / 保持 λ：R ≤ / 均衡</td><td class="num">2.9 h（×0.99）/ 4.4 min / 3.2 h · 5.1 min</td></tr>
+  <tr><td>故障率表（ARINC），每一类</td><td class="num">×0.98（可恶化 2 %；CORE 中断 0.0467 → 0.0478 /h，即每 10⁶ 卡·小时 0.478）</td></tr>
+  <tr><td>阶段表</td><td class="num">13 s / 3.0 min / 72 s → 13 s / 3.0 min / 73 s（×0.99）</td></tr>
 </table></div>
+<p>解读：需求在检测而不在硬件。把静默错误即时检出率提高到约 90 %（或在 11 h 内发现污染）；中断侧已满足 90 %，故障率表与阶段表是验收限值。</p>
+<h3>7.6 算例 B：同一目录、正确交付 95 %（仅靠检测无法达到）</h3>
+<div class="table-wrap"><table>
+  <tr><th>量</th><th class="num">值</th></tr>
+  <tr><td>q = 1 时可达</td><td class="num">94.69 % → "即使 100 % 即时检出也无法达到"；预算按 q = 1 计算</td></tr>
+  <tr><td>预算卡片：允许 vs 当前硬中断损失</td><td class="num">4.96 % 对 5.25 %</td></tr>
+  <tr><td>保持 R：MTBI ≥ / 保持 λ：R ≤</td><td class="num">3.2 h（×1.08）/ 3.9 min</td></tr>
+  <tr><td>故障率表（ARINC），每一类</td><td class="num">×1.06（CORE 中断 0.0467 → 0.0441 /h）</td></tr>
+  <tr><td>阶段表</td><td class="num">13 s / 2.7 min / 64 s（×1.13）</td></tr>
+</table></div>
+<p>解读：全量检测再加中断率降低 6 %（或恢复加快 13 %）即可达到 95 %。机制页的规划器会说明机制库（重执行、弹性、进程重调度、更快或内存 checkpoint、热替换）能否替代硬件提供这部分：ReMAP 的六机制组合在 10 万卡达到 94.72 %，HAC-D 的十机制组合 94.64 %，所以 95 % 还需要硬件或 checkpoint 设计上的改动。</p>
+<h3>7.7 算例 C：三类故障基线、50,000 卡、正确交付 90 %</h3>
+<div class="table-wrap"><table>
+  <tr><th>量</th><th class="num">值</th></tr>
+  <tr><td>当前正确有效产出 / 仅靠硬件可达</td><td class="num">76.67 % / 77.88 % → 不可行</td></tr>
+  <tr><td>所需即时检出率 q* / 所需兜底时延 D*</td><td class="num">71.54 % / 32.0 h</td></tr>
+  <tr><td>q* 下：预算 vs 当前硬中断损失；MTBI ≥；R ≤；故障率</td><td class="num">3.29 % 对 3.19 %；5.6 h（×0.96）；4.8 min；×0.94</td></tr>
+  <tr><td>采用参考的 95 % 检出率后（机制页 → D-SDC → 应用到方案）</td><td class="num">正确交付 95.43 %</td></tr>
+  <tr><td>此时：预算 vs 当前；MTBI ≥；R ≤；故障率；阶段</td><td class="num">8.81 % 对 3.19 %；89 min（×0.25）；24 min；×0.25；×0.18</td></tr>
+</table></div>
+<p>解读：有了 95 % 检出率，5 万卡的中断侧有四倍余量；表格给出硬件与恢复可以恶化而 90 % 仍成立的限度。</p>
+<h3>7.8 从预算到需求</h3>
+<ul>
+  <li>把各类允许的故障率（每单元 FIT）作为验收标准交给硬件负责方，阶段时间交给平台团队，q* / D* 交给静默错误检测团队，损失预算各项交给对应杠杆的负责人。</li>
+  <li>在机制页检查机制路线（按目标规划，带降额；无故障上界可证明目标不可达），并用窗口账本仿真校核（蒙特卡洛页，或规划器的校核：P(窗口 ≥ 目标) 及其 Wilson 判定）。</li>
+  <li>每次实测后重跑；页面即时重算。<code>hacd allocate &lt;s&gt; --goodput 0.9 --basis delivered --method arinc</code> 与 MCP 工具 <code>allocate_scenario</code>（含 <code>lossMethod</code>、<code>lossWeights</code>）为脚本与智能体输出同样的表；完整流程见 <code>docs/ALLOCATION_PRACTICE.md</code>。</li>
+</ul>
 </section>
 
 <section id="s8">
@@ -375,7 +430,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s13">
 <h2>13. 方法参考</h2>
-<p>完整推导见 <code>docs/MODEL_REFERENCE.md</code>（§1–§22.2）与 <code>docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md</code>。除注明外时间单位为秒。</p>
+<p>完整推导见 <code>docs/MODEL_REFERENCE.md</code>（§1–§23）与 <code>docs/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md</code>；与参考引擎及 ReMAP 的对比见 <code>docs/TOOL_COMPARISON.md</code>。除注明外时间单位为秒。</p>
 <h3>13.1 结构</h3>
 <div class="formula">串联：A = Π Aᵢ，λ = Σ λᵢ · 并联：U = Π Uᵢ · k-of-n（可修）：Σ_{j≤n−k} C(n,j) uʲ (1−u)ⁿ⁻ʲ，u = λ·MTTR/(1 + λ·MTTR)
 备用：带备用系数与切换概率的 CTMC · 共因：声明故障域上的 β 因子 · 割集与重要度来自布尔结构</div>
@@ -426,12 +481,18 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
 可用率分解：ln Aᵢ = (wᵢ/Σw) ln A*；λᵢ = Uᵢ/(MTTRᵢ(1 − Uᵢ))
 热备：满足 P(Binomial(N_nodes, p_daily) ≤ k) ≥ q 的最小 k；Poisson(N λ T_replenish) 分位数；维修流水线 Poisson(N λ f_hw L) 分位数
 推理：u_r = λ_r MTTR_r/(1 + λ_r MTTR_r)；A_any = 1 − u_r^{n+k}；A_cap = Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}</div>
+<h3>13.10 v3.5 新增：期末规则、统计、上界、损失预算、事件计数</h3>
+<div class="formula">期末规则 discard-all：正确交付 = Σ_{n ≤ T/c} Poisson(n; ν(T − nc)) · [g(T − nc) − U n]⁺ / T；P(期末未解决) = 1 − Σ_n Poisson(n; ν(T − nc))（retain-last-clean 见 §13.7）
+统计：均值 ± t_{0.975, n−1}·sd/√n（Student-t），type-7 分位数；P(窗口 ≥ 目标) 带 Wilson 区间 [(p + z²/2n) ± z√(p(1−p)/n + z²/4n²)]/(1 + z²/n)；对照置信水平给出 支持 / 不确定 / 未达到
+检查点上界：S 秒窗口内 goodput ≤ (⌊S/L⌋τ + min(S mod L, τ))/S，L = τ + δ；长期 ≤ τ/L；目标高于最优组合的上界 ⇒ 已证明不可达
+损失预算：允许_i = (1 − G*) · w_i，Σ w_i = 1（按比例 / 均分 / 自定义）；超出_i = 当前_i − 允许_i；小时 = 份额 × 窗口
+事件计数：λ = k/E，FIT = λ·10⁹；Garwood [χ²_{α/2}(2k)/(2E), χ²_{1−α/2}(2k+2)/(2E)]；k = 0：上界 χ²_c(2)/(2E) = −ln(1 − c)/E</div>
 </section>
 
 <section id="s14">
 <h2>14. 验证与精度</h2>
 <h3>14.1 黄金向量与测试</h3>
-<p>187 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程），计算时不读引擎代码：v1 143 个、v2 26 个、v3 18 个。测试集含 358 个核心测试与 29 个导入器测试；导出的工作簿用独立公式引擎重算；每个页面都在 1280 px 与 375 px、浅色与深色下截图检查。</p>
+<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 517 个核心测试与 29 个导入器测试；导出的工作簿用独立公式引擎重算；每个页面都在 1280 px 与 375 px、浅色与深色下截图检查。</p>
 <h3>14.2 与参考引擎的交叉校核</h3>
 <p>经审核的参考引擎（单训练作业、30 天离散事件仿真、每方案 4000 次）与 HAC-D 在同一基线上：万卡硬件 MTBF 30 h 并线性外推，τ 300 s，δ 4 s，检测 95 % 在 10 s 否则 60 s，恢复 180 s 成功率 99 % 否则加 2 h 人工。</p>
 <div class="table-wrap"><table>
@@ -442,6 +503,8 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   <tr><td>500,000</td><td class="num">88.88 %</td><td class="num">88.88 %</td><td class="num">81.84 %</td><td class="num">81.88 %</td><td class="num">25.24 ± 0.26 %</td><td class="num">25.32 %</td></tr>
 </table></div>
 <p>单项机制收益与六机制 Shapley 贡献在参考工具的抽样误差内一致；弹性一项差异最大（10 万卡 0.83 对 0.25 点），因为参考工具的弹性路径使其故障流失去同步（其配对差值误差 ±0.3–0.6 点）。一阶 goodput 在 10 万 / 20 万 / 50 万卡分别低 0.2 / 0.4 / 2.4 点，这正是标记触发时首要值切换为精确更新式的原因。</p>
+<h3>14.3 第一版闭式结果与 ReMAP 桥接</h3>
+<p>参考引擎第一版的闭式模型（TOR = A·τ/L·z/(e^z − 1)·S）就是 HAC-D 的精确更新式：<code>scripts/ref-compare-v1.ts</code> 以 1e-16 的精度复现其在 1 万–50 万卡的 goodput 与可用率。ReMAP 逐字节内嵌经审核的审核引擎；<code>scripts/remap-bridge.ts</code> 可在任意 HAC-D 方案上运行它，在 54 条事件目录上用 ReMAP 的种子（4000 个窗口）得到与已发布基线完全一致的 62.56 % ± 0.46、A_op 97.556 %，HAC-D 解析式为 62.61 %、97.548 %。<code>scripts/remap-param-check.ts</code> 证实该目录示例与 ReMAP 参考审核的事件 FIT、标志、基线设置与机制参数完全相同。</p>
 </section>
 
 <section id="s15">
@@ -467,8 +530,8 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   <li><b>先定口径并收集数据</b>：哪个度量（正确有效产出、有效 goodput、A_op、容量可用率）、哪个窗口；尽量用自己日志的故障率，否则用带出处的参数库记录。</li>
   <li><b>建方案并评估</b>：拓扑与部件类、修复路径、亚健康与静默错误、负载与恢复；阅读训练作业（或推理服务）页与区间标记。</li>
   <li><b>归因</b>：损失去向（账本）、哪些杠杆重要（Shapley、龙卷风）。</li>
-  <li><b>分配与规划</b>：在可用性分配页分配中断预算；在机制页用降额选出最低工作量的充分机制组合。</li>
-  <li><b>校核</b>：窗口账本仿真给出 P(窗口 ≥ 目标)；寿命或相关性非指数时用作业仿真。</li>
+  <li><b>分配与规划</b>：在可用性分配页设定目标与口径，读取所需静默错误检出率（q*、D*）、按账本项的损失预算、各类允许的故障率与各阶段允许的时间（§7）；在机制页用降额选出最低工作量的充分机制组合并查看无故障上界。</li>
+  <li><b>校核</b>：窗口账本仿真给出 P(窗口 ≥ 目标) 及其 Wilson 判定；寿命或相关性非指数时用作业仿真；用 ReMAP 桥接对同一方案做独立蒙特卡洛。</li>
   <li><b>评审与报告</b>：11 条清单、原始 vs 补偿后度量、导出；然后在生产中实测并循环。</li>
 </ol>
 </section>
@@ -496,7 +559,7 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
 </table></div>
 <p>所有命令都接受 <code>--json</code>。</p>
 <h3>16.2 MCP 工具</h3>
-<p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>。</p>
+<p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>、<code>estimate_rate</code>。</p>
 <h3>16.3 内置示例</h3>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>方案</th></tr>
@@ -518,8 +581,8 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   "structure": { "mode": "template", "template": "training-series" },
   "workload": { "type": "training", "nGpus": 100000, "durationDays": 30, "deltaS": 4, "intervalS": 300 },
   "recovery": { "mode": "mixture", "detection": { "coverage": 0.95, "autoSeconds": 10, "timeoutSeconds": 60 }, "automatic": { "successProbability": 0.99, "seconds": 180 }, "manual": { "seconds": 7200 } },
-  "sdc": { "detection": { "coverage": 0, "detectSeconds": 1 }, "fallbackDelayHours": 120 },
-  "mechanisms": { "replay": { … }, "elastic": { … }, "process": { … } },
+  "sdc": { "detection": { "coverage": 0, "detectSeconds": 1 }, "fallbackDelayHours": 120, "terminalRule": "retain-last-clean" },
+  "mechanisms": { "order": ["replay", "hotswap", "elastic", "process"], "replay": { … }, "elastic": { … }, "process": { … }, "overheads": { } },
   "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9 } }</pre>
 <p>完整 JSON Schema 见 <code>docs/scenario.schema.json</code>；工具规范见 <code>docs/SPEC.md</code>。</p>
 </section>
@@ -529,9 +592,10 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
 <ul>
   <li>解析式假设指数寿命与修复、故障独立（共因只通过 β）；仿真放宽这些假设。</li>
   <li>机制链的弹性一级是容量模型（一个域不可用，其余继续）；它不是同步训练的性能承诺，且需要机制库列出的前置条件。</li>
-  <li>静默错误与参考工具一样采用固定兜底时延且同一时刻只有一个事件；保留窗口与定位 / 验证成功率尚未作为独立参数。</li>
-  <li>机制库的参数是参考目录的目标值与先验（已标注）；降额是一种约定，不是实测。</li>
-  <li>待办：54 条事件目录的转换器、DP 弹性训练模板、Shapley 的蒙特卡洛置信区间、图片 / 框图导入。</li>
+  <li>静默错误与参考工具一样采用固定兜底时延且同一时刻只有一个事件；期末规则可选保留最后干净检查点或整窗口清零，但保留窗口与定位 / 验证成功率不是独立参数。</li>
+  <li>机制库的参数是参考目录与文献的目标值与先验（已标注）；降额是一种约定，不是实测。事件计数的区间只覆盖 Poisson 抽样误差。</li>
+  <li>未建模：参考工具 V4 引擎的拓扑特性（放置方式、维修并发数、最低可用容量）；ReMAP 桥接会注明引擎无法表示的梯级与开销。</li>
+  <li>待办：DP 弹性训练模板、Shapley 的蒙特卡洛置信区间、图片 / 框图导入。</li>
 </ul>
 </section>
 

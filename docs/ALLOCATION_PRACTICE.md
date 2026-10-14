@@ -49,3 +49,7 @@ A λ-only allocation solves the wrong problem whenever a non-hardware line domin
 ## 5. HAC-D implementation
 
 `planToTarget(scenario, {target, players, effort, derate, scan, verify})` in `packages/core/src/mechanisms/plan.ts` evaluates all coalitions of the candidate mechanisms (closed forms, nominal and derated), returns the cheapest feasible coalition, the necessary mechanisms, the effort–value Pareto front, a coverage × recovery scan and the optional ledger verification. UI: Mechanisms page → "Plan to target"; CLI `hacd plan`; MCP `plan_mechanisms`. The allocation of the remaining interruption budget stays on the Allocation page (delivered basis).
+
+## Addendum 2026-10-13 (v3.6)
+
+When even 100 % immediate silent-corruption detection cannot reach the delivered target, `allocateScenario` now computes the class and stage budgets at q = 1 (the best the detection lever can do) and says so in the notes, instead of at the current coverage, where the implied effective target saturated and the budgets were meaningless. The worked examples of the user manual §7.5–§7.7 (54-event catalog at 90 % and 95 %, three-class baseline at 50,000 cards) show the three readings: detection is the requirement; detection plus a hardware or recovery improvement; slack after a mechanism is applied. The loss budget over the ledger lines (§7.1 of the model reference) complements the interruption budget: it says which line to attack first.

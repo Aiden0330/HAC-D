@@ -457,7 +457,14 @@ export function allocateScenario(s: Scenario, opts: { goodputTarget?: number; av
           budgetScenario = withCoverage(s, requiredCoverage);
           r = evaluateScenario(budgetScenario);
           notes.push(`delivered ${(Gd * 100).toFixed(1)} % is out of reach of the hardware alone (at most ${(maxByHardware * 100).toFixed(2)} % with the current silent-corruption policy): the budgets below assume immediate silent-corruption detection raised to ${(requiredCoverage * 100).toFixed(2)} %`);
-        } else notes.push(`delivered ${(Gd * 100).toFixed(1)} % is out of reach even with 100 % immediate detection; shorten the fallback delay or the recovery`);
+        } else {
+          // v3.6: even full immediate detection does not reach the target, so the remaining gap must come from the interruption
+          // side; the budgets are computed at q = 1 (the best the detection lever can do) instead of at the current coverage
+          coverageUsed = 1;
+          budgetScenario = withCoverage(s, 1);
+          r = evaluateScenario(budgetScenario);
+          notes.push(`delivered ${(Gd * 100).toFixed(1)} % is out of reach even with 100 % immediate detection (at most ${(deliveredOf(budgetScenario) * 100).toFixed(2)} % at q = 1): the budgets below assume q = 1 and show what the hardware interruption rate and the recovery must reach on top of it; a shorter fallback delay, faster checkpoints (C-FAST, C-MEM) and the chain rungs (replay, hot-swap, elasticity, process rescheduling) reduce the rest`);
+        }
       }
       const tr2 = r.training!;
       const factor = tr2.effectiveGoodput > 0 ? tr2.deliveredGoodput / tr2.effectiveGoodput : 1;
