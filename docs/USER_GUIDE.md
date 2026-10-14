@@ -121,3 +121,11 @@ Every coalition carries its no-fault bound (the checkpoint saves alone cap the w
 
 ### Failure rates from incident counts
 The component details carry *Rate from incident counts*: events over units × hours observed give the rate, FIT, MTBF and the exact Garwood interval (zero events: the one-sided upper bound −ln(1 − c)/E, used as the rate); *Use as measured rate* writes it into the class with provenance `measured` and the derivation. Also `hacd rate <events> <unitHours>` and the MCP tool `estimate_rate` (§23).
+
+## v3.6 (2026-10-13): minimal mode and the ReMAP bridge
+
+### Minimal mode
+The web app opens in **Minimal** mode: Scenario, Training, Mechanisms, Allocation, Import and Library. The header toggle **All pages** adds Inference, Spares & domains, Compare, Simulate and Report; the choice is remembered in the browser. Nothing is removed: every function stays in the core, the CLI and the MCP server, and the manual's screenshots show all pages. Keep Simulate in mind when inputs are non-exponential or correlated (the closed forms are flagged and the Monte Carlo route is on that page; `hacd simulate` / `hacd ledger` do the same from the command line).
+
+### Using ReMAP's models with HAC-D
+`docs/REMAP_INTEGRATION.md` describes the three ways the tools work together: `scripts/remap-bridge.ts` runs the expert engines ReMAP vendors (the audited 54-event review engine and the V4 monthly engine) on any HAC-D scenario and compares them with HAC-D's closed forms and ledger simulation, exporting the engine inputs and a ReMAP audit request; `hacd import-remap` turns a ReMAP / reference event catalog (`inputs.json`, `events.json`, frozen run inputs) into a HAC-D scenario at catalog granularity; and HAC-D's closed forms, planner, allocation and mechanism library sit on top of ReMAP's calibrated catalogs and reports. The bridge needs the untracked `remap/remap-main` drop (`--remap <dir>` or `REMAP_DIR`).

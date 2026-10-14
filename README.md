@@ -66,6 +66,7 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - **Loss budget** over the window ledger on the Allocation page, `hacd allocate` and `allocate_scenario` (proportional / equal / custom weights, levers per line).
 - **Proof of infeasibility** in the planner from the checkpoint no-fault bound; **configurable rung order**; **incident-count rate estimation** with exact Garwood intervals (`hacd rate`, `estimate_rate`, component editor).
 - `docs/TOOL_COMPARISON.md` sets HAC-D against the reference engine's V1–V4 and ReMAP (`scripts/ref-compare-v1.ts` reproduces the V1 closed form to machine precision); `docs/MODEL_REFERENCE.md` §20.1, §19.2, §21.1, §22.5, §7.1, §23.
+- v3.6: **minimal mode** (the web app opens with the training core; "All pages" restores the rest, nothing removed) and the **ReMAP bridge** (`scripts/remap-bridge.ts` runs ReMAP's vendored engines on a HAC-D scenario and exports a ReMAP audit request; `hacd import-remap` imports a ReMAP / reference event catalog): `docs/REMAP_INTEGRATION.md`.
 
 ## Layout
 

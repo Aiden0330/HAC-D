@@ -154,6 +154,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </section>
 
 <section id="s3">
+<p><b>精简模式。</b>应用默认只显示训练可用性核心（方案、训练作业、机制、可用性分配、导入、参数库）；页眉的<b>全部页面</b>开关可加回推理服务、备件与故障域、方案对比、蒙特卡洛与设计评审，选择会被记住。本手册的截图展示全部页面；所有功能在命令行与 MCP 中保持可用。<b>ReMAP。</b><code>scripts/remap-bridge.ts</code> 在 HAC-D 方案上运行 ReMAP 内嵌的专家引擎并与解析式对比，<code>hacd import-remap</code> 把 ReMAP 或参考工具的事件库转为方案（见 <code>docs/REMAP_INTEGRATION.md</code>）。</p>
 <h2>3. 概念与口径</h2>
 <h3>3.1 度量</h3>
 <div class="table-wrap"><table>
@@ -485,6 +486,8 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   <tr><td><code>hacd simulate &lt;s&gt; --reps 100</code></td><td>单元级蒙特卡洛与解析式对比</td></tr>
   <tr><td><code>hacd ledger &lt;s&gt; --trials 300 --target 0.9</code></td><td>窗口账本仿真与解析式对比</td></tr>
   <tr><td><code>hacd rate &lt;events&gt; &lt;unitHours&gt; [--confidence 0.95]</code></td><td>由事件计数估计故障率，精确 Garwood 区间（零事件给上界）</td></tr>
+  <tr><td><code>hacd import-remap &lt;inputs.json&gt; --cards 100000 --out s.json</code></td><td>把 ReMAP / 参考工具的事件库转为事件粒度的 HAC-D 方案</td></tr>
+  <tr><td><code>node --import tsx scripts/remap-bridge.ts &lt;s&gt; --trials 400 --export req.json</code></td><td>在方案上运行 ReMAP 内嵌的审核引擎与 V4 引擎，与 HAC-D 对比，导出引擎输入与 ReMAP 审核请求</td></tr>
   <tr><td><code>hacd mechanisms &lt;s&gt; --players D-SDC,R-REPLAY</code></td><td>单项 / 末位加入 / Shapley 收益</td></tr>
   <tr><td><code>hacd plan &lt;s&gt; --target 0.9 --trials 200</code></td><td>最低工作量可行组合、必要机制、扫描、校核</td></tr>
   <tr><td><code>hacd measures &lt;s&gt;</code></td><td>原始 vs 补偿后与瀑布</td></tr>

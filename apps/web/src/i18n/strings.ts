@@ -3,6 +3,7 @@ export const strings = {
   en: {
     app: { title: 'HAC-D', eyebrow: 'AI cluster availability modeling', footer: 'First-order closed forms with validity flags; non-exponential or correlated inputs route to Monte Carlo. Grounded in the survey chapter “AI 集群可靠性建模”.' },
     nav: { scenario: 'Scenario', library: 'Library', training: 'Training', mechanisms: 'Mechanisms', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
+    ui: { minimal: 'Minimal', full: 'All pages', hint: 'Minimal shows the training-availability core (Scenario, Training, Mechanisms, Allocation, Import, Library); All pages adds Inference, Spares & domains, Compare, Simulate and Report. Every function stays available in the CLI and MCP server.' },
     theme: { auto: 'Auto', light: 'Light', dark: 'Dark' },
     common: {
       formula: 'Formula', table: 'Table', chart: 'Chart', download: 'Download', copy: 'Copy', add: 'Add', remove: 'Remove', run: 'Run', running: 'Running…', reset: 'Reset', apply: 'Apply',
@@ -113,6 +114,7 @@ export const strings = {
   zh: {
     app: { title: 'HAC-D', eyebrow: 'AI 集群可用性建模', footer: '一阶解析式附有效性标记；非指数或相关故障输入转入蒙特卡洛。依据综述章节《AI 集群可靠性建模》。' },
     nav: { scenario: '方案', library: '参数库', training: '训练作业', mechanisms: '机制', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
+    ui: { minimal: '精简', full: '全部页面', hint: '精简模式只显示训练可用性核心（方案、训练作业、机制、可用性分配、导入、参数库）；全部页面另含推理服务、备件与故障域、方案对比、蒙特卡洛与设计评审。所有功能在命令行与 MCP 中保持可用。' },
     theme: { auto: '自动', light: '浅色', dark: '深色' },
     common: {
       formula: '公式', table: '表格', chart: '图', download: '下载', copy: '复制', add: '新增', remove: '删除', run: '运行', running: '运行中…', reset: '重置', apply: '应用',

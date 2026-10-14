@@ -162,6 +162,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
 </section>
 
 <section id="s3">
+<p><b>Minimal mode.</b> The app opens with the training-availability core only (Scenario, Training, Mechanisms, Allocation, Import, Library); the header toggle <b>All pages</b> adds Inference, Spares &amp; domains, Compare, Simulate and Report, and the choice is remembered. The screenshots in this manual show all pages; every function also stays in the CLI and the MCP server. <b>ReMAP.</b> <code>scripts/remap-bridge.ts</code> runs the expert engines ReMAP vendors on a HAC-D scenario and compares them with the closed forms, and <code>hacd import-remap</code> turns a ReMAP or reference event catalog into a scenario (see <code>docs/REMAP_INTEGRATION.md</code>).</p>
 <h2>3. Concepts and 口径</h2>
 <h3>3.1 Metrics</h3>
 <div class="table-wrap"><table>
@@ -493,6 +494,8 @@ inference: u_r = λ_r MTTR_r/(1 + λ_r MTTR_r);  A_any = 1 − u_r^{n+k};  A_cap
   <tr><td><code>hacd simulate &lt;s&gt; --reps 100</code></td><td>unit-level Monte Carlo vs the closed form</td></tr>
   <tr><td><code>hacd ledger &lt;s&gt; --trials 300 --target 0.9</code></td><td>window-ledger simulation vs the closed form</td></tr>
   <tr><td><code>hacd rate &lt;events&gt; &lt;unitHours&gt; [--confidence 0.95]</code></td><td>failure rate from incident counts with the exact Garwood interval (zero events: upper bound)</td></tr>
+  <tr><td><code>hacd import-remap &lt;inputs.json&gt; --cards 100000 --out s.json</code></td><td>a ReMAP / reference event catalog as a HAC-D scenario at catalog granularity</td></tr>
+  <tr><td><code>node --import tsx scripts/remap-bridge.ts &lt;s&gt; --trials 400 --export req.json</code></td><td>run ReMAP's vendored review and V4 engines on the scenario, compare with HAC-D, export the engine inputs and a ReMAP audit request</td></tr>
   <tr><td><code>hacd mechanisms &lt;s&gt; --players D-SDC,R-REPLAY</code></td><td>single / last-added / Shapley gains</td></tr>
   <tr><td><code>hacd plan &lt;s&gt; --target 0.9 --trials 200</code></td><td>cheapest feasible mechanism set, necessary mechanisms, scan, verification</td></tr>
   <tr><td><code>hacd measures &lt;s&gt;</code></td><td>original vs compensated and the waterfall</td></tr>

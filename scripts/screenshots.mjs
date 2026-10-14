@@ -18,7 +18,7 @@ for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
     page.on('pageerror', (e) => errors.push(String(e)));
     page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
     await page.goto('http://localhost:5173', { waitUntil: 'networkidle' });
-    await page.evaluate(([t, lg]) => { localStorage.removeItem('hacd-scenarios-v1'); localStorage.setItem('hacd-theme', t); localStorage.setItem('hacd-lang', lg); document.documentElement.setAttribute('data-theme', t); }, [theme, lang]);
+    await page.evaluate(([t, lg]) => { localStorage.removeItem('hacd-scenarios-v1'); localStorage.setItem('hacd-theme', t); localStorage.setItem('hacd-lang', lg); localStorage.setItem('hacd-ui-mode', 'full'); document.documentElement.setAttribute('data-theme', t); }, [theme, lang]);
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(500);
     // the three-class reference example shows the silent-corruption, chain and ledger cards

@@ -24,6 +24,7 @@ import {
   mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY, planToTarget,
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
   rateFromCounts, unitRateFromCounts,
+  importRemapCatalog,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
@@ -393,6 +394,29 @@ switch (cmd) {
     for (const n of p.notes) console.log(`- ${n}`);
     break;
   }
+  case 'import-remap': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd import-remap <inputs.json | events.json | events-array.json> [--cards 100000] [--id catalog-x] [--name "…"] [--out scenario.json] [--json]');
+      process.exit(1);
+    }
+    const r = importRemapCatalog(JSON.parse(readFileSync(path, 'utf8')), { npus: flag('cards') ? Number(flag('cards')) : undefined, id: flag('id'), name: flag('name') });
+    if (flag('out')) {
+      writeFileSync(flag('out')!, JSON.stringify(r.scenario, null, 2));
+      console.error(`wrote ${flag('out')}`);
+    }
+    if (json) {
+      out(flag('out') ? { scenario: r.scenario.meta.id, events: r.events.length, classFit: r.classFit, warnings: r.warnings } : r.scenario);
+      break;
+    }
+    const cards = r.scenario.workload.type === 'training' ? r.scenario.workload.nGpus : 0;
+    console.log(`${r.events.length} events → scenario ${r.scenario.meta.id} (${cards.toLocaleString('en-US')} cards); class FIT per card-hour: interruption ${r.classFit.hard.toFixed(2)}, sub-health ${r.classFit.slow.toFixed(2)}, silent ${r.classFit.sdc.toFixed(2)}`);
+    const tr = evaluateScenario(r.scenario).training;
+    if (tr) console.log(`delivered goodput ${pct(tr.deliveredGoodput)} · A_op ${pct(tr.operationalAvailability, 3)} · MTBI ${formatDuration(tr.mtbiHours * 3600)} (reference-engine baseline settings; edit the scenario for yours)`);
+    for (const n of r.warnings) console.log(`- ${n}`);
+    if (!flag('out')) console.log('- add --out scenario.json to save the scenario, or --json to print it');
+    break;
+  }
   case 'rate': {
     const events = Number(files[0]);
     const exposure = flag('units') && flag('hours') ? undefined : Number(files[1]);
@@ -412,5 +436,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | rate <events> <unitHours> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
 }

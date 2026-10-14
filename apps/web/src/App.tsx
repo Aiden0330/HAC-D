@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore, type Page, type Theme } from './state/store.js';
 import { setLanguage } from './i18n/index.js';
@@ -15,6 +16,17 @@ import { ImportPage } from './pages/ImportPage.js';
 import { MechanismsPage } from './pages/MechanismsPage.js';
 
 const PAGES: Page[] = ['scenario', 'training', 'mechanisms', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'import', 'library'];
+/** v3.6 minimal mode (default): the training-availability core only; the other pages stay one click away ("All pages") and every function stays in the CLI / MCP */
+const MINIMAL_HIDDEN: Page[] = ['inference', 'spares', 'compare', 'simulate', 'report'];
+type UiMode = 'minimal' | 'full';
+const UI_MODE_KEY = 'hacd-ui-mode';
+function readUiMode(): UiMode {
+  try {
+    return localStorage.getItem(UI_MODE_KEY) === 'full' ? 'full' : 'minimal';
+  } catch {
+    return 'minimal';
+  }
+}
 
 export function App() {
   const { t } = useTranslation();
@@ -26,6 +38,19 @@ export function App() {
   const scenarios = useStore((s) => s.scenarios);
   const activeId = useStore((s) => s.activeId);
   const setActive = useStore((s) => s.setActive);
+  const [uiMode, setUiModeState] = useState<UiMode>(readUiMode);
+  const setUiMode = (m: UiMode) => {
+    setUiModeState(m);
+    try {
+      localStorage.setItem(UI_MODE_KEY, m);
+    } catch {
+      /* private mode: the choice lasts for the session */
+    }
+  };
+  const visiblePages = uiMode === 'minimal' ? PAGES.filter((p) => !MINIMAL_HIDDEN.includes(p)) : PAGES;
+  useEffect(() => {
+    if (!visiblePages.includes(page)) setPage('scenario');
+  }, [uiMode, page, visiblePages, setPage]);
 
   return (
     <div className="app">
@@ -49,13 +74,17 @@ export function App() {
               <button key={th} type="button" className="btn small" aria-pressed={theme === th} onClick={() => setTheme(th)}>{t(`theme.${th}`)}</button>
             ))}
           </div>
+          <div className="btn-row" role="group" aria-label="pages shown" title={t('ui.hint')}>
+            <button type="button" className="btn small" aria-pressed={uiMode === 'minimal'} onClick={() => setUiMode('minimal')}>{t('ui.minimal')}</button>
+            <button type="button" className="btn small" aria-pressed={uiMode === 'full'} onClick={() => setUiMode('full')}>{t('ui.full')}</button>
+          </div>
           <div className="btn-row" role="group" aria-label="language">
             <button type="button" className="btn small" aria-pressed={lang === 'zh'} onClick={() => setLanguage('zh')}>中文</button>
             <button type="button" className="btn small" aria-pressed={lang === 'en'} onClick={() => setLanguage('en')}>EN</button>
           </div>
         </header>
         <nav className="nav" aria-label="pages">
-          {PAGES.map((p) => (
+          {visiblePages.map((p) => (
             <button key={p} type="button" aria-current={page === p ? 'page' : undefined} onClick={() => setPage(p)}>{t(`nav.${p}`)}</button>
           ))}
         </nav>
