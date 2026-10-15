@@ -1,0 +1,68 @@
+<svg class="viz" id="chart-unavail" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 329" width="100%" role="img"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec;
+  --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+@media (prefers-color-scheme: dark) { svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835;
+  --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; } }
+:root[data-theme="light"] svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; }
+svg.viz text { fill: var(--ink); font-size: 12px; }
+svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; }
+svg.viz .m { fill: var(--muted); font-size: 11px; }
+svg.viz .tick { font-variant-numeric: tabular-nums; }
+svg.viz .ttl { font-size: 13px; font-weight: 600; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; }
+svg.viz .axis { stroke: var(--axis); stroke-width: 1; }
+svg.viz .ref { stroke: var(--ink2); stroke-width: 1; }
+svg.viz .hit { fill: transparent; pointer-events: all; }
+svg.viz .xh { pointer-events: none; }
+svg.viz .cellt { font-size: 12px; font-variant-numeric: tabular-nums; }
+svg.viz .onDark { fill: var(--surface); }
+</style><rect width="960" height="329" fill="var(--surface)" rx="8"/><text x="118" y="20" class="ttl">图 2 · 不可用度的构成（百分点 = 100 − A_op）：基线 vs 该规模的推荐机制方案，预算线 1.5 pt</text><rect x="118" y="32" width="12" height="12" rx="2" fill="var(--s1)"/><text x="136" y="42" class="t2">NPU 芯片与内存</text><rect x="248.4" y="32" width="12" height="12" rx="2" fill="var(--s2)"/><text x="266.4" y="42" class="t2">网络</text><rect x="316.4" y="32" width="12" height="12" rx="2" fill="var(--s3)"/><text x="334.4" y="42" class="t2">主机</text><rect x="384.4" y="32" width="12" height="12" rx="2" fill="var(--s4)"/><text x="402.4" y="42" class="t2">机房设施</text><rect x="476.4" y="32" width="12" height="12" rx="2" fill="var(--s5)"/><text x="494.4" y="42" class="t2">存储 / 软件 / 未归因</text><rect x="644" y="32" width="12" height="12" rx="2" fill="var(--s6)"/><text x="662" y="42" class="t2">亚健康隔离与静默暂停</text><line x1="118" x2="118" y1="62" y2="293" class="grid"/><text x="118" y="309" text-anchor="middle" class="m tick">0</text><line x1="246.66666666666666" x2="246.66666666666666" y1="62" y2="293" class="grid"/><text x="246.66666666666666" y="309" text-anchor="middle" class="m tick">2</text><line x1="375.3333333333333" x2="375.3333333333333" y1="62" y2="293" class="grid"/><text x="375.3333333333333" y="309" text-anchor="middle" class="m tick">4</text><line x1="504" x2="504" y1="62" y2="293" class="grid"/><text x="504" y="309" text-anchor="middle" class="m tick">6</text><line x1="632.6666666666666" x2="632.6666666666666" y1="62" y2="293" class="grid"/><text x="632.6666666666666" y="309" text-anchor="middle" class="m tick">8</text><line x1="761.3333333333334" x2="761.3333333333334" y1="62" y2="293" class="grid"/><text x="761.3333333333334" y="309" text-anchor="middle" class="m tick">10</text><line x1="890" x2="890" y1="62" y2="293" class="grid"/><text x="890" y="309" text-anchor="middle" class="m tick">12</text><text x="890" y="323" text-anchor="end" class="m">不可用度（百分点）</text><line x1="214.50000000000009" x2="214.50000000000009" y1="62" y2="293" class="ref"/><text x="218.50000000000009" y="58" class="t2">预算 1.5 pt</text><text x="110" y="81.5" text-anchor="end" class="t2">1 万 · 基线</text><rect x="118.0" y="70" width="5.4" height="15" rx="0" fill="var(--s1)" data-tip="1 万 · 基线（无需机制）
+NPU 芯片与内存：0.12 pt，占 45.9 %"/><rect x="125.4" y="70" width="0.0" height="15" rx="0" fill="var(--s2)" data-tip="1 万 · 基线（无需机制）
+网络：0.02 pt，占 8.2 %"/><rect x="126.8" y="70" width="0.5" height="15" rx="0" fill="var(--s3)" data-tip="1 万 · 基线（无需机制）
+主机：0.04 pt，占 15.5 %"/><rect x="129.3" y="70" width="0.0" height="15" rx="0" fill="var(--s4)" data-tip="1 万 · 基线（无需机制）
+机房设施：0.03 pt，占 11.7 %"/><rect x="131.2" y="70" width="0.6" height="15" rx="0" fill="var(--s5)" data-tip="1 万 · 基线（无需机制）
+存储 / 软件 / 未归因：0.04 pt，占 15.8 %"/><rect x="133.7" y="70" width="0.5" height="15" rx="3" fill="var(--s6)" data-tip="1 万 · 基线（无需机制）
+亚健康隔离与静默暂停：0.01 pt，占 2.9 %"/><text x="140.2" y="81.5" class="t2 tick">0.25</text><text x="110" y="106.5" text-anchor="end" class="t2">1 万 · 方案</text><rect x="118.0" y="95" width="5.4" height="15" rx="0" fill="var(--s1)" data-tip="1 万 · 方案（无需机制）
+NPU 芯片与内存：0.12 pt，占 45.9 %"/><rect x="125.4" y="95" width="0.0" height="15" rx="0" fill="var(--s2)" data-tip="1 万 · 方案（无需机制）
+网络：0.02 pt，占 8.2 %"/><rect x="126.8" y="95" width="0.5" height="15" rx="0" fill="var(--s3)" data-tip="1 万 · 方案（无需机制）
+主机：0.04 pt，占 15.5 %"/><rect x="129.3" y="95" width="0.0" height="15" rx="0" fill="var(--s4)" data-tip="1 万 · 方案（无需机制）
+机房设施：0.03 pt，占 11.7 %"/><rect x="131.2" y="95" width="0.6" height="15" rx="0" fill="var(--s5)" data-tip="1 万 · 方案（无需机制）
+存储 / 软件 / 未归因：0.04 pt，占 15.8 %"/><rect x="133.7" y="95" width="0.5" height="15" rx="3" fill="var(--s6)" data-tip="1 万 · 方案（无需机制）
+亚健康隔离与静默暂停：0.01 pt，占 2.9 %"/><text x="140.2" y="106.5" class="t2 tick">0.25</text><text x="110" y="140.5" text-anchor="end" class="t2">10 万 · 基线</text><rect x="118.0" y="129" width="70.7" height="15" rx="0" fill="var(--s1)" data-tip="10 万 · 基线（R-ELASTIC）
+NPU 芯片与内存：1.13 pt，占 46.1 %"/><rect x="190.7" y="129" width="10.9" height="15" rx="0" fill="var(--s2)" data-tip="10 万 · 基线（R-ELASTIC）
+网络：0.20 pt，占 8.2 %"/><rect x="203.6" y="129" width="22.6" height="15" rx="0" fill="var(--s3)" data-tip="10 万 · 基线（R-ELASTIC）
+主机：0.38 pt，占 15.6 %"/><rect x="228.2" y="129" width="16.4" height="15" rx="0" fill="var(--s4)" data-tip="10 万 · 基线（R-ELASTIC）
+机房设施：0.29 pt，占 11.7 %"/><rect x="246.7" y="129" width="23.1" height="15" rx="0" fill="var(--s5)" data-tip="10 万 · 基线（R-ELASTIC）
+存储 / 软件 / 未归因：0.39 pt，占 15.9 %"/><rect x="271.7" y="129" width="4.0" height="15" rx="3" fill="var(--s6)" data-tip="10 万 · 基线（R-ELASTIC）
+亚健康隔离与静默暂停：0.06 pt，占 2.5 %"/><text x="281.7" y="140.5" class="t2 tick">2.45</text><text x="110" y="165.5" text-anchor="end" class="t2">10 万 · 方案</text><rect x="118.0" y="154" width="0.5" height="15" rx="0" fill="var(--s1)" data-tip="10 万 · 方案（R-ELASTIC）
+NPU 芯片与内存：0.04 pt，占 4.2 %"/><rect x="120.5" y="154" width="7.0" height="15" rx="0" fill="var(--s2)" data-tip="10 万 · 方案（R-ELASTIC）
+网络：0.14 pt，占 15.0 %"/><rect x="129.6" y="154" width="0.0" height="15" rx="0" fill="var(--s3)" data-tip="10 万 · 方案（R-ELASTIC）
+主机：0.01 pt，占 1.4 %"/><rect x="130.4" y="154" width="17.7" height="15" rx="0" fill="var(--s4)" data-tip="10 万 · 方案（R-ELASTIC）
+机房设施：0.31 pt，占 32.7 %"/><rect x="150.1" y="154" width="24.7" height="15" rx="0" fill="var(--s5)" data-tip="10 万 · 方案（R-ELASTIC）
+存储 / 软件 / 未归因：0.42 pt，占 44.5 %"/><rect x="176.8" y="154" width="1.3" height="15" rx="3" fill="var(--s6)" data-tip="10 万 · 方案（R-ELASTIC）
+亚健康隔离与静默暂停：0.02 pt，占 2.1 %"/><text x="184.1" y="165.5" class="t2 tick">0.93</text><text x="110" y="199.5" text-anchor="end" class="t2">20 万 · 基线</text><rect x="118.0" y="188" width="140.0" height="15" rx="0" fill="var(--s1)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+NPU 芯片与内存：2.21 pt，占 46.2 %"/><rect x="260.0" y="188" width="23.2" height="15" rx="0" fill="var(--s2)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+网络：0.39 pt，占 8.2 %"/><rect x="285.2" y="188" width="46.0" height="15" rx="0" fill="var(--s3)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+主机：0.75 pt，占 15.6 %"/><rect x="333.2" y="188" width="34.0" height="15" rx="0" fill="var(--s4)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+机房设施：0.56 pt，占 11.7 %"/><rect x="369.2" y="188" width="46.9" height="15" rx="0" fill="var(--s5)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+存储 / 软件 / 未归因：0.76 pt，占 15.9 %"/><rect x="418.1" y="188" width="7.2" height="15" rx="3" fill="var(--s6)" data-tip="20 万 · 基线（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+亚健康隔离与静默暂停：0.11 pt，占 2.4 %"/><text x="431.4" y="199.5" class="t2 tick">4.78</text><text x="110" y="224.5" text-anchor="end" class="t2">20 万 · 方案</text><rect x="118.0" y="213" width="1.9" height="15" rx="0" fill="var(--s1)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+NPU 芯片与内存：0.06 pt，占 5.6 %"/><rect x="121.9" y="213" width="0.0" height="15" rx="0" fill="var(--s2)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+网络：0.01 pt，占 0.9 %"/><rect x="122.5" y="213" width="0.0" height="15" rx="0" fill="var(--s3)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+主机：0.02 pt，占 1.9 %"/><rect x="123.8" y="213" width="24.2" height="15" rx="0" fill="var(--s4)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+机房设施：0.41 pt，占 38.0 %"/><rect x="150.0" y="213" width="33.6" height="15" rx="0" fill="var(--s5)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+存储 / 软件 / 未归因：0.55 pt，占 51.6 %"/><rect x="185.6" y="213" width="1.4" height="15" rx="3" fill="var(--s6)" data-tip="20 万 · 方案（D-HARD + R-REPLAY + R-NETFAIL + R-ELASTIC + C-MEM + H-LEMON + H-SWEEP）
+亚健康隔离与静默暂停：0.02 pt，占 2.0 %"/><text x="193.1" y="224.5" class="t2 tick">1.07</text><text x="110" y="258.5" text-anchor="end" class="t2">50 万 · 基线</text><rect x="118.0" y="247" width="329.3" height="15" rx="0" fill="var(--s1)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+NPU 芯片与内存：5.15 pt，占 46.3 %"/><rect x="449.3" y="247" width="56.8" height="15" rx="0" fill="var(--s2)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+网络：0.91 pt，占 8.2 %"/><rect x="508.1" y="247" width="110.1" height="15" rx="0" fill="var(--s3)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+主机：1.74 pt，占 15.7 %"/><rect x="620.2" y="247" width="82.0" height="15" rx="0" fill="var(--s4)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+机房设施：1.31 pt，占 11.7 %"/><rect x="704.2" y="247" width="112.2" height="15" rx="0" fill="var(--s5)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+存储 / 软件 / 未归因：1.77 pt，占 16.0 %"/><rect x="818.4" y="247" width="15.2" height="15" rx="3" fill="var(--s6)" data-tip="50 万 · 基线（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+亚健康隔离与静默暂停：0.24 pt，占 2.1 %"/><text x="839.6" y="258.5" class="t2 tick">11.12</text><text x="110" y="283.5" text-anchor="end" class="t2">50 万 · 方案</text><rect x="118.0" y="272" width="4.4" height="15" rx="0" fill="var(--s1)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+NPU 芯片与内存：0.10 pt，占 3.9 %"/><rect x="124.4" y="272" width="0.0" height="15" rx="0" fill="var(--s2)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+网络：0.03 pt，占 1.2 %"/><rect x="126.4" y="272" width="0.2" height="15" rx="0" fill="var(--s3)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+主机：0.03 pt，占 1.3 %"/><rect x="128.6" y="272" width="62.7" height="15" rx="0" fill="var(--s4)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+机房设施：1.00 pt，占 39.2 %"/><rect x="193.3" y="272" width="85.8" height="15" rx="0" fill="var(--s5)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+存储 / 软件 / 未归因：1.37 pt，占 53.2 %"/><rect x="281.1" y="272" width="2.0" height="15" rx="3" fill="var(--s6)" data-tip="50 万 · 方案（D-HARD + R-NETFAIL + R-ELASTIC + R-PROCESS + C-MEM + H-LEMON + H-SWEEP）
+亚健康隔离与静默暂停：0.03 pt，占 1.2 %"/><text x="289.0" y="283.5" class="t2 tick">2.57</text></svg>

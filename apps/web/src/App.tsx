@@ -14,8 +14,9 @@ import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
 import { ImportPage } from './pages/ImportPage.js';
 import { MechanismsPage } from './pages/MechanismsPage.js';
+import { AuditPage } from './pages/AuditPage.js';
 
-const PAGES: Page[] = ['scenario', 'training', 'mechanisms', 'inference', 'spares', 'allocation', 'compare', 'simulate', 'report', 'import', 'library'];
+const PAGES: Page[] = ['scenario', 'training', 'mechanisms', 'allocation', 'audit', 'inference', 'spares', 'compare', 'simulate', 'report', 'import', 'library'];
 /** v3.6 minimal mode (default): the training-availability core only; the other pages stay one click away ("All pages") and every function stays in the CLI / MCP */
 const MINIMAL_HIDDEN: Page[] = ['inference', 'spares', 'compare', 'simulate', 'report'];
 type UiMode = 'minimal' | 'full';
@@ -93,6 +94,7 @@ export function App() {
         {page === 'scenario' && <ScenarioPage />}
         {page === 'training' && <TrainingPage />}
         {page === 'mechanisms' && <MechanismsPage />}
+        {page === 'audit' && <AuditPage />}
         {page === 'inference' && <InferencePage />}
         {page === 'spares' && <SparesPage />}
         {page === 'allocation' && <AllocationPage />}

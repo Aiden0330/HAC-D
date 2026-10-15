@@ -34,7 +34,9 @@ export interface LedgerClassSpec {
   /** job-level silent-corruption rate per running hour */
   sdcRatePerHour: number;
   slow?: LedgerSlowSpec;
-  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number };
+  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number; custom?: Record<string, number> };
+  /** v3.7 per-class global recovery sampler (per-class automatic stage overrides); default: the spec's sampler */
+  globalRecovery?: (rng: Rng) => () => number;
 }
 
 export interface LedgerSpec {
@@ -51,6 +53,8 @@ export interface LedgerSpec {
   sdc: { coverage: number; detectSeconds: number; fallbackDelayHours: number; step?: { stepSeconds: number; recoverSeconds: number }; terminalRule?: SdcTerminalRule };
   /** v3.5 order of the detection-delayed rungs (default replay → hotswap → elastic → process) */
   chainOrder?: readonly string[];
+  /** v3.7 durable lag of asynchronous saves (hours): every rollback returns this much below the checkpoint */
+  rollbackLagH?: number;
   classes: LedgerClassSpec[];
 }
 
@@ -87,7 +91,7 @@ export interface LedgerReplication {
   /** 1 − downtime/T */
   operationalAvailability: number;
   ledger: LedgerAccount;
-  counts: { hard: number; slow: number; sdc: number; manual: number; sdcEpisodes: number; replay: number; elastic: number; process: number; global: number; isolations: number; predicted: number; falseAlarms: number; netfail: number; hotswap: number };
+  counts: { hard: number; slow: number; sdc: number; manual: number; sdcEpisodes: number; replay: number; elastic: number; process: number; global: number; isolations: number; predicted: number; falseAlarms: number; netfail: number; hotswap: number; custom: number };
   byClass: Record<string, LedgerClassAccount>;
   unresolvedAtEnd: boolean;
 }
@@ -112,6 +116,8 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const rate = hardTotal + slowTotal + sdcTotal;
   // the global recovery draws come from the mechanism stream: a rung that avoids a global recovery must not shift the arrivals
   const recovery = spec.globalRecovery(tech);
+  // v3.7 per-class samplers (automatic stage overrides) share the mechanism stream
+  const classRecovery = classes.map((c) => (c.globalRecovery ? c.globalRecovery(tech) : recovery));
   const pick = (rates: number[], total: number): number => {
     let v = rng.uniform() * total;
     for (let i = 0; i < rates.length; i++) {
@@ -134,8 +140,11 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   let downUntil = 0;
   const slows: { cls: number; detected: boolean; until: number }[] = [];
   const locals: { domain: number; until: number; cls: number }[] = [];
+  // v3.7 degraded running after a custom rung (fabric re-route): a throughput factor until the repair ends
+  const degrades: { factor: number; until: number; cls: number }[] = [];
   const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, terminalInvalid: 0, localLoss: 0, overhead: 0 };
-  const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0, predicted: 0, falseAlarms: 0, netfail: 0, hotswap: 0 };
+  const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0, predicted: 0, falseAlarms: 0, netfail: 0, hotswap: 0, custom: 0 };
+  const lagH = Math.max(0, spec.rollbackLagH ?? 0);
   const overheadFrac = Math.min(0.99, Math.max(0, spec.overhead ?? 0));
   // false alarms of the predictor: a separate Poisson stream of planned migrations on the running clock
   const pd = spec.chain.predict;
@@ -155,16 +164,18 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     downUntil = Math.max(downUntil, until);
   };
   /** pause of `seconds` after a delay; `seconds === null` draws the global recovery */
-  const pause = (delayS: number, seconds: number | null) => {
+  const pause = (delayS: number, seconds: number | null, perClass = false) => {
     acct(current).recoveries++;
     let s = seconds;
     if (s === null) {
-      s = recovery();
+      s = (perClass ? classRecovery[current] : recovery)();
       counts.global++;
     }
     globalPause(delayS + s);
   };
-  const rollback = (to: number, kind: 'hard' | 'sdc') => {
+  /** rollback to `to0`; the durable lag of asynchronous saves applies to rollback events (hard, detected corruption), not to a fallback discovery that returns to the clean checkpoint itself */
+  const rollback = (to0: number, kind: 'hard' | 'sdc', withLag = true) => {
+    const to = Math.max(0, to0 - (withLag ? lagH : 0));
     const loss = Math.max(0, progress - to);
     ledger.rollback += loss;
     if (kind === 'hard') ledger.rollbackHard += loss;
@@ -195,6 +206,42 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       }
       failed += ch.netfail.failureSeconds;
     }
+    // v3.7 custom rungs: transparent ones before the detection-delayed rungs, delayed ones after them
+    const tryCustom = (position: 'transparent' | 'delayed'): boolean => {
+      for (const [id, cr] of Object.entries(ch.custom ?? {})) {
+        if ((cr.position ?? 'transparent') !== position) continue;
+        const a = cls.applicable.custom?.[id] ?? 0;
+        if (a <= 0 || tech.uniform() >= a) continue;
+        if (tech.uniform() < cr.success) {
+          counts.custom++;
+          if (cr.rollback) {
+            rollback(cp, 'hard');
+            if (!cpDirty) dirty = null;
+          }
+          if (cr.localLossSeconds > 0) {
+            const dur = cr.localLossDurationSeconds ?? 0;
+            if (dur > 0) {
+              // degraded running after the pause (fabric re-route): throughput factor 1 − ℓ/T over the repair time T, booked as local loss as it happens
+              const pauseEnd = Math.max(t, downUntil) + ((cr.detectionDelay ? delayS : 0) + failed + cr.successSeconds) / 3600;
+              degrades.push({ factor: Math.max(0, 1 - cr.localLossSeconds / dur), until: pauseEnd + dur / 3600, cls: current });
+            } else {
+              // no duration given: progress lost at the event (checkpoint pointers lowered so that the window identity holds)
+              const take = Math.min(cr.localLossSeconds / 3600, progress);
+              progress -= take;
+              cp = Math.min(cp, progress);
+              cleanCp = Math.min(cleanCp, progress);
+              ledger.localLoss += take;
+              acct(current).localLoss += take;
+            }
+          }
+          pause(cr.detectionDelay ? delayS : 0, failed + cr.successSeconds);
+          return true;
+        }
+        failed += cr.failureSeconds ?? 0;
+      }
+      return false;
+    };
+    if (tryCustom('transparent')) return;
     // the detection-delayed rungs in the configured order (default replay → hotswap → elastic → process)
     for (const rung of rungOrder(spec.chainOrder)) {
       if (rung === 'replay' && ch.replay && cls.applicable.replay > 0 && tech.uniform() < cls.applicable.replay) {
@@ -236,10 +283,11 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
         failed += ch.process.failureSeconds;
       }
     }
+    if (tryCustom('delayed')) return;
     rollback(cp, 'hard');
     // a rollback before the first dirty checkpoint was written clears the corruption
     if (!cpDirty) dirty = null;
-    pause(delayS + failed, null);
+    pause(delayS + failed, null, true);
   };
   const domains = Math.max(1, spec.chain.elastic?.domains ?? 1);
   const advance = (dt: number) => {
@@ -255,7 +303,9 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     let slowFactor = 1;
     for (const s of slows) slowFactor *= classes[s.cls].slow!.performance;
     const localFactor = 1 - locals.length / domains;
-    const factor = slowFactor * localFactor * (1 - overheadFrac);
+    let degradeFactor = 1;
+    for (const d of degrades) degradeFactor *= d.factor;
+    const factor = slowFactor * localFactor * degradeFactor * (1 - overheadFrac);
     if (commits) {
       cp = progress + (commits * tau - Math.min(phase, tau)) * factor;
       cpDirty = !!dirty;
@@ -265,11 +315,13 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     ledger.save += Math.max(0, dt - compute);
     const slowLoss = compute * (1 - slowFactor);
     const localLoss = compute * slowFactor * (1 - localFactor);
-    ledger.overhead += compute * slowFactor * localFactor * overheadFrac;
+    const degradeLoss = compute * slowFactor * localFactor * (1 - degradeFactor);
+    ledger.overhead += compute * slowFactor * localFactor * degradeFactor * overheadFrac;
     ledger.slowdown += slowLoss;
-    ledger.localLoss += localLoss;
+    ledger.localLoss += localLoss + degradeLoss;
     for (const s of slows) acct(s.cls).slowdown += slowLoss / slows.length;
     for (const l of locals) acct(l.cls).localLoss += localLoss / locals.length;
+    for (const d of degrades) acct(d.cls).localLoss += degradeLoss / degrades.length;
     phase = Math.max(0, end - commits * L);
     remaining = Math.max(0, remaining - dt);
   };
@@ -282,6 +334,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     let next = Math.min(T, nextFault, nextAlarm, up ? Infinity : downUntil, dirty ? dirty.discover : Infinity);
     for (const s of slows) next = Math.min(next, s.until);
     for (const l of locals) next = Math.min(next, l.until);
+    for (const d of degrades) next = Math.min(next, d.until);
     const dtAdv = Math.max(0, next - t);
     advance(dtAdv);
     if (t >= downUntil - 1e-9 && Number.isFinite(nextFalseAlarm)) nextFalseAlarm = Math.max(0, nextFalseAlarm - dtAdv);
@@ -294,7 +347,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     }
     if (dirty && dirty.discover <= t + 1e-9) {
       current = dirty.cls;
-      rollback(cleanCp, 'sdc');
+      rollback(cleanCp, 'sdc', false);
       cp = cleanCp;
       cpDirty = false;
       dirty = null;
@@ -303,6 +356,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       sdcRecoveryUntil = downUntil;
     }
     for (let i = locals.length - 1; i >= 0; i--) if (locals[i].until <= t + 1e-9) locals.splice(i, 1);
+    for (let i = degrades.length - 1; i >= 0; i--) if (degrades[i].until <= t + 1e-9) degrades.splice(i, 1);
     let isolate = false;
     for (let i = slows.length - 1; i >= 0; i--) {
       if (slows[i].until <= t + 1e-9) {

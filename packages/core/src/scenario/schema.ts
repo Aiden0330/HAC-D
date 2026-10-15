@@ -173,7 +173,15 @@ export const ComponentSchema = z.object({
    * state without an interruption. Handled by the job-level `scenario.sdc` policy (immediate detection,
    * fallback discovery, clean-checkpoint rollback, terminal discard).
    */
-  sdc: z.object({ ratePerHour: z.number().nonnegative(), provenance: ProvenanceSchema.optional() }).optional(),
+  /** v3 silent corruption produced by this class; v3.7 `coverage` overrides the scenario-level immediate detection coverage for this class (rate-weighted into the job-level coverage) */
+  sdc: z.object({
+    ratePerHour: z.number().nonnegative(),
+    /** absolute immediate-detection coverage of this class (overrides the scenario-level coverage; a scenario-level detector raises it to at least its own coverage) */
+    coverage: z.number().min(0).max(1).optional(),
+    /** conditional detectors by mechanism id: each catches this share of the misses left by the others, q_i = 1 − (1 − q)·Π(1 − c_k) */
+    extraDetection: z.record(z.string(), z.number().min(0).max(1)).optional(),
+    provenance: ProvenanceSchema.optional(),
+  }).optional(),
   /**
    * v3.3 weights for the allocation methods (Allocation page): AGREE importance and duty, feasibility-of-improvement weight,
    * cost-optimal coefficients cost = a·(λ_current/λ)^b, the lowest achievable rate as a fraction of the current one, and
@@ -194,7 +202,9 @@ export const ComponentSchema = z.object({
    * `scenario.mechanisms` can act on (the reference catalog's per-event replay / process / elastic flags,
    * aggregated per class). Missing = 0 = the mechanism does not apply to this class.
    */
-  mechanisms: z.object({ replay: z.number().min(0).max(1).optional(), process: z.number().min(0).max(1).optional(), elastic: z.number().min(0).max(1).optional(), predict: z.number().min(0).max(1).optional(), netfail: z.number().min(0).max(1).optional(), hotswap: z.number().min(0).max(1).optional() }).optional(),
+  mechanisms: z.object({ replay: z.number().min(0).max(1).optional(), process: z.number().min(0).max(1).optional(), elastic: z.number().min(0).max(1).optional(), predict: z.number().min(0).max(1).optional(), netfail: z.number().min(0).max(1).optional(), hotswap: z.number().min(0).max(1).optional(), custom: z.record(z.string(), z.number().min(0).max(1)).optional() }).optional(),
+  /** v3.7 per-class overrides of the automatic recovery stages of the MTTR mixture (seconds; missing stages keep the scenario's values): the mechanism audit's startup / checkpoint-read / communication-rebuild budget */
+  recoveryStages: z.object({ startup: z.number().nonnegative().optional(), read: z.number().nonnegative().optional(), communication: z.number().nonnegative().optional() }).optional(),
   /** infant mortality: rate multiplier for the first `durationHours` of life (simulation) */
   infant: z.object({ multiplier: z.number().positive(), durationHours: z.number().positive() }).optional(),
   /** lemon units: fraction of units with a higher rate (simulation) */
@@ -272,6 +282,8 @@ export const TrainingWorkloadSchema = z.object({
   stepTimeS: z.number().positive().optional(),
   /** v2: measured lost computation per failure (seconds); overrides τ/2 in the first-order and product forms */
   measuredRecomputeS: z.number().nonnegative().optional(),
+  /** v3.7 durable lag of asynchronous checkpoint saves: the recovery point is this many seconds behind the save, added to the rollback of every rollback event (first-order approximation) */
+  rollbackLagS: z.number().nonnegative().optional(),
 });
 
 export const InferenceWorkloadSchema = z.object({
@@ -314,6 +326,10 @@ export const RungSchema = z.object({
   confidence: z.enum(['measured', 'paper-reported', 'vendor', 'derived', 'assumed']).optional(),
 });
 
+/** v3.7 engineering breakdown of the automatic recovery attempt (mechanism audit 2026-10-14): process / runtime startup (with the graph-preparation share inside it), checkpoint-state read, communication rebuild; serial, so the sum is the attempt */
+export const RecoveryStagesSchema = z.object({ startup: z.number().nonnegative(), graphWithinStartup: z.number().nonnegative().optional(), read: z.number().nonnegative(), communication: z.number().nonnegative() });
+export type RecoveryStages = z.infer<typeof RecoveryStagesSchema>;
+
 export const RecoverySchema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('preset'), preset: z.string() }),
   z.object({ mode: z.literal('pipeline'), stages: z.array(StageSchema).min(1) }),
@@ -327,7 +343,7 @@ export const RecoverySchema = z.discriminatedUnion('mode', [
   z.object({
     mode: z.literal('mixture'),
     detection: z.object({ coverage: z.number().min(0).max(1).default(0.95), autoSeconds: z.number().nonnegative().default(10), timeoutSeconds: z.number().nonnegative().default(60) }).prefault({}),
-    automatic: z.object({ successProbability: z.number().min(0).max(1).default(0.99), seconds: z.number().nonnegative().default(180), scale: ScaleLawSchema.optional() }).prefault({}),
+    automatic: z.object({ successProbability: z.number().min(0).max(1).default(0.99), seconds: z.number().nonnegative().default(180), scale: ScaleLawSchema.optional(), stages: RecoveryStagesSchema.optional() }).prefault({}),
     manual: z.object({ seconds: z.number().nonnegative().default(7200) }).prefault({}),
   }),
 ]);
@@ -363,6 +379,20 @@ export const SdcPolicySchema = z.object({
 });
 
 /** v3 recovery mechanism chain tried before the global checkpoint recovery (docs/MODEL_REFERENCE.md §19). */
+/** v3.7 custom chain rung (mechanism audit): success pause, failure time, rollback or not, whether it waits for the detection delay, compute lost outside the pause (degraded running), and its position in the chain */
+export const CustomRungSchema = z.object({
+  success: z.number().min(0).max(1),
+  successSeconds: z.number().nonnegative(),
+  failureSeconds: z.number().nonnegative().default(0),
+  rollback: z.boolean().default(false),
+  detectionDelay: z.boolean().default(false),
+  localLossSeconds: z.number().nonnegative().default(0),
+  /** wall time (s) over which the local loss is spread as a throughput factor in the ledger simulation (e.g. the repair time of a degraded fabric); absent: booked at the event */
+  localLossDurationSeconds: z.number().nonnegative().optional(),
+  position: z.enum(['transparent', 'delayed']).default('transparent'),
+});
+export type CustomRung = z.infer<typeof CustomRungSchema>;
+
 export const MechanismChainSchema = z.object({
   /** v3.5 order in which the detection-delayed rungs are tried (prediction and network failover always come first); missing rungs follow in the default order replay → hotswap → elastic → process */
   order: z.array(z.enum(['replay', 'hotswap', 'elastic', 'process'])).optional(),
@@ -380,6 +410,8 @@ export const MechanismChainSchema = z.object({
    * mechanism restores the scenario exactly and re-applying one replaces its previous application instead of compounding.
    */
   applied: z.record(z.string(), z.object({ order: z.number().int().nonnegative(), parameters: z.record(z.string(), z.number()), previous: z.record(z.string(), z.unknown()) })).optional(),
+  /** v3.7 custom rungs keyed by mechanism id (link-transparent recovery, fabric degrade, control-plane continuity, …); applicability per class in `component.mechanisms.custom` */
+  custom: z.record(z.string(), CustomRungSchema).optional(),
   /** transient faults re-executed in place: no rollback */
   replay: z.object({ success: z.number().min(0).max(1).default(0.9), successSeconds: z.number().nonnegative().default(5), failureSeconds: z.number().nonnegative().default(10) }).optional(),
   /** DP-domain elasticity: the faulty domain drops out for recoverSeconds while the others continue; no rollback */

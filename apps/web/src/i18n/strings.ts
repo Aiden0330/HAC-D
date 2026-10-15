@@ -2,8 +2,8 @@
 export const strings = {
   en: {
     app: { title: 'HAC-D', eyebrow: 'AI cluster availability modeling', footer: 'First-order closed forms with validity flags; non-exponential or correlated inputs route to Monte Carlo. Grounded in the survey chapter “AI 集群可靠性建模”.' },
-    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', mechanisms: 'Mechanisms', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
-    ui: { minimal: 'Minimal', full: 'All pages', hint: 'Minimal shows the training-availability core (Scenario, Training, Mechanisms, Allocation, Import, Library); All pages adds Inference, Spares & domains, Compare, Simulate and Report. Every function stays available in the CLI and MCP server.' },
+    nav: { scenario: 'Scenario', library: 'Library', training: 'Training', mechanisms: 'Mechanisms', audit: 'Audit & study', inference: 'Inference', spares: 'Spares & domains', allocation: 'Allocation', compare: 'Compare', simulate: 'Simulate', report: 'Report', import: 'Import' },
+    ui: { minimal: 'Minimal', full: 'All pages', hint: 'Minimal shows the training-availability core (Scenario, Training, Mechanisms, Allocation, Audit & study, Import, Library); All pages adds Inference, Spares & domains, Compare, Simulate and Report. Every function stays available in the CLI and MCP server.' },
     theme: { auto: 'Auto', light: 'Light', dark: 'Dark' },
     common: {
       formula: 'Formula', table: 'Table', chart: 'Chart', download: 'Download', copy: 'Copy', add: 'Add', remove: 'Remove', run: 'Run', running: 'Running…', reset: 'Reset', apply: 'Apply',
@@ -94,6 +94,7 @@ export const strings = {
       switchoverPenalty: 'Switchover penalty', humanFraction: 'Events needing a person', autoShare: 'Downtime on the automatic path', gain: 'Gain ΔA', unavailabilityRatio: 'U_original / U_compensated', mtbfRatio: 'MTBF ratio', approximate: 'A first-order or reduced model was used in at least one block.', measure: 'Measure', unavailability: 'Unavailability', frequency: 'ν (/h)',
     },
     mechanisms: {
+      provisionalNote: 'audited mechanisms without measured integration fields have no effect otherwise', auditedTag: 'audit 2026-10-14',
       title: 'Fault-management mechanisms', sub: 'The reference catalog’s twelve mechanisms as scenario changes; single gains, last-added gains and exact Shapley attribution over all combinations, evaluated with the closed forms.',
       players: 'Mechanisms to attribute', metric: 'Value function', run: 'Attribute', running: 'Evaluating coalitions…', cancel: 'Cancel', cancelled: 'Cancelled: the compute worker was restarted; the other pages’ pending jobs were dropped too.', oneJob: 'the compute worker runs one job at a time (attribute or plan); the counter shows the coalitions evaluated', phase_coalitions: 'coalitions', phase_scan: 'scan cells', phase_verify: 'ledger windows', baseline: 'Baseline (players stripped)', combined: 'All selected', delta: 'Combined gain', single: 'Single gain (alone)', lastAdded: 'Last-added gain', shapley: 'Shapley value', share: 'Share', coalitions: 'coalitions', interaction: 'Interaction (combined − Σ single)',
       library: 'Mechanism library (reference catalog)', status: 'Status', kind: 'Kind', scope: 'Scope', change: 'Change', prerequisite: 'Prerequisite', failure: 'Failure / fallback', parameters: 'Parameters', confidence: 'Confidence', inScenario: 'in scenario', apply: 'Apply to scenario', remove: 'Remove', notTraining: 'Attribution applies to training workloads.', noPlayers: 'Select at least one mechanism with a scenario transform.',
@@ -104,6 +105,21 @@ export const strings = {
       params: 'Parameter overrides', paramHint: 'Edit a target parameter before attributing (e.g. D-SDC coverage 0.999, R-ELASTIC domains 100).', legendLoss: 'loss (negative gain)', legendGain: 'gain over the baseline',
       effort: 'Effort', planTitle: 'Plan to target', planSub: 'Cheapest set of the selected mechanisms (effort scores) that reaches the target with nominal and derated parameters; necessary mechanisms; effort–value Pareto front; coverage × recovery scan; ledger verification of P(window ≥ target).', planTarget: 'Target', planDerate: 'Derate assumed parameters', planDerateHint: 'coverage −5 pts, success −8 pts, times ×1.5 (library targets and priors only)', planVerify: 'Verify with the ledger simulation', planTrials: 'Windows (trials)', planConfidence: 'Confidence P(window ≥ target)', planRun: 'Plan', planning: 'Planning…', planNone: 'No coalition reaches the target', planChosen: 'Cheapest feasible set', planNecessary: 'Necessary (in every feasible set)', planFeasible: 'feasible coalitions', planMax: 'best reachable (all on)', planPareto: 'Effort–value Pareto front', planCoalition: 'Coalition', planValue: 'nominal', planDerated: 'derated', planMargin: 'margin', planScan: 'Coverage × recovery scan', planScanX: 'immediate detection coverage', planScanY: 'automatic recovery attempt (s)', planVerification: 'Ledger verification', planPass: 'passes', planFail: 'fails', planEffortHint: 'effort scores are editable in the library table below', planMean: 'mean', planPTarget: 'P(window ≥ target)', planBound: 'No-fault bound (best checkpoint settings)', planBoundNote: 'duty cycle τ/(τ+δ)', planProven: 'proven infeasible: the checkpoint saves alone cap the window below the target', verdict_supported: 'supported', verdict_uncertain: 'uncertain', verdict_below: 'below', wilson: 'Wilson',
     },
+    audit: {
+      title: 'Mechanism audit and allocation study', sub: 'Single-point benefit audit of selected mechanisms (the 口径 of the mechanism audit of 2026-10-14) and the cross-scale allocation study (budgets, planner, Shapley, residual weak links, levers, verification); both export a standalone HTML report with its JSON.',
+      scenarioFor: 'Scenario', defaultCatalog: 'default: the 54-event reference catalog', notTraining: 'The audit and the study need a training workload.', noMechanisms: 'Select at least one mechanism.', badSizes: 'Give one or more cluster sizes (cards).', cancelled: 'Cancelled: the compute worker was restarted.',
+      auditTitle: 'Single-point benefit audit', auditSub: 'One applicable, successfully handled event (or one stage) per mechanism against the scenario\'s own baseline; seconds, detection points and FIT are different units. Cluster-level deltas only for mechanisms whose integration parameters are complete.',
+      audited: 'Audited mechanisms (2026-10-14 catalog)', builtin: 'HAC-D built-in mechanisms', selectAll: 'All 35', selectAudited: 'Audited 16', selectNone: 'None', needs: 'needs',
+      provisional: 'Provisional assumptions', provisionalShort: 'use provisional assumptions', provisionalHint: 'Fills the null integration fields (eligible share 100 % of the candidate events, success 90 %, failure 10 s, risk share 1/3, …), tagged assumed; the planner derates them. Off: those mechanisms stay audit-only.',
+      runAudit: 'Run audit', legendReady: 'integration parameters complete (or provisional)', legendMissing: 'fields to calibrate: audit only until the switch is on',
+      kpiNormal: 'Regular reference loss', kpiExpected: 'Expected loss incl. manual tail', kpiStages: 'Stage budget startup / read / communication', kpiStagesNote: 'serial split of the automatic attempt; same-stage mechanisms take the minimum', kpiBaseline: 'Scenario baseline',
+      colMech: 'Mechanism', colMetric: 'Metric (口径)', colBaseline: 'Baseline → target', colGain: 'Single-point gain', colStatus: 'Cluster-level status', statusReady: 'enters the models', statusProvisional: 'provisional (assumed)', statusMissing: 'to calibrate', statusAuditOnly: 'audit only',
+      downloadHtml: 'Download HTML report', downloadJson: 'Download JSON', preview: 'Report preview',
+      studyTitle: 'Cross-scale allocation study', studySub: 'For each size: hardware-only and recovery-only budgets (ARINC, minimum effort, stage budgets), the cheapest feasible mechanism set (exact ≤ 10 candidates, greedy beyond), Shapley attribution (exact ≤ 12, sampled beyond), residual loss by domain group, recovery levers beyond the library, window-ledger verification and metric-vs-N curves.',
+      sizes: 'Cluster sizes (cards)', sizesHint: 'comma-separated, e.g. 10000, 100000, 200000, 500000', target: 'Target', trials: 'Verification windows', trialsHint: '0 = skip the ledger verification', seed: 'Seed', options: 'Options', levers: 'recovery levers', curves: 'metric-vs-N curves',
+      players: 'Candidate mechanisms', playersHint: 'more than 10 → greedy planner; more than 12 → sampled Shapley', defaultPlayers: 'Default 10', runStudy: 'Run study', running: 'Running…', phase_sizes: 'sizes', phase_curves: 'curves',
+      colSize: 'Cards', colBase: 'Baseline', colPlan: 'Recommended set · effort', colValues: 'Nominal / derated', colResidual: 'Hardware factor after the plan', colVerify: 'P(window ≥ target) · verdict', infeasible: 'no feasible set; best:', none: 'none', greedy: 'greedy',
+    },
     import: {
       title: 'Import spreadsheet', sub: 'Load an availability workbook: detect the methods it uses, extract the topology, convert it into a scenario and reconcile with the sheet’s own numbers.',
       choose: 'Choose .xlsx / .xls / .csv', sheet: 'Sheet', methods: 'Methods detected', hits: 'Formula fingerprints', columns: 'Column roles', role: 'Role', header: 'Header', tree: 'Extracted topology', confidence: 'Confidence', importBtn: 'Import as scenario', imported: 'Imported scenario', reconcile: 'Reconciliation (spreadsheet vs HAC-D)', excelValue: 'Spreadsheet', engineValue: 'HAC-D', delta: 'Δ', noCached: 'The file carries no cached results (saved without calculation): only structure and parameters were compared.', evidence: 'Evidence', noHeader: 'No header row recognised on this sheet: pick another sheet or set the column roles.', futureImage: 'Diagram / image import will feed the same topology draft.', exportXlsx: 'Export the active scenario to Excel', node: 'Node', cell: 'Cell', formula: 'Formula', method: 'Method', none: '—',
@@ -113,8 +129,8 @@ export const strings = {
   },
   zh: {
     app: { title: 'HAC-D', eyebrow: 'AI 集群可用性建模', footer: '一阶解析式附有效性标记；非指数或相关故障输入转入蒙特卡洛。依据综述章节《AI 集群可靠性建模》。' },
-    nav: { scenario: '方案', library: '参数库', training: '训练作业', mechanisms: '机制', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
-    ui: { minimal: '精简', full: '全部页面', hint: '精简模式只显示训练可用性核心（方案、训练作业、机制、可用性分配、导入、参数库）；全部页面另含推理服务、备件与故障域、方案对比、蒙特卡洛与设计评审。所有功能在命令行与 MCP 中保持可用。' },
+    nav: { scenario: '方案', library: '参数库', training: '训练作业', mechanisms: '机制', audit: '审核与报告', inference: '推理服务', spares: '备件与故障域', allocation: '可用性分配', compare: '方案对比', simulate: '蒙特卡洛', report: '设计评审', import: '导入' },
+    ui: { minimal: '精简', full: '全部页面', hint: '精简模式只显示训练可用性核心（方案、训练作业、机制、可用性分配、审核与报告、导入、参数库）；全部页面另含推理服务、备件与故障域、方案对比、蒙特卡洛与设计评审。所有功能在命令行与 MCP 中保持可用。' },
     theme: { auto: '自动', light: '浅色', dark: '深色' },
     common: {
       formula: '公式', table: '表格', chart: '图', download: '下载', copy: '复制', add: '新增', remove: '删除', run: '运行', running: '运行中…', reset: '重置', apply: '应用',
@@ -205,6 +221,7 @@ export const strings = {
       switchoverPenalty: '倒换损失', humanFraction: '需人工处理的事件比例', autoShare: '自动路径的停机占比', gain: '增益 ΔA', unavailabilityRatio: 'U_原始 / U_补偿后', mtbfRatio: 'MTBF 比', approximate: '至少一个块使用了一阶近似或简化模型。', measure: '度量', unavailability: '不可用率', frequency: 'ν（/小时）',
     },
     mechanisms: {
+      provisionalNote: '未填实测集成字段的审核机制否则不起作用', auditedTag: '审核 2026-10-14',
       title: '故障管理机制', sub: '参考工具的 12 项可靠性机制作为方案变更：单项收益、末位加入收益与全组合精确 Shapley 归因，均用解析式计算。',
       players: '参与归因的机制', metric: '价值函数', run: '归因', running: '正在枚举组合…', cancel: '取消', cancelled: '已取消：计算线程已重启；其他页面正在等待的计算也已丢弃。', oneJob: '计算线程一次只运行一项任务（归因或规划）；计数显示已评估的组合数', phase_coalitions: '组合', phase_scan: '扫描格', phase_verify: '账本窗口', baseline: '基线（已剥离所选机制）', combined: '全部启用', delta: '组合收益', single: '单项收益（单独启用）', lastAdded: '末位加入收益', shapley: 'Shapley 贡献', share: '占比', coalitions: '个组合', interaction: '交互项（组合 − Σ 单项）',
       library: '机制库（参考目录）', status: '状态', kind: '类型', scope: '作用范围', change: '变化', prerequisite: '前置条件', failure: '失败 / 回退', parameters: '参数', confidence: '置信', inScenario: '已在方案中', apply: '应用到方案', remove: '移除', notTraining: '归因适用于训练负载。', noPlayers: '请至少选择一项带方案变更的机制。',
@@ -214,6 +231,21 @@ export const strings = {
       sideBySide: '最后三列给出各机制对运行可用率 A_op 与正确有效产出的收益（与所选价值函数无关）；两者排序不同（A_op 只随停机变化）。',
       params: '参数覆盖', paramHint: '归因前可修改目标参数（如 D-SDC 检出率 0.999、R-ELASTIC 域数 100）。', legendLoss: '损失（负收益）', legendGain: '相对基线的收益',
       effort: '工作量', planTitle: '按目标规划', planSub: '在所选机制中找出达到目标的最低工作量组合（名义参数与降额参数都须满足）、必要机制、工作量–价值 Pareto 前沿、检出率 × 恢复时间扫描，以及账本仿真校核 P(窗口 ≥ 目标)。', planTarget: '目标', planDerate: '对假设参数降额', planDerateHint: '检出率 −5 点、成功率 −8 点、时间 ×1.5（仅机制库的目标值与先验）', planVerify: '用账本仿真校核', planTrials: '窗口数（次）', planConfidence: '置信 P(窗口 ≥ 目标)', planRun: '规划', planning: '正在规划…', planNone: '没有组合能达到目标', planChosen: '最低工作量可行组合', planNecessary: '必要机制（出现在每个可行组合中）', planFeasible: '个可行组合', planMax: '全部启用可达', planPareto: '工作量–价值 Pareto 前沿', planCoalition: '组合', planValue: '名义', planDerated: '降额', planMargin: '余量', planScan: '检出率 × 恢复时间扫描', planScanX: '静默即时检出率', planScanY: '自动恢复尝试（s）', planVerification: '账本仿真校核', planPass: '通过', planFail: '未通过', planEffortHint: '工作量分数可在下方机制库表中修改', planMean: '均值', planPTarget: 'P(窗口 ≥ 目标)', planBound: '无故障上界（最优检查点设置）', planBoundNote: '占空比 τ/(τ+δ)', planProven: '已证明不可达：仅检查点保存就把窗口上限压到目标以下', verdict_supported: '支持', verdict_uncertain: '不确定', verdict_below: '未达到', wilson: 'Wilson',
+    },
+    audit: {
+      title: '机制审核与分配报告', sub: '对所选机制做单点收益审核（2026-10-14 机制审核的口径），以及跨规模的可用性分配研究（预算、规划器、Shapley、残余薄弱环节、杠杆、校核）；两者都可导出独立的 HTML 报告及其 JSON。',
+      scenarioFor: '方案', defaultCatalog: '默认：54 条事件的参考目录', notTraining: '审核与研究需要训练作业负载。', noMechanisms: '至少选择一项机制。', badSizes: '请给出一个或多个集群规模（卡数）。', cancelled: '已取消：计算线程已重启。',
+      auditTitle: '单点收益审核', auditSub: '每项机制按"一次适用且成功处理的事件（或一个阶段）"对方案自身基线量化；秒数、检出率百分点与 FIT 单位不同，不能混合排序。集群级增量只对参数齐全的机制给出。',
+      audited: '审核新增机制（2026-10-14 目录）', builtin: 'HAC-D 既有机制', selectAll: '全部 35 项', selectAudited: '审核 16 项', selectNone: '清空', needs: '待填',
+      provisional: '临时假设', provisionalShort: '使用临时假设', provisionalHint: '把审核中留空的集成字段填为临时值（适用比例 = 候选事件的 100 %、成功率 90 %、失败 10 s、风险占比 1/3 等），标注 assumed，规划器会降额；关闭时这些机制只出现在单点表中。',
+      runAudit: '生成审核', legendReady: '集成参数齐全（或已用临时假设）', legendMissing: '有待校准字段：开关关闭时仅单点审核',
+      kpiNormal: '常规中断参考损失', kpiExpected: '含人工尾部的期望损失', kpiStages: '阶段预算 启动 / 读取 / 通信', kpiStagesNote: '自动恢复的串行工程拆分；同一阶段取最小值', kpiBaseline: '方案基线',
+      colMech: '机制', colMetric: '量化口径', colBaseline: '基线 → 目标', colGain: '单点改善量', colStatus: '集群级状态', statusReady: '进入模型', statusProvisional: '临时假设（assumed）', statusMissing: '待校准', statusAuditOnly: '仅单点审核',
+      downloadHtml: '下载 HTML 报告', downloadJson: '下载 JSON', preview: '报告预览',
+      studyTitle: '跨规模分配研究', studySub: '对每个规模：仅改硬件 / 仅改恢复的预算（ARINC、最小努力法、阶段预算）、最低工作量可行机制集（≤ 10 项精确，更多时贪心）、Shapley 归因（≤ 12 项精确，更多时抽样）、方案后残余损失按域分组、库外恢复杠杆、窗口账本校核与指标随 N 的曲线。',
+      sizes: '集群规模（卡）', sizesHint: '逗号分隔，如 10000, 100000, 200000, 500000', target: '目标', trials: '校核窗口数', trialsHint: '0 = 跳过账本校核', seed: '随机种子', options: '选项', levers: '恢复参数杠杆', curves: '指标随 N 的曲线',
+      players: '候选机制', playersHint: '超过 10 项 → 贪心规划；超过 12 项 → 抽样 Shapley', defaultPlayers: '默认 10 项', runStudy: '运行研究', running: '正在计算…', phase_sizes: '规模', phase_curves: '曲线',
+      colSize: '卡数', colBase: '基线', colPlan: '推荐机制集 · 工作量', colValues: '名义 / 降额', colResidual: '方案后硬件因子', colVerify: 'P(窗口 ≥ 目标) · 判定', infeasible: '无可行集；最佳：', none: '无', greedy: '贪心',
     },
     import: {
       title: '导入表格', sub: '加载可用性计算表：识别所用方法、提取拓扑、转换为方案并与表内数值对账。',

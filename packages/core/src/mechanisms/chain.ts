@@ -46,7 +46,22 @@ export interface HotswapParams {
   successSeconds: number;
   failureSeconds: number;
 }
+/** v3.7 custom rung (mechanism audit): `transparent` rungs are tried right after network failover without the detection delay unless `detectionDelay`, `delayed` rungs after the configured detection-delayed rungs */
+export interface CustomRungParams {
+  success: number;
+  successSeconds: number;
+  failureSeconds: number;
+  rollback: boolean;
+  detectionDelay: boolean;
+  /** compute lost outside the pause on success (degraded running), seconds of job time per event */
+  localLossSeconds: number;
+  /** wall time over which that compute is lost (the ledger simulation runs a throughput factor 1 − ℓ/T for T seconds after the pause); absent: booked at the event */
+  localLossDurationSeconds?: number;
+  position: 'transparent' | 'delayed';
+}
 export interface ChainParams {
+  /** v3.7 custom rungs keyed by id, tried in insertion order */
+  custom?: Record<string, CustomRungParams>;
   predict?: PredictParams;
   netfail?: NetfailParams;
   replay?: ReplayParams;
@@ -63,9 +78,11 @@ export interface Applicability {
   predict?: number;
   netfail?: number;
   hotswap?: number;
+  /** v3.7 fraction of the class's events each custom rung applies to */
+  custom?: Record<string, number>;
 }
 
-export type ChainOutcomeKind = 'predict' | 'netfail' | 'replay' | 'hotswap' | 'elastic' | 'process' | 'global';
+export type ChainOutcomeKind = 'predict' | 'netfail' | 'replay' | 'hotswap' | 'elastic' | 'process' | 'global' | 'custom';
 
 /** The detection-delayed rungs whose order can be configured (prediction and network failover act before detection and always come first). */
 export type ChainRung = 'replay' | 'hotswap' | 'elastic' | 'process';
@@ -81,6 +98,8 @@ export function rungOrder(order?: readonly string[]): ChainRung[] {
 
 export interface ChainPath {
   kind: ChainOutcomeKind;
+  /** custom rung id when kind = 'custom' */
+  id?: string;
   probability: number;
   /** global pause of the job for this path, seconds (detection delay and failed rungs included) */
   pauseS: number;
@@ -98,6 +117,8 @@ export interface ChainOutcome {
   pElastic: number;
   pProcess: number;
   pGlobal: number;
+  /** v3.7 probability of each custom rung (by id) */
+  pCustom: Record<string, number>;
   /** probability that the event rolls the job back to the last checkpoint */
   pRollback: number;
   /** expected global pause per event, seconds */
@@ -112,7 +133,7 @@ export interface ChainOutcome {
   trivial: boolean;
 }
 
-export const DEFAULT_CHAIN: Required<ChainParams> = {
+export const DEFAULT_CHAIN: Required<Omit<ChainParams, 'custom'>> = {
   predict: { recall: 0.5, precision: 0.8, migrationSeconds: 180 },
   netfail: { success: 0.95, successSeconds: 2, failureSeconds: 10 },
   hotswap: { success: 0.9, successSeconds: 180, failureSeconds: 60 },
@@ -161,10 +182,21 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
   const aHs = hs ? clamp01(applicable.hotswap) : 0;
   const aEl = el ? clamp01(applicable.elastic) : 0;
   const aPr = pr ? clamp01(applicable.process) : 0;
+  const customRungs = Object.entries(params.custom ?? {});
+  const customStage = (position: 'transparent' | 'delayed') => {
+    for (const [id, cr] of customRungs) {
+      if ((cr.position ?? 'transparent') !== position) continue;
+      const a = clamp01(applicable.custom?.[id]);
+      if (a <= 0) continue;
+      nodes = stage(nodes, a, clamp01(cr.success), (n) => ({ kind: 'custom', id, probability: n.p, pauseS: (cr.detectionDelay ? detectS : 0) + n.failedS + cr.successSeconds, rollback: !!cr.rollback, localLossS: Math.max(0, cr.localLossSeconds ?? 0) }), cr.failureSeconds ?? 0);
+    }
+  };
   // prediction pre-empts the failure: a planned migration without detection delay or rollback
   if (pd && aPd > 0) nodes = stage(nodes, aPd, clamp01(pd.recall), (n) => ({ kind: 'predict', probability: n.p, pauseS: n.failedS + pd.migrationSeconds, rollback: false, localLossS: 0 }), 0);
   // network failover is absorbed inside the collective: no detection delay
   if (nf && aNf > 0) nodes = stage(nodes, aNf, clamp01(nf.success), (n) => ({ kind: 'netfail', probability: n.p, pauseS: n.failedS + nf.successSeconds, rollback: false, localLossS: 0 }), nf.failureSeconds);
+  // v3.7 transparent custom rungs (link-local recovery, fabric degrade, control-plane continuity): before the detection-delayed rungs
+  customStage('transparent');
   // the detection-delayed rungs in the configured order (default replay → hotswap → elastic → process)
   for (const rung of rungOrder(order)) {
     if (rung === 'replay' && rp && aRp > 0) nodes = stage(nodes, aRp, clamp01(rp.success), (n) => ({ kind: 'replay', probability: n.p, pauseS: detectS + n.failedS + rp.successSeconds, rollback: false, localLossS: 0 }), rp.failureSeconds);
@@ -174,11 +206,15 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
       nodes = stage(nodes, aEl, clamp01(el.success), (n) => ({ kind: 'elastic', probability: n.p, pauseS: n.failedS + el.syncSeconds, rollback: false, localLossS: Math.max(0, detectS + el.recoverSeconds - el.syncSeconds) / domains }), el.failureSeconds);
     } else if (rung === 'process' && pr && aPr > 0) nodes = stage(nodes, aPr, clamp01(pr.success), (n) => ({ kind: 'process', probability: n.p, pauseS: detectS + n.failedS + pr.successSeconds, rollback: true, localLossS: 0 }), pr.failureSeconds);
   }
+  // v3.7 delayed custom rungs: after the ordered rungs, before the global recovery
+  customStage('delayed');
   for (const n of nodes) if (n.p > 0) paths.push({ kind: 'global', probability: n.p, pauseS: detectS + n.failedS + globalS, rollback: true, localLossS: 0 });
   // merge identical terminal kinds for a compact report while keeping the exact expectations
   let pPredict = 0, pNetfail = 0, pReplay = 0, pHotswap = 0, pElastic = 0, pProcess = 0, pGlobal = 0, pRollback = 0, meanPauseS = 0, pauseRollbackS = 0, pauseNoRollbackS = 0, localLossS = 0;
+  const pCustom: Record<string, number> = {};
   for (const p of paths) {
-    if (p.kind === 'predict') pPredict += p.probability;
+    if (p.kind === 'custom') pCustom[p.id!] = (pCustom[p.id!] ?? 0) + p.probability;
+    else if (p.kind === 'predict') pPredict += p.probability;
     else if (p.kind === 'netfail') pNetfail += p.probability;
     else if (p.kind === 'replay') pReplay += p.probability;
     else if (p.kind === 'hotswap') pHotswap += p.probability;
@@ -193,7 +229,7 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
     } else pauseNoRollbackS += p.probability * p.pauseS;
   }
   const trivial = paths.length === 1 && paths[0].kind === 'global';
-  return { pPredict, pNetfail, pReplay, pHotswap, pElastic, pProcess, pGlobal, pRollback, meanPauseS, pauseRollbackS, pauseNoRollbackS, localLossS, paths, trivial };
+  return { pPredict, pNetfail, pReplay, pHotswap, pElastic, pProcess, pGlobal, pCustom, pRollback, meanPauseS, pauseRollbackS, pauseNoRollbackS, localLossS, paths, trivial };
 }
 
 /** Aggregate several event classes (rate-weighted) into job-level rollback / pause-only rates. */
@@ -233,7 +269,7 @@ export function addOutcome(acc: MixedRates, ratePerHour: number, o: ChainOutcome
 /** Add a plain event class: every event rolls back (rollback = true) or only pauses, with a fixed pause. */
 export function addPlainEvents(acc: MixedRates, ratePerHour: number, pauseS: number, rollback: boolean): MixedRates {
   return addOutcome(acc, ratePerHour, {
-    pPredict: 0, pNetfail: 0, pReplay: 0, pHotswap: 0, pElastic: 0, pProcess: 0, pGlobal: rollback ? 1 : 0, pRollback: rollback ? 1 : 0,
+    pPredict: 0, pNetfail: 0, pReplay: 0, pHotswap: 0, pElastic: 0, pProcess: 0, pGlobal: rollback ? 1 : 0, pCustom: {}, pRollback: rollback ? 1 : 0,
     meanPauseS: pauseS, pauseRollbackS: rollback ? pauseS : 0, pauseNoRollbackS: rollback ? 0 : pauseS, localLossS: 0, paths: [], trivial: true,
   });
 }

@@ -296,6 +296,9 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </section>
 
 <section id="s7">
+<h3>6.9 审核与报告页（v3.7）</h3>
+<p>机制库新增 2026-10-14《新可靠性机制库·单点收益审核》的 16 项机制（链路透明恢复、网络绕行降级、故障隔离、控制面连续、预热进程、运行时快照、异步与压缩检查点、恢复动作分类、FP8 / FP4 / ABFT / 网络 SDC 检测、在线筛查、HCCL 弹性重建、CANN 图缓存），每项保留审核的原理、触发、流程、重叠规则与出处。审核留空的集成字段（适用比例、条件成功率、失败耗时、开销；FP8 / FP4 的风险占比）未填时这些机制只做单点审核；在机制页或本页打开"使用临时假设"后进入集群级模型（标注 assumed，规划器降额）。同一恢复阶段的机制取最小值不相加。</p>
+<p><b>单点收益审核</b>：选择机制 → 生成审核 → 表格给出量化口径、基线 → 目标、单点改善量与集群级增量；"下载 HTML 报告"输出与审核交付件同结构的独立页面（卡片、口径、处理流程、阶段预算、总表、敏感性、逐项文章、内嵌 JSON）。<b>跨规模分配研究</b>：规模列表、目标、口径（A_op / 正确交付 / 有效）、候选机制（&gt; 10 项贪心规划，&gt; 12 项抽样 Shapley）、校核窗口数 → 运行研究 → 各规模的基线、推荐机制集、名义 / 降额、方案后硬件因子与校核，以及内嵌的完整报告（预算、杠杆、三张图、机制参数、各域允许 FIT、结论）。命令行 <code>hacd audit</code>、<code>hacd study</code> 与 MCP <code>audit_mechanisms</code>、<code>allocation_study</code> 输出同样的报告。</p>
 <h2>7. 可用性分配页</h2>
 <figure><img src="img-zh/allocation.jpg" alt="可用性分配页"><figcaption>正确交付口径下的分配页（54 条事件目录、100,000 卡、目标 90 %）：静默错误卡片（仅靠硬件可达性、所需检出率与兜底时延、对应的有效目标）、带杠杆的窗口账本损失预算、与方法无关的预算卡片、说明、各部件类允许的故障率、各恢复阶段允许的时间、方法所用的类别权重与可用率分解。</figcaption></figure>
 <p>本页把目标转换为需求：需要多高的静默错误检出率、允许损失如何按账本项拆分、每个部件类允许多大的中断率、每个恢复阶段允许多长时间，以及（设定可用率目标时）每类可贡献的不可用度。所有结果随编辑即时重算；页面上只有下表的输入控件。</p>
@@ -553,13 +556,15 @@ E[N] = Σ_k P(S_k ≤ T)；E[带错] = Σ_k ∫₀ᴰ P(S_k ≤ T − x) dx；E[
   <tr><td><code>node --import tsx scripts/remap-bridge.ts &lt;s&gt; --trials 400 --export req.json</code></td><td>在方案上运行 ReMAP 内嵌的审核引擎与 V4 引擎，与 HAC-D 对比，导出引擎输入与 ReMAP 审核请求</td></tr>
   <tr><td><code>hacd mechanisms &lt;s&gt; --players D-SDC,R-REPLAY</code></td><td>单项 / 末位加入 / Shapley 收益</td></tr>
   <tr><td><code>hacd plan &lt;s&gt; --target 0.9 --trials 200</code></td><td>最低工作量可行组合、必要机制、扫描、校核</td></tr>
+  <tr><td><code>hacd audit &lt;s&gt; --provisional --html audit.html</code></td><td>所选机制的单点收益审核与独立 HTML 报告（v3.7）</td></tr>
+  <tr><td><code>hacd study &lt;s&gt; --sizes 10000,100000,200000,500000 --target 0.985 --html study.html</code></td><td>跨规模分配研究与独立 HTML 报告（v3.7）</td></tr>
   <tr><td><code>hacd measures &lt;s&gt;</code></td><td>原始 vs 补偿后与瀑布</td></tr>
   <tr><td><code>hacd methods book.xlsx</code>、<code>hacd import-excel book.xlsx --out s.json</code>、<code>hacd export-excel s.json</code></td><td>Excel 方法报告、导入、导出</td></tr>
   <tr><td><code>hacd schema</code></td><td>方案文件的 JSON Schema</td></tr>
 </table></div>
 <p>所有命令都接受 <code>--json</code>。</p>
 <h3>16.2 MCP 工具</h3>
-<p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>、<code>estimate_rate</code>。</p>
+<p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms、audit_mechanisms、allocation_study</code>、<code>estimate_rate</code>。</p>
 <h3>16.3 内置示例</h3>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>方案</th></tr>

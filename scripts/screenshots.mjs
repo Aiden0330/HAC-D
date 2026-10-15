@@ -5,10 +5,10 @@ import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'shots';
 const lang = process.argv[3] ?? 'en';
 const L = lang === 'zh'
-  ? { pages: { Scenario: '方案', Training: '训练作业', Mechanisms: '机制', Allocation: '可用性分配', Simulate: '蒙特卡洛', Report: '设计评审', Import: '导入', Compare: '方案对比' }, attribute: '归因', plan: '规划', ledger: '运行账本仿真', importBtn: '导入为方案', details: '详情' }
-  : { pages: { Scenario: 'Scenario', Training: 'Training', Mechanisms: 'Mechanisms', Allocation: 'Allocation', Simulate: 'Simulate', Report: 'Report', Import: 'Import', Compare: 'Compare' }, attribute: 'Attribute', plan: 'Plan', ledger: 'Run ledger simulation', importBtn: 'Import as scenario', details: 'Details' };
+  ? { pages: { Scenario: '方案', Training: '训练作业', Mechanisms: '机制', Audit: '审核与报告', Allocation: '可用性分配', Simulate: '蒙特卡洛', Report: '设计评审', Import: '导入', Compare: '方案对比' }, attribute: '归因', plan: '规划', audit: '生成审核', study: '运行研究', ledger: '运行账本仿真', importBtn: '导入为方案', details: '详情' }
+  : { pages: { Scenario: 'Scenario', Training: 'Training', Mechanisms: 'Mechanisms', Audit: 'Audit & study', Allocation: 'Allocation', Simulate: 'Simulate', Report: 'Report', Import: 'Import', Compare: 'Compare' }, attribute: 'Attribute', plan: 'Plan', audit: 'Run audit', study: 'Run study', ledger: 'Run ledger simulation', importBtn: 'Import as scenario', details: 'Details' };
 mkdirSync(out, { recursive: true });
-const pages = ['Scenario', 'Training', 'Mechanisms', 'Allocation', 'Simulate', 'Report', 'Import', 'Compare'];
+const pages = ['Scenario', 'Training', 'Mechanisms', 'Allocation', 'Audit', 'Simulate', 'Report', 'Import', 'Compare'];
 const browser = await chromium.launch();
 for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
   for (const theme of ['light', 'dark']) {
@@ -32,6 +32,14 @@ for (const [w, h, tag] of [[1280, 900, 'desktop'], [375, 812, 'mobile']]) {
         await page.waitForTimeout(2500);
         await page.getByRole('button', { name: L.plan, exact: true }).click();
         await page.waitForTimeout(6000);
+      }
+      if (name === 'Audit') {
+        await page.getByRole('button', { name: L.audit, exact: true }).click();
+        await page.waitForTimeout(2500);
+        if (tag === 'desktop' && theme === 'light') {
+          await page.getByRole('button', { name: L.study, exact: true }).click();
+          await page.waitForTimeout(60000);
+        }
       }
       if (name === 'Simulate') {
         await page.getByRole('button', { name: L.ledger, exact: true }).click();

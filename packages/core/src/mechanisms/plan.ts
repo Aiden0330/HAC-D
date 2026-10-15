@@ -26,20 +26,30 @@ export interface DerateSpec {
 
 export const DERATE_DEFAULT: DerateSpec = { coverageDelta: 0.05, successDelta: 0.08, timeFactor: 1.5, reductionFactor: 0.5 };
 
-/** Worsen a mechanism's target parameters for the second (derated) evaluation; checkpoint compute interval and domain counts are design choices and stay. */
+/**
+ * Worsen a mechanism's target parameters for the second (derated) evaluation. Capabilities move towards no effect: coverage,
+ * detection targets and shares (eligible share, risk share) lose `coverageDelta`, success / recall / precision lose
+ * `successDelta`, times and overheads grow by `timeFactor`, the manual-fallback probability and the fabric-degrade exposure
+ * get worse, reductions and compression ratios shrink. Design choices (checkpoint compute interval, domain count, the lemon
+ * population share) and "before" reference values stay.
+ */
 export function derateParameters(p: Record<string, number>, d: DerateSpec = DERATE_DEFAULT): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(p)) {
     const key = k.toLowerCase();
-    if (key.includes('coverage')) out[k] = Math.max(0, v - d.coverageDelta);
+    if (key.includes('coverage') || key.includes('detection') || key === 'eligibleshare' || key === 'riskshare') out[k] = Math.max(0, v - d.coverageDelta);
     else if (key === 'success') out[k] = Math.max(0, v - d.successDelta);
-    else if (key === 'reduction') out[k] = v * d.reductionFactor;
+    else if (key === 'reduction' || key === 'occurrencereduction') out[k] = v * d.reductionFactor;
     else if (key === 'overhead') out[k] = Math.min(0.99, v * d.timeFactor);
     else if (key === 'recall' || key === 'precision') out[k] = Math.max(0, v - d.successDelta);
     else if (key === 'ratefactor' || key === 'durationfactor') out[k] = Math.min(1, v + d.coverageDelta);
+    else if (key === 'manualprobabilitytarget') out[k] = Math.min(1, v * d.timeFactor);
+    else if (key === 'compressionratio') out[k] = Math.max(1, 1 + (v - 1) / d.timeFactor);
+    else if (key === 'exposedcommunicationfraction') out[k] = Math.min(1, v + d.coverageDelta);
+    else if (key === 'remainingbandwidthratio') out[k] = Math.max(0.01, v - d.coverageDelta);
     else if (key === 'share') out[k] = v;
     else if (key === 'loadsavingseconds') out[k] = v / d.timeFactor;
-    else if (key === 'computeseconds' || key === 'domains') out[k] = v;
+    else if (key === 'computeseconds' || key === 'domains' || key.endsWith('beforeseconds')) out[k] = v;
     else if (key.endsWith('seconds')) out[k] = v * d.timeFactor;
     else out[k] = v;
   }
@@ -195,7 +205,7 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
     notes.push(`cheapest feasible set: ${plan.ids.join(' + ') || '(none needed)'} at effort ${plan.effort}: ${(plan.value * 100).toFixed(2)} % nominal, ${(plan.derated * 100).toFixed(2)} % derated vs target ${(target * 100).toFixed(1)} %`);
     if (necessary.length) notes.push(`necessary (in every feasible set): ${necessary.join(', ')}`);
     const rejectedByDerate = coalitions.filter((c) => c.value >= target && c.derated < target);
-    if (rejectedByDerate.length) notes.push(`${rejectedByDerate.length} coalition(s) meet the target nominally but not after derating the assumed parameters (coverage −${(derate!.coverageDelta * 100).toFixed(0)} pts, success −${(derate!.successDelta * 100).toFixed(0)} pts, times ×${derate!.timeFactor})`);
+    if (rejectedByDerate.length) notes.push(`${rejectedByDerate.length} coalition(s) meet the target nominally but not after derating the assumed parameters (coverage, detection targets and shares −${(derate!.coverageDelta * 100).toFixed(0)} pts, success −${(derate!.successDelta * 100).toFixed(0)} pts, times ×${derate!.timeFactor}, reductions ×${derate!.reductionFactor})`);
   }
   if (derate) notes.push('derating applies to the mechanism parameters of the library (targets and priors in the reference catalog); the scenario\'s own baseline values are not derated');
   const out: MechanismPlan = { target, metric, players: ids, baseline, coalitions, feasibleCount: feasible.length, plan, necessary, pareto, maxValue: all.value, maxDerated: all.derated, bounds, derate, notes };

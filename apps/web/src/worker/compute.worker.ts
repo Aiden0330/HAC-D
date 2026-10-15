@@ -2,7 +2,8 @@
 import * as Comlink from 'comlink';
 import {
   evaluateScenario, compareScenarios, tornadoForScenario, allocateScenario, buildMcRun, finishMcRun, simulateReplications, summarize,
-  mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, planToTarget,
+  mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, planToTarget, auditMechanisms, allocationStudy,
+  type AuditOptions, type StudyOptions, type StudyPhase,
   type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication, type PlanOptions, type PlanPhase,
 } from '@hac-d/core';
 
@@ -15,6 +16,10 @@ export interface ComputeApi {
   mechanisms(s: Scenario, players: string[], opts: { metric?: AttributionMetric; parameters?: Record<string, Record<string, number>> }, onProgress?: (done: number, total: number) => void): ReturnType<typeof mechanismReport>;
   ledger(s: Scenario, opts: { trials: number; seed: number | string; target?: number }, onProgress?: (done: number, total: number) => void): ReturnType<typeof finishLedgerRun>;
   plan(s: Scenario, opts: PlanOptions, onProgress?: (done: number, total: number, phase: PlanPhase) => void): ReturnType<typeof planToTarget>;
+  /** v3.7 single-point benefit audit of selected mechanisms */
+  audit(s: Scenario, opts: AuditOptions): ReturnType<typeof auditMechanisms>;
+  /** v3.7 cross-scale allocation study */
+  study(s: Scenario, opts: StudyOptions, onProgress?: (done: number, total: number, phase: StudyPhase) => void): ReturnType<typeof allocationStudy>;
 }
 
 const api: ComputeApi = {
@@ -37,6 +42,8 @@ const api: ComputeApi = {
   },
   mechanisms: (s, players, opts, onProgress) => mechanismReport(s, players, { ...opts, onProgress }),
   plan: (s, opts, onProgress) => planToTarget(s, { ...opts, onProgress }),
+  audit: (s, opts) => auditMechanisms(s, opts),
+  study: (s, opts, onProgress) => allocationStudy(s, { ...opts, onProgress }),
   ledger: (s, opts, onProgress) => {
     const run = buildLedgerRun(s, opts);
     const rows: LedgerReplication[] = [];

@@ -2,7 +2,8 @@
 /**
  * HAC-D MCP server (stdio). Tools: list_examples, get_example, evaluate_scenario, compare_scenarios,
  * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
- * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, apply_mechanisms, simulate_ledger, plan_mechanisms (v3).
+ * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, apply_mechanisms, simulate_ledger, plan_mechanisms (v3),
+ * estimate_rate (v3.5), audit_mechanisms, allocation_study (v3.7: single-point benefit audit and cross-scale allocation study, each with an optional standalone HTML report).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -17,6 +18,7 @@ import {
   mechanismReport, simulateScenarioLedger, MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, planToTarget,
   type Library, type AllocationMethod, type TornadoMetric, type AttributionMetric,
   rateFromCounts, unitRateFromCounts, type LossBudgetMethod, type LedgerLossLine,
+  auditMechanisms, auditReportHtml, allocationStudy, studyReportHtml, type StudyMetric, type ReportLang,
 } from '@hac-d/core';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -145,6 +147,27 @@ server.registerTool(
   async ({ events, exposureHours, units, hours, confidence }) => {
     if (exposureHours === undefined && (units === undefined || hours === undefined)) throw new Error('give exposureHours, or units and hours');
     return text(exposureHours !== undefined ? rateFromCounts(events, exposureHours, confidence) : unitRateFromCounts(events, units!, hours!, confidence));
+  },
+);
+
+server.registerTool(
+  'audit_mechanisms',
+  { description: 'v3.7 single-point benefit audit (单点收益审核) of selected mechanisms on a scenario: one applicable, successfully handled event (or one stage) per mechanism against the scenario\'s baseline (detection + automatic attempt + mean rollback; the audit\'s 342.5 s path on the reference catalog), with the mechanism\'s principle, trigger, workflow, overlap rules and integration fields (eligible share, conditional success, failure seconds, overhead; null until measured). `provisional` fills the null fields with the provisional assumptions (tagged assumed). Cluster-level deltas (A_op, delivered, effective) are added for mechanisms whose transform can act. `htmlPath` writes the standalone HTML report (zh or en).', inputSchema: { scenario: scenarioArg, mechanisms: z.array(z.string()).optional().describe('mechanism ids (default: all 35 library mechanisms)'), provisional: z.boolean().optional(), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional(), htmlPath: z.string().optional(), lang: z.enum(['zh', 'en']).optional() } },
+  async ({ scenario, mechanisms, provisional, parameters, htmlPath, lang }) => {
+    const rep = auditMechanisms(toScenario(scenario), { ids: mechanisms, provisional, parameters });
+    if (htmlPath) writeFileSync(htmlPath, auditReportHtml(rep, (lang as ReportLang | undefined) ?? 'zh'));
+    return text(htmlPath ? { ...rep, htmlPath } : rep);
+  },
+);
+
+server.registerTool(
+  'allocation_study',
+  { description: 'v3.7 cross-scale allocation study: for each cluster size the hardware-only and recovery-only budgets (uniform factors, ARINC and minimum-effort class allocation, stage budgets), the cheapest feasible mechanism set (exact ≤ 10 candidates, greedy beyond), Shapley attribution (exact ≤ 12, sampled beyond), the residual loss by domain group, recovery levers beyond the library, a window-ledger verification (P(window ≥ target), Wilson) and metric-vs-N curves with the largest size each set supports. Metric A_op (default), delivered or effective goodput. `htmlPath` writes the standalone HTML report with three charts; `summary` returns only the per-size summary.', inputSchema: { scenario: scenarioArg, sizes: z.array(z.number()).optional(), target: z.number().optional(), metric: z.enum(['aOp', 'delivered', 'effective']).optional(), players: z.array(z.string()).optional(), provisional: z.boolean().optional(), parameters: z.record(z.string(), z.record(z.string(), z.number())).optional(), trials: z.number().int().nonnegative().optional(), seed: z.number().optional(), derate: z.boolean().optional(), levers: z.boolean().optional(), curves: z.boolean().optional(), htmlPath: z.string().optional(), lang: z.enum(['zh', 'en']).optional(), summary: z.boolean().optional() } },
+  async ({ scenario, sizes, target, metric, players, provisional, parameters, trials, seed, derate, levers, curves, htmlPath, lang, summary }) => {
+    const r = allocationStudy(toScenario(scenario), { sizes, target, metric: metric as StudyMetric | undefined, players, provisional, parameters, trials, seed, derate: derate === false ? null : undefined, levers, curves });
+    if (htmlPath) writeFileSync(htmlPath, studyReportHtml(r, (lang as ReportLang | undefined) ?? 'zh'));
+    if (summary) return text({ target: r.target, metric: r.metric, players: r.players, htmlPath, sizes: r.sizes.map((N) => { const z = r.perSize[N]; return { N, baseline: z.baseline.value, hardwareFactor: z.hardwareOnly.factor, recoveryStarS: z.recoveryOnly.recoveryStarS, plan: z.plan, residualFactor: z.residualFactor, verification: z.verification, shapley: Object.fromEntries(z.gains.map((g) => [g.id, g.byMetric[r.metric].shapley])), residualByGroup: z.planned.byGroup }; }), maxN: Object.fromEntries(Object.entries(r.curves).map(([k, c]) => [k, c.maxN])), notes: r.notes });
+    return text(htmlPath ? { ...r, htmlPath } : r);
   },
 );
 

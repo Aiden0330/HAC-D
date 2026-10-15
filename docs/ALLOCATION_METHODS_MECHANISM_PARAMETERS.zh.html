@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>可靠性分配方法与机制参数分配</title>
+<meta name="description" content="ARINC、AGREE 等经典可靠性分配方法的公式，以及 HAC-D 中 19 项故障管理机制参数的分配规则（两页速览，2026-10-14）。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede7; --ink: #1d1d1b; --muted: #5f5e58; --rule: #d9d6cd; --rule-strong: #b9b5a8;
+    --accent: #2f4fb8; --accent-soft: #e7ecfa; --warn: #a8691b; --warn-soft: #f6ead6; --ok: #2d7a4f; --ok-soft: #e1f0e6; --crit: #b3382c;
+    --d: #2f4fb8; --r: #2d7a4f; --c: #b8862f; --h: #6a4bb3; --p: #c0477e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+      --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+      --d: #8fa4ea; --r: #7cc89a; --c: #d9b367; --h: #a78de0; --p: #e08ab0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+    --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+    --d: #8fa4ea; --r: #7cc89a; --c: #d9b367; --h: #a78de0; --p: #e08ab0;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif; font-size: 13px; line-height: 1.5; }
+  main { max-width: 1120px; margin: 0 auto; padding: 22px 16px 48px; }
+  .page { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 22px 26px 26px; margin-bottom: 18px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: "IBM Plex Serif", "IBM Plex Sans", "PingFang SC", "Noto Serif CJK SC", Georgia, serif; font-size: 24px; font-weight: 600; line-height: 1.3; margin: 4px 0 6px; }
+  h2 { font-family: "IBM Plex Serif", "IBM Plex Sans", "PingFang SC", Georgia, serif; font-size: 16.5px; font-weight: 600; margin: 18px 0 8px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  h2:first-of-type { border-top: none; padding-top: 0; }
+  h3 { font-size: 13.5px; font-weight: 600; margin: 12px 0 5px; }
+  p { margin: 5px 0; }
+  .sub { color: var(--muted); font-size: 12.5px; margin: 0 0 6px; }
+  .f { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere; }
+  code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 11.5px; background: var(--surface-2); padding: 0 4px; border-radius: 3px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 6px 0 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; background: var(--surface); }
+  th, td { border-bottom: 1px solid var(--rule); padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; font-size: 11.5px; white-space: nowrap; }
+  td.k { white-space: nowrap; font-weight: 500; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; }
+  .box { background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 7px 11px; }
+  .box h3 { margin: 0 0 4px; font-size: 12.5px; }
+  .box p { margin: 3px 0; font-size: 12.2px; }
+  .callout { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 6px 11px; border-radius: 0 6px 6px 0; margin: 8px 0; font-size: 12.2px; }
+  .flow { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin: 8px 0 10px; }
+  .flow div { background: var(--surface-2); border-radius: 6px; padding: 6px 7px; font-size: 11.6px; line-height: 1.4; border-top: 3px solid var(--accent); }
+  .flow div b { display: block; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 2px; }
+  .tag { display: inline-block; font-size: 10.5px; padding: 0 5px; border-radius: 4px; color: #fff; margin-right: 4px; vertical-align: 1px; }
+  .tag.d { background: var(--d); } .tag.r { background: var(--r); } .tag.c { background: var(--c); } .tag.h { background: var(--h); } .tag.p { background: var(--p); }
+  .legend { font-size: 11.5px; color: var(--muted); margin: 2px 0 6px; }
+  .small { font-size: 11.5px; color: var(--muted); }
+  ul { margin: 4px 0 6px; padding-left: 18px; } li { margin: 2px 0; }
+  footer { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+  @media screen and (max-width: 760px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .page { padding: 16px 14px 18px; }
+    h1 { font-size: 20px; }
+  }
+  @media print {
+    @page { size: A4; margin: 9mm 9mm 10mm; }
+    html, body { background: #fff; color: #000; font-size: 8.9px; line-height: 1.38; }
+    main { max-width: none; padding: 0; }
+    .page { border: none; border-radius: 0; padding: 0; margin: 0; }
+    .page + .page { break-before: page; page-break-before: always; }
+    table { font-size: 7.7px; line-height: 1.32; } th, td { padding: 1px 3px; }
+    .f { font-size: 7.7px; } code { font-size: 7.5px; }
+    .legend { margin: 1px 0 3px; }
+    .flow { gap: 4px; margin: 5px 0 6px; } .flow div { font-size: 7.6px; padding: 2px 4px; border-top-width: 2px; line-height: 1.32; } .box { padding: 4px 8px; } .box p, .callout, .sub, .small, .legend, footer { font-size: 8.3px; }
+    .grid2 { gap: 5px 12px; } .callout { margin: 5px 0; padding: 4px 8px; } p { margin: 3px 0; }
+    h1 { font-size: 15px; margin: 2px 0 4px; } h2 { font-size: 11.5px; margin: 7px 0 3px; padding-top: 4px; } h3 { font-size: 9.2px; margin: 4px 0 2px; } .eyebrow { font-size: 8px; }
+    .tag { font-size: 7.6px; padding: 0 3px; }
+    .table-wrap { overflow: visible; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============================== 第 1 页 ============================== -->
+<section class="page" id="p1">
+  <div class="eyebrow">HAC-D · 方法速览 · 2026-10-14 · 第 1 / 2 页</div>
+  <h1>可靠性指标分配方法与 19 项故障管理机制的参数分配</h1>
+  <p class="sub">分配 = 把系统级目标（故障率 λ*、可靠度 R*、可用率 A*、goodput G*）自顶向下拆成每个部件类、每个恢复阶段、每项机制参数的需求，再自底向上预测、迭代。公式与 HAC-D 的实现一致（<code>packages/core/src/allocation</code>、<code>scenario/analysis.ts</code>、<code>mechanisms/</code>）。口径规则：同一事件类、同一分母、同一层级；中断、亚健康、静默错误三类事件的量不能相加，只能各自进入窗口账本后再合成。</p>
+
+  <h2>1. 经典分配方法（串联系统，故障率预算 λ*，m 个子系统）</h2>
+  <p class="small">记号：λᵢ⁰ 当前合计率（单元率 × 数量 nᵢ）；λᵢ* 分配率；改进倍数 kᵢ = λᵢ⁰ / λᵢ*（&lt; 1 表示可以恶化）。标为"固定"的类先按当前值从 λ* 中扣除，再分配其余。单元级验收值 = λᵢ* / nᵢ（HAC-D 以每 10⁶ 单元·小时给出）；分配率低于参数库已知最优值时标记 <code>tighter-than-best-known</code>。</p>
+  <div class="table-wrap"><table>
+    <tr><th style="width:11%">方法</th><th style="width:44%">公式</th><th style="width:19%">需要的输入</th><th>适用 / 注意</th></tr>
+    <tr><td class="k">等分</td><td><span class="f">λᵢ* = λ* / m</span>；可靠度形式 <span class="f">Rᵢ = (R*)^{1/m}</span></td><td>无</td><td>对子系统没有任何信息时的起点；差异最大的类会被低估或高估</td></tr>
+    <tr><td class="k">ARINC</td><td><span class="f">λᵢ* = wᵢ λ*，wᵢ = λᵢ⁰ / Σⱼ λⱼ⁰</span>；等价于所有类按同一倍数改进 <span class="f">k = Σλ⁰ / λ*</span></td><td>每类当前故障率</td><td>信任当前比例、指数寿命、串联；HAC-D 分配页默认方法</td></tr>
+    <tr><td class="k">AGREE</td><td><span class="f">Rᵢ(tᵢ) = 1 − (1 − R*(T)^{nᵢ/N}) / Eᵢ</span>，<span class="f">λᵢ = −ln Rᵢ / tᵢ</span>；nᵢ 模块数（复杂度），N = Σnᵢ，Eᵢ 重要度（子系统失效导致系统失效的概率，串联取 1），tᵢ = dutyᵢ·T 工作时间。HAC-D：<span class="f">R* = e^{−λ*T}</span>，T 取 λ*T ≤ 0.1 使一阶近似成立，再按比例缩放至 <span class="f">Σλᵢ = λ*</span>；要求 1 − R*^{nᵢ/N} &lt; Eᵢ，否则提示提高重要度或降低预算</td><td>模块数、重要度、工作时间比</td><td>模块越多、工作时间越长、重要度越低的类拿到越多预算；各类模块数与权重相同时退化为等分</td></tr>
+    <tr><td class="k">可改进性加权<br><span class="small">（Karmiol / MIL-HDBK-338 可行性法）</span></td><td><span class="f">wᵢ = Πₖ rᵢₖ / Σⱼ Πₖ rⱼₖ，λᵢ* = wᵢ λ*</span>；评分 r：复杂度、技术水平、工作时间、环境（1–10，越难改进分越高 → 拿越多预算）。HAC-D 用单一权重 <code>feasibilityWeight</code>（故障率为假设值时默认 2，否则 1）</td><td>各类评分或权重</td><td>各类置信度参差不齐时；权重完全相同时与等分一致</td></tr>
+    <tr><td class="k">最小努力<br><span class="small">（Albert）</span></td><td>当前率降序 λ₍₁₎ ≥ λ₍₂₎ ≥ …；取最小 k 使 <span class="f">λ̄ = (λ* − Σⱼ₍ₖ₎ λ₍ⱼ₎) / k ≥ λ₍ₖ₊₁₎</span>；前 k 类改到共同水平 λ̄，其余不动</td><td>每类当前故障率</td><td>少数类主导时最省力；预算已满足时保持现状</td></tr>
+    <tr><td class="k">成本最优<br><span class="small">（拉格朗日）</span></td><td><span class="f">min Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ}  s.t. Σλᵢ = λ*，λᵢ^min ≤ λᵢ ≤ λᵢ⁰</span> → <span class="f">λᵢ = (aᵢ bᵢ (λᵢ⁰)^{bᵢ} / ν)^{1/(bᵢ+1)}</span>，截断到区间，乘子 ν 由二分使 Σλᵢ = λ*；HAC-D 默认 λᵢ^min = 5 % λᵢ⁰</td><td>成本曲线 a、b，下限</td><td>有改进成本模型时；预算低于各类下限之和时不可行</td></tr>
+    <tr><td class="k">不可用度分解<br><span class="small">（可用率目标 A*）</span></td><td><span class="f">Π Aᵢ = A* → ln Aᵢ = (wᵢ/Σw) ln A*，Uᵢ = 1 − Aᵢ</span>；给 MTTRᵢ 则 <span class="f">λᵢ = Uᵢ / (MTTRᵢ (1 − Uᵢ))</span>，给 λᵢ 则 <span class="f">MTTRᵢ = Uᵢ / (λᵢ (1 − Uᵢ))</span>；权重默认单元数</td><td>A*，各类 MTTR 或 λ</td><td>硬件级可用率；每类只能用 λ 或 MTTR 之一兑现预算</td></tr>
+  </table></div>
+
+  <h2>2. AI 训练作业：从 goodput 目标到中断预算（HAC-D 可用性分配页，自上而下）</h2>
+  <div class="grid2">
+    <div class="box"><h3>① 口径链：正确交付 → 有效 → 中断项</h3>
+      <p><span class="f">G_eff* = G_d* / f</span>，<span class="f">f = 正确交付 ÷ 有效</span>（静默错误的交付系数）；<span class="f">G_head* = G_eff* / φ</span>，<span class="f">φ = (1 − P_blocked) φ_job (1 − ℓ_local)(1 − o)</span>（备件耗尽、亚健康降速、弹性域损失、机制开销）。中断预算只对 G_head* 做。</p></div>
+    <div class="box"><h3>② 仅靠硬件可达性 → 必需杠杆</h3>
+      <p>所有故障率 → 0、静默策略不变时的 <span class="f">G_d^max</span>；若 <span class="f">G_d^max &lt; G_d*</span>，硬件再好也不够：报告硬件不变时的最小即时检出率 <span class="f">q* = min{q : G_d(q) ≥ G_d*}</span> 与检出率不变时的最长兜底发现时延 <span class="f">D* = max{D : G_d(D) ≥ G_d*}</span>（二分）；下方预算在 q* 下计算，q = 1 仍不够则按 q = 1 计算并说明中断侧还须补足多少。</p></div>
+    <div class="box"><h3>③ 窗口账本损失预算（九个账本项）</h3>
+      <p><span class="f">L* = 1 − G_d*，allowedₖ = L*·wₖ</span>，k ∈ {停机、CKPT 保存、回滚、亚健康降速、弹性域损失、备件耗尽、机制开销、静默回滚、期末判废}；权重按当前账本比例（默认）、在有损失的项上均分、或自定义（ReMAP 参考权重 停机/保存/回滚/判废/降速/域损失 = 25/20/35/10/5/5 %）。<span class="f">超出ₖ = 当前ₖ − allowedₖ</span>，先攻超出最大的项；拆分是记账目标，不证明各项可独立达到。</p></div>
+    <div class="box"><h3>④ 中断预算（Young 间隔一阶式，与方法无关）</h3>
+      <p><span class="f">M = 3600 / (N λ_GPU)</span> s，<span class="f">τ_Y = √(2δM)</span>，<span class="f">L = √(2δ/M) + R/M</span>，<span class="f">L* = 1 − G_head*</span>。保持 R 压缩 λ：解 <span class="f">√(2δ)·s + R·s² = L*</span>（s = M^{−1/2}）得 <span class="f">M* = 1/s²，λ_job* = 3600/M*</span>；保持 λ 压缩 R：<span class="f">R* = M (L* − √(2δ/M))</span>；均衡：<span class="f">L_r = ρL*，L_c = (1−ρ)L*，M_bal = 2δ/L_c²，R_bal = L_r·M_bal</span>（ρ 重启项占比，默认 0.5）。有效条件 <span class="f">(τ+δ)/M ≤ 0.1 且 R/M ≤ 0.1</span>，否则标注并改用完整 Daly 模型。</p></div>
+    <div class="box"><h3>⑤ 拆到部件类与恢复阶段</h3>
+      <p>λ_job* 按第 1 节方法拆到部件类（每单元允许率 = 验收 FIT）。恢复阶段：<span class="f">budgetᵢ = floorᵢ + (wᵢ − floorᵢ) / Σⱼ(wⱼ − floorⱼ) · (R* − Σ floor)</span>，wᵢ 默认当前阶段时间，检测 / 定位下限 5 s；阶段 = 检测、自动尝试、人工份额，或流水线各段（检测、定位、重调度、加载、重算除外）。</p></div>
+    <div class="box"><h3>⑥ 两条筛选律</h3>
+      <p>无故障上界：<span class="f">G ≤ (⌊S/L⌋τ + min(S mod L, τ)) / S ≤ τ/(τ+δ)</span>，L = τ+δ，S 窗口秒数；目标高于最佳机制组合的上界即"已证明不可达"。规模律：按将运行的最大 N 分配——检测与恢复项 ∝ N，checkpoint 项 ∝ √N（Young 间隔），静默污染次数 ∝ N。</p></div>
+  </div>
+  <div class="callout">读表口诀：改进倍数 ×1.6 = 该类中断率须降到今天的 1/1.6；×0.98 = 可以恶化 2 %，这时故障率表与阶段表是验收限值而非改进任务。分配页只在"各类之间怎么拆"上随方法不同；损失预算、预算卡片与阶段预算与方法无关。</div>
+
+  <h2>3. 选组合、降额与算例</h2>
+  <div class="grid2">
+    <div class="box"><h3>选机制组合与降额（机制页"按目标规划"）</h3>
+      <p>目标值 = 最低工作量之和（表中分值，可编辑）的可行组合，名义参数与降额参数都须 ≥ 目标；"必要机制" = 出现在所有可行组合中的机制；Pareto 前沿列出工作量 – 价值的备选。默认降额 <code>DERATE_DEFAULT</code>：覆盖率 −5 pt，成功率 / 召回 / 精度 −8 pt，时间 ×1.5，削减比例 ×0.5，开销 ×1.5；计算间隔 τ 与域数是设计量，不降额。替代关系（重执行、热替换、弹性、进程重调度：收益递减，按 <code>mechanisms.order</code> 依次尝试）与互补关系（D-SDC + R-SDC；D-SLOW + H-SWEEP）决定组合时的先后。</p></div>
+    <div class="box"><h3>算例（用户手册 §7.5–7.7，页面可复现）</h3>
+      <p>A · 54 条事件目录、10 万卡、正确交付 90 %：当前 62.61 %，仅靠硬件最高 64.30 % → 不可行；q* = 89.81 % 或 D* = 11.3 h；静默回滚一项超出 +21.45 pt，所以 D-SDC 排在任何硬件改动之前；q* 下中断侧有余量（各类 ×0.98）。</p>
+      <p>B · 同目录、95 %：q = 1 也只到 94.69 % → 预算按 q = 1：中断率再降 6 %（ARINC 每类 ×1.06）或恢复加快 13 %（阶段 13 s / 2.7 min / 64 s）。</p>
+      <p>C · 三类基线、5 万卡、90 %：q* = 71.54 %；套用 95 % 检出后正确交付 95.43 %，中断侧四倍余量（×0.25），表格成为硬件与恢复可恶化的限度。</p></div>
+  </div>
+  <footer>命令行与智能体接口输出同样的表：<code>hacd allocate &lt;s.json&gt; --goodput 0.9 --basis delivered --method arinc</code>、<code>hacd plan &lt;s.json&gt; --target 0.9</code>、<code>hacd mechanisms &lt;s.json&gt; --metric delivered</code>、<code>hacd rate &lt;events&gt; &lt;unitHours&gt;</code>；MCP：<code>allocate_scenario</code>、<code>plan_mechanisms</code>、<code>estimate_rate</code>。详见 <code>docs/ALLOCATION_PRACTICE.md</code>、<code>docs/MODEL_REFERENCE.md</code> §7.1 / §22 / §23、<code>docs/MECHANISM_CONTRIBUTIONS.md</code> §4。所有机制参数为参考目录的目标值或文献先验（标注在机制库条目中），须用本集群实测替换。</footer>
+</section>
+
+<!-- ============================== 第 2 页 ============================== -->
+<section class="page" id="p2">
+  <div class="eyebrow">HAC-D · 方法速览 · 2026-10-14 · 第 2 / 2 页</div>
+  <h2 style="border-top:none;padding-top:0;margin-top:4px">4. 19 项故障管理机制：参数怎么分配</h2>
+  <p class="sub">流程（分配页 → 机制页 → 分配页 → 校核），每一步对应页面上的一个控件；表中"分配规则"把 §2 的账本项允许值反推成机制参数的设定值。</p>
+  <div class="flow">
+    <div><b>① 定口径</b>分配页：目标口径 = 正确有效产出，G*，窗口天数，最大 N</div>
+    <div><b>② 必需杠杆</b>静默错误卡片：仅靠硬件可达？不可达 → q* 与 D* 是硬需求</div>
+    <div><b>③ 先攻哪项</b>损失预算卡片：按"超出"排序；每项列出驱动它的机制杠杆</div>
+    <div><b>④ 排序</b>机制页"归因"：Shapley 份额（公平排序）、单项收益、末位加入收益</div>
+    <div><b>⑤ 选组合</b>机制页"按目标规划"：最低工作量之和的可行组合，名义与降额参数都须达标；必要机制；Pareto 前沿</div>
+    <div><b>⑥ 定参数</b>"应用到方案"后回到分配页：剩余中断预算拆到部件类（§1）与恢复阶段（§2⑤），按下表反推各参数</div>
+    <div><b>⑦ 校核</b>规划器校核或蒙特卡洛页（"全部页面"模式）：P(窗口 ≥ 目标) ≥ 置信度（默认 90 %），Wilson 判定 supported / uncertain / below</div>
+    <div><b>⑧ 闭环</b>实测后用 <code>hacd rate</code>（Garwood 区间）回写故障率、阶段时间、检出率，重跑</div>
+  </div>
+
+  <p class="legend">分类：<span class="tag d">D</span>检测 <span class="tag r">R</span>恢复 <span class="tag c">C</span>checkpoint <span class="tag h">H</span>物理 / 硬件 <span class="tag p">P</span>预测。记号：λ 作业中断率，a 该机制适用的事件占比（按事件标记），d 检测时延，G 全局恢复时间（自动尝试 + 失败后的人工份额），W 回滚损失 ≈ τ/2，M 作业 MTBI，allowedₖ 为 §2③ 对应账本项的允许损失。"净节省"为每个适用事件的一阶估计，页面用精确的 27 路径链枚举与账本计算。</p>
+  <div class="table-wrap"><table>
+    <tr><th style="width:15%">机制</th><th style="width:19%">参数（参考目标值）</th><th style="width:14%">所动账本项 / 因子</th><th style="width:40%">分配规则：从预算反推参数</th><th style="width:8%">规划器降额</th><th class="num">工作量</th></tr>
+    <tr><td class="k"><span class="tag d">D</span>D-HARD 中断检测 / 超时兜底</td><td>覆盖率 p_d 0.999，自动发现 t_auto 1 s；超时 t_to 60 s（基线 0.95 / 10 s）</td><td>停机（T_det 进入 R̄）</td><td><span class="f wrap">T_det = p_d t_auto + (1 − p_d) t_to ≤ 阶段表"检测"预算</span> → <span class="f wrap">p_d ≥ (t_to − T_det*) / (t_to − t_auto)</span>；误报与检测开销未计价，须另行证明</td><td>p_d −5 pt，时间 ×1.5</td><td class="num">2</td></tr>
+    <tr><td class="k"><span class="tag d">D</span>D-SLOW 亚健康检测</td><td>检出概率 p_det 0.99，时延 T_d 30 s，策略 = 隔离（基线 0.95 / 5 min）</td><td>亚健康降速（φ_job），隔离暂停</td><td>漏检部分 (1 − p_det)·D_sh（D_sh 默认 24 h）主导降速 → <span class="f wrap">1 − p_det ≤ allowed_降速 ÷ 当前漏检降速</span>；T_d 只影响检出部分，次要；隔离会增加少量 A_op 停机，是用停机换 goodput</td><td>p_det −5 pt，T_d ×1.5</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag d">D</span>D-SDC 静默即时检测</td><td>即时检出率 q 0.95，检测 1 s；兜底发现时延 D 120 h（方案页静默策略）</td><td>静默回滚、期末判废；污染率 <span class="f">ν = λ_sdc(1 − q)A_run(1 − P_clear)</span></td><td>分配页直接给出 q* 与 D*（§2②）；设定值取 <span class="f wrap">q_set ≥ q* + 0.05</span>（吃掉降额）或 <span class="f wrap">D_set ≤ D* / 1.5</span>；两者可以组合（提高 q 或缩短 D）。终止规则不同（保留最后干净点 vs 全部判废）的数字不能互比</td><td>q −5 pt，时间 ×1.5</td><td class="num">5</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-SDC 干净 step 状态恢复</td><td>step 重算 t_step 1 s，恢复 t_rec 1 s；需 D-SDC</td><td>静默回滚（检出事件 W → t_step，R → t_rec）</td><td>每个检出事件损失 t_step + t_rec，事件率 λ_sdc·q → <span class="f wrap">t_step + t_rec ≤ allowed_静默回滚 / (λ_sdc q)</span>（同一时间单位）；无 D-SDC 时无效，是检测的互补项而非替代项</td><td>时间 ×1.5</td><td class="num">4</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-REPLAY 通信 / 算子重执行</td><td>成功率 s 0.9，成功耗时 t_s 5 s，失败耗时 t_f 10 s；a = 带 replay 标记的瞬态事件占比</td><td>停机、回滚（P_rb↓，R̄↓）</td><td>每适用事件净节省 ≈ <span class="f wrap">s (G + W − t_s) − (1 − s) t_f</span>；要求 <span class="f wrap">λ·a·净节省 ≥ 停机 + 回滚需削减的量</span>，给定 s 反推 t_s 上限或给定 t_s 反推 s 下限；只对瞬态根因，不能用于持久器件损坏</td><td>s −8 pt，时间 ×1.5</td><td class="num">2</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-NETFAIL 容错集合通信 / 多网卡切换</td><td>s 0.95，t_s 2 s，t_f 10 s；仅网络类事件；无检测时延，链首</td><td>停机、回滚</td><td>净节省 ≈ <span class="f wrap">s (d + G + W − t_s) − (1 − s) t_f</span>（省掉检测时延 d）；a 由网络类事件占比决定，不是可调参数；多网卡 / 多路径是前置条件，不另计开销</td><td>s −8 pt，时间 ×1.5</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-HOTSWAP 故障卡热替换</td><td>s 0.9，t_s 180 s，t_f 60 s；卡 / 服务器类事件</td><td>停机、回滚（不回滚）；备卡进入备件耗尽行</td><td>净节省 ≈ <span class="f wrap">s (G + W − t_s) − (1 − s) t_f</span>，只有 t_s &lt; G + W 才有收益；备卡数由备件页按补充时间与泊松 / 二项分位数确定，使 P_blocked ≤ allowed_备件耗尽</td><td>s −8 pt，时间 ×1.5</td><td class="num">4</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-ELASTIC DP 域弹性恢复</td><td>域数 n_dom 50，s 0.98，域恢复 t_el 180 s，t_f 120 s，全局协调 t_sync 1 s</td><td>停机↓、回滚↓、弹性域损失↑ <span class="f">ℓ_local</span></td><td>成功时全局只停 f + t_sync，一个域缺席 d + t_el 期间损失 <span class="f wrap">(d + t_el − t_sync)/n_dom</span> 的算力 → <span class="f wrap">n_dom ≥ λ·a·s·(d + t_el − t_sync) / allowed_域损失</span>；n_dom 是设计量（不降额），须与并行方案一致；与重执行 / 热替换 / 进程重调度互为替代，收益递减</td><td>s −8 pt，时间 ×1.5；n_dom 不变</td><td class="num">5</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-PROCESS 进程 / Pod 重调度</td><td>s 0.95，t_s 60 s，t_f 120 s</td><td>停机（R̄↓；仍回滚）</td><td>净节省 ≈ <span class="f wrap">s (G − t_s) − (1 − s) t_f</span>（无回滚收益，主要动 A_op）；需要健康备用资源；排在弹性之后、全局恢复之前（<code>mechanisms.order</code> 可改）</td><td>s −8 pt，时间 ×1.5</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-CKPT 全局 CKPT 自动恢复（基线）</td><td>自动尝试 G_auto 180 s，成功率 p_s 0.99（方案页 → 恢复）</td><td>停机（G ∈ R̄），静默事件暂停 R_c</td><td><span class="f wrap">G = G_auto + (1 − p_s) T_manual ≤ R*</span>（§2④ 保持 λ 压缩 R）；阶段表给出"自动尝试"预算 G_auto*；<span class="f wrap">p_s ≥ 1 − (R* − T_det − G_auto) / T_manual</span>。基线用实测值，不降额</td><td>—</td><td class="num">0</td></tr>
+    <tr><td class="k"><span class="tag r">R</span>R-MANUAL 人工诊断与恢复（基线）</td><td>T_manual 120 min；最终成功率 100 %（模型终止假设）</td><td>停机（(1 − p_s)·T_manual）</td><td>阶段表"人工份额"预算 B_m → <span class="f wrap">T_manual ≤ B_m / (1 − p_s)</span>；长尾未建模，须以实测分布校核</td><td>—</td><td class="num">0</td></tr>
+    <tr><td class="k"><span class="tag c">C</span>C-FAST 更快 checkpoint</td><td>计算间隔 τ 60 s，暴露保存 δ 1 s（基线 300 s / 4 s）</td><td>保存 δ/(τ+δ)、回滚 W = τ/2、判废前损失 U</td><td><span class="f wrap">δ/(τ+δ) ≤ allowed_保存</span>；<span class="f wrap">λ_rb·P_rb·τ/2 ≤ allowed_回滚 → τ ≤ 2·allowed_回滚 / (λ_rb P_rb)</span>；与 Young 最优 <span class="f">τ_Y = √(2δM)</span> 对照；先用占空比 <span class="f">τ/(τ+δ) ≥ G*</span> 筛掉不可达的组合。A_op 不受影响（保存不是停机）</td><td>δ ×1.5；τ 为设计量不变</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag c">C</span>C-MEM 内存 / 分层 checkpoint</td><td>τ 60 s，δ 0.5 s，加载节省 60 s（G_auto − 60，下限 30 s），开销 o 1 %</td><td>保存、回滚、停机（G↓）、机制开销</td><td>τ、δ 同 C-FAST 规则；加载节省直接从阶段表"加载 / 自动尝试"预算扣减；<span class="f wrap">o ≤ allowed_开销</span>，且 o 必须小于它换来的 goodput 增量（归因页看净值）</td><td>δ ×1.5，节省 ÷1.5，o ×1.5</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag d">D</span>D-SDC-DMR 双模冗余 / 在线完整性校验</td><td>q 0.999，检测 1 s，吞吐开销 o 8 %（SpareTrain 3–14 %，AEGIS 1–3 %）</td><td>静默回滚、判废↓；机制开销↑</td><td>仅当 D-SDC 能达到的 q 低于 q*、或判废 / 静默回滚仍超出时采用；净收益 = <span class="f wrap">ΔG_d(q: 0.95 → 0.999) − o</span> 须为正，且 <span class="f wrap">o ≤ allowed_开销</span>；校验误报未建模</td><td>q −5 pt，o ×1.5</td><td class="num">4</td></tr>
+    <tr><td class="k"><span class="tag p">P</span>P-PREDICT 故障预测与预先迁移</td><td>召回 r 0.5，精度 p 0.8，迁移停顿 t_mig 180 s；a = 持久卡 / 服务器故障占比</td><td>停机、回滚（命中：无检测时延、无回滚）；误报率 λ·a·r(1 − p)/p 的纯暂停</td><td>每适用事件净节省 ≈ <span class="f wrap">a·r·[(d + G + W) − t_mig / p]</span>；收益为正的条件 <span class="f wrap">t_mig / p &lt; d + G + W</span>（精度决定正负，召回只放大）；预测器须有前兆信号，参数来自文献先验，必须按本集群实测</td><td>r、p −8 pt，t_mig ×1.5</td><td class="num">3</td></tr>
+    <tr><td class="k"><span class="tag h">H</span>H-RELIABILITY 降低硬件物理故障率</td><td>reduction（默认 0；须逐事件给出新旧率，不假设全局 FIT 下降比例）</td><td>所有账本项（λᵢ → λ_rb、λ_p、M）</td><td>由 §1 方法给出每类 λᵢ* → <span class="f wrap">reductionᵢ = 1 − λᵢ*/λᵢ⁰ = 1 − 1/kᵢ</span>；按类交付每单元允许 FIT 作为验收标准；根因须去重，同器件同暴露时长前后实测</td><td>reduction ×0.5</td><td class="num">4</td></tr>
+    <tr><td class="k"><span class="tag h">H</span>H-LEMON 问题节点识别与剔除</td><td>占比 share 0.1，剔除 reduction 0.7 → <span class="f">λ × (1 − share·reduction)</span></td><td>中断率（所有硬件项）</td><td>所需总体率因子 <span class="f wrap">f* = λ_job*/λ_job⁰</span>（§2④ 保持 R）→ <span class="f wrap">share·reduction ≥ 1 − f*</span>；被剔除的容量计入备件耗尽行；与 H-RELIABILITY 作用在同一因子上，不能重复计提</td><td>reduction ×0.5</td><td class="num">2</td></tr>
+    <tr><td class="k"><span class="tag h">H</span>H-SWEEP 节点离线巡检（亚健康筛查）</td><td>亚健康进入率因子 0.5，持续时间因子 0.5</td><td>亚健康降速（ν_sh × D_sh）</td><td>降速损失 ∝ 进入率 × 持续时间 → <span class="f wrap">rateFactor·durationFactor ≤ allowed_降速 / 当前降速</span>；与 D-SLOW 互补（巡检降低发生，检测缩短暴露）</td><td>两因子各 +0.05</td><td class="num">2</td></tr>
+    <tr><td class="k"><span class="tag h">H</span>H-PROTECT 既有光路 / 供电保护（信息项）</td><td>无增量参数</td><td>无增量（事件率已是保护后的残余率）</td><td>不分配、不计收益；只检查是否重复计提：若输入的是保护前物理故障率，改在方案页用冗余组建模（k-of-n、并联、切换覆盖率、共因 β），由 RBD / CTMC 得到残余率</td><td>—</td><td class="num">0</td></tr>
+  </table></div>
+
+</section>
+
+</main>
+</body>
+</html>

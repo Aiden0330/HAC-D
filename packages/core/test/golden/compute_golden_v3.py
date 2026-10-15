@@ -61,8 +61,14 @@ def chain(detect_s, global_s, params, applicable, order=None):
     predict: recall r turns the event into a planned migration (pause f + t_mig, no detection delay, no rollback); a miss
     costs nothing. netfail: absorbed inside the collective (pause f + t_nf, no detection delay, no rollback). hotswap:
     pause d + f + t_hs, no rollback. A rung's applicable fraction must be given explicitly (missing = 0)."""
-    rungs = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in rung_order(order) if params.get(kind) and applicable.get(kind, 0.0) > 0]
-    acc = {"pPredict": 0.0, "pNetfail": 0.0, "pReplay": 0.0, "pHotswap": 0.0, "pElastic": 0.0, "pProcess": 0.0, "pGlobal": 0.0,
+    # v3.7 custom rungs: transparent ones right after netfail (no detection delay unless flagged), delayed ones after the ordered rungs
+    custom = params.get("custom") or {}
+    capp = applicable.get("custom") or {}
+    customs = lambda pos: [(("custom", cid), capp.get(cid, 0.0), cr) for cid, cr in custom.items() if cr.get("position", "transparent") == pos and capp.get(cid, 0.0) > 0]
+    front = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in ["predict", "netfail"] if params.get(kind) and applicable.get(kind, 0.0) > 0]
+    delayed = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in rung_order(order)[2:] if params.get(kind) and applicable.get(kind, 0.0) > 0]
+    rungs = front + customs("transparent") + delayed + customs("delayed")
+    acc = {"pPredict": 0.0, "pNetfail": 0.0, "pReplay": 0.0, "pHotswap": 0.0, "pElastic": 0.0, "pProcess": 0.0, "pGlobal": 0.0, "pCustom": 0.0,
            "pRollback": 0.0, "meanPauseS": 0.0, "pauseRollbackS": 0.0, "pauseNoRollbackS": 0.0, "localLossS": 0.0}
     def terminal(kind, p, pause, rollback, local):
         acc["p" + kind[0].upper() + kind[1:]] += p
@@ -83,6 +89,11 @@ def chain(detect_s, global_s, params, applicable, order=None):
         # not applicable
         rec(i + 1, p * (1 - frac), failed)
         tried = p * frac
+        if isinstance(kind, tuple):
+            s_ = prm["success"]
+            terminal("custom", tried * s_, (detect_s if prm.get("detectionDelay") else 0.0) + failed + prm["successSeconds"], bool(prm.get("rollback")), float(prm.get("localLossSeconds", 0.0)))
+            rec(i + 1, tried * (1 - s_), failed + prm.get("failureSeconds", 0.0))
+            return
         if kind == "predict":
             r = prm["recall"]
             terminal("predict", tried * r, failed + prm["migrationSeconds"], False, 0.0)
@@ -209,6 +220,19 @@ for cid, (T, nu, D, Rc, g, U) in {
     "sdc.short_window": (240, 0.05, 5.95, 0.05, 0.85, 0.02),
 }.items():
     cases.append({"id": cid, "group": "sdc", "inputs": {"horizonH": T, "nuPerWallHour": nu, "fallbackDelayH": D, "episodePauseH": Rc, "cleanGoodput": g, "preEpisodeLossH": U}, "expected": sdc_delivery(T, nu, D, Rc, g, U), "tolerance": {"rel": 2e-6}})
+
+# v3.7 custom rungs of the mechanism audit (link-transparent recovery, fabric degrade with degraded running, a delayed rung with rollback)
+CR = {
+    "R-LINK-LOCAL": {"success": 0.9, "successSeconds": 2, "failureSeconds": 10, "rollback": False, "detectionDelay": False, "localLossSeconds": 0, "position": "transparent"},
+    "R-FABRIC-DEGRADE": {"success": 0.8, "successSeconds": 2, "failureSeconds": 10, "rollback": False, "detectionDelay": False, "localLossSeconds": 163.636, "position": "transparent"},
+    "X-DELAYED": {"success": 0.7, "successSeconds": 40, "failureSeconds": 20, "rollback": True, "detectionDelay": True, "localLossSeconds": 0, "position": "delayed"},
+}
+for cid, (d, g, params, app) in {
+    "chain.v37_custom_transparent": (12.5, 252, {"custom": {"R-LINK-LOCAL": CR["R-LINK-LOCAL"]}}, {"custom": {"R-LINK-LOCAL": 1}}),
+    "chain.v37_custom_mixed": (12.5, 252, {**P32, "custom": CR}, {"predict": 0.3, "netfail": 0.5, "replay": 0.831, "hotswap": 0.5, "elastic": 1, "process": 1, "custom": {"R-LINK-LOCAL": 0.6, "R-FABRIC-DEGRADE": 0.4, "X-DELAYED": 0.5}}),
+    "chain.v37_custom_delayed_only": (30, 300, {"custom": {"X-DELAYED": CR["X-DELAYED"]}, "replay": P["replay"]}, {"replay": 0.5, "custom": {"X-DELAYED": 1}}),
+}.items():
+    cases.append({"id": cid, "group": "chain", "inputs": {"detectS": d, "globalS": g, "params": params, "applicable": app}, "expected": chain(d, g, params, app), "tolerance": {"rel": 1e-12, "abs": 1e-15}})
 
 # v3.5 configurable order of the detection-delayed rungs
 for cid, (d, g, params, app, order) in {

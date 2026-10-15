@@ -163,6 +163,7 @@
     "pElastic": 0.24705800000000003,
     "pProcess": 0.004789900000000004,
     "pGlobal": 0.0002521000000000005,
+    "pCustom": 0.0,
     "pRollback": 0.005042000000000005,
     "meanPauseS": 15.215548200000002,
     "pauseRollbackS": 1.0658602000000013,
@@ -213,6 +214,7 @@
     "pElastic": 0.35378,
     "pProcess": 0.221621149,
     "pGlobal": 0.424598851,
+    "pCustom": 0.0,
     "pRollback": 0.64622,
     "meanPauseS": 130.99382191200002,
     "pauseRollbackS": 130.64004191200002,
@@ -249,6 +251,7 @@
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 0.37,
+    "pCustom": 0.0,
     "pRollback": 0.37,
     "meanPauseS": 109.59,
     "pauseRollbackS": 98.565,
@@ -285,6 +288,7 @@
     "pElastic": 0.0,
     "pProcess": 0.95,
     "pGlobal": 0.050000000000000044,
+    "pCustom": 0.0,
     "pRollback": 1.0,
     "meanPauseS": 78.00000000000001,
     "pauseRollbackS": 78.00000000000001,
@@ -317,6 +321,7 @@
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 1.0,
+    "pCustom": 0.0,
     "pRollback": 1.0,
     "meanPauseS": 264.5,
     "pauseRollbackS": 264.5,
@@ -385,6 +390,7 @@
     "pElastic": 0.017009943299999993,
     "pProcess": 0.00032978461500000016,
     "pGlobal": 1.735708500000003e-05,
+    "pCustom": 0.0,
     "pRollback": 0.00034714170000000027,
     "meanPauseS": 68.19322861856998,
     "pauseRollbackS": 0.09425583377000009,
@@ -427,6 +433,7 @@
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 0.275,
+    "pCustom": 0.0,
     "pRollback": 0.275,
     "meanPauseS": 207.55,
     "pauseRollbackS": 74.2375,
@@ -469,6 +476,7 @@
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 0.2752,
+    "pCustom": 0.0,
     "pRollback": 0.2752,
     "meanPauseS": 110.74600000000001,
     "pauseRollbackS": 99.436,
@@ -537,6 +545,7 @@
     "pElastic": 0.0,
     "pProcess": 0.0,
     "pGlobal": 0.0,
+    "pCustom": 0.0,
     "pRollback": 0.0,
     "meanPauseS": 120.0,
     "pauseRollbackS": 0.0,
@@ -664,6 +673,205 @@
    }
   },
   {
+   "id": "chain.v37_custom_transparent",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "custom": {
+      "R-LINK-LOCAL": {
+       "success": 0.9,
+       "successSeconds": 2,
+       "failureSeconds": 10,
+       "rollback": false,
+       "detectionDelay": false,
+       "localLossSeconds": 0,
+       "position": "transparent"
+      }
+     }
+    },
+    "applicable": {
+     "custom": {
+      "R-LINK-LOCAL": 1
+     }
+    }
+   },
+   "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
+    "pReplay": 0.0,
+    "pHotswap": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.09999999999999998,
+    "pCustom": 0.9,
+    "pRollback": 0.09999999999999998,
+    "meanPauseS": 29.249999999999993,
+    "pauseRollbackS": 27.449999999999992,
+    "pauseNoRollbackS": 1.8,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v37_custom_mixed",
+   "group": "chain",
+   "inputs": {
+    "detectS": 12.5,
+    "globalS": 252,
+    "params": {
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     },
+     "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+     },
+     "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+     },
+     "predict": {
+      "recall": 0.5,
+      "precision": 0.8,
+      "migrationSeconds": 180
+     },
+     "netfail": {
+      "success": 0.95,
+      "successSeconds": 2,
+      "failureSeconds": 10
+     },
+     "hotswap": {
+      "success": 0.9,
+      "successSeconds": 180,
+      "failureSeconds": 60
+     },
+     "custom": {
+      "R-LINK-LOCAL": {
+       "success": 0.9,
+       "successSeconds": 2,
+       "failureSeconds": 10,
+       "rollback": false,
+       "detectionDelay": false,
+       "localLossSeconds": 0,
+       "position": "transparent"
+      },
+      "R-FABRIC-DEGRADE": {
+       "success": 0.8,
+       "successSeconds": 2,
+       "failureSeconds": 10,
+       "rollback": false,
+       "detectionDelay": false,
+       "localLossSeconds": 163.636,
+       "position": "transparent"
+      },
+      "X-DELAYED": {
+       "success": 0.7,
+       "successSeconds": 40,
+       "failureSeconds": 20,
+       "rollback": true,
+       "detectionDelay": true,
+       "localLossSeconds": 0,
+       "position": "delayed"
+      }
+     }
+    },
+    "applicable": {
+     "predict": 0.3,
+     "netfail": 0.5,
+     "replay": 0.831,
+     "hotswap": 0.5,
+     "elastic": 1,
+     "process": 1,
+     "custom": {
+      "R-LINK-LOCAL": 0.6,
+      "R-FABRIC-DEGRADE": 0.4,
+      "X-DELAYED": 0.5
+     }
+    }
+   },
+   "expected": {
+    "pPredict": 0.15,
+    "pNetfail": 0.40374999999999994,
+    "pReplay": 0.10439711729999997,
+    "pHotswap": 0.015835447215000003,
+    "pElastic": 0.018967346775299997,
+    "pProcess": 0.0003677342742150003,
+    "pGlobal": 1.2580383065250029e-05,
+    "pCustom": 0.30666977405241996,
+    "pRollback": 0.00038708870970000043,
+    "meanPauseS": 34.26027805819488,
+    "pauseRollbackS": 0.08370710716703811,
+    "pauseNoRollbackS": 34.17657095102781,
+    "localLossS": 10.821566506149402
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
+   "id": "chain.v37_custom_delayed_only",
+   "group": "chain",
+   "inputs": {
+    "detectS": 30,
+    "globalS": 300,
+    "params": {
+     "custom": {
+      "X-DELAYED": {
+       "success": 0.7,
+       "successSeconds": 40,
+       "failureSeconds": 20,
+       "rollback": true,
+       "detectionDelay": true,
+       "localLossSeconds": 0,
+       "position": "delayed"
+      }
+     },
+     "replay": {
+      "success": 0.9,
+      "successSeconds": 5,
+      "failureSeconds": 10
+     }
+    },
+    "applicable": {
+     "replay": 0.5,
+     "custom": {
+      "X-DELAYED": 1
+     }
+    }
+   },
+   "expected": {
+    "pPredict": 0.0,
+    "pNetfail": 0.0,
+    "pReplay": 0.45,
+    "pHotswap": 0.0,
+    "pElastic": 0.0,
+    "pProcess": 0.0,
+    "pGlobal": 0.16500000000000004,
+    "pCustom": 0.38499999999999995,
+    "pRollback": 0.55,
+    "meanPauseS": 100.95,
+    "pauseRollbackS": 85.2,
+    "pauseNoRollbackS": 15.75,
+    "localLossS": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-12,
+    "abs": 1e-15
+   }
+  },
+  {
    "id": "chain.order_process_first",
    "group": "chain",
    "inputs": {
@@ -707,6 +915,7 @@
     "pElastic": 0.004900000000000003,
     "pProcess": 0.95,
     "pGlobal": 0.00010000000000000015,
+    "pCustom": 0.0,
     "pRollback": 0.9501,
     "meanPauseS": 75.75585000000001,
     "pauseRollbackS": 68.92645,
@@ -779,6 +988,7 @@
     "pElastic": 0.6747299999999999,
     "pProcess": 0.00032978461500000016,
     "pGlobal": 1.7357085000000026e-05,
+    "pCustom": 0.0,
     "pRollback": 0.00034714170000000027,
     "meanPauseS": 32.25315249101999,
     "pauseRollbackS": 0.09425583377000007,
@@ -834,6 +1044,7 @@
     "pElastic": 0.14148749999999996,
     "pProcess": 0.475,
     "pGlobal": 0.14726250000000002,
+    "pCustom": 0.0,
     "pRollback": 0.6222624999999999,
     "meanPauseS": 129.1212375,
     "pauseRollbackS": 111.33637500000002,

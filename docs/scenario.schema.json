@@ -884,6 +884,22 @@
                 "type": "number",
                 "minimum": 0
               },
+              "coverage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "extraDetection": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
               "provenance": {
                 "type": "object",
                 "properties": {
@@ -999,6 +1015,34 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 1
+              },
+              "custom": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          },
+          "recoveryStages": {
+            "type": "object",
+            "properties": {
+              "startup": {
+                "type": "number",
+                "minimum": 0
+              },
+              "read": {
+                "type": "number",
+                "minimum": 0
+              },
+              "communication": {
+                "type": "number",
+                "minimum": 0
               }
             }
           },
@@ -1223,6 +1267,10 @@
               "exclusiveMinimum": 0
             },
             "measuredRecomputeS": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rollbackLagS": {
               "type": "number",
               "minimum": 0
             }
@@ -2017,6 +2065,32 @@
                       ]
                     }
                   ]
+                },
+                "stages": {
+                  "type": "object",
+                  "properties": {
+                    "startup": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "graphWithinStartup": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "read": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "communication": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "startup",
+                    "read",
+                    "communication"
+                  ]
                 }
               }
             },
@@ -2303,6 +2377,60 @@
               "order",
               "parameters",
               "previous"
+            ]
+          }
+        },
+        "custom": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "successSeconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "failureSeconds": {
+                "default": 0,
+                "type": "number",
+                "minimum": 0
+              },
+              "rollback": {
+                "default": false,
+                "type": "boolean"
+              },
+              "detectionDelay": {
+                "default": false,
+                "type": "boolean"
+              },
+              "localLossSeconds": {
+                "default": 0,
+                "type": "number",
+                "minimum": 0
+              },
+              "localLossDurationSeconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "position": {
+                "default": "transparent",
+                "type": "string",
+                "enum": [
+                  "transparent",
+                  "delayed"
+                ]
+              }
+            },
+            "required": [
+              "success",
+              "successSeconds"
             ]
           }
         },

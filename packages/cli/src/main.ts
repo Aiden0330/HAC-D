@@ -16,12 +16,15 @@
  *   hacd mechanisms <scenario.json> [--players D-SDC,R-SDC,…] [--metric delivered|effective|aOp] [--json]   single / last-added / Shapley gains (v3)
  *   hacd ledger <scenario.json> [--trials 300] [--seed 1] [--target 0.9] [--json]   finite-window ledger simulation vs the closed form (v3)
  *   hacd plan <scenario.json> [--target 0.9] [--players …] [--no-derate] [--trials 200] [--json]   cheapest mechanism set for the target, necessary mechanisms, scan, verification (v3.1)
+ *   hacd audit <scenario.json> [--mechanisms R-LINK-LOCAL,…] [--provisional] [--html out.html] [--lang zh|en] [--json]   single-point benefit audit of mechanisms, standalone HTML report (v3.7)
+ *   hacd study <scenario.json> [--sizes 10000,100000,200000,500000] [--target 0.985] [--metric aOp|delivered|effective] [--players …] [--provisional] [--trials 200] [--seed 1] [--no-derate] [--no-levers] [--no-curves] [--html out.html] [--lang zh|en] [--json]   cross-scale allocation study (v3.7)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import {
   EXAMPLES, parseScenario, evaluateScenario, scenarioJsonSchema, formatDuration, compareScenarios, allocateScenario, tornadoForScenario, simulateScenario,
   mechanismReport, simulateScenarioLedger, DEFAULT_PLAYERS, MECHANISM_LIBRARY, planToTarget,
+  auditMechanisms, auditReportHtml, allocationStudy, studyReportHtml, DEFAULT_STUDY_PLAYERS, type StudyMetric, type ReportLang,
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
   rateFromCounts, unitRateFromCounts,
   importRemapCatalog,
@@ -394,6 +397,60 @@ switch (cmd) {
     for (const n of p.notes) console.log(`- ${n}`);
     break;
   }
+  case 'audit': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd audit <scenario.json> [--mechanisms R-LINK-LOCAL,R-REPLAY,…] [--provisional] [--html out.html] [--lang zh|en] [--json]');
+      process.exit(1);
+    }
+    const ids = flag('mechanisms') ? flag('mechanisms')!.split(',').map((x) => x.trim()).filter(Boolean) : undefined;
+    const rep = auditMechanisms(load(path), { ids, provisional: rest.includes('--provisional') });
+    const lang = ((flag('lang') as ReportLang | undefined) ?? 'zh');
+    if (flag('html')) {
+      writeFileSync(flag('html')!, auditReportHtml(rep, lang));
+      console.error(`wrote ${flag('html')}`);
+    }
+    if (json) {
+      out(rep);
+      break;
+    }
+    const b = rep.baseline;
+    console.log(`baseline: detection ${b.detectS.toFixed(1)} s · automatic ${b.autoS.toFixed(0)} s (startup ${b.stages.startup.toFixed(0)} / read ${b.stages.read.toFixed(0)} / communication ${b.stages.communication.toFixed(0)}) · rollback ${b.rollbackS.toFixed(0)} s → regular loss ${b.normalLossS.toFixed(1)} s, expected ${b.expectedLossS.toFixed(1)} s; A_op ${pct(rep.baselineValues.aOp, 3)}, delivered ${pct(rep.baselineValues.delivered)} at ${rep.scenario.nGpus} cards${rep.provisional ? ' (provisional assumptions on)' : ''}`);
+    const fmtV = (v: number, unit: string) => (unit === 'fraction' ? pct(v, 1) : unit === 'FIT' ? `${v.toFixed(2)} FIT` : `${v.toFixed(v >= 100 ? 1 : 2)} s`);
+    printTable([['mechanism', 'metric', 'before → after', 'gain', 'ΔA_op', 'Δdelivered', 'status'], ...rep.rows.map((r) => { const sp = r.singlePoint; return [r.id, sp ? (lang === 'zh' ? sp.metric.zh : sp.metric.en) : '—', sp ? `${fmtV(sp.before, sp.unit)} → ${fmtV(sp.after, sp.unit)}` : '—', sp ? (sp.unit === 'fraction' && sp.direction === 'increase' ? `+${(sp.improvement * 100).toFixed(1)} pt` : sp.unit === 'fraction' ? `× ${sp.after.toFixed(3)}` : `−${fmtV(sp.improvement, sp.unit)}`) : '—', r.cluster ? `${(r.cluster.aOp * 100).toFixed(3)} pt` : '—', r.cluster ? `${(r.cluster.delivered * 100).toFixed(2)} pt` : '—', r.cluster ? (r.integration.provisional ? 'provisional' : 'ready') : r.integration.missing.length ? `to calibrate: ${r.integration.missing.join(',')}` : 'audit only']; })]);
+    for (const n of rep.notes) console.log(`- ${lang === 'zh' ? n.zh : n.en}`);
+    break;
+  }
+  case 'study': {
+    const path = files[0];
+    if (!path) {
+      console.error('usage: hacd study <scenario.json> [--sizes 10000,100000,200000,500000] [--target 0.985] [--metric aOp|delivered|effective] [--players D-HARD,R-REPLAY,…] [--provisional] [--trials 200] [--seed 1] [--no-derate] [--no-levers] [--no-curves] [--html out.html] [--lang zh|en] [--json]');
+      process.exit(1);
+    }
+    const sizes = flag('sizes') ? flag('sizes')!.split(',').map((x) => Number(x.trim())).filter((n) => n > 0) : undefined;
+    const players = flag('players') ? flag('players')!.split(',').map((x) => x.trim()).filter(Boolean) : DEFAULT_STUDY_PLAYERS;
+    const r = allocationStudy(load(path), { sizes, target: flag('target') ? Number(flag('target')) : undefined, metric: (flag('metric') as StudyMetric | undefined) ?? 'aOp', players, provisional: rest.includes('--provisional'), trials: flag('trials') ? Number(flag('trials')) : 200, seed: flag('seed') ? Number(flag('seed')) : 1, derate: rest.includes('--no-derate') ? null : undefined, levers: !rest.includes('--no-levers'), curves: !rest.includes('--no-curves'), onProgress: (done, total, phase) => console.error(`[${phase}] ${done} / ${total}`) });
+    const lang = ((flag('lang') as ReportLang | undefined) ?? 'zh');
+    if (flag('html')) {
+      writeFileSync(flag('html')!, studyReportHtml(r, lang));
+      console.error(`wrote ${flag('html')}`);
+    }
+    if (json) {
+      out(r);
+      break;
+    }
+    console.log(`target ${pct(r.target, 1)} (${r.metric}); candidates ${r.players.join(', ')}${r.provisional ? ' (provisional assumptions)' : ''}`);
+    printTable([['cards', 'baseline', 'hw factor', 'R̄ ≤', 'plan', 'effort', 'nominal', 'derated', 'residual hw', 'P(window ≥ target)', 'verdict'], ...r.sizes.map((N) => { const z = r.perSize[N]; return [String(N), pct(z.baseline.value), Number.isFinite(z.hardwareOnly.factor) ? `× ${z.hardwareOnly.factor.toFixed(3)}` : '∞', Number.isFinite(z.recoveryOnly.recoveryStarS) ? `${z.recoveryOnly.recoveryStarS.toFixed(0)} s` : '∞', `${z.plan.feasible ? '' : '[infeasible] '}${z.plan.ids.join('+') || '∅'}${z.plan.method === 'greedy' ? ' (greedy)' : ''}`, String(z.plan.effort), pct(z.plan.nominal), pct(z.plan.derated), `× ${z.residualFactor.plan.toFixed(2)} / × ${z.residualFactor.planDerated.toFixed(2)}`, z.verification ? `${pct(z.verification.pAtLeastTarget, 1)} [${pct(z.verification.wilson[0], 1)}–${pct(z.verification.wilson[1], 1)}]` : '—', z.verification?.verdict ?? '—']; })]);
+    for (const N of r.sizes) {
+      const z = r.perSize[N];
+      console.log(`\n## ${N} cards: Shapley (${r.metric}, pt) ${z.gains.slice().sort((a, b) => b.byMetric[r.metric].shapley - a.byMetric[r.metric].shapley).map((g) => `${g.id} ${(g.byMetric[r.metric].shapley * 100).toFixed(2)}`).join(' · ')}${z.attribution.method === 'sampled' ? ' (sampled)' : ''}`);
+      const groups = Object.entries(z.planned.byGroup).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} ${(v * 100).toFixed(2)} pt`).join(', ');
+      console.log(`   residual after the plan: ${groups}${z.levers ? ` · levers: ${z.levers.filter((l) => l.id !== 'plan').map((l) => `${l.id} ${pct(l.value)}`).join(', ')}` : ''}`);
+    }
+    if (Object.keys(r.curves).length) console.log(`\nlargest size meeting the target: ${Object.entries(r.curves).filter(([k]) => !k.endsWith('Derated')).map(([k, c]) => `${k} ${c.maxN} (derated ${r.curves[k + 'Derated'].maxN})`).join(' · ')}`);
+    for (const n of r.notes) console.log(`- ${n}`);
+    break;
+  }
   case 'import-remap': {
     const path = files[0];
     if (!path) {
@@ -436,5 +493,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
 }

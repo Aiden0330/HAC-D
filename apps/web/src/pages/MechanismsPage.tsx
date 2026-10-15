@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
+import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, provisionalParameters, integrationStatus, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
@@ -39,6 +39,9 @@ export function MechanismsPage() {
   const [players, setPlayers] = useState<string[]>(DEFAULT_PLAYERS);
   const [metric, setMetric] = useState<AttributionMetric>('delivered');
   const [overrides, setOverrides] = useState<Record<string, Record<string, number>>>({});
+  // v3.7 audited mechanisms carry null integration fields: with the switch on, the provisional assumptions (tagged assumed) are merged below the user's overrides
+  const [provisional, setProvisional] = useState(false);
+  const paramsFor = (ids: string[]) => { const base = provisional ? provisionalParameters(ids) : {}; const out: Record<string, Record<string, number>> = { ...base }; for (const [id, p] of Object.entries(overrides)) out[id] = { ...(out[id] ?? {}), ...p }; return out; };
   const [report, setReport] = useState<MechanismReport | null>(null);
   const [plan, setPlan] = useState<MechanismPlan | null>(null);
   const [planTarget, setPlanTarget] = useState<number>(scenario?.targets.goodput ?? 0.9);
@@ -73,7 +76,7 @@ export function MechanismsPage() {
     setErr(null);
     setProgress({ done: 0, total: 1 << players.length });
     try {
-      setReport(await compute().mechanisms(active.scenario, players, { metric, parameters: overrides }, progressCallback((done: number, total: number) => setProgress({ done, total }))));
+      setReport(await compute().mechanisms(active.scenario, players, { metric, parameters: paramsFor(players) }, progressCallback((done: number, total: number) => setProgress({ done, total }))));
     } catch (e) {
       fail(e);
     } finally {
@@ -87,7 +90,7 @@ export function MechanismsPage() {
     setErr(null);
     setProgress({ done: 0, total: 1 << players.length, phase: 'coalitions' });
     try {
-      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: overrides, effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }, progressCallback((done: number, total: number, phase: string) => setProgress({ done, total, phase }))));
+      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: paramsFor(players), effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }, progressCallback((done: number, total: number, phase: string) => setProgress({ done, total, phase }))));
     } catch (e) {
       fail(e);
     } finally {
@@ -133,6 +136,7 @@ export function MechanismsPage() {
             </div>
           </div>
         </div>
+        <label style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, fontSize: 13 }} title={t('audit.provisionalHint')}><input type="checkbox" checked={provisional} onChange={(e) => setProvisional(e.target.checked)} />{t('audit.provisionalShort')} <span className="muted" style={{ fontSize: 12 }}>({t('mechanisms.provisionalNote')})</span></label>
         <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>● {t('mechanisms.inScenario')} · {t('mechanisms.oneJob')}</div>
         {err && <div className={`callout ${err.tone === 'crit' ? 'crit' : ''}`} style={{ marginTop: 8 }}>{err.text}</div>}
       </Card>
@@ -248,6 +252,7 @@ export function MechanismsPage() {
                       <b>{m.id}</b>
                       <div className="muted" style={{ fontSize: 11 }}>{name(m)}</div>
                       <div className="muted" style={{ fontSize: 10 }}>{m.confidence}</div>
+                      {m.audit && <div className="muted" style={{ fontSize: 10 }}>{t('mechanisms.auditedTag')}{m.integrationNeeds?.length ? ` · ${integrationStatus(m, { ...m.parameters, ...(overrides[m.id] ?? {}), ...(provisional ? m.provisional ?? {} : {}) }).ready ? t('audit.statusReady') : t('audit.statusMissing') + ': ' + m.integrationNeeds.join(', ')}` : ''}</div>}
                     </td>
                     <td>{m.kind}</td>
                     <td><Badge status={m.status === 'baseline' ? 'pass' : m.status === 'informational' ? 'none' : 'warn'}>{t(`mechanisms.status_${m.status}`)}</Badge></td>
@@ -267,7 +272,7 @@ export function MechanismsPage() {
                       {m.apply && (on ? (
                         <button type="button" className="btn small" onClick={() => updateActive((s) => stripMechanisms(s, [m.id]))} disabled={!isStrippable(active.scenario, m.id)}>{t('mechanisms.remove')}</button>
                       ) : (
-                        <button type="button" className="btn small" onClick={() => updateActive((s) => applyMechanisms(s, [m.id], overrides))}>{t('mechanisms.apply')}</button>
+                        <button type="button" className="btn small" onClick={() => updateActive((s) => applyMechanisms(s, [m.id], paramsFor([m.id])))}>{t('mechanisms.apply')}</button>
                       ))}
                       {on && <div className="muted" style={{ fontSize: 10 }}>● {t('mechanisms.inScenario')}</div>}
                     </td>

@@ -1,0 +1,1548 @@
+{
+  "version": "mechanism-detail-review-2",
+  "date": "2026-10-14",
+  "scope": "单点量化与机制设计；未计算任何集群规模的可用度，未计算组合收益或 Shapley",
+  "baseline": {
+    "detectSeconds": 12.5,
+    "recoverSeconds": 180,
+    "rollbackSeconds": 150,
+    "manualProbability": 0.01,
+    "manualAdditionalSeconds": 7200,
+    "checkpointComputeSeconds": 300,
+    "checkpointBlockSeconds": 4,
+    "normalLossSeconds": 342.5,
+    "expectedRecoverySeconds": 252,
+    "expectedLossSeconds": 414.5
+  },
+  "startupBudgetAssumption": {
+    "startup": 60,
+    "graphWithinStartup": 30,
+    "otherWithinStartup": 30,
+    "checkpointRead": 60,
+    "communication": 60,
+    "total": 180,
+    "status": "统一的串行工程预算，待实测；图准备属于启动，不能相加；实际并行阶段按关键路径重算。"
+  },
+  "precisionContext": {
+    "model": "DeepSeek-V4.1-Flash",
+    "measuredTrainingPrecisionShares": null,
+    "sdcRiskSharesByPrecision": null,
+    "note": "公开 FP4 KV 存储和推理代码不能确定训练 FWD/DGRAD/WGRAD 的精度比例。FLOP 占比不能直接作为 SDC 风险占比；混合 W4A8 路径按首个污染来源去重。"
+  },
+  "sdcRecoveryContract": {
+    "latentDiscoverySeconds": 432000,
+    "lateRecovery": "回到错误之前最后一个干净状态，保留之前有效进度；干净检查点长期保留。",
+    "instantRecovery": "可信 step 起点存在且检出在提交前时，自动重算当前 step；否则转干净 CKPT。",
+    "note": "5 天是漏检发现时延，不是每次固定损失；实际回退还取决于错误前的干净保存点、任务剩余时间与重叠事件。"
+  },
+  "sources": {
+    "nvlink": {
+      "title": "NVLink 6 分层可靠性概览",
+      "url": "https://developer.nvidia.com/blog/how-nvidia-nvlink-6-delivers-multi-layer-resiliency-for-ai-factories/"
+    },
+    "shadow": {
+      "title": "Shadow Engine 原理与推理实验",
+      "url": "https://developer.nvidia.com/blog/restore-llm-inference-capacity-in-seconds-with-shadow-engine-recovery-in-nvidia-dynamo/"
+    },
+    "snapshot": {
+      "title": "Dynamo Snapshot",
+      "url": "https://developer.nvidia.com/blog/nvidia-dynamo-snapshot-fast-startup-for-inference-workloads-on-kubernetes/"
+    },
+    "async": {
+      "title": "Megatron-Core 异步检查点",
+      "url": "https://developer.nvidia.com/blog/train-generative-ai-models-more-efficiently-with-new-nvidia-megatron-core-functionalities/"
+    },
+    "compress": {
+      "title": "nvCOMP 无损检查点压缩",
+      "url": "https://developer.nvidia.com/blog/cut-checkpoint-costs-with-about-30-lines-of-python-and-nvidia-nvcomp/"
+    },
+    "degrade": {
+      "title": "GB300 NVL72 降带宽运行的版本边界",
+      "url": "https://docs.nvidia.com/dgx/dgxgb300nvl72-2-release-notes/improvements.html"
+    },
+    "recovery": {
+      "title": "GPU 错误恢复动作接口",
+      "url": "https://docs.nvidia.com/deploy/a100-gpu-mem-error-mgmt/error-recovery-and-response-flags.html"
+    },
+    "nccl": {
+      "title": "NCCL communicator shrink 官方说明",
+      "url": "https://developer.nvidia.com/blog/building-scalable-and-fault-tolerant-nccl-applications/"
+    },
+    "hccl": {
+      "title": "HCCL 9.0 通信域管理 API 与限制",
+      "url": "https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/API/hcclug/hcclcpp_07_0001.html"
+    },
+    "cann": {
+      "title": "CANN 9.1 aclmdlRICaptureBegin",
+      "url": "https://www.hiascend.com/doc_center/source/en/CANNCommunityEdition/910/API/runtimeapi/aclcppdevg_03_1782.html"
+    },
+    "abft": {
+      "title": "NVIDIA 算法级错误检测研究",
+      "url": "https://research.nvidia.com/publication/2021-03_making-convolutions-resilient-algorithm-based-error-detection-techniques"
+    },
+    "fp4": {
+      "title": "Transformer Engine NVFP4 训练说明",
+      "url": "https://docs.nvidia.com/deeplearning/transformer-engine/features/low_precision_training/nvfp4/nvfp4.html"
+    },
+    "deepseek": {
+      "title": "DeepSeek-V4.1-Flash 技术报告",
+      "url": "https://arxiv.org/html/2609.19969v1"
+    },
+    "deepseekCode": {
+      "title": "DeepSeek-V4.1-Flash 公开推理实现",
+      "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/blob/main/inference/model.py"
+    }
+  },
+  "mechanisms": [
+    {
+      "id": "R-LINK-LOCAL",
+      "name": "链路透明恢复",
+      "category": "新增",
+      "basis": "适用且成功处理的一次故障",
+      "scope": "当前保护后仍造成中断、且新增能力可以处理的瞬态链路异常。不能覆盖永久损坏。",
+      "eventCandidates": [
+        "IOD-hard",
+        "NIC-hard",
+        "OPT-hard",
+        "BOXIO-hard",
+        "FABRIC-hard"
+      ],
+      "inputs": {
+        "successTotalPauseSeconds": 2,
+        "successPauseRangeSeconds": [
+          1,
+          3
+        ],
+        "rollbackSeconds": 0
+      },
+      "change": "常规全局恢复并回滚 → 链路恢复成功后继续训练。候选总停顿 2s，包含发现、协调和恢复。",
+      "formula": "常规损失 = 12.5 + 180 + 150 = 342.5s；成功损失 = 2 + 0 = 2s。",
+      "evidence": "公开资料提供分层纠错/重试的设计依据。端到端 2s 是跨平台工程预算，不能当作 FEC 或物理重试的实测耗时。",
+      "prerequisite": "应用状态与通信事务保持一致；重复传输不造成重复提交；超时上限和失败上报明确。",
+      "failure": "失败尝试耗时另计，再回到现有恢复链；成功概率和新增适用覆盖率均待测。",
+      "cost": "记录重试延迟、带宽占用及重试风暴；硬件既有保护不计新增开销或收益。",
+      "overlap": "若同一事件已被 R-REPLAY 成功处理，原路径约为 12.5+5=17.5s；与 2s 比较只节省 15.5s，不能再计 340.5s。",
+      "acceptance": "同负载故障注入，测训练可见停顿、事务一致性、失败回退与残余事件覆盖率。",
+      "sourceIds": [
+        "nvlink"
+      ],
+      "lever": "缩短瞬态故障停顿；成功时避免 CKPT 回滚",
+      "principle": "在通信数据尚有可信重放副本时，先在链路附近纠正或重试，再升级到应用恢复。FEC 处理可纠正误码，重传处理未纠正的数据，物理重训练处理短暂失链。模型只给“现有保护仍未覆盖、但新增能力可挽救”的事件记增量收益。",
+      "trigger": {
+        "signal": "不可纠正误码、重试告警或 Link Down；故障已进入新增保护路径。",
+        "gate": "重放缓冲仍有效、序号和确认状态可核对，未发生不可逆的错误提交；重试次数与超时上限须配置。",
+        "timing": "链路异常出现后立即由硬件/驱动执行，尽量早于应用超时。2s 是完整训练可见停顿预算，不是单次物理重传耗时。",
+        "owner": "链路固件／驱动；训练监控记录停顿。"
+      },
+      "workflow": [
+        "暂停受影响通道的新事务，记录序号和最近有效确认点。",
+        "依照错误等级纠正、重传或重训练；校验重放数据并抑制重复提交。",
+        "确认链路稳定与事务完成后恢复投递；达到重试上限则明确向上层报错。"
+      ],
+      "successCriteria": "所有待处理事务完成且数据校验通过，训练继续产生正确 step；不能仅凭 Link Up 判断成功。",
+      "doNotTrigger": "永久物理损坏、重放数据丢失、状态已污染或需要重复无限重试时，不走透明续跑。",
+      "observe": [
+        "新增适用事件数与成功数",
+        "训练可见停顿 P50/P95/P99",
+        "重传次数和额外带宽",
+        "失败升级前额外耗时",
+        "重复提交／数据错误数"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "quantification": {
+        "metric": "常规单次等效损失",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 342.5,
+        "after": 2,
+        "improvement": 340.5,
+        "saved": 340.5,
+        "reductionFraction": 0.9941605839416059,
+        "range": [
+          {
+            "targetSeconds": 1,
+            "savedSeconds": 341.5
+          },
+          {
+            "targetSeconds": 3,
+            "savedSeconds": 339.5
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "R-FABRIC-DEGRADE",
+      "name": "网络绕行与降级运行",
+      "category": "新增",
+      "basis": "一次成功绕行，包含整个降级期",
+      "scope": "剩余拓扑仍可承载作业的链路/交换资源故障；不是所有 NIC 或交换板故障。",
+      "eventCandidates": [
+        "NIC-hard",
+        "OPT-hard",
+        "BOXIO-hard",
+        "FABRIC-hard"
+      ],
+      "inputs": {
+        "switchTotalPauseSeconds": 2,
+        "exposedCommunicationFraction": 0.3,
+        "remainingBandwidthRatio": 0.75,
+        "repairSeconds": 1800
+      },
+      "change": "全局恢复到满性能资源 → 2s 切换后降速运行 30min，再恢复正常。",
+      "formula": "吞吐 η=1/[(1−f)+f/r]；损失 L=t_switch+(1−η)×T_repair。",
+      "evidence": "降带宽运行有官方实现例证；f=30%、r=75%、30min 修复均为示例预算，必须用训练 profile 和运维数据替换。",
+      "prerequisite": "对照路径的全局恢复必须能切到健康资源并恢复满吞吐，否则需给对照路径也计降速。f 为正常 step 中未被计算掩盖的通信时间占比。",
+      "failure": "绕行失败进入现有恢复；降级时再次故障需要单独建模。",
+      "cost": "降级吞吐损失已计入；修复资源与共因故障尚未计价。",
+      "overlap": "与已有 2+2 光路、平面冗余只计算增量；不再把同一次降级生成一个独立亚健康事件。",
+      "acceptance": "测不同失效拓扑下的训练吞吐、切换停顿、后台修复时长和二次故障容忍度。",
+      "sourceIds": [
+        "degrade",
+        "nvlink"
+      ],
+      "lever": "以可量化的降速代价替代全局重启",
+      "principle": "将故障链路或交换资源从可用拓扑中移除，把通信迁移到剩余路径。训练可能继续，但带宽下降会拉长 step。收益必须覆盖从切换到修复完成的整个降级期；连通性恢复并不等于吞吐恢复。",
+      "trigger": {
+        "signal": "链路持续失效、交换资源故障，或经确认的持续性能退化。",
+        "gate": "剩余路径连通且有容量，路由与集合通信算法支持当前拓扑；预期降速代价可接受。",
+        "timing": "透明重试失败或确认故障不可短时修复后；控制器做有界切换。",
+        "owner": "网络控制器＋通信运行时＋训练调度器。"
+      },
+      "workflow": [
+        "隔离失效资源，生成剩余拓扑，确认所有必要 rank 仍可达。",
+        "一致地更新路由和通信计划，排空旧事务后切换。",
+        "记录实际 step 吞吐，后台维修；代价超限时转入迁移或重启。",
+        "修复资源经验证后重新加入，确认吞吐恢复后结束降级计时。"
+      ],
+      "successCriteria": "通信正确且作业持续提交有效 step；剩余吞吐和维修时间同时满足预算。",
+      "doNotTrigger": "网络分区、剩余路径过载、无法安全切换或同一故障影响全部平面时，不承诺降级续跑。",
+      "observe": [
+        "切换总停顿",
+        "降级前后 step 吞吐",
+        "降级持续时间",
+        "拓扑和剩余带宽",
+        "降级期间再次故障率"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "throughputRatio": 0.9090909090909092,
+        "breakEvenRepairSeconds": 3745.500000000003
+      },
+      "quantification": {
+        "metric": "含整个降级期的单次等效损失",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 342.5,
+        "after": 165.63636363636348,
+        "improvement": 176.86363636363652,
+        "saved": 176.86363636363652,
+        "reductionFraction": 0.5163901791639023,
+        "range": [
+          {
+            "repairSeconds": 600,
+            "throughputRatio": 0.9090909090909092,
+            "lossSeconds": 56.5454545454545,
+            "savedSeconds": 285.9545454545455
+          },
+          {
+            "repairSeconds": 1800,
+            "throughputRatio": 0.9090909090909092,
+            "lossSeconds": 165.63636363636348,
+            "savedSeconds": 176.86363636363652
+          },
+          {
+            "repairSeconds": 3600,
+            "throughputRatio": 0.9090909090909092,
+            "lossSeconds": 329.27272727272697,
+            "savedSeconds": 13.227272727273032
+          },
+          {
+            "repairSeconds": 7200,
+            "throughputRatio": 0.9090909090909092,
+            "lossSeconds": 656.5454545454539,
+            "savedSeconds": -314.04545454545394
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "I-CONTAIN",
+      "name": "故障隔离与传播抑制",
+      "category": "新增／依赖能力",
+      "basis": "仅比较 180s 恢复阶段的容量等效损失",
+      "scope": "能够限制影响范围的局部故障；同时要求其余域继续产生可保留的训练进度。",
+      "eventCandidates": [
+        "IOD-hard",
+        "NIC-hard",
+        "BOXIO-hard",
+        "FABRIC-hard"
+      ],
+      "inputs": {
+        "stageSeconds": 180,
+        "domains": 50,
+        "affectedDomains": 1,
+        "globalCoordinationSeconds": 1
+      },
+      "change": "180s 全局停止 → 1s 全局协调，再由 1/50 域承担 180s 局部恢复。",
+      "formula": "阶段损失 = 1 + 180×(1/50) = 4.6s；此处不包含检测和回滚。",
+      "evidence": "50 域沿用用户设定；1s 和局部独立前进是条件假设。物理隔离本身不保证同步训练可继续。",
+      "prerequisite": "DP 数学语义、状态冗余和通信隔离均成立；局部恢复 180s 从全局协调完成后开始计时，避免重叠计账。",
+      "failure": "隔离失败或同步训练无法前进时，仍按全局恢复；不能套用 1/50。",
+      "cost": "备用资源、状态复制、收敛与同步开销待验证。",
+      "overlap": "现有 R-ELASTIC 已采用 50 域、1s 协调和 180s 局部恢复。同一事件在该模型上的额外收益默认记 0；本项是使条件成立的支撑能力。",
+      "acceptance": "故障期间测其他域保留的有效进度，不能只测存活卡数或局部链路恢复时间。",
+      "sourceIds": [
+        "nvlink"
+      ],
+      "lever": "限制故障影响域；为局部弹性提供必要条件",
+      "principle": "将故障产生的反压、超时和错误事务限制在局部域，并阻止污染向健康域传播。只有训练框架允许健康域继续产生可保留进度，才可以把恢复损失按受影响容量比例折算；硬件隔离不自动解决同步训练的等待。",
+      "trigger": {
+        "signal": "异常可定位到特定链路、芯片或 DP 域，且出现跨域传播风险。",
+        "gate": "故障边界清晰、隔离不会切断健康域必需状态；框架支持成员变化与一致性恢复。",
+        "timing": "错误上报后、全局反压或错误提交扩散前；可与诊断并行，但计账按实际时间线。",
+        "owner": "驱动／网络控制器＋弹性训练控制器。"
+      },
+      "workflow": [
+        "标记故障域并拒绝其新事务，清理或排空在途通信。",
+        "全局协调成员版本，确定哪些已完成进度可以保留。",
+        "健康域按已验证的训练语义继续，故障域执行局部恢复。",
+        "校验状态版本后重新加入；无法保持一致性则升级全局恢复。"
+      ],
+      "successCriteria": "故障没有扩散，健康域新增进度最终可保留，重新加入不会造成梯度或优化器状态分叉。",
+      "doNotTrigger": "TP/PP/EP 依赖不可替代、所有 rank 必须等待、或污染范围不明时，不使用 1/50 折算。",
+      "observe": [
+        "实际受影响域数",
+        "健康域可保留进度",
+        "全局协调停顿",
+        "局部恢复耗时",
+        "升级为全局恢复的比例"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "incrementalSecondsOnExistingElastic": 0,
+        "standaloneBenefitWithoutIndependentProgress": null
+      },
+      "quantification": {
+        "metric": "仅恢复阶段等效损失",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 180,
+        "after": 4.6,
+        "improvement": 175.4,
+        "saved": 175.4,
+        "reductionFraction": 0.9744444444444444,
+        "range": []
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "H-CONTROL-CONTINUITY",
+      "name": "控制面异常下业务连续运行",
+      "category": "新增",
+      "basis": "适用且成功保护的一次管理故障",
+      "scope": "管理服务、管理通道或管理 CPU 异常；不包含数据转发芯片失效。",
+      "eventCandidates": [
+        "MGMT-hard"
+      ],
+      "inputs": {
+        "trainingPauseSeconds": 1,
+        "trainingPauseRangeSeconds": [
+          0,
+          1
+        ],
+        "controlRestoreRangeSeconds": [
+          10,
+          30
+        ],
+        "rollbackSeconds": 0
+      },
+      "change": "管理异常触发训练恢复 → 数据面维持运行，训练停顿预算 0–1s。",
+      "formula": "按保守目标 1s：单次常规损失 342.5s → 1s。管理服务恢复时长不直接算训练停机。",
+      "evidence": "控制面与数据面解耦是公开设计；0–1s 训练停顿和 10–30s 管理恢复均是候选预算。",
+      "prerequisite": "控制状态可恢复、无双主，数据转发不依赖故障服务持续参与；只覆盖 MGMT-hard 经审计后的适用子类。",
+      "failure": "切换失败或期间又发生需要控制面处理的故障，进入对应升级路径。",
+      "cost": "冗余控制服务、备用管理链路及管理失能期间的复合风险。",
+      "overlap": "与现有控制面 HA 只计增量；不能把管理服务的全部 MTTR 都当成训练节省。",
+      "acceptance": "管理服务重启与管理链路断开注入，验证数据面连续性、训练正确性、切换与二次故障。",
+      "sourceIds": [
+        "nvlink"
+      ],
+      "lever": "避免管理故障被升级成训练中断",
+      "principle": "数据转发使用已安装的有效状态，不依赖管理 CPU 持续工作。管理服务故障时，由备用控制器接管状态和租约，数据面维持原转发；管理失能时间和训练停顿分别记录。",
+      "trigger": {
+        "signal": "管理进程退出、控制器心跳超时、管理 CPU 重启或管理链路失效。",
+        "gate": "数据面和既有转发表健康，备用控制服务可用，租约或仲裁能防止双主。",
+        "timing": "管理故障被确认后切换；训练不因单独的管理告警立即重启。",
+        "owner": "控制面 HA 管理器＋网络运维。"
+      },
+      "workflow": [
+        "检测管理角色失效，用租约／仲裁撤销旧主写权限。",
+        "数据面继续使用有效配置，冻结不安全的拓扑变更。",
+        "备用控制器加载一致状态并接管管理；恢复后核对设备视图。"
+      ],
+      "successCriteria": "无双主、无错误配置覆盖，训练数据持续正确转发；管理能力在预算内恢复。",
+      "doNotTrigger": "数据转发芯片故障、状态不一致或整个控制域丢失时，不能以管理 HA 掩盖真实数据面故障。",
+      "observe": [
+        "训练停顿与控制恢复两个时钟",
+        "主备状态一致性",
+        "管理失能期新增异常",
+        "错误切换次数",
+        "备用接管成功率"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "quantification": {
+        "metric": "常规单次等效损失",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 342.5,
+        "after": 1,
+        "improvement": 341.5,
+        "saved": 341.5,
+        "reductionFraction": 0.997080291970803,
+        "range": [
+          {
+            "targetSeconds": 0,
+            "savedSeconds": 342.5
+          },
+          {
+            "targetSeconds": 1,
+            "savedSeconds": 341.5
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "R-WARM-PROCESS",
+      "name": "预热进程与可信状态接替",
+      "category": "新增",
+      "basis": "一次适用恢复中的进程启动阶段",
+      "scope": "硬件、驱动、节点仍健康的进程异常；故障子类需从 UNKNOWN-hard 等经审计识别，不能将未知故障全部覆盖。",
+      "eventCandidates": [
+        "UNKNOWN-hard"
+      ],
+      "inputs": {
+        "startupBeforeSeconds": 60,
+        "startupTargetSeconds": 20,
+        "startupTargetRangeSeconds": [
+          10,
+          30
+        ],
+        "otherRecoverySeconds": 120,
+        "rollbackSeconds": 150
+      },
+      "change": "把 180s 恢复暂拆为启动 60s＋其他 120s；预热使启动 60s → 20s，其他阶段保持不变。",
+      "formula": "恢复总时长示例 180 → 140s；含检测/回滚的常规单次损失 342.5 → 302.5s。",
+      "evidence": "公开 7.3s 结果来自推理进程终止实验，不用于训练预测。60s 启动预算和 20s 目标均为工程估算。",
+      "prerequisite": "状态存活、执行权互斥、训练状态版本一致；本项保守保留原 CKPT 回滚量，不假定零回滚。",
+      "failure": "可信状态不可用、硬件失效或备用进程未就绪时进入原恢复链。",
+      "cost": "备用进程驻留内存与后台预热干扰待测；不声称零额外 HBM 或零正常态开销。",
+      "overlap": "与 R-RUNTIME-SNAPSHOT、编译缓存作用于同一启动预算，不能相加消除同一段时间。",
+      "acceptance": "区分进程崩溃、GPU reset、节点掉电；验证优化器更新中途故障的状态一致性和真实接替耗时。",
+      "sourceIds": [
+        "shadow"
+      ],
+      "lever": "缩短进程初始化阶段",
+      "principle": "提前建立备用进程和可复用的运行环境，主进程异常后移交执行权。公开 Shadow Engine 的效果属于推理；训练中权重、优化器、随机数和数据位置都在变化，必须从可信训练状态恢复，不能只复用一份权重。",
+      "trigger": {
+        "signal": "训练进程退出或通信上下文不可继续，但节点、加速卡和驱动仍健康。",
+        "gate": "备用进程就绪；可验证的状态副本存活；旧执行者能够被隔离，防止双写。",
+        "timing": "诊断确认是适用进程故障后，在冷启动前选择预热接替。",
+        "owner": "进程守护器＋训练状态管理器。"
+      },
+      "workflow": [
+        "停止旧执行者提交，核对硬件健康与故障范围。",
+        "激活预热进程，绑定独立且有效的通信上下文。",
+        "恢复同一版本的权重、优化器、RNG 和数据游标，按原 CKPT 口径重算未保留进度。",
+        "执行正确性检查后恢复训练；备用资源随后补齐。"
+      ],
+      "successCriteria": "只有一个执行者提交，训练状态完整一致，实际启动阶段达到预算。",
+      "doNotTrigger": "GPU/NPU reset、节点掉电、共享状态损坏或 SDC 污染尚未清除时，不直接接替。",
+      "observe": [
+        "备用就绪比例",
+        "启动与状态恢复分段耗时",
+        "状态一致性失败数",
+        "备用 HBM/内存占用",
+        "正常态训练干扰"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "normalEventLossBeforeSeconds": 342.5,
+        "normalEventLossAfterSeconds": 302.5,
+        "recoveryBeforeSeconds": 180,
+        "recoveryAfterSeconds": 140
+      },
+      "quantification": {
+        "metric": "启动阶段耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 60,
+        "after": 20,
+        "improvement": 40,
+        "saved": 40,
+        "reductionFraction": 0.6666666666666666,
+        "range": [
+          {
+            "targetStartupSeconds": 10,
+            "savedSeconds": 50
+          },
+          {
+            "targetStartupSeconds": 30,
+            "savedSeconds": 30
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "R-RUNTIME-SNAPSHOT",
+      "name": "运行时初始化快照",
+      "category": "新增",
+      "basis": "一次快照兼容且恢复成功的启动阶段",
+      "scope": "需要重新启动、且软硬件与运行时快照兼容的恢复；快照不是最新训练进度。",
+      "eventCandidates": [
+        "CORE-hard",
+        "SRAM-hard",
+        "IOD-hard",
+        "MODULE-hard",
+        "MEMT-hard",
+        "MEMP-hard",
+        "NIC-hard",
+        "CPU-hard",
+        "DDR-hard",
+        "SSD-hard",
+        "UNKNOWN-hard"
+      ],
+      "inputs": {
+        "startupBeforeSeconds": 60,
+        "startupTargetSeconds": 15,
+        "startupTargetRangeSeconds": [
+          10,
+          30
+        ],
+        "otherRecoverySeconds": 120,
+        "rollbackSeconds": 150
+      },
+      "change": "相同 60s 启动预算，用初始化快照恢复至 15s；加载最新训练状态和外部重绑定仍包含在其他阶段。",
+      "formula": "恢复总时长示例 180 → 135s；含检测/回滚的常规单次损失 342.5 → 297.5s。",
+      "evidence": "进程快照原理有公开支持；训练 15s 恢复目标、兼容范围均待验证，不等同于普通图捕捉。",
+      "prerequisite": "驱动、设备、模型配置和地址映射兼容；外部连接可重建；启动镜像与最新可信训练状态分离。",
+      "failure": "快照不可用或恢复验证失败后冷启动，需额外记录失败尝试耗时。",
+      "cost": "镜像生成、存储、读取、版本失效与恢复后校验成本待测。",
+      "overlap": "与预热进程为同一启动阶段的替代或部分重叠方案；不能将 40s 与 45s 的节省直接相加。",
+      "acceptance": "测快照命中率、兼容失败率、恢复关键路径和更新训练状态后的正确性。",
+      "sourceIds": [
+        "snapshot"
+      ],
+      "lever": "用初始化镜像缩短冷启动阶段",
+      "principle": "在可信且可恢复的初始化边界保存运行时环境，恢复时跳过重复的初始化工作。该镜像与保存训练进度的 CKPT 分开管理；恢复运行时后，还需装载最新干净训练状态并重建外部连接。",
+      "trigger": {
+        "signal": "恢复编排要求新建进程，且找到与目标软件、硬件、模型配置兼容的初始化快照。",
+        "gate": "快照有完整性和版本记录；驱动、设备及地址约束满足；网络连接可重新绑定。",
+        "timing": "作业部署时制作镜像；故障后的进程启动阶段使用。",
+        "owner": "运行时恢复服务＋训练框架。"
+      },
+      "workflow": [
+        "在预先验证的安全点生成初始化镜像并登记兼容指纹。",
+        "恢复时核对版本和目标设备，再恢复进程／设备初始化状态。",
+        "重绑外部通信，装载可信训练 CKPT，不把镜像中旧训练状态当作当前状态。",
+        "校验 step 后交付训练；镜像失配或验证失败则冷启动。"
+      ],
+      "successCriteria": "恢复环境与训练状态都通过验证，并且快照读取、重绑定和校验后的完整启动路径更短。",
+      "doNotTrigger": "驱动或拓扑不兼容、镜像来自污染状态、跨进程恢复能力未验证时，使用常规冷启动。",
+      "observe": [
+        "镜像命中率",
+        "恢复成功率",
+        "启动关键路径",
+        "失败后冷启动额外耗时",
+        "镜像存储与版本维护成本"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "normalEventLossBeforeSeconds": 342.5,
+        "normalEventLossAfterSeconds": 297.5,
+        "recoveryBeforeSeconds": 180,
+        "recoveryAfterSeconds": 135
+      },
+      "quantification": {
+        "metric": "启动阶段耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 60,
+        "after": 15,
+        "improvement": 45,
+        "saved": 45,
+        "reductionFraction": 0.75,
+        "range": [
+          {
+            "targetStartupSeconds": 10,
+            "savedSeconds": 50
+          },
+          {
+            "targetStartupSeconds": 30,
+            "savedSeconds": 30
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "C-ASYNC",
+      "name": "异步检查点保存",
+      "category": "扩展 C-FAST",
+      "basis": "每完成一次保存；另列故障回退代价",
+      "scope": "保持 300s 计算周期，只改变训练阻塞与后台持久化；不同时计缩短周期的收益。",
+      "eventCandidates": [],
+      "inputs": {
+        "blockingBeforeSeconds": 4,
+        "blockingTargetSeconds": 1,
+        "blockingTargetRangeSeconds": [
+          0.5,
+          2
+        ],
+        "additionalDurableLagSeconds": 10
+      },
+      "change": "每次保存阻塞 4s → 1s；另设相对原方案新增的有效持久化滞后 10s。",
+      "formula": "每次保存少阻塞 3s；若仅远端副本存活，近似新增回退窗口为有效新增滞后 δ。",
+      "evidence": "异步暂存并后台写入是公开方案；1s 阻塞和新增 10s 滞后是候选值，不是实测。",
+      "prerequisite": "区分 CPU/本地副本和远端持久副本的故障生存范围；未提交完成的副本不能当作有效 CKPT。",
+      "failure": "暂存副本丢失、后台写入失败或队列积压时回到上一份已完成且干净的检查点。",
+      "cost": "后台吞吐干扰与持久化滞后需要计入；10s 为有效额外回退暴露的近似，实际由保存时刻、训练阻塞和故障范围共同决定。",
+      "overlap": "旧 C-FAST 若已包含异步保存效果，不再额外扣除相同阻塞；短周期与低阻塞分开记参数。",
+      "acceptance": "分别测阻塞结束和持久化提交时间，注入进程/节点/存储故障，验证可恢复进度。",
+      "sourceIds": [
+        "async"
+      ],
+      "lever": "减少每次保存时的训练阻塞",
+      "principle": "在一致的 step 边界快速冻结或复制状态，让训练继续，后台写入持久介质。训练恢复使用的是已完成、可验证且在当前故障域中存活的副本；“拷到 CPU”与“远端持久化成功”是两个不同里程碑。",
+      "trigger": {
+        "signal": "距上次采集已完成 300s 有效计算，达到检查点采集条件。",
+        "gate": "一致性边界可用、暂存空间充足、后台写入队列未超限；采集状态尚未被 SDC 污染。",
+        "timing": "周期性保存时触发，无须等待故障；后台持久化完成后再发布提交标记。",
+        "owner": "训练 CKPT 管理器＋存储服务。"
+      },
+      "workflow": [
+        "在全体必要分片一致的版本边界采集状态，禁止异步读取已被后续优化器修改的数据。",
+        "完成可信暂存后解除训练阻塞，后台写入分片与校验信息。",
+        "所有必要分片持久化成功后原子发布 manifest；失败的半成品不参与恢复。",
+        "记录可恢复位置；队列积压时限流或回到同步保存。"
+      ],
+      "successCriteria": "故障注入后可以从已发布副本恢复同一训练版本，阻塞下降且后台干扰受控。",
+      "doNotTrigger": "没有不可变快照或充足暂存空间、后台长期落后时，不能提前宣告保存成功。",
+      "observe": [
+        "采集阻塞时间",
+        "远端持久化滞后",
+        "后台带宽／吞吐干扰",
+        "队列长度",
+        "不同故障域下的可恢复进度"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "illustrativeExtraRollbackSeconds": 10,
+        "additionalDurableLagIsApproximation": true
+      },
+      "quantification": {
+        "metric": "每次保存阻塞",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 4,
+        "after": 1,
+        "improvement": 3,
+        "saved": 3,
+        "reductionFraction": 0.75,
+        "range": [
+          {
+            "blockingSeconds": 0.5,
+            "savedSeconds": 3.5
+          },
+          {
+            "blockingSeconds": 2,
+            "savedSeconds": 2
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "C-LOSSLESS",
+      "name": "无损检查点压缩",
+      "category": "扩展 C-FAST",
+      "basis": "一次检查点读取阶段",
+      "scope": "有可压缩状态、且读取 I/O 是瓶颈的 CKPT；按权重与优化器实际数据类型测量。",
+      "eventCandidates": [],
+      "inputs": {
+        "readBeforeSeconds": 60,
+        "compressionRatio": 2,
+        "decompressSeconds": 10,
+        "otherRecoverySeconds": 120
+      },
+      "change": "180s 恢复暂拆为读取 60s＋其他 120s；压缩后读取 30s，再解压 10s。",
+      "formula": "读取阶段 T′=60/r+10；r=2 时 60 → 40s，总恢复 180 → 160s。",
+      "evidence": "无损压缩有公开支持；2× 压缩比、60s I/O、10s 解压均为工程预算。FP8/FP4 权重通常需更保守的压缩比。",
+      "prerequisite": "相同状态、相同有效带宽对比；公式按读取和解压串行计算；若重叠必须用关键路径重新计时。",
+      "failure": "压缩数据校验失败时读取其他可信副本；不能把错误检查点解压成功当作训练正确。",
+      "cost": "保存侧压缩时间、资源竞争、写入改善尚待测，本次不计保存收益，也不假定保存成本为零。",
+      "overlap": "只扣读取阶段，不能与运行时快照中已经消除的同一批读取重复计算。",
+      "acceptance": "实测完整训练 CKPT 压缩比、压缩与解压速度、保存阻塞、读取带宽和端到端恢复。",
+      "sourceIds": [
+        "compress"
+      ],
+      "lever": "减少 CKPT 数据读取时间；不改变保存周期",
+      "principle": "对检查点做可逆编码，减少存储读取量，再在恢复路径解码。端到端收益取决于读取瓶颈、压缩比和解码耗时；FP4 权重的冗余可能很少，优化器高精度状态仍需独立测量。",
+      "trigger": {
+        "signal": "CKPT 写入时选择压缩编码，恢复时读取到相同编码版本的可信副本。",
+        "gate": "编解码可用、压缩数据可校验、预计读取节省超过解压成本；不引入有损数值变化。",
+        "timing": "保存时生成压缩格式；本表收益只在读取／解压阶段计入。",
+        "owner": "CKPT 序列化层＋存储／设备解码器。"
+      },
+      "workflow": [
+        "按权重、优化器和其他状态分块编码，记录原始大小、类型及校验值。",
+        "恢复时校验 manifest 与压缩块，读取后无损解码。",
+        "核对解码后状态与版本，再交给训练；损坏块换可信副本。"
+      ],
+      "successCriteria": "逐字节可逆、训练恢复正确，完整读取加解码时间小于原读取时间。",
+      "doNotTrigger": "压缩比低于盈亏阈值、解码资源争用严重或格式不兼容时，选择未压缩路径。",
+      "observe": [
+        "各类状态实际压缩比",
+        "读写与编解码时间",
+        "解码器资源占用",
+        "保存阻塞变化",
+        "校验失败与换副本耗时"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "derived": {
+        "breakEvenCompressionRatio": 1.2,
+        "recoveryAfterSeconds": 160
+      },
+      "quantification": {
+        "metric": "读取加解压阶段耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 60,
+        "after": 40,
+        "improvement": 20,
+        "saved": 20,
+        "reductionFraction": 0.3333333333333333,
+        "range": [
+          {
+            "compressionRatio": 1.1,
+            "readAndDecompressSeconds": 64.54545454545453,
+            "savedSeconds": -4.54545454545454
+          },
+          {
+            "compressionRatio": 1.5,
+            "readAndDecompressSeconds": 50,
+            "savedSeconds": 10
+          },
+          {
+            "compressionRatio": 2,
+            "readAndDecompressSeconds": 40,
+            "savedSeconds": 20
+          },
+          {
+            "compressionRatio": 3,
+            "readAndDecompressSeconds": 30,
+            "savedSeconds": 30
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "D-RECOVERY-CLASSIFY",
+      "name": "故障分类与恢复动作匹配",
+      "category": "扩展恢复编排",
+      "basis": "适用恢复集合内每次恢复的期望时间",
+      "scope": "准确分类可以减少错误恢复动作和人工升级的故障；不是提高所有故障的检出率。",
+      "eventCandidates": [],
+      "inputs": {
+        "automaticRecoverySeconds": 180,
+        "manualExtraSeconds": 7200,
+        "manualProbabilityBefore": 0.01,
+        "manualProbabilityTarget": 0.001
+      },
+      "change": "自动恢复仍 180s；需要额外 2h 人工恢复的概率从 1% 降至 0.1%。",
+      "formula": "E[T]=180+p_manual×7200；252 → 187.2s。",
+      "evidence": "恢复动作分类有官方接口依据；人工升级概率 0.1% 为候选目标，并非 NVIDIA 公布的效果。",
+      "prerequisite": "仅对受益故障集合校准；需记录错误分类、失败尝试和错误隔离造成的代价。",
+      "failure": "未分类或自动恢复仍失败时沿用人工兜底；不能取消未知故障尾部。",
+      "cost": "额外诊断耗时和误分类损失尚未计入，本次计算条件是自动尝试仍为 180s。",
+      "overlap": "若更快恢复或其他机制已经避免人工升级，不能再次对同一事件扣 64.8s。",
+      "acceptance": "按根因分组比较自动恢复成功率、人工升级比例、诊断耗时及恢复长尾。",
+      "sourceIds": [
+        "recovery"
+      ],
+      "lever": "提高恢复动作匹配率，减少人工长尾",
+      "principle": "将硬件错误、进程健康、通信异常和历史重试信息汇合为恢复决策。按故障域与状态可信度，选择重执行、局部恢复、进程重启、设备重置或 CKPT 恢复；人工只处理自动路径耗尽、卡死或根因不明的少量情况。",
+      "trigger": {
+        "signal": "已经发现一个故障，需要选择恢复动作；或当前动作失败需升级。",
+        "gate": "错误码／遥测足以支持预设规则，执行动作前核对状态可信度和影响域；不确定性须显式保留。",
+        "timing": "检测之后、实际恢复动作之前；重试次数和诊断超时都必须有上限。",
+        "owner": "恢复编排器＋根因诊断服务。"
+      },
+      "workflow": [
+        "合并同一事件的多源告警，登记根因候选与可信度。",
+        "依据动作白名单选择最小影响的适用恢复，先检查依赖和预算。",
+        "验证进度、正确性和硬件健康；失败则升级到更强的自动恢复。",
+        "自动动作耗尽或无法安全判定时进入约 2h 人工诊断，并保留失败轨迹。"
+      ],
+      "successCriteria": "恢复后正确 step 可持续提交；人工比例下降且没有用误恢复掩盖数据污染。",
+      "doNotTrigger": "证据不足时不强行执行破坏性隔离；检测能力不足也不能由动作分类补齐。",
+      "observe": [
+        "各根因的动作混淆矩阵",
+        "人工升级比例",
+        "诊断与失败尝试耗时",
+        "正确恢复成功率",
+        "误隔离损失"
+      ],
+      "origin": "NVLink 分层方案延伸",
+      "designStatus": "拟议流程；跨平台目标待验证",
+      "quantification": {
+        "metric": "每次恢复的期望耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 252,
+        "after": 187.2,
+        "improvement": 64.80000000000001,
+        "saved": 64.80000000000001,
+        "reductionFraction": 0.2571428571428572,
+        "range": [
+          {
+            "manualProbability": 0.005,
+            "expectedRecoverySeconds": 216,
+            "savedSeconds": 36
+          },
+          {
+            "manualProbability": 0.001,
+            "expectedRecoverySeconds": 187.2,
+            "savedSeconds": 64.8
+          },
+          {
+            "manualProbability": 0.0001,
+            "expectedRecoverySeconds": 180.72,
+            "savedSeconds": 71.28
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "D-SDC-FP8",
+      "name": "FP8 计算路径 SDC 检测",
+      "category": "用户方案 · 检测扩展",
+      "basis": "适用 FP8 路径内的 SDC；按该子集统计",
+      "scope": "使用 FP8 的算子计算及其量化元数据，覆盖前向与反向需要分别验收。不是全部 AI Core SDC。",
+      "eventCandidates": [
+        "CORE-sdc"
+      ],
+      "inputs": {
+        "creditedDetectionBefore": 0,
+        "detectionTarget": 0.95,
+        "precisionSdcRiskShare": null,
+        "stepSeconds": 1,
+        "detectSeconds": 1,
+        "recoverSeconds": 1,
+        "latentDiscoverySeconds": 432000
+      },
+      "change": "现有 BF16 检测尚未验证的 FP8 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+      "formula": "在适用子集内：登记覆盖 0% → 95%，残余漏检 100% → 5%。q 为该路径的 SDC 风险占比；后续核心检出率按 Σ(q_j×c_j) 加权。",
+      "evidence": "95% 是用户提出的验收目标；0% 是尚未验证能力的保守记账，不是断言原检测器真实无效。低精度计算是混合精度执行，FP4 存储不能直接证明 FP4 训练计算占比。",
+      "prerequisite": "校验覆盖实际算子、输入／输出格式、scale、累加精度与提交边界；可从可信 step 起点重放，保留 RNG 和数据游标。",
+      "failure": "检出但无法在 step 内恢复则回到干净 CKPT；真正漏检进入原约 5 天后的发现与回滚路径，保留错误之前的进度。",
+      "cost": "校验计算、访存和误报引发的重算开销未知，不能假定免费。若采用 ABFT 实现本检测，则同一校验不另计两份覆盖。",
+      "overlap": "BF16／FP8／FP4 按互斥的首个错误来源分配风险；W4A8 等混合算子不能同时把同一错误计入 FP4 和 FP8。检测率与故障发生 FIT 是不同参数。",
+      "acceptance": "针对每种精度的前向、输入梯度、权重梯度及 scale 做分层注入，分别报告真 SDC 的检出率、误报率、发现时延和重放成功率。",
+      "sourceIds": [
+        "fp4",
+        "deepseek",
+        "deepseekCode"
+      ],
+      "lever": "提高特定精度路径检出率，减少长期污染窗口",
+      "principle": "将当前只对 BF16 验证的检测链扩展到 FP8 实际执行路径。可选择独立校验、差异重算或经验证的硬件检查实现；登记的 95% 是能力目标，不预设实现。正常量化误差、舍入差异与硬件 SDC 需要分别判定。",
+      "trigger": {
+        "signal": "每个受保护 FP8 算子或 step 边界主动执行检查；校验残差越阈、scale 非法或独立计算不一致触发恢复。",
+        "gate": "阈值经无故障训练标定；检查输入与元数据有可信锚点；异常结果尚未成为已提交优化器状态。",
+        "timing": "算子输出提交前或最迟当前 step 提交前；若抽样跨多个 step 检查，须另算延迟和污染窗口。",
+        "owner": "低精度算子库＋SDC 检测服务＋step 提交控制器。"
+      },
+      "workflow": [
+        "登记实际 dtype、scale、算子与阶段，按互斥风险子类挂接，不能只读取模型权重文件格式。",
+        "对算子结果和元数据执行已验证校验，暂缓异常结果提交。",
+        "用可信 step 输入、RNG 和旧参数在健康资源重算，确认结果后只提交一次。",
+        "重复异常则隔离资源并升级 CKPT 恢复；未检出的错误仍保留原长期漏检分支。"
+      ],
+      "successCriteria": "目标子集 SDC 的检出率达到 95%，误报和性能开销可接受；已检出事件从可信状态重算后不污染参数。",
+      "doNotTrigger": "普通量化舍入偏差不直接判为硬件故障；没有可信 step 起点、已经跨 step 污染时，不承诺只损失一个 step。",
+      "observe": [
+        "按 dtype／FWD／DGRAD／WGRAD 的 SDC 覆盖率",
+        "scale 与累加路径覆盖",
+        "误报率",
+        "检测到提交的时序",
+        "校验开销与重算成功率"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "residualMissFraction": 0.050000000000000044,
+        "baselineMeaning": "未验证能力暂不计覆盖，不是实测 0%",
+        "riskShareOfAllSdc": null,
+        "illustrativeDetectedBranchSeconds": 3,
+        "branchCondition": "保守按完整 step 重放；可信起点和自动恢复均成功；1s step 待实测",
+        "latentWindowSeconds": 432000,
+        "latentWindowIsNotGuaranteedJobLoss": true
+      },
+      "quantification": {
+        "metric": "适用 SDC 子集的登记检出率",
+        "unit": "fraction",
+        "direction": "increase",
+        "before": 0,
+        "after": 0.95,
+        "improvement": 0.95,
+        "gain": 0.95,
+        "gainPercentagePoints": 95,
+        "range": []
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "D-SDC-FP4",
+      "name": "FP4 计算路径 SDC 检测",
+      "category": "用户方案 · 检测扩展",
+      "basis": "适用 FP4 路径内的 SDC；按该子集统计",
+      "scope": "使用 FP4 的算子计算及其量化元数据，覆盖前向与反向需要分别验收。不是全部 AI Core SDC。",
+      "eventCandidates": [
+        "CORE-sdc"
+      ],
+      "inputs": {
+        "creditedDetectionBefore": 0,
+        "detectionTarget": 0.95,
+        "precisionSdcRiskShare": null,
+        "stepSeconds": 1,
+        "detectSeconds": 1,
+        "recoverSeconds": 1,
+        "latentDiscoverySeconds": 432000
+      },
+      "change": "现有 BF16 检测尚未验证的 FP4 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+      "formula": "在适用子集内：登记覆盖 0% → 95%，残余漏检 100% → 5%。q 为该路径的 SDC 风险占比；后续核心检出率按 Σ(q_j×c_j) 加权。",
+      "evidence": "95% 是用户提出的验收目标；0% 是尚未验证能力的保守记账，不是断言原检测器真实无效。低精度计算是混合精度执行，FP4 存储不能直接证明 FP4 训练计算占比。",
+      "prerequisite": "校验覆盖实际算子、输入／输出格式、scale、累加精度与提交边界；可从可信 step 起点重放，保留 RNG 和数据游标。",
+      "failure": "检出但无法在 step 内恢复则回到干净 CKPT；真正漏检进入原约 5 天后的发现与回滚路径，保留错误之前的进度。",
+      "cost": "校验计算、访存和误报引发的重算开销未知，不能假定免费。若采用 ABFT 实现本检测，则同一校验不另计两份覆盖。",
+      "overlap": "BF16／FP8／FP4 按互斥的首个错误来源分配风险；W4A8 等混合算子不能同时把同一错误计入 FP4 和 FP8。检测率与故障发生 FIT 是不同参数。",
+      "acceptance": "针对每种精度的前向、输入梯度、权重梯度及 scale 做分层注入，分别报告真 SDC 的检出率、误报率、发现时延和重放成功率。",
+      "sourceIds": [
+        "fp4",
+        "deepseek",
+        "deepseekCode"
+      ],
+      "lever": "提高特定精度路径检出率，减少长期污染窗口",
+      "principle": "将当前只对 BF16 验证的检测链扩展到 FP4 实际执行路径。可选择独立校验、差异重算或经验证的硬件检查实现；登记的 95% 是能力目标，不预设实现。正常量化误差、舍入差异与硬件 SDC 需要分别判定。",
+      "trigger": {
+        "signal": "每个受保护 FP4 算子或 step 边界主动执行检查；校验残差越阈、scale 非法或独立计算不一致触发恢复。",
+        "gate": "阈值经无故障训练标定；检查输入与元数据有可信锚点；异常结果尚未成为已提交优化器状态。",
+        "timing": "算子输出提交前或最迟当前 step 提交前；若抽样跨多个 step 检查，须另算延迟和污染窗口。",
+        "owner": "低精度算子库＋SDC 检测服务＋step 提交控制器。"
+      },
+      "workflow": [
+        "登记实际 dtype、scale、算子与阶段，按互斥风险子类挂接，不能只读取模型权重文件格式。",
+        "对算子结果和元数据执行已验证校验，暂缓异常结果提交。",
+        "用可信 step 输入、RNG 和旧参数在健康资源重算，确认结果后只提交一次。",
+        "重复异常则隔离资源并升级 CKPT 恢复；未检出的错误仍保留原长期漏检分支。"
+      ],
+      "successCriteria": "目标子集 SDC 的检出率达到 95%，误报和性能开销可接受；已检出事件从可信状态重算后不污染参数。",
+      "doNotTrigger": "普通量化舍入偏差不直接判为硬件故障；没有可信 step 起点、已经跨 step 污染时，不承诺只损失一个 step。",
+      "observe": [
+        "按 dtype／FWD／DGRAD／WGRAD 的 SDC 覆盖率",
+        "scale 与累加路径覆盖",
+        "误报率",
+        "检测到提交的时序",
+        "校验开销与重算成功率"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "residualMissFraction": 0.050000000000000044,
+        "baselineMeaning": "未验证能力暂不计覆盖，不是实测 0%",
+        "riskShareOfAllSdc": null,
+        "illustrativeDetectedBranchSeconds": 3,
+        "branchCondition": "保守按完整 step 重放；可信起点和自动恢复均成功；1s step 待实测",
+        "latentWindowSeconds": 432000,
+        "latentWindowIsNotGuaranteedJobLoss": true
+      },
+      "quantification": {
+        "metric": "适用 SDC 子集的登记检出率",
+        "unit": "fraction",
+        "direction": "increase",
+        "before": 0,
+        "after": 0.95,
+        "improvement": 0.95,
+        "gain": 0.95,
+        "gainPercentagePoints": 95,
+        "range": []
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "D-ABFT",
+      "name": "算子 ABFT／实时矩阵校验",
+      "category": "用户方案 · 漏检补充",
+      "basis": "已被前一道检测漏掉的适用算子 SDC",
+      "scope": "有可验证代数关系的 GEMM／相关线性算子；不自动覆盖非线性、控制流和所有输入错误。",
+      "eventCandidates": [
+        "CORE-sdc"
+      ],
+      "inputs": {
+        "upstreamDetection": 0.95,
+        "conditionalMissDetectionTarget": 0.9,
+        "conditionalTargetRange": [
+          0.9,
+          0.95,
+          0.98
+        ],
+        "throughputLossBudget": 0.001,
+        "stepSeconds": 1
+      },
+      "change": "以 0.1% 正常态吞吐损失为压测预算；示例捕获前一道 95% 检测剩余漏检中的 90%，该子集两级覆盖变为 99.5%。",
+      "formula": "c_total=c₁+(1−c₁)c₂|miss；95%+5%×90%=99.5%。每 1000s 正常运行的吞吐损失预算相当于 1s 满速产出。",
+      "evidence": "0.1% 来自用户预算，条件补漏率 90% 为待验证示例，并非已有实测。99.5% 只适用于第一道已有 95% 有效覆盖的同一算子子集；尚未验证的低精度路径不能直接套用。此公式不要求两道检测独立。",
+      "prerequisite": "校验向量／校验值可信、正确考虑量化与浮点误差；若用于补漏，必须在第一道漏检样本上测条件检出率。",
+      "failure": "检查不通过则阻止提交并用可信输入重算；一致性无法恢复则回滚干净 CKPT。ABFT 漏检仍走约 5 天发现路径。",
+      "cost": "0.1% 为目标而非保证；小 batch MoE、频繁访存、同步与高精度校验可能显著增加开销。误报率和错误重算成本须另测。",
+      "overlap": "若 ABFT 本身用于实现 FP8/FP4 的 95% 检测，两者是同一条能力，不能再按 95%＋补漏计收益。只有独立新增、在剩余漏检上验证的检查才算补充。",
+      "acceptance": "按算子形状和 dtype 采集故障注入矩阵；测联合漏检、误报、每 step 实际吞吐和检测提交边界。",
+      "sourceIds": [
+        "abft"
+      ],
+      "lever": "捕获已有检测的剩余漏检；以正常态开销换取更高覆盖",
+      "principle": "对 C=A×B，可比较 C×r 与 A×(B×r) 的校验残差，避免完全重复一次矩阵乘。必须使用实际量化后的运算定义并校准容差；可信检查路径是关键。数据在生成校验值之前已被一致污染，或错误位于校验盲区时，仍可能漏检。",
+      "trigger": {
+        "signal": "受保护算子每次执行时计算校验；残差超过按形状、精度和数值范围标定的阈值则报错。",
+        "gate": "校验元数据与检查路径可信，校验结束早于参数提交；抽样策略的漏检必须纳入覆盖率。",
+        "timing": "与算子尾部融合或紧接算子执行，异常 step 不提交。",
+        "owner": "算子实现／编译器＋训练正确性守护器。"
+      },
+      "workflow": [
+        "保留可信输入标识并生成校验向量，计算应满足的代数关系。",
+        "完成算子后用适当精度计算残差，与无故障分布校准的阈值比较。",
+        "异常时冻结本 step，换可信资源重算；一致性通过后单次提交。",
+        "记录与主检测器的交集、补漏集和共同漏检集，更新条件检出率。"
+      ],
+      "successCriteria": "在主检测器实际漏检样本上达到约定补漏率，且正确性验证、误报和 0.1% 性能预算均通过。",
+      "doNotTrigger": "不把固定浮点精确相等当作通用判据；不将传输 checksum 等同于算子 ABFT，也不默认检查器不会出错。",
+      "observe": [
+        "条件补漏率而非单独检出率",
+        "两级共同漏检",
+        "无故障误报率",
+        "按形状的实际开销",
+        "可信重算成功率"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "residualMissFraction": 0.0050000000000000044,
+        "relativeResidualMissReduction": 0.9,
+        "normalComputeLossSecondsPer1000Seconds": 1,
+        "notAnIndependenceAssumption": true
+      },
+      "quantification": {
+        "metric": "同一适用子集的两级联合检出率",
+        "unit": "fraction",
+        "direction": "increase",
+        "before": 0.95,
+        "after": 0.995,
+        "improvement": 0.04500000000000004,
+        "gain": 0.04500000000000004,
+        "gainPercentagePoints": 4.5000000000000036,
+        "range": [
+          {
+            "conditionalMissDetection": 0.9,
+            "jointDetection": 0.995
+          },
+          {
+            "conditionalMissDetection": 0.95,
+            "jointDetection": 0.9975
+          },
+          {
+            "conditionalMissDetection": 0.98,
+            "jointDetection": 0.999
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "D-NET-SDC",
+      "name": "网络端到端 SDC 检测",
+      "category": "用户方案 · 检测扩展",
+      "basis": "网络残余 SDC 事件子集",
+      "scope": "NIC、框内互联、Fabric 的数据污染；指现有 CRC/FEC 等保护之后仍逃逸的错误。",
+      "eventCandidates": [
+        "NIC-sdc",
+        "BOXIO-sdc",
+        "FABRIC-sdc"
+      ],
+      "inputs": {
+        "creditedDetectionBefore": 0,
+        "detectionTarget": 0.95,
+        "detectSeconds": 1,
+        "latentDiscoverySeconds": 432000
+      },
+      "change": "在目标网络残余 SDC 子集内登记 95% 检出目标，剩余漏检比例降至 5%。",
+      "formula": "适用子集覆盖 0% → 95%；已保护链路内的误码总数不能用作本项新增覆盖的分母。",
+      "evidence": "95% 是用户目标，不是 NVLink 或 HCCL 公布的端到端 SDC 指标；1s 是 step 级发现预算，需用集合通信时延校准。",
+      "prerequisite": "校验涵盖数据、源／目的、rank、step 和序号；集合通信计算需要专门的一致性或代数校验，不能仅验证每个包。",
+      "failure": "错误输出不提交，优先重传或重执行受影响集合操作；无可信输入或重复失败则局部／全局 CKPT 恢复。",
+      "cost": "额外校验计算、元数据、通信与同步开销待测；不能假定现有链路 CRC 可免费提供 95% 新覆盖。",
+      "overlap": "与链路重试存在事件路径关系；与算子 ABFT 按首个污染位置区分。网络侧校验不能证明发送前的算子结果正确。",
+      "acceptance": "注入链路逃逸、端点缓冲污染、错序和错 rank；分别验证 P2P、AllGather、AllReduce、AllToAll 的残余 SDC 覆盖。",
+      "sourceIds": [
+        "nvlink",
+        "nccl"
+      ],
+      "lever": "缩短网络污染发现窗口，提高网络残余 SDC 检出率",
+      "principle": "把可信边界从“单条链路包完整”扩展到“应用收到正确 step 的正确张量”。复制型传输可校验内容和标识，归约型通信则需要检查归约语义与数值误差；CRC 正确并不能排除错误 rank、错误缓冲区或错误归约结果。",
+      "trigger": {
+        "signal": "每次受保护通信在发送／接收／归约完成时校验；内容、序号、rank 或结果不一致触发阻止提交。",
+        "gate": "源张量的可信性已经建立，端到端校验不被同一故障一致改写；浮点归约有合法容差。",
+        "timing": "集合操作完成后、结果进入已提交参数前；异步通信必须等校验完成。",
+        "owner": "通信库＋张量校验层＋训练提交控制器。"
+      },
+      "workflow": [
+        "为传输建立 step／通信域版本／rank／数据长度等身份信息与可信校验。",
+        "传输或归约后核对内容及语义，不让失败结果进入优化器提交。",
+        "从可信发送缓冲或 step 起点重传／重执行，检查全组完成状态。",
+        "确认结果一致后继续；资源持续异常则隔离并升级恢复。"
+      ],
+      "successCriteria": "现有保护后的网络 SDC 测试集中检出达到 95%，输出一致且误报开销受控。",
+      "doNotTrigger": "不把普通网络超时直接归为 SDC；源头已错误但传输无误时，应交给算子检测。",
+      "observe": [
+        "各集合操作的残余 SDC 检出率",
+        "误报与发现时延",
+        "校验流量和算力开销",
+        "重执行成功率",
+        "源污染与传输污染分类"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "residualMissFraction": 0.050000000000000044,
+        "baselineMeaning": "未验证能力暂不计覆盖，不是实测 0%",
+        "riskShareOfAllSdc": null
+      },
+      "quantification": {
+        "metric": "适用 SDC 子集的登记检出率",
+        "unit": "fraction",
+        "direction": "increase",
+        "before": 0,
+        "after": 0.95,
+        "improvement": 0.95,
+        "gain": 0.95,
+        "gainPercentagePoints": 95,
+        "range": []
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "H-SDC-SCREEN",
+      "name": "在线压测与异常资源筛除",
+      "category": "用户方案 · 发生率改善",
+      "basis": "可被筛查和隔离的 SDC 风险子集；全覆盖另作目标情景",
+      "scope": "具有可复现或可提前识别特征的计算／互联异常资源。可先验证 AI Core；随机瞬态错误和其他硬件域不能默认同样适用。",
+      "eventCandidates": [
+        "CORE-sdc",
+        "IOD-sdc",
+        "NIC-sdc",
+        "BOXIO-sdc",
+        "FABRIC-sdc",
+        "UNKNOWN-sdc"
+      ],
+      "inputs": {
+        "occurrenceReductionTarget": 0.25,
+        "sdcFitReference": 48.30917874396136,
+        "coreFitReference": 41.06280193236715,
+        "eligibleShare": null,
+        "screenIntervalSeconds": null,
+        "screenCostSeconds": null
+      },
+      "change": "保留“SDC 发生率下降 25%”目标；表中显示全部风险适用时的条件情景。落地只对验证过的子集乘以 0.75，不改变检出率或单次恢复时间。",
+      "formula": "FIT′_eligible=0.75×FIT_eligible；全覆盖目标情景：48.3092 → 36.2319 FIT。部分适用时 FIT′_SDC=FIT_SDC×(1−0.25a)。若仅对 CORE-sdc 降低 25%，则 CORE 为 41.0628 → 30.7971 FIT，不能宣称全部 SDC 也降低 25%。",
+      "evidence": "降低 25% 为用户目标，适用风险比例 a 未知。48.3092 FIT 和 CORE 的 41.0628 FIT 来自审计事件库的单卡等效先验，并非厂商实测；本轮没有改写原始故障率。",
+      "prerequisite": "测试对未来训练风险有预测性，发现后能够隔离或替换资源；隔离持续时间和备用容量足够。",
+      "failure": "未发现的潜在错误仍可能发生；隔离失败或无备用资源时，记录停机／容量损失并回到原恢复流程。",
+      "cost": "压测占用算力、误隔离和备用资源成本待测；不能把 ABFT 的 0.1% 预算自动借给压测。",
+      "overlap": "压测发现异常但未阻断后续暴露，只能计检测不能计预防。对同一风险既隔离又在线检出时，先改发生率再作用于剩余事件，不能两次扣 FIT。",
+      "acceptance": "相同机龄、负载和观测时长下比较可用卡时归一化 SDC 率；报告区间、误隔离、复发和压测干扰。",
+      "sourceIds": [],
+      "lever": "提前筛除异常资源，降低适用集合的训练暴露 SDC FIT",
+      "principle": "在入池、空闲窗口或低干扰时段运行覆盖目标计算路径的已知答案测试，发现有风险的资源后暂停分配、复测或替换。收益来自把不可靠资源移出训练，而不是把测试告警本身统计成故障率下降。",
+      "trigger": {
+        "signal": "资源入池、维修后复检、周期调度到期，或遥测／重复校验异常提示潜在风险。",
+        "gate": "有可控的测试窗口与干净状态，测试可停止且不破坏正在训练的数据；阈值、周期和隔离策略需经压测确定。",
+        "timing": "优先在错误污染正式训练之前；生产中检测到异常后可以加速复查。",
+        "owner": "资源健康服务＋调度器＋算子测试套件。"
+      },
+      "workflow": [
+        "对 BF16／FP8／FP4、关键规模和温度负载执行受控已知答案测试；网络域另用端到端已知数据与集合操作测试，不沿用计算域覆盖率。",
+        "异常重复确认并记录资源身份，防止一次噪声触发大规模误隔离。",
+        "从可分配池移除高风险资源或迁移训练；维修和复检通过后再加入。",
+        "按实际健康卡时与故障分组估计发生率变化，区分被预防与已发生的故障。"
+      ],
+      "successCriteria": "适用集合的生产 SDC 率下降达到 25% 目标，且压测、误隔离与容量成本可接受。",
+      "doNotTrigger": "没有可安全中止的测试环境、没有可信答案或生产数据无法隔离时，不直接执行破坏性压力负载。",
+      "observe": [
+        "适用风险比例",
+        "隔离前后每卡时 SDC 率",
+        "预测命中与误隔离率",
+        "筛查周期／耗时",
+        "备用容量与复发情况"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "rateMultiplier": 0.75,
+        "eligibleShareUsedOnlyForIllustration": 1,
+        "actualEligibleShare": null,
+        "actualSdcFitAfter": null,
+        "coreOnlyFitAfterIfFullyEligible": 30.797101449275363
+      },
+      "quantification": {
+        "metric": "全部 SDC 风险适用时的条件 FIT 情景",
+        "unit": "FIT",
+        "direction": "decrease",
+        "before": 48.30917874396136,
+        "after": 36.23188405797102,
+        "improvement": 12.077294685990339,
+        "saved": 12.077294685990339,
+        "reductionFraction": 0.24999999999999997,
+        "range": []
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "R-HCCL-ELASTIC",
+      "name": "HCCL 通信域弹性重建",
+      "category": "用户方案 · 局部恢复加速",
+      "basis": "一次适用局部恢复中的通信重建阶段",
+      "scope": "故障 rank 可移除或替换，训练状态和并行语义支持继续；HCCL 目标实现需逐版本验证。",
+      "eventCandidates": [
+        "CORE-hard",
+        "IOD-hard",
+        "NIC-hard",
+        "BOXIO-hard",
+        "FABRIC-hard",
+        "UNKNOWN-hard"
+      ],
+      "inputs": {
+        "communicationBeforeSeconds": 60,
+        "communicationTargetSeconds": 15,
+        "communicationTargetRangeSeconds": [
+          10,
+          20
+        ],
+        "otherRecoverySeconds": 120,
+        "domains": 50
+      },
+      "change": "将通信重建阶段从 60s 压缩到 15s 候选值，其他阶段不变；局部恢复总时长示例 180s → 135s。",
+      "formula": "单次适用局部恢复少 45s；若确实只有 1/50 域损失产出，该阶段少损失 45/50=0.9 个全系统等效秒。",
+      "evidence": "NCCL shrink 提供可参考的恢复设计。HCCL 9.0 文档中的部分暂停／恢复接口为保留接口，不能据此声称当前 HCCL 已具备等价 shrink；15s 是待实现和测试的工程目标。",
+      "prerequisite": "统一故障成员列表和通信 epoch，残余 rank 无死锁；权重、优化器分片、全局 batch 与梯度归约语义已处理。",
+      "failure": "移除失败、成员分歧或状态无法恢复时中止局部尝试，进入适用的自动全局恢复；少数卡死／根因不明进入人工兜底。",
+      "cost": "成员协调、重分片和再次故障处理都需计时；本项并不自动消除状态重载或模型重分片时间。",
+      "overlap": "已有 R-ELASTIC 只更换通信阶段参数，不再计一次“全局变局部”收益。若预热或运行时快照已复用通信域，该阶段只能扣一次。",
+      "acceptance": "同规模同拓扑的故障注入，测成员一致达成、通信可用和首个正确 step 三个时刻，覆盖 TP／PP／EP／DP。",
+      "sourceIds": [
+        "nccl",
+        "hccl"
+      ],
+      "lever": "缩短局部恢复的通信重建阶段",
+      "principle": "仿照 NCCL shrink 的思路，让健康成员对故障 rank 达成一致，终止挂起通信并构造新通信域，尽量复用可验证的拓扑信息。通信库恢复连通只完成一部分；框架还必须修复训练状态和并行关系。",
+      "trigger": {
+        "signal": "通信异步错误、集合操作超时或 rank 心跳异常，经确认有成员不可继续。",
+        "gate": "故障成员可被一致隔离，目标版本提供经过验证的恢复能力；框架可在新成员集合上保持正确训练。",
+        "timing": "检测和故障分类之后，局部恢复路径的通信阶段；不改变原检测时间。",
+        "owner": "HCCL 运行时＋弹性训练控制器。"
+      },
+      "workflow": [
+        "冻结当前 epoch 的提交，各存活成员一致确认待排除／替换 rank。",
+        "有界中止挂起通信，隔离旧通信域，创建新通信域并更新成员映射。",
+        "恢复必要分片与 batch／梯度规则，更新与通信绑定的图或算子状态。",
+        "通过集体验证和一个正确 step 后提交新 epoch；失败则升级恢复。"
+      ],
+      "successCriteria": "所有存活成员在同一 epoch 上无死锁运行，正确训练语义保持，通信阶段达到 10–20s 目标。",
+      "doNotTrigger": "仅调用普通子通信域拆分，不代表能从挂死父通信域恢复；剩余成员无法构成模型时不能直接缩容。",
+      "observe": [
+        "故障成员一致确认时间",
+        "通信重建与状态修复分别耗时",
+        "首个正确 step 时间",
+        "局部升级全局比例",
+        "目标 CANN/HCCL 版本与支持矩阵"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "recoveryAfterSeconds": 135,
+        "equivalentSecondsSavedIfOneDomainContinuesIndependently": 0.9
+      },
+      "quantification": {
+        "metric": "通信重建阶段耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 60,
+        "after": 15,
+        "improvement": 45,
+        "saved": 45,
+        "reductionFraction": 0.75,
+        "range": [
+          {
+            "communicationSeconds": 10,
+            "savedSeconds": 50
+          },
+          {
+            "communicationSeconds": 20,
+            "savedSeconds": 40
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    },
+    {
+      "id": "R-CANN-GRAPH",
+      "name": "CANN 图准备与启动缓存加速",
+      "category": "用户方案 · 启动加速",
+      "basis": "一次适用恢复中的图准备阶段",
+      "scope": "可复用编译产物、预热环境，或安全地快速重新捕获图的启动路径；不是训练 CKPT。",
+      "eventCandidates": [
+        "CORE-hard",
+        "MODULE-hard",
+        "CPU-hard",
+        "NIC-hard",
+        "UNKNOWN-hard"
+      ],
+      "inputs": {
+        "graphBeforeSeconds": 30,
+        "graphTargetSeconds": 7.5,
+        "graphTargetRangeSeconds": [
+          5,
+          10
+        ],
+        "otherRecoverySeconds": 150
+      },
+      "change": "在启动 60s 内单列图准备 30s，目标降为 7.5s；其他 150s 不变，总恢复示例 180s → 157.5s。",
+      "formula": "图准备阶段节省 22.5s（候选范围 20–25s），不同时扣除整个启动 60s。",
+      "evidence": "CANN 的流捕获 API 支持将任务保存为运行实例以减少主机投递开销；该能力本身不保证跨进程持久化或故障后免初始化。7.5s 是图缓存／预热方案的候选目标。",
+      "prerequisite": "缓存与模型、shape、dtype、算子版本、设备、地址和通信域兼容；不兼容时重新捕获并验证。",
+      "failure": "命中失败或图验证失败则完整编译／捕获；记录失败尝试和校验额外耗时，不复用旧通信句柄。",
+      "cost": "缓存生成、存储、预热内存与失效维护成本待测；本表不同时计稳态 host launch 加速收益。",
+      "overlap": "与预热进程／运行时快照共享 60s 启动预算，其中图准备只有 30s；先确认剩余工作再计增量，不能叠加 40s、45s 和 22.5s。",
+      "acceptance": "按固定／动态 shape、不同并行拓扑及软件升级测试缓存命中率、图准备关键路径和恢复后正确性。",
+      "sourceIds": [
+        "cann",
+        "snapshot"
+      ],
+      "lever": "减少恢复中的图编译、准备与捕获工作",
+      "principle": "提前准备可复用的编译产物和执行计划，恢复时减少重复编译、预热及图捕获。流捕获描述运行时任务；它不自动包含最新权重、优化器状态或跨进程恢复能力。实际实现可选择缓存加快速重捕获，而不强求直接恢复旧图句柄。",
+      "trigger": {
+        "signal": "恢复进入运行时初始化，存在匹配当前配置的缓存或可用预热环境。",
+        "gate": "完整兼容指纹通过，指针、内存生命周期及通信域绑定有效；动态形状使用经过验证的缓存策略。",
+        "timing": "状态和通信资源达到可绑定条件后执行图准备；与其他阶段重叠时按实际关键路径计时。",
+        "owner": "CANN 运行时／图编译层＋启动编排器。"
+      },
+      "workflow": [
+        "正常部署时缓存编译结果或预热环境，记录模型、算子、精度和拓扑指纹。",
+        "恢复时核对兼容性，重绑资源；通信域改变时失效相关图节点或重新捕获。",
+        "快速完成图准备，用可信输入验证输出和同步行为。",
+        "成功后恢复训练；不命中时直接常规初始化，校验失败则清理旧图再重建。"
+      ],
+      "successCriteria": "图准备含校验耗时达到 5–10s 目标，完整恢复正确；不能只报告正常训练时的图执行加速。",
+      "doNotTrigger": "旧地址失效、rank 拓扑改变但图未更新、运行时版本不兼容时，禁止直接重用旧图。",
+      "observe": [
+        "图准备耗时",
+        "缓存命中／失效原因",
+        "首个正确 step 时间",
+        "缓存与预热资源成本",
+        "失败回退额外耗时"
+      ],
+      "origin": "用户补充方案",
+      "designStatus": "拟议流程；性能与覆盖率为验收目标",
+      "derived": {
+        "recoveryAfterSeconds": 157.5,
+        "partOfStartupBudgetSeconds": 60
+      },
+      "quantification": {
+        "metric": "图准备阶段耗时",
+        "unit": "seconds",
+        "direction": "decrease",
+        "before": 30,
+        "after": 7.5,
+        "improvement": 22.5,
+        "saved": 22.5,
+        "reductionFraction": 0.75,
+        "range": [
+          {
+            "graphPrepareSeconds": 5,
+            "savedSeconds": 25
+          },
+          {
+            "graphPrepareSeconds": 10,
+            "savedSeconds": 20
+          }
+        ]
+      },
+      "quantitativeEvidence": "ENGINEERING_SCENARIO_NOT_MEASURED",
+      "simulationReady": false,
+      "integration": {
+        "eligibleShareOfParentEvents": null,
+        "conditionalSuccessProbability": null,
+        "failureAttemptSeconds": null,
+        "steadyThroughputOverheadFraction": null,
+        "rateBasis": "原始库保持 96.6% / 2% / 1.4%；筛查仅对适用子集的残余 FIT 乘系数，改善后的比例不强行归一回原比例。",
+        "instructions": "事件 ID 仅为候选挂接。先填写适用比例、条件恢复成功率、失败耗时、正常态开销及重叠规则；检出率、恢复成功率与发生率改善分别记账。"
+      }
+    }
+  ]
+}

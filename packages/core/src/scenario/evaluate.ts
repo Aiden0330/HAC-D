@@ -14,9 +14,9 @@ import { binomCdf } from '../math/special.js';
 import { lostDollarsPerDay, wastedGpuHoursPerDay } from '../cost/index.js';
 import { chainOutcome, emptyMixedRates, addOutcome, addPlainEvents, type ChainParams, type MixedRates } from '../mechanisms/chain.js';
 import { sdcDelivery, pClearedBeforePersist, type SdcDeliveryResult } from '../sdc/index.js';
-import { computeCounts, buildStructure, interruptionRatePerHour, sdcRatePerHour, replicaComposition, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
+import { computeCounts, buildStructure, interruptionRatePerHour, sdcRatePerHour, replicaComposition, classSdcCoverage, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
 import { designReviewChecklist, type ChecklistItem } from './checklist.js';
-import type { Scenario } from './schema.js';
+import type { Scenario, RecoveryStages } from './schema.js';
 
 export interface ComponentRow {
   id: string;
@@ -169,6 +169,8 @@ export interface ChainRow {
   pProcess: number;
   pGlobal: number;
   pRollback: number;
+  /** v3.7 probability of each custom rung (by id) */
+  pCustom: Record<string, number>;
   meanPauseS: number;
   localLossS: number;
 }
@@ -310,6 +312,24 @@ export function mixtureLadder(r: Extract<Scenario['recovery'], { mode: 'mixture'
       { id: 'manual', kind: 'manual', successProbability: 1, timeS: r.manual.seconds, note: 'manual recovery after a failed automatic attempt' },
     ],
   };
+}
+
+/**
+ * v3.7 the automatic attempt's stage budget: explicit stages when given, else an engineering split of the attempt
+ * (startup 1/3 with the graph preparation as half of it, checkpoint-state read 1/3, communication rebuild 1/3 — the mechanism
+ * audit's 60 / 60 / 60 s of 180 s). Serial, so the sum is the attempt; per-class overrides replace single stages.
+ */
+export function automaticStages(r: Extract<Scenario['recovery'], { mode: 'mixture' }>): RecoveryStages & { graphWithinStartup: number } {
+  const st = r.automatic.stages;
+  if (st) {
+    // explicit stages are shares of the attempt: when their sum differs from automatic.seconds they are rescaled to it, so the
+    // attempt (the number every recovery model uses) always wins and a per-class stage saving is never scaled by the mismatch
+    const sum = st.startup + st.read + st.communication;
+    const k = sum > 0 ? r.automatic.seconds / sum : 1;
+    return { startup: st.startup * k, graphWithinStartup: (st.graphWithinStartup ?? st.startup / 2) * k, read: st.read * k, communication: st.communication * k };
+  }
+  const third = r.automatic.seconds / 3;
+  return { startup: third, graphWithinStartup: third / 2, read: third, communication: third };
 }
 
 export function resolveLadder(s: Scenario): Ladder | undefined {
@@ -504,32 +524,46 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     // v3: split the recovery at scale n into the detection delay (charged before any mechanism) and the global recovery that
     // follows; evaluated per scale-table row so that the recovery scale laws reach every N
     const tDetMixture = s.recovery.mode === 'mixture' ? s.recovery.detection.coverage * s.recovery.detection.autoSeconds + (1 - s.recovery.detection.coverage) * s.recovery.detection.timeoutSeconds : undefined;
-    const recoveryAt = (n: number): { recoveryS: number; detectS: number; globalS: number } => {
+    type RecoveryAt = { recoveryS: number; detectS: number; globalS: number; autoS?: number };
+    const recoveryAt = (n: number): RecoveryAt => {
       const R = n === N ? recoveryS : recoveryModel.meanS(n);
+      const composed = n === N ? recovery : recoveryModel.compose(n);
       let d = 0;
       if (tDetMixture !== undefined) d = tDetMixture;
-      else if (recoveryModel.kind === 'pipeline') d = (n === N ? recovery : recoveryModel.compose(n)).stages.find((st) => st.name === 'detect')?.meanS ?? 0;
-      return { recoveryS: R, detectS: d, globalS: Math.max(0, R - d) };
+      else if (recoveryModel.kind === 'pipeline') d = composed.stages.find((st) => st.name === 'detect')?.meanS ?? 0;
+      const autoS = tDetMixture !== undefined ? composed.stages.find((st) => st.name === 'automatic')?.meanS : undefined;
+      return { recoveryS: R, detectS: d, globalS: Math.max(0, R - d), autoS };
     };
-    const { detectS, globalS } = recoveryAt(N);
+    const rrN = recoveryAt(N);
+    const { detectS, globalS } = rrN;
+    // v3.7 per-class automatic recovery: the mechanism audit's stage budget (startup / checkpoint read / communication rebuild)
+    // with per-class overrides; the class's global recovery is the job's minus the saved stage time (scaled like the attempt)
+    const stagesDefault = s.recovery.mode === 'mixture' ? automaticStages(s.recovery) : undefined;
+    const autoDefaultS = stagesDefault ? stagesDefault.startup + stagesDefault.read + stagesDefault.communication : 0;
+    const classAutoS = (ci: ComponentInstances): number => (stagesDefault ? (ci.recoveryStages?.startup ?? stagesDefault.startup) + (ci.recoveryStages?.read ?? stagesDefault.read) + (ci.recoveryStages?.communication ?? stagesDefault.communication) : autoDefaultS);
+    const gOf = (ci: ComponentInstances, rr: RecoveryAt): number => (rr.autoS !== undefined && autoDefaultS > 0 && ci.recoveryStages ? Math.max(0, rr.globalS - (autoDefaultS - classAutoS(ci)) * (rr.autoS / autoDefaultS)) : rr.globalS);
 
     // v3: mechanism chain per class → rollback vs pause-only event classes; `f` scales every event class with N (scale table)
-    const chainParams: ChainParams = { predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process };
-    const chainActive = !!(s.mechanisms.replay || s.mechanisms.elastic || s.mechanisms.process || s.mechanisms.predict || s.mechanisms.netfail || s.mechanisms.hotswap);
+    const chainParams: ChainParams = { custom: s.mechanisms.custom, predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process };
+    const chainActive = !!(s.mechanisms.replay || s.mechanisms.elastic || s.mechanisms.process || s.mechanisms.predict || s.mechanisms.netfail || s.mechanisms.hotswap || Object.keys(s.mechanisms.custom ?? {}).length);
     const overheadFraction = Math.min(0.99, Object.values(s.mechanisms.overheads ?? {}).reduce((a, b) => a + b, 0));
     const sdcTotal = sdcRatePerHour(items);
-    const sdcCoverage = s.sdc.detection.coverage;
+    // v3.7 per-class coverage (absolute override compounded with the class's conditional detectors) is rate-weighted into the
+    // job-level immediate detection coverage (Poisson thinning is additive)
+    const sdcCoverage = sdcTotal > 0 ? items.reduce((a, ci) => a + ci.total * ci.sdcLambda * classSdcCoverage(ci, s.sdc.detection.coverage), 0) / sdcTotal : s.sdc.detection.coverage;
     const sdcDetectedRate = sdcTotal * sdcCoverage;
     // false alarms of the predictor: planned migrations that were not needed (pause-only), r(1 − p)/p per predicted-applicable interruption
     const falseAlarmRate = s.mechanisms.predict
       ? items.reduce((a, ci) => a + ci.lambda * ci.total * ci.applicable.predict * s.mechanisms.predict!.recall * (1 - s.mechanisms.predict!.precision) / Math.max(s.mechanisms.predict!.precision, 0.01), 0)
       : 0;
-    const mixedRatesAt = (f: number, d: number, g: number): MixedRates => {
+    const mixedRatesAt = (f: number, rr: RecoveryAt): MixedRates => {
+      const d = rr.detectS;
+      const g = rr.globalS;
       let m = emptyMixedRates();
       for (const ci of items) {
         const rate = ci.lambda * ci.total * f;
         if (rate <= 0) continue;
-        m = addOutcome(m, rate, chainOutcome(d, g, chainParams, ci.applicable, s.mechanisms.order));
+        m = addOutcome(m, rate, chainOutcome(d, gOf(ci, rr), chainParams, ci.applicable, s.mechanisms.order));
       }
       if (falseAlarmRate > 0 && s.mechanisms.predict) m = addPlainEvents(m, falseAlarmRate * f, s.mechanisms.predict.migrationSeconds, false);
       // a detected sub-healthy unit is switched out after saving the current progress: a pause without rollback
@@ -541,13 +575,13 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       }
       return m;
     };
-    const mixed = mixedRatesAt(1, detectS, globalS);
+    const mixed = mixedRatesAt(1, rrN);
     const chainRows: ChainRow[] = [];
     for (const ci of items) {
       const rate = ci.lambda * ci.total;
       if (rate <= 0) continue;
-      const o = chainOutcome(detectS, globalS, chainParams, ci.applicable, s.mechanisms.order);
-      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
+      const o = chainOutcome(detectS, gOf(ci, rrN), chainParams, ci.applicable, s.mechanisms.order);
+      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, pCustom: o.pCustom, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
     }
     const eventRate = mixed.rollbackRatePerHour + mixed.pauseRatePerHour;
     const mtbiEventS = eventRate > 0 ? 3600 / eventRate : Infinity;
@@ -569,18 +603,22 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     };
     const tauS = intervalFor(mtbiRollbackS, mixed.rollbackPauseS);
     const recomputeSource: 'tau/2' | 'measured' | 'step' = w.measuredRecomputeS !== undefined ? 'measured' : w.recovery === 'replica' ? 'step' : 'tau/2';
-    const recompute = recomputeSource === 'measured' ? w.measuredRecomputeS! : recomputeSource === 'step' ? (w.stepTimeS ?? 0) : tauS / 2;
+    // v3.7 asynchronous checkpoint durable lag: the recovery point trails the save, so every rollback loses `lag` more seconds
+    const lagS = w.rollbackLagS ?? 0;
+    const recompute = (recomputeSource === 'measured' ? w.measuredRecomputeS! : recomputeSource === 'step' ? (w.stepTimeS ?? 0) : tauS / 2) + lagS;
     const recomputeEffective = pRollback * recompute;
+    if (lagS > 0) assumptions.push(`asynchronous checkpoint durable lag ${lagS} s is added to the rollback of every rollback event (first-order; the exact renewal goodput is corrected by λ_rb·lag on the running clock)`);
     // first order on the event clock: 1 − δ/τ − (P_rb·W + R̄)/M_ev
     const fo = goodputFirstOrder(deltaS, tauS, mtbiEventS, meanPauseS);
-    if (recomputeSource !== 'tau/2' || pRollback < 1) {
+    if (recomputeSource !== 'tau/2' || pRollback < 1 || lagS > 0) {
       fo.terms.recompute = Number.isFinite(mtbiEventS) ? recomputeEffective / mtbiEventS : 0;
       fo.terms.total = fo.terms.save + fo.terms.recompute + fo.terms.restart;
       fo.goodput = Math.max(0, 1 - fo.terms.total);
       if (recomputeSource !== 'tau/2') assumptions.push(recomputeSource === 'step' ? 'replica recovery: recompute per interruption = one step (JIT / FlashRecovery), save term unchanged' : `measured lost computation per failure (${recompute.toFixed(0)} s) replaces τ/2 in the first-order and product forms`);
     }
     const mixedRenewal = renewalGoodputMixed({ tauS, deltaS, rollbackRatePerS: mixed.rollbackRatePerHour / 3600, rollbackPauseS: mixed.rollbackPauseS, pauseRatePerS: mixed.pauseRatePerHour / 3600, pauseS: mixed.pauseOnlyS });
-    const renewal = mixedRenewal.goodput;
+    const lagFrac = lagS > 0 ? (mixed.rollbackRatePerHour / 3600) * lagS * mixedRenewal.runningFraction : 0;
+    const renewal = Math.max(0, mixedRenewal.goodput - lagFrac);
     const pauseOnlyFactor = 1 / (1 + (mixed.pauseRatePerHour / 3600) * mixed.pauseOnlyS);
     const dg = Number.isFinite(mtbiRollbackS) ? dalyGoodput(tauS, deltaS, mtbiRollbackS, mixed.rollbackPauseS) * pauseOnlyFactor : (tauS / (tauS + deltaS)) * pauseOnlyFactor;
     const implied = mixedRenewal.impliedRecomputeS;
@@ -621,7 +659,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     const nonPause = 1 - pauseFrac;
     const dec = head.model === 'first-order'
       ? { running: 1 - fo.terms.restart, save: fo.terms.save, rollback: fo.terms.recompute, goodput: fo.goodput }
-      : { running: mixedRenewal.runningFraction, save: mixedRenewal.saveFraction, rollback: mixedRenewal.rollbackFraction, goodput: mixedRenewal.goodput };
+      : { running: mixedRenewal.runningFraction, save: mixedRenewal.saveFraction, rollback: mixedRenewal.rollbackFraction + lagFrac, goodput: renewal };
     const computeFrac = nonPause * dec.goodput;
     const ledger: TrainingLedger = {
       downtime: nonPause * (1 - dec.running) + pauseFrac,
@@ -644,7 +682,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       // per row exactly as for the configured size; only the spare-pool blocking stays as configured
       const f = row.nGpus / N;
       const rr = recoveryAt(row.nGpus);
-      const mx = mixedRatesAt(f, rr.detectS, rr.globalS);
+      const mx = mixedRatesAt(f, rr);
       const evRow = mx.rollbackRatePerHour + mx.pauseRatePerHour;
       const mEv = evRow > 0 ? 3600 / evRow : Infinity;
       const mRb = mx.rollbackRatePerHour > 0 ? 3600 / mx.rollbackRatePerHour : Infinity;
@@ -652,16 +690,17 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       const pRbRow = evRow > 0 ? mx.rollbackRatePerHour / evRow : 1;
       const tauRow = intervalFor(mRb, mx.rollbackPauseS);
       const foRow = goodputFirstOrder(deltaS, tauRow, mEv, pauseRow);
-      if (recomputeSource !== 'tau/2' || pRbRow < 1) {
-        foRow.terms.recompute = Number.isFinite(mEv) ? (pRbRow * (recomputeSource === 'tau/2' ? tauRow / 2 : recompute)) / mEv : 0;
+      if (recomputeSource !== 'tau/2' || pRbRow < 1 || lagS > 0) {
+        foRow.terms.recompute = Number.isFinite(mEv) ? (pRbRow * (recomputeSource === 'tau/2' ? tauRow / 2 + lagS : recompute)) / mEv : 0;
         foRow.terms.total = foRow.terms.save + foRow.terms.recompute + foRow.terms.restart;
         foRow.goodput = Math.max(0, 1 - foRow.terms.total);
       }
       const mrRow = renewalGoodputMixed({ tauS: tauRow, deltaS, rollbackRatePerS: mx.rollbackRatePerHour / 3600, rollbackPauseS: mx.rollbackPauseS, pauseRatePerS: mx.pauseRatePerHour / 3600, pauseS: mx.pauseOnlyS });
-      const h = headlineGoodput(foRow, mrRow.goodput);
+      const lagRow = lagS > 0 ? (mx.rollbackRatePerHour / 3600) * lagS * mrRow.runningFraction : 0;
+      const h = headlineGoodput(foRow, Math.max(0, mrRow.goodput - lagRow));
       row.tauS = tauRow;
       row.goodput = foRow;
-      row.renewalGoodput = mrRow.goodput;
+      row.renewalGoodput = Math.max(0, mrRow.goodput - lagRow);
       row.headline = h.goodput;
       row.headlineModel = h.model;
       const perfRow = 1 - (1 - Math.pow(pNotSlowed, f)) * (1 - minPerformance);

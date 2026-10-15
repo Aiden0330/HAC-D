@@ -249,9 +249,10 @@ describe('scenario-level v3 (reference three-class baseline)', () => {
 });
 
 describe('mechanism library and attribution', () => {
-  it('has the twelve reference mechanisms plus the seven v3.2 entries, with transforms for the parameterised ones', () => {
-    expect(MECHANISM_LIBRARY.map((m) => m.id)).toEqual(['D-HARD', 'D-SLOW', 'D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'R-CKPT', 'R-MANUAL', 'C-FAST', 'H-PROTECT', 'H-RELIABILITY', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP', 'C-MEM', 'D-SDC-DMR', 'H-LEMON', 'H-SWEEP']);
-    expect(MECHANISM_LIBRARY.filter((m) => !m.apply).map((m) => m.id)).toEqual(['R-CKPT', 'R-MANUAL', 'H-PROTECT']);
+  it('has the twelve reference mechanisms plus the seven v3.2 entries and the sixteen v3.7 audit entries, with transforms for the parameterised ones', () => {
+    expect(MECHANISM_LIBRARY.map((m) => m.id).slice(0, 19)).toEqual(['D-HARD', 'D-SLOW', 'D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'R-CKPT', 'R-MANUAL', 'C-FAST', 'H-PROTECT', 'H-RELIABILITY', 'P-PREDICT', 'R-NETFAIL', 'R-HOTSWAP', 'C-MEM', 'D-SDC-DMR', 'H-LEMON', 'H-SWEEP']);
+    expect(MECHANISM_LIBRARY.map((m) => m.id).slice(19)).toEqual(['R-LINK-LOCAL', 'R-FABRIC-DEGRADE', 'I-CONTAIN', 'H-CONTROL-CONTINUITY', 'R-WARM-PROCESS', 'R-RUNTIME-SNAPSHOT', 'C-ASYNC', 'C-LOSSLESS', 'D-RECOVERY-CLASSIFY', 'D-SDC-FP8', 'D-SDC-FP4', 'D-ABFT', 'D-NET-SDC', 'H-SDC-SCREEN', 'R-HCCL-ELASTIC', 'R-CANN-GRAPH']);
+    expect(MECHANISM_LIBRARY.filter((m) => !m.apply).map((m) => m.id)).toEqual(['R-CKPT', 'R-MANUAL', 'H-PROTECT', 'I-CONTAIN']);
   });
   it('Shapley values sum to the combined gain; single gains carry an interaction term', () => {
     const rep = mechanismReport(referenceThreeClasses(100000));

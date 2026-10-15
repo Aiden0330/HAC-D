@@ -30,7 +30,7 @@ function compute(c: GoldenCase): Record<string, number> {
     }
     case 'chain': {
       const o = chainOutcome(i.detectS, i.globalS, c.inputs.params as ChainParams, c.inputs.applicable as Applicability, c.inputs.order as string[] | undefined);
-      return { pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, meanPauseS: o.meanPauseS, pauseRollbackS: o.pauseRollbackS, pauseNoRollbackS: o.pauseNoRollbackS, localLossS: o.localLossS };
+      return { pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pCustom: Object.values(o.pCustom).reduce((a, b) => a + b, 0), pRollback: o.pRollback, meanPauseS: o.meanPauseS, pauseRollbackS: o.pauseRollbackS, pauseNoRollbackS: o.pauseNoRollbackS, localLossS: o.localLossS };
     }
     case 'sdc': {
       const d = sdcDelivery({ horizonH: i.horizonH, nuPerWallHour: i.nuPerWallHour, fallbackDelayH: i.fallbackDelayH, episodePauseH: i.episodePauseH, cleanGoodput: i.cleanGoodput, preEpisodeLossH: i.preEpisodeLossH });

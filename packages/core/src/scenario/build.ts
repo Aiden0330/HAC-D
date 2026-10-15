@@ -142,8 +142,14 @@ export interface ComponentInstances {
   subhealth?: Subhealth;
   /** v3 silent-corruption rate per unit-hour (0 when the class produces none) */
   sdcLambda: number;
-  /** v3 fraction of this class's hard interruptions each chain mechanism applies to */
-  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number };
+  /** v3 fraction of this class's hard interruptions each chain mechanism applies to (v3.7: custom rungs by id) */
+  applicable: { replay: number; process: number; elastic: number; predict: number; netfail: number; hotswap: number; custom?: Record<string, number> };
+  /** v3.7 absolute immediate silent-corruption detection coverage of this class (overrides the scenario-level coverage) */
+  sdcCoverage?: number;
+  /** v3.7 Π(1 − c_k) over the class's conditional detectors (`component.sdc.extraDetection`): the share of misses they leave */
+  sdcExtraMissFactor: number;
+  /** v3.7 per-class automatic recovery stage overrides (seconds) */
+  recoveryStages?: { startup?: number; read?: number; communication?: number };
 }
 
 export function componentInstances(c: Component, counts: Counts, subhealthThreshold = SUBHEALTH_THRESHOLD_DEFAULT): ComponentInstances {
@@ -214,8 +220,21 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
     subhealth: componentSubhealth(c, subhealthThreshold),
     sdcLambda: c.sdc?.ratePerHour ?? 0,
     // a missing flag means the mechanism does not apply to this class (every rung, prediction included)
-    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0, predict: c.mechanisms?.predict ?? 0, netfail: c.mechanisms?.netfail ?? 0, hotswap: c.mechanisms?.hotswap ?? 0 },
+    applicable: { replay: c.mechanisms?.replay ?? 0, process: c.mechanisms?.process ?? 0, elastic: c.mechanisms?.elastic ?? 0, predict: c.mechanisms?.predict ?? 0, netfail: c.mechanisms?.netfail ?? 0, hotswap: c.mechanisms?.hotswap ?? 0, custom: c.mechanisms?.custom },
+    sdcCoverage: c.sdc?.coverage,
+    sdcExtraMissFactor: Object.values(c.sdc?.extraDetection ?? {}).reduce((m, g) => m * (1 - Math.min(1, Math.max(0, g))), 1),
+    recoveryStages: c.recoveryStages,
   };
+}
+
+/**
+ * v3.7 effective immediate-detection coverage of a class: its absolute coverage (class override, else the scenario's)
+ * compounded with its conditional detectors on the residual misses, q_i = 1 − (1 − q)·Π(1 − c_k); the order in which the
+ * detectors were applied does not matter.
+ */
+export function classSdcCoverage(ci: ComponentInstances, scenarioCoverage: number): number {
+  const q = ci.sdcCoverage ?? scenarioCoverage;
+  return Math.min(1, Math.max(0, 1 - (1 - q) * ci.sdcExtraMissFactor));
 }
 
 /** Job-level silent-corruption rate per hour: Σ n_i λ_sdc,i over the enabled classes. */

@@ -1,7 +1,7 @@
 /** Build the finite-window ledger simulation from a scenario and compare it with the closed forms. */
 import type { Scenario } from '../scenario/schema.js';
-import { computeCounts, componentInstances } from '../scenario/build.js';
-import { evaluateScenario, resolveRecovery, type TrainingKpis } from '../scenario/evaluate.js';
+import { computeCounts, componentInstances, classSdcCoverage } from '../scenario/build.js';
+import { evaluateScenario, resolveRecovery, automaticStages, type TrainingKpis } from '../scenario/evaluate.js';
 import type { Rng } from '../math/rng.js';
 import { simulateLedger, simulateLedgerReplications, summarizeLedger, type LedgerSpec, type LedgerClassSpec, type LedgerSummary, type LedgerReplication } from './ledger.js';
 
@@ -33,6 +33,23 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
   const counts = computeCounts(s);
   const w = s.workload;
   const N = w.nGpus;
+  const model = resolveRecovery(s);
+  let detection: LedgerSpec['detection'] = null;
+  let globalRecovery: LedgerSpec['globalRecovery'];
+  let autoS = 0;
+  if (s.recovery.mode === 'mixture') {
+    const r = s.recovery;
+    detection = { coverage: r.detection.coverage, autoSeconds: r.detection.autoSeconds, timeoutSeconds: r.detection.timeoutSeconds };
+    autoS = model.meanS(N) - (r.detection.coverage * r.detection.autoSeconds + (1 - r.detection.coverage) * r.detection.timeoutSeconds) - (1 - r.automatic.successProbability) * r.manual.seconds;
+    globalRecovery = (rng: Rng) => () => autoS + (rng.uniform() < r.automatic.successProbability ? 0 : r.manual.seconds);
+  } else {
+    globalRecovery = (rng: Rng) => model.sampler(N, rng);
+  }
+  // v3.7 per-class automatic stage overrides (mechanism audit budget): the class draws its own automatic time, scaled like the attempt
+  const stagesDefault = s.recovery.mode === 'mixture' ? automaticStages(s.recovery) : undefined;
+  const autoDefaultS = stagesDefault ? stagesDefault.startup + stagesDefault.read + stagesDefault.communication : 0;
+  let sdcWeighted = 0;
+  let sdcTotal = 0;
   const classes: LedgerClassSpec[] = s.components
     .filter((c) => c.enabled)
     .map((c) => {
@@ -44,6 +61,14 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
         sdcRatePerHour: ci.sdcLambda * ci.total,
         applicable: ci.applicable,
       };
+      sdcTotal += cls.sdcRatePerHour;
+      sdcWeighted += cls.sdcRatePerHour * classSdcCoverage(ci, s.sdc.detection.coverage);
+      if (s.recovery.mode === 'mixture' && stagesDefault && autoDefaultS > 0 && ci.recoveryStages) {
+        const r = s.recovery;
+        const classAuto = (ci.recoveryStages.startup ?? stagesDefault.startup) + (ci.recoveryStages.read ?? stagesDefault.read) + (ci.recoveryStages.communication ?? stagesDefault.communication);
+        const scaled = Math.max(0, autoS * (classAuto / autoDefaultS));
+        cls.globalRecovery = (rng: Rng) => () => scaled + (rng.uniform() < r.automatic.successProbability ? 0 : r.manual.seconds);
+      }
       if (ci.subhealth && ci.subhealth.ratePerHour > 0) {
         cls.slow = {
           ratePerHour: ci.subhealth.ratePerHour * ci.total,
@@ -56,17 +81,6 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
       }
       return cls;
     });
-  const model = resolveRecovery(s);
-  let detection: LedgerSpec['detection'] = null;
-  let globalRecovery: LedgerSpec['globalRecovery'];
-  if (s.recovery.mode === 'mixture') {
-    const r = s.recovery;
-    detection = { coverage: r.detection.coverage, autoSeconds: r.detection.autoSeconds, timeoutSeconds: r.detection.timeoutSeconds };
-    const autoS = model.meanS(N) - (r.detection.coverage * r.detection.autoSeconds + (1 - r.detection.coverage) * r.detection.timeoutSeconds) - (1 - r.automatic.successProbability) * r.manual.seconds;
-    globalRecovery = (rng: Rng) => () => autoS + (rng.uniform() < r.automatic.successProbability ? 0 : r.manual.seconds);
-  } else {
-    globalRecovery = (rng: Rng) => model.sampler(N, rng);
-  }
   const ev = evaluateScenario(s).training!;
   return {
     horizonH: w.durationDays * 24,
@@ -74,10 +88,11 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
     deltaS: w.deltaS,
     detection,
     globalRecovery,
-    chain: { predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process },
+    chain: { custom: s.mechanisms.custom, predict: s.mechanisms.predict, netfail: s.mechanisms.netfail, replay: s.mechanisms.replay, hotswap: s.mechanisms.hotswap, elastic: s.mechanisms.elastic, process: s.mechanisms.process },
     chainOrder: s.mechanisms.order,
+    rollbackLagH: (w.rollbackLagS ?? 0) / 3600,
     overhead: Object.values(s.mechanisms.overheads ?? {}).reduce((a, b) => a + b, 0),
-    sdc: { coverage: s.sdc.detection.coverage, detectSeconds: s.sdc.detection.detectSeconds, fallbackDelayHours: s.sdc.fallbackDelayHours, terminalRule: s.sdc.terminalRule, step: s.sdc.stepRecovery },
+    sdc: { coverage: sdcTotal > 0 ? sdcWeighted / sdcTotal : s.sdc.detection.coverage, detectSeconds: s.sdc.detection.detectSeconds, fallbackDelayHours: s.sdc.fallbackDelayHours, terminalRule: s.sdc.terminalRule, step: s.sdc.stepRecovery },
     classes,
   };
 }
