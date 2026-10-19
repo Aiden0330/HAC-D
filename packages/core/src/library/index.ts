@@ -35,11 +35,21 @@ export interface LibraryFilter {
   query?: string;
   /** only records convertible to a component failure rate */
   ratesOnly?: boolean;
+  /** v4 GPU-measured records (analogues) only, or everything else */
+  hardware?: 'gpu' | 'non-gpu';
+}
+
+const GPU_RE = /\b(gpu|gpus|h100|h800|h200|a100|a800|v100|b200|gb200|gb300|nvidia|nvl\d*|nvlink|nvswitch|dgx|hgx|cuda|xid)\b/i;
+/** v4 a record measured on GPU hardware: kept in the NPU tool as an analogue (tagged), since no public Ascend failure data exists */
+export function isGpuRecord(r: LibraryRecord): boolean {
+  return GPU_RE.test([r.applicability.hardware, r.id, r.name.en, r.class].filter(Boolean).join(' '));
 }
 
 export function filterLibrary(lib: Library, f: LibraryFilter): LibraryRecord[] {
   const q = f.query?.trim().toLowerCase();
   return lib.records.filter((r) => {
+    if (f.hardware === 'gpu' && !isGpuRecord(r)) return false;
+    if (f.hardware === 'non-gpu' && isGpuRecord(r)) return false;
     if (f.class && r.class !== f.class) return false;
     if (f.kind && r.kind !== f.kind) return false;
     if (f.confidence && r.provenance.confidence !== f.confidence) return false;

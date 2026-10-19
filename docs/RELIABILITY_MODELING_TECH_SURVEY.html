@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-Cluster Reliability: Modeling Technologies and 500k-NPU Design</title>
+<meta name="description" content="Bilingual (EN / 中文) survey note, 2026-10-15: the modeling and simulation technologies for AI-cluster reliability in training and inference, and the key reliability mechanisms and system-design technologies for 500k-NPU training, synthesized from the two AI-cluster surveys, HAC-D's 100k–500k reference runs and a web check.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #efede7; --ink: #1d1d1b; --muted: #5f5e58; --rule: #d9d6cd; --rule-strong: #b9b5a8;
+    --accent: #2f4fb8; --accent-soft: #e7ecfa; --warn: #a8691b; --warn-soft: #f6ead6; --ok: #2d7a4f; --ok-soft: #e1f0e6; --crit: #b3382c;
+    --radius: 10px; --radius-sm: 6px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+      --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141513; --surface: #1d1e1b; --surface-2: #262724; --ink: #ecebe6; --muted: #a39f94; --rule: #35362f; --rule-strong: #4b4c44;
+    --accent: #9cb0ef; --accent-soft: #232a40; --warn: #e0a85a; --warn-soft: #3a2e1d; --ok: #7cc89a; --ok-soft: #1f3327; --crit: #e07a6f;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; font-size: 15px; line-height: 1.6; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+  h1, h2, h3 { font-family: "IBM Plex Serif", "IBM Plex Sans", "PingFang SC", Georgia, serif; font-weight: 600; line-height: 1.3; margin: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  /* language switching: html[data-lang] selects which <main> is shown; English before JS runs */
+  html:not([data-lang="zh"]) main[data-lang="zh"] { display: none; }
+  html[data-lang="zh"] main[data-lang="en"] { display: none; }
+  .bar { max-width: 1040px; margin: 0 auto; padding: 14px 16px 0; display: flex; justify-content: flex-end; gap: 14px; flex-wrap: wrap; }
+  .seg { display: flex; gap: 4px; }
+  .seg button { font: inherit; font-size: 12px; padding: 4px 10px; border: 1px solid var(--rule-strong); background: var(--surface); color: var(--ink); border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  main { max-width: 1040px; margin: 0 auto; padding: 10px 16px 80px; }
+  header.title { padding-bottom: 16px; border-bottom: 1px solid var(--rule); margin-bottom: 22px; }
+  header.title h1 { font-size: 29px; }
+  header.title .sub { color: var(--muted); font-size: 14px; margin-top: 6px; max-width: 900px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  nav.toc { font-size: 13.5px; color: var(--muted); margin: 0 0 18px; }
+  nav.toc a { margin-right: 14px; }
+  section { margin: 28px 0; }
+  h2 { font-size: 22px; margin: 34px 0 10px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  h3 { font-size: 16.5px; margin: 20px 0 6px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 6px 0 10px; padding-left: 22px; }
+  li { margin: 5px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-size: 13px; background: var(--surface); }
+  th, td { border-bottom: 1px solid var(--rule); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; font-size: 12.5px; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin: 12px 0; font-size: 14px; }
+  .small { font-size: 13px; color: var(--muted); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 12px 0; }
+  .kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; }
+  .kpi .v { font-family: "IBM Plex Serif", serif; font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .kpi .l { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule-strong); color: var(--muted); white-space: nowrap; }
+  .tag.web { color: var(--accent); border-color: var(--accent); }
+  .tag.vendor { color: var(--warn); border-color: var(--warn); }
+  @media (max-width: 600px) { header.title h1 { font-size: 24px; } }
+  @media print {
+    body { background: #fff; color: #000; font-size: 11.5pt; }
+    main { max-width: none; padding: 0; }
+    .bar, nav.toc { display: none; }
+    h2 { break-after: avoid; }
+    table { font-size: 10pt; }
+    .kpi { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="seg" role="group" aria-label="Language / 语言">
+    <button type="button" data-lang-choice="en" aria-pressed="true">EN</button>
+    <button type="button" data-lang-choice="zh" aria-pressed="false">中文</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme / 主题">
+    <button type="button" data-theme-choice="auto" aria-pressed="true">Auto</button>
+    <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+    <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+
+<!-- ======================================================= ENGLISH ======================================================= -->
+<main data-lang="en" lang="en">
+<header class="title">
+  <div class="eyebrow">Survey note · 2026-10-15</div>
+  <h1>AI-Cluster Reliability: Modeling and Simulation Technologies, and the Key Technologies for 500k-NPU Training</h1>
+  <div class="sub">Synthesized from the two surveys <em>AI 集群建模图谱</em> (modeling survey, cited as "main survey") and <em>AI 集群可靠性建模：MTBF、MTTR 与可靠性框图</em> (cited as "reliability chapter"), both with a research cutoff of 2026-10-13, from HAC-D's 100k–500k reference runs (<code>docs/REFERENCE_COMPARISON_100K_500K.md</code>, <code>docs/MECHANISM_CONTRIBUTIONS.md</code>, <code>docs/ALLOCATION_PRACTICE.md</code>), and from a web check on 2026-10-15 for anything newer. Items that came only from the web check are marked <span class="tag web">web</span>; vendor-reported figures without a stated denominator are marked <span class="tag vendor">vendor</span>.</div>
+</header>
+
+<nav class="toc"><a href="#s1">1 Modeling and simulation technologies</a><a href="#s1i">Inference</a><a href="#s2">2 The 500k budget</a><a href="#s3">3 Key technologies for 500k-NPU training</a><a href="#s4">4 Where the field is thin</a><a href="#s5">Sources</a></nav>
+
+<div class="callout">
+  <strong>Summary.</strong> Reliability modeling for AI clusters is a ladder from cheap to expensive methods: 口径-typed failure data, closed forms (RBD, CTMC, checkpoint renewal, MTTR pipelines, elasticity first-order models, silent-corruption latent states, allocation), discrete-event and Monte Carlo simulation, performance simulators used as parameter suppliers, data-driven models that feed the inputs, device-level fault injection for silent corruption, and a calibration and validation loop. At 500k NPUs the job interruption interval is minutes, so the technologies that matter are the ones that move the cluster out of the restart-dominated regime: failure domains that degrade instead of stopping, scale-independent detection, local recovery instead of global restart, loosely coupled training, near-zero exposed checkpoint cost, silent corruption managed as its own budget, spares and repair treated as a queue, fleet hygiene, and an observability loop that keeps the models calibrated.
+</div>
+
+<section id="s1">
+<h2>1　Modeling and simulation technologies for AI-cluster reliability</h2>
+<p>Ordered the way a design team uses them, cheapest first, following the main survey's fidelity-versus-cost spectrum (§2) and its eight-step design loop (§16).</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Family</th><th>What it answers</th><th>Representative models and tools</th><th>Accuracy and limits reported in the surveys</th></tr></thead>
+<tbody>
+<tr><td><strong>口径 and first-hand failure data</strong></td><td>Which event, which denominator, which level, which window. Makes Meta RSC, Llama 3, ByteDance, Google and LANL numbers comparable.</td><td>Metric system (MTBF, MTTF, MTBI, MTTR, availability, goodput, ETTR, CETT, TOR, FIT/AFR); per-GPU·h conversion; exposure-based rates with Garwood intervals; root-cause deduplicated incident ledgers.</td><td>The same "MTBF" differs by about 3× across sources until converted to per-GPU·h (reliability chapter §2–§3). Zero events only give an upper bound.</td></tr>
+<tr><td><strong>Closed-form models</strong></td><td>Sizing, allocation and option ranking in milliseconds.</td><td>RBD and fault trees with capacity states; CTMC and semi-Markov chains for repairable blocks and spare pools (Meta Sparing's three chains, Google's k-of-n TPU cube); checkpoint renewal family (Young, Daly, Saxena, exact renewal, Epoch's Lambert-W form); MTTR as a six-stage pipeline with scale laws; Meta RSC's E[ETTR]; SPARe's redundancy closed forms (r* ≈ log₂N + 0.8); the elasticity first-order model (coverage c, pause Re, capacity loss b·Trep, overhead ρ); sub-health capacity states; silent corruption as a latent state over a finite window; AGREE / ARINC / cost-optimal allocation and importance measures.</td><td>About 5 % (Meta RSC vs Monte Carlo), under 1 % (Meta Sparing vs Arcadia), 1.13 % (SPARe vs MC). HAC-D reproduces the reference V1 model exactly. Only for order-of-magnitude judgments and comparisons when τ+δ ≪ M and R ≪ M hold (reliability chapter calculator and checklist).</td></tr>
+<tr><td><strong>Discrete-event and Monte Carlo simulation</strong></td><td>Non-exponential and correlated inputs, finite resources, distributions and tails, mechanism combinations.</td><td>AIReSim (SimPy, 4,096 servers, two-level spare pools and repairs); Meta's Arcadia; SPARe's SimGrid DES; DeepMind's event-tape DES replayed on real training; NTP's placement Monte Carlo; the per-event engines behind the reference tool and ReMAP; HAC-D's window ledger.</td><td>Recurring lesson: only recovery time and spare-pool waiting move the result much, and spares beyond a knee buy nothing (AIReSim). Results carry sampling error and inherit input-distribution errors unchanged.</td></tr>
+<tr><td><strong>Performance simulators as parameter suppliers</strong></td><td>Step time, degraded throughput, collective re-initialization, plane-loss capacity, serving capacity under failover. Not reliability models themselves.</td><td>Profile + DES: SimAI, ASTRA-sim, vTrain, Echo, with Chakra traces as the exchange format (main survey §4). Network: ns-3, htsim, ASTRA-sim backends (§7). Serving: Vidur, LLMServingSim, ServeGen workloads (§3, §6). Emulation of real runtimes with virtual devices: Phantora, Maya.</td><td>Self-reported errors 2–15 % for profile + DES; calibration goes stale within months (main survey §13); large-scale numbers are mostly projections, with real-machine validation rarely beyond a few hundred to two thousand GPUs.</td></tr>
+<tr><td><strong>Data-driven models</strong></td><td>The inputs: time-varying and heterogeneous failure rates, prediction and detection parameters.</td><td>Survival analysis: Weibull shape 0.7–0.8 for LANL infant mortality versus about 5 for Titan wear-out, Cox and competing-risk fits with rack-position random effects (ρ = 0.92 between failure modes). Failure prediction: SuperBench's Cox-Time at 93 % accuracy. Fail-slow detection: GREYHOUND's change-point detector at 3.7 s. Localization and probing: Holmes, Minder, Mycroft (triggers under 15 s regardless of scale), SkeletonHunter (8 s). Lemon-node statistics.</td><td>Failures are rare and imbalanced events; models generalize poorly across generations and sites (Titan batches differ 12× in MTBF). Mean-based statistics overstate most parts' rates.</td></tr>
+<tr><td><strong>Device-level fault injection for silent corruption</strong></td><td>SDC rates, error patterns and harmful fractions before a cluster exists.</td><td>Gate-level GPU injection (NVIDIA's Anatomy study: 3 M simulator hours, 25k SDC cases); Veritas' chain from defect rate to fleet SDC rate; Phoebe's accelerated injection (1,068× faster); LLM-PRISM from RTL faults to training divergence. Field detectors such as AEGIS give the rate lower bound.</td><td>The link from injection to a model parameter needs a confidential number (absolute defect rate), so the practical route is to calibrate backwards from field detection rates. Burn-in finds only about a quarter of SDC parts (reliability chapter §7).</td></tr>
+<tr><td><strong>Calibration, verification and validation</strong></td><td>Whether the model is implemented correctly and whether it matches the target cluster.</td><td>Continuous calibration against production measurements (Arcadia: accuracy drops 3.27 % after four months without it); benchmarks as ground truth with their own noise (MLPerf ±2.5–5 %, same-SKU GPU variance 8 %); independent golden vectors and cross-tool reproduction (HAC-D vs the reference engine within 0.26 points at 100k–500k); hold-out windows; verifiers when agents drive the modeling (ArchEval's pass rule needs rank correlation τ ≥ 0.6 against a simulator).</td><td>The reliability chapter's audit of published models finds that almost none are validated against production interruption data: most do analytic-versus-simulation cross-checks only. This is the main gap in the field.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="s1i">Inference-specific pieces</h3>
+<ul>
+<li><strong>N+k capacity availability</strong> rather than "service up": a replica is a series of TP/EP ranks, the service is a k-of-n of replicas with capacity, and the SLO is evaluated over a window.</li>
+<li><strong>Request-level DES with failover and cold start.</strong> A 183 s vLLM cold start exceeds the 2-minute spot preemption warning, which is why SkyServe over-provisions spot replicas and falls back to on-demand (main survey §11).</li>
+<li><strong>Three time scales</strong>: seconds for failover and KV-state recovery, minutes for autoscaling and cold start, hours for tidal demand and spot or train-inference capacity scheduling. Slower recovery means more standing redundancy.</li>
+<li><strong>Liveput</strong> for preemption-prone deployments (expected throughput over the distribution of preemption scenarios), and prefill/decode-disaggregated pools treated as separate reliability units.</li>
+<li><strong>Evaluation hygiene</strong>: where the failures come from (production logs, replayed availability traces, or a killed process), whether the load is open-loop and bursty, and whether reported GPU·h savings subtract redundancy and spares (main survey §11 checklist).</li>
+</ul>
+</section>
+
+<section id="s2">
+<h2>2　The 500k-NPU budget</h2>
+<p>The budget decides which technologies matter. At 500k cards the job interruption interval is minutes, whatever the per-card rate used:</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Input</th><th>Job interruption interval at 500k cards</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>Llama 3 rate, 1 per 50,000 GPU·h</td><td class="num">about 6 min</td><td>reliability chapter §2; Epoch's extrapolation gives about 3 min at 1 M GPUs</td></tr>
+<tr><td>SPARe's 1/N extrapolation at 600k</td><td class="num">about 5 min</td><td>SPARe (ICML'26); global restart above 60 min at that scale</td></tr>
+<tr><td>Reference-engine baseline, 30 h at 10k cards</td><td class="num">36 min</td><td>HAC-D reference comparison, three-class baseline</td></tr>
+</tbody>
+</table>
+</div>
+<p>With a 4.45-minute global restart (TrainMover's measured framework initialization) and a 6-minute interval, checkpoint-restart alone leaves roughly a quarter of the time productive, and the first-order checkpoint formulas are outside their validity range (R ≪ M fails). HAC-D's reference runs at 500k say the same in delivered goodput:</p>
+<div class="kpis">
+  <div class="kpi"><div class="v">25 %</div><div class="l">delivered goodput at 500k with checkpoint recovery only (reference baseline, silent corruption found after 120 h)</div></div>
+  <div class="kpi"><div class="v">73 %</div><div class="l">with 95 % immediate silent-corruption detection and step recovery</div></div>
+  <div class="kpi"><div class="v">83 %</div><div class="l">with the six-mechanism combination of the reference catalog</div></div>
+  <div class="kpi"><div class="v">≥ 99 % / ≤ 120 s</div><div class="l">silent-corruption coverage and recovery time needed to reach the 80 % target at 500k (planner scan)</div></div>
+</div>
+<p class="small">Single-mechanism gains in operational availability at 500k, HAC-D and reference within 0.01 points: elasticity +6.67, process restart +4.49, replay +3.54, interruption detection +0.42 points. The silent-corruption term dominates delivered goodput at this scale: in the reference baseline 1.4 % of interruptions are silent and found only after 120 h, which rolls back up to five days of progress and costs 58 % of the window at 500k.</p>
+</section>
+
+<section id="s3">
+<h2>3　Key technologies for 500k-NPU training</h2>
+<p>Ranked by the term of the budget each one moves (the reliability chapter's three levers: failure rate, recovery time, structure), and by what the 500k numbers above require.</p>
+<ol>
+<li><strong>Failure domains that degrade instead of stopping the job.</strong> Superpod-scale domains with graceful loss of a plane or link: multi-plane fabrics with packet spraying (Meta's MRC keeps a 50k-GPU job running through 1–13 link flaps per minute, and one T0–T1 link failure costs 0.4 % of capacity), link-layer retrain and retransmission (Huawei claims over 99 % flap tolerance <span class="tag vendor">vendor</span>), fault-tolerant collectives and NIC failover, and placement of DP replicas, checkpoints and spares aligned with rack, power-zone and cooling domains, since power events raise hardware failure probability 5–10× in LANL data. Huawei's 2026 claim that its optical engine cuts 48,000 modules to 5,500 and doubles fault-free running time is reported without a denominator <span class="tag web">web</span> <span class="tag vendor">vendor</span>.</li>
+<li><strong>Detection and localization whose latency does not grow with N.</strong> In-band heartbeats and device plugins at 4–11 s (FlashRecovery), per-component probes at 2–60 s (ByteRobust), communication-layer triggers under 15 s regardless of scale (Mycroft), network skeleton probing at 8 s (SkeletonHunter), fail-slow detection in seconds (GREYHOUND), and grey-node eviction that lifted MTTF from 6.6 h to 16.7 h (Guard). Recovery time enters availability linearly while the failure rate enters the checkpoint term only as a square root, so this is where the leverage is.</li>
+<li><strong>Local recovery instead of global restart.</strong> DP replicas as the fault unit (Meta's FT-HSDP at 98k GPUs: about 3 min to detect and handle plus about 100 s to rejoin), hot-swap and live migration (TrainMover's 11–21 s at 1k GPUs; Clockwork's live GPU migration <span class="tag web">web</span>; PHOENIX), warm standby sized by a binomial P99 rather than a percentage (4 machines per 1,024 for ByteRobust), reduced-TP continuation for damaged replicas (NTP cuts throughput loss from 12 % to under 1 % with spare NVL domains), pipeline rerouting (ReCycle), and per-step fault tolerance without checkpoints (torchft, also on AMD with TorchTitan <span class="tag web">web</span>). The order of the recovery ladder matters: predict, then network failover, replay, hot-swap, elastic, process restart, and global restart last. Restart initialization itself must be made scale-independent, since NCCL setup alone grew from 17 s to about 200 s between 16k and 98k GPUs.</li>
+<li><strong>Loosely coupled training to shrink the synchronous domain.</strong> Decoupled DiLoCo (DeepMind, April 2026) splits the run into asynchronous islands so a failure stays local; its 1.2-million-chip event tape gives 88 % goodput against 58 % for elastic DP, with inter-DC bandwidth reduced by orders of magnitude. Real training was only at O(1k) TPUs and the training semantics change, so convergence must be re-validated per model.</li>
+<li><strong>Near-zero exposed checkpoint cost and fast restore.</strong> In-memory and peer-replica checkpoints (GEMINI's 85 % to 97 % effective training time; Epoch's 0.32 s peer-memory save versus 2.4 s to storage), asynchronous hierarchical checkpointing (ByteCheckpoint, Check-N-Run), and restore read bandwidth accounted separately (about 5 min to read a 405B state). At 500k the optimal interval drops to minutes, so exposed save time must be seconds; HAC-D's no-fault bound is the quick feasibility screen.</li>
+<li><strong>Silent corruption managed as its own budget.</strong> Episodes scale with N. The tools are online two-stage detection (AEGIS at 0.86–2.6 % overhead found 18 cases in 35 M GPU·h, all permanent and recurring on the same devices, so isolation follows detection), selective dual modular redundancy (SpareTrain at 3–14 % overhead), per-step detectors with last-step recompute (2026 injection studies <span class="tag web">web</span>), device characterization showing that loss curves are not a sufficient monitor (LLM-PRISM), and retain-last-clean checkpoint semantics so that a late detection rolls back to a verified clean state.</li>
+<li><strong>Spares and repair treated as a queue.</strong> Quantile-based spare sizing, sparing zones at the block size that balances stranding against repair (Meta's 8.6 / 4.7 / 2.6 % inter-block spares for 72 / 36 / 18-GPU blocks), repair turnaround of days (Unicron's 1–7 days), fault storms that saturate repair crews, and automated node replacement that cuts remediation from 60–120 min to 5–10 min. This is why HAC-D's first co-simulation target is the resource queue inside the ledger.</li>
+<li><strong>Fleet hygiene and prediction.</strong> Acceptance screening and continuous sweeps, lemon-node eviction (Meta's large-job failures from 14 % to 4 %), repairing the components behind repeat network failures (SkeletonHunter's 99.1 % monthly reduction after fixing 98 % of 1,302 problem components), and failure prediction that turns interruptions into planned migrations at the next checkpoint.</li>
+<li><strong>An observability and calibration loop.</strong> Event ledgers with root-cause deduplication, exposure hours and stage timestamps; continuous calibration; autonomous recovery engines (NVIDIA Mission Control is the productized form <span class="tag web">web</span>). HAC-D's allocation result is the practical rule: at 500k hardware alone cannot reach the target, detection is the necessary mechanism, and once it is in place component rates may relax about 4× in the 50k worked example.</li>
+</ol>
+</section>
+
+<section id="s4">
+<h2>4　Where the field is thin</h2>
+<ul>
+<li><strong>Validation against production.</strong> Most published reliability models are checked analytic-versus-simulation; AIReSim's validation is a single sentence, SPARe and Epoch have no real-machine comparison. HAC-D's confirmation layer (incident ledgers, injection campaigns, hold-out windows) exists to close this gap.</li>
+<li><strong>Common-cause parameters.</strong> No source publishes a β factor for power, cooling, switch or storage domains; LANL gives conditional amplification factors, hardware specifications give structure only.</li>
+<li><strong>Non-exponential and time-varying rates.</strong> Infant mortality (shape 0.7–0.8) and wear-out (shape about 5) point in opposite directions; checkpoint intervals and spare formulas still assume constant rates.</li>
+<li><strong>Elasticity at scale.</strong> No data on the failure rate of the elastic mechanisms themselves; Gemini 2.5's reported residual loss comes about half from the elastic mechanism's own tail. Degraded throughput is usually assumed proportional to online cards, which is optimistic.</li>
+<li><strong>Silent corruption rates.</strong> Field rates are reported in incompatible units (cumulative per-mille, per-device, per GPU·h); device-level injection gives relative rates only.</li>
+<li><strong>Cross-datacenter and 1 M-accelerator training.</strong> Models exist (DiLoCo scaling laws, cross-DC ring models) but validation is simulation or projection; the largest public end-to-end measurement is 2,048 H100s.</li>
+</ul>
+</section>
+
+<section id="s5">
+<h2>Sources</h2>
+<p><strong>Surveys (research cutoff 2026-10-13).</strong> Main survey <em>AI 集群建模图谱</em>: §2 modeling stack and method families; §3–§7 workload, training, inference and network simulators; §11 reliability, elasticity and goodput (failure statistics, evaluation methodology, analytical models and simulators, elastic and resilient inference, checklist); §13 calibration and pitfalls; §16 design playbook and reliability first-order model. Reliability chapter <em>AI 集群可靠性建模</em>: §2 metrics; §3 first-hand failure data; §4 RBD, CTMC, correlated failures and the audit of published models; §5 MTTR decomposition; §6 checkpoint, sparing, failure domains, TCO and the design-review checklist; §7 prediction, screening, silent data corruption, fault injection and open problems.</p>
+<p><strong>HAC-D documents.</strong> <code>docs/REFERENCE_COMPARISON_100K_500K.md</code> (three-class baseline 25.2 % at 500k, 73.1 % with 95 % detection, 82.8 % with six mechanisms; single-mechanism gains), <code>docs/MECHANISM_CONTRIBUTIONS.md</code> (mechanism catalog and additional methods), <code>docs/ALLOCATION_PRACTICE.md</code> (90 % at 50k; coverage ≥ 99 % with 120 s recovery needed at 500k), <code>docs/ARCHITECTURE.zh.html</code> (phase ladder and co-simulation order).</p>
+<p><strong>Web check, 2026-10-15.</strong>
+<a href="https://www.hpcwire.com/2026/03/11/clockwork-io-introduces-live-gpu-migration-for-ai-cluster-failures/">Clockwork live GPU migration (HPCwire)</a> ·
+<a href="https://perspectives.nvidia.com/ai-infrastructure/task/faq/automated-fault-tolerance-fast-recovery-training/">NVIDIA automated fault tolerance and fast recovery</a> ·
+<a href="https://www.usenix.org/conference/osdi26/presentation/lei">AEGIS, OSDI'26</a> ·
+<a href="https://iclr.cc/virtual/2026/poster/10007813">SpareTrain, ICLR'26</a> ·
+<a href="https://arxiv.org/abs/2604.00726">Silent data corruption in LLM training, arXiv 2604.00726</a> ·
+<a href="https://arxiv.org/pdf/2605.04213">The Anatomy of Silent Data Corruption</a> ·
+<a href="https://www.themoonlight.io/en/review/llm-prism-characterizing-silent-data-corruption-from-permanent-gpu-faults-in-llm-training">LLM-PRISM (review)</a> ·
+<a href="https://arxiv.org/pdf/2604.21428">Decoupled DiLoCo, arXiv 2604.21428</a> ·
+<a href="https://deepmind.google/blog/decoupled-diloco">DeepMind blog on Decoupled DiLoCo</a> ·
+<a href="https://github.com/pytorch-labs/torchft">torchft</a> ·
+<a href="https://www.techradar.com/pro/huawei-throws-massive-1-million-npu-gauntlet-at-nvidia-and-amd-as-it-positions-itself-an-alternative-to-us-ai-giants">Huawei SuperPoD and SuperCluster claims (TechRadar)</a> ·
+<a href="https://aimagazine.com/news/how-powerful-are-huaweis-new-superpods-and-superclusters">Huawei SuperPoDs (AI Magazine)</a>.</p>
+<p class="small">Numbers quoted from the surveys keep the original papers' 口径; figures from different sources are not directly comparable, and vendor-reported availability claims lack a stated denominator. Nothing here is a measurement of a 500k-NPU cluster; all 500k figures are extrapolations or simulations, as the sources themselves state.</p>
+</section>
+</main>
+
+<!-- ======================================================= 中文 ======================================================= -->
+<main data-lang="zh" lang="zh-CN">
+<header class="title">
+  <div class="eyebrow">综述札记 · 2026-10-15</div>
+  <h1>AI 集群可靠性：建模与仿真技术，以及 50 万卡 NPU 训练的关键技术</h1>
+  <div class="sub">依据两份综述《AI 集群建模图谱》（下称"主综述"）与《AI 集群可靠性建模：MTBF、MTTR 与可靠性框图》（下称"可靠性章"，两者研究截点均为 2026-10-13）、HAC-D 的 10 万–50 万卡参考运行（<code>docs/REFERENCE_COMPARISON_100K_500K.md</code>、<code>docs/MECHANISM_CONTRIBUTIONS.md</code>、<code>docs/ALLOCATION_PRACTICE.md</code>），以及 2026-10-15 的网络检索综合而成。仅来自网络检索的条目标记 <span class="tag web">web</span>；没有给出分母的厂商数字标记 <span class="tag vendor">vendor</span>。</div>
+</header>
+
+<nav class="toc"><a href="#z1">1 建模与仿真技术</a><a href="#z1i">推理侧</a><a href="#z2">2 50 万卡的预算</a><a href="#z3">3 50 万卡训练的关键技术</a><a href="#z4">4 领域的薄弱之处</a><a href="#z5">来源</a></nav>
+
+<div class="callout">
+  <strong>摘要。</strong>AI 集群的可靠性建模是一条从便宜到昂贵的阶梯：口径化的故障数据、闭式模型（RBD、CTMC、检查点更新过程、MTTR 流水线、弹性一阶模型、静默错误潜伏态、指标分配）、离散事件与蒙特卡洛仿真、作为参数供应方的性能仿真器、提供输入的数据驱动模型、面向静默错误的器件级故障注入，以及标定与确认的闭环。在 50 万卡 NPU 规模，作业中断间隔只有几分钟，因此真正重要的技术是把集群拉出"重启主导"区间的那些：会降级而不是停机的故障域、与规模无关的检测、以局部恢复替代全局重启、松耦合训练、接近零的暴露检查点开销、把静默错误当作独立预算来管理、把备件与维修当作队列、机队卫生，以及让模型持续校准的可观测闭环。
+</div>
+
+<section id="z1">
+<h2>1　AI 集群可靠性的建模与仿真技术</h2>
+<p>按设计团队的使用顺序、从便宜到昂贵排列，依据主综述的"保真度—评估代价"谱（§2）与八步设计闭环（§16）。</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>技术族</th><th>回答什么</th><th>代表模型与工具</th><th>综述报告的精度与局限</th></tr></thead>
+<tbody>
+<tr><td><strong>口径与一手故障数据</strong></td><td>哪类事件、哪个分母、哪一层级、哪个窗口。使 Meta RSC、Llama 3、字节跳动、Google 与 LANL 的数字可比。</td><td>指标体系（MTBF、MTTF、MTBI、MTTR、可用度、goodput、ETTR、CETT、TOR、FIT/AFR）；换算到每 GPU·h；基于暴露时长的率与 Garwood 区间；按根因去重的事件台账。</td><td>同一个"MTBF"在换算到每 GPU·h 之前各来源相差约 3 倍（可靠性章 §2–§3）。零事件只能给出上界。</td></tr>
+<tr><td><strong>闭式模型</strong></td><td>毫秒级完成规模估算、指标分配与方案排序。</td><td>带容量状态的 RBD 与故障树；可修块与备件池的 CTMC 与半 Markov 链（Meta Sparing 的三条链、Google 的 k-of-n TPU cube）；检查点更新过程族（Young、Daly、Saxena、精确更新式、Epoch 的 Lambert-W 形式）；带规模律的六阶段 MTTR 流水线；Meta RSC 的 E[ETTR]；SPARe 的冗余闭式（r* ≈ log₂N + 0.8）；弹性一阶模型（覆盖率 c、停顿 Re、容量损失 b·Trep、常态开销 ρ）；亚健康容量状态；有限窗口上的静默错误潜伏态；AGREE / ARINC / 成本最优分配与重要度。</td><td>约 5 %（Meta RSC 对蒙特卡洛）、低于 1 %（Meta Sparing 对 Arcadia）、1.13 %（SPARe 对 MC）。HAC-D 精确复现参考 V1 模型。只在 τ+δ ≪ M 且 R ≪ M 成立时用于数量级判断与方案比较（可靠性章的计算器与评审清单）。</td></tr>
+<tr><td><strong>离散事件与蒙特卡洛仿真</strong></td><td>非指数与相关输入、有限资源、分布与尾部、机制组合。</td><td>AIReSim（SimPy，4,096 台服务器，两级备用池与两级维修）；Meta 的 Arcadia；SPARe 的 SimGrid DES；DeepMind 在真实训练上回放的事件磁带 DES；NTP 的放置蒙特卡洛；参考工具与 ReMAP 背后的逐事件引擎；HAC-D 的窗口账本。</td><td>反复出现的结论：只有恢复时间与备用池等待显著影响结果，超过拐点后再加备机没有收益（AIReSim）。结果带抽样误差，并原样继承输入分布的误差。</td></tr>
+<tr><td><strong>作为参数供应方的性能仿真器</strong></td><td>step 时间、降级吞吐、集合通信重建、平面丢失容量、故障切换下的服务容量。本身不是可靠性模型。</td><td>profile + DES：SimAI、ASTRA-sim、vTrain、Echo，以 Chakra 轨迹为交换格式（主综述 §4）。网络：ns-3、htsim、ASTRA-sim 后端（§7）。服务：Vidur、LLMServingSim、ServeGen 负载（§3、§6）。真实运行时加虚拟设备的 emulation：Phantora、Maya。</td><td>profile + DES 自报误差 2–15 %；标定在数月内过期（主综述 §13）；大规模数字多为投影，真机验证很少超过几百到两千卡。</td></tr>
+<tr><td><strong>数据驱动模型</strong></td><td>提供输入：时变与异质的故障率、预测与检测参数。</td><td>生存分析：LANL 婴儿期的 Weibull 形状 0.7–0.8 对 Titan 耗损的约 5，带机柜位置随机效应的 Cox 与竞争风险拟合（两种失效模式间 ρ = 0.92）。故障预测：SuperBench 的 Cox-Time，准确率 93 %。拖慢检测：GREYHOUND 的变点检测器，3.7 s。定位与探测：Holmes、Minder、Mycroft（触发不到 15 s 且与规模无关）、SkeletonHunter（8 s）。柠檬节点统计。</td><td>故障是稀有且极不平衡的事件；模型跨代际、跨机房泛化差（Titan 不同批次 MTBF 相差 12 倍）。均值统计会高估多数部件的故障率。</td></tr>
+<tr><td><strong>面向静默错误的器件级故障注入</strong></td><td>在集群建成之前得到 SDC 率、误差模式与有害比例。</td><td>门级 GPU 注入（NVIDIA 的 Anatomy 研究：300 万仿真器小时、2.5 万个 SDC 案例）；Veritas 从缺陷率到机群 SDC 率的链式；Phoebe 的加速注入（快 1,068 倍）；LLM-PRISM 从 RTL 故障到训练发散。AEGIS 一类现场检测器给出率的下界。</td><td>从注入到模型参数还差一个保密的数（绝对缺陷率），所以可行做法是用现场检出率反向标定。burn-in 只能发现约四分之一的 SDC 部件（可靠性章 §7）。</td></tr>
+<tr><td><strong>标定、验证与确认</strong></td><td>模型实现是否正确、是否对得上目标集群。</td><td>对生产测量的持续标定（Arcadia：停止标定四个月后精度下降 3.27 %）；带自身噪声的真机基准作为真值（MLPerf ±2.5–5 %，同型 GPU 变异 8 %）；独立黄金向量与跨工具复现（HAC-D 对参考引擎在 10 万–50 万卡相差 0.26 点以内）；留出窗口；agent 驱动建模时的验证器（ArchEval 的通过规则要求与仿真器的秩相关 τ ≥ 0.6）。</td><td>可靠性章对已发表模型的清点发现几乎没有一个对照过生产中断数据：多数只做了解析对仿真的交叉校核。这是该领域的主要缺口。</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="z1i">推理侧的专有部分</h3>
+<ul>
+<li><strong>N+k 容量可用率</strong>而非"服务在线"：副本是 TP/EP 秩的串联，服务是带容量的副本 k-of-n，SLO 在窗口上评估。</li>
+<li><strong>带故障切换与冷启动的请求级 DES。</strong>vLLM 183 s 的冷启动超过 2 分钟的 spot 抢占预警，这正是 SkyServe 超配 spot 副本并回退到按需实例的原因（主综述 §11）。</li>
+<li><strong>三个时间尺度</strong>：秒级的故障切换与 KV 状态恢复，分钟级的扩缩容与冷启动，小时级的潮汐需求与 spot 或训推容量调度。恢复越慢，常备冗余越多。</li>
+<li><strong>Liveput</strong>：面向易被抢占部署的指标（抢占场景分布下的期望吞吐）；并把 prefill / decode 分离的资源池当作独立的可靠性单元。</li>
+<li><strong>评估卫生</strong>：故障来自哪里（生产日志、回放的可用性 trace，还是杀掉一个进程），负载是否开环且带突发，报告的 GPU·h 节省是否扣除了冗余与备机（主综述 §11 清单）。</li>
+</ul>
+</section>
+
+<section id="z2">
+<h2>2　50 万卡 NPU 的预算</h2>
+<p>预算决定哪些技术重要。在 50 万卡规模，无论采用哪种单卡故障率，作业中断间隔都只有几分钟：</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>输入</th><th>50 万卡时的作业中断间隔</th><th>来源</th></tr></thead>
+<tbody>
+<tr><td>Llama 3 的率，每 50,000 GPU·h 一次</td><td class="num">约 6 分钟</td><td>可靠性章 §2；Epoch 外推到 100 万 GPU 约 3 分钟</td></tr>
+<tr><td>SPARe 在 60 万卡的 1/N 外推</td><td class="num">约 5 分钟</td><td>SPARe（ICML'26）；该规模下全局重启超过 60 分钟</td></tr>
+<tr><td>参考引擎基线，1 万卡 30 h</td><td class="num">36 分钟</td><td>HAC-D 参考对比，三类故障基线</td></tr>
+</tbody>
+</table>
+</div>
+<p>按 4.45 分钟的全局重启（TrainMover 实测的框架初始化）和 6 分钟的间隔，只靠检查点重启大约只剩四分之一的时间在有效训练，一阶检查点公式也已超出适用范围（R ≪ M 不成立）。HAC-D 在 50 万卡的参考运行用正确有效产出说出了同样的结论：</p>
+<div class="kpis">
+  <div class="kpi"><div class="v">25 %</div><div class="l">50 万卡、只靠检查点恢复的正确有效产出（参考基线，静默错误 120 h 后才发现）</div></div>
+  <div class="kpi"><div class="v">73 %</div><div class="l">95 % 即时静默错误检出加 step 恢复</div></div>
+  <div class="kpi"><div class="v">83 %</div><div class="l">参考目录的六机制组合</div></div>
+  <div class="kpi"><div class="v">≥ 99 % / ≤ 120 s</div><div class="l">在 50 万卡达到 80 % 目标所需的静默错误覆盖率与恢复时间（规划器扫描）</div></div>
+</div>
+<p class="small">50 万卡的单项机制对运行可用度的增益（HAC-D 与参考引擎相差 0.01 点以内）：弹性 +6.67、进程重启 +4.49、重执行 +3.54、中断检测 +0.42 点。在这个规模静默错误项主导正确有效产出：参考基线中 1.4 % 的中断是静默的、120 h 后才被发现，一次回退可丢掉多达五天的进度，在 50 万卡吃掉 58 % 的窗口。</p>
+</section>
+
+<section id="z3">
+<h2>3　50 万卡 NPU 训练的关键技术</h2>
+<p>按每项技术所改变的预算项排序（可靠性章的三个杠杆：故障率、恢复时间、结构），并对照上面 50 万卡的数字。</p>
+<ol>
+<li><strong>会降级而不是让作业停下的故障域。</strong>超节点规模的故障域，丢一个平面或一条链路时优雅降级：多平面网络加逐包喷洒（Meta 的 MRC 让 5 万卡作业在每分钟 1–13 次链路闪断下继续运行，一条 T0–T1 链路故障只损失 0.4 % 容量），链路层重训练与重传（华为宣称闪断容忍超过 99 % <span class="tag vendor">vendor</span>），容错集合通信与网卡切换，以及把 DP 副本、检查点与备件按机柜、供电区与制冷域放置——LANL 数据中电力事件让硬件故障概率升高 5–10 倍。华为 2026 年宣称其光引擎把 48,000 个光模块减到 5,500 个、无故障运行时间翻倍，该数字没有给出分母 <span class="tag web">web</span> <span class="tag vendor">vendor</span>。</li>
+<li><strong>时延不随 N 增长的检测与定位。</strong>带内心跳与 device plugin 4–11 s（FlashRecovery）、逐部件探针 2–60 s（ByteRobust）、与规模无关的通信层触发不到 15 s（Mycroft）、网络骨架探测 8 s（SkeletonHunter）、秒级的拖慢检测（GREYHOUND），以及把 MTTF 从 6.6 h 提到 16.7 h 的灰节点剔除（Guard）。恢复时间线性进入可用度，而故障率只以平方根进入检查点项，所以杠杆在这里。</li>
+<li><strong>以局部恢复替代全局重启。</strong>以 DP 副本为容错单元（Meta 的 FT-HSDP 在 9.8 万 GPU 上：约 3 分钟检测与处理、约 100 s 重新加入），热插拔与在线迁移（TrainMover 在 1 千卡上 11–21 s；Clockwork 的 GPU 在线迁移 <span class="tag web">web</span>；PHOENIX），按二项分布 P99 而非百分比确定的温备（ByteRobust 每 1,024 台 4 台），受损副本降 TP 度继续运行（NTP 借助备用 NVL 域把吞吐损失从 12 % 压到 1 % 以下），流水线重路由（ReCycle），以及不依赖检查点的逐步容错（torchft，也已在 AMD 上与 TorchTitan 结合 <span class="tag web">web</span>）。恢复阶梯的顺序很重要：先预测，再网络切换、重执行、热插拔、弹性、进程重启，最后才是全局重启。重启初始化本身也必须做到与规模无关：从 1.6 万到 9.8 万 GPU，仅 NCCL 初始化就从 17 s 增到约 200 s。</li>
+<li><strong>松耦合训练，缩小同步域。</strong>Decoupled DiLoCo（DeepMind，2026 年 4 月）把一次训练拆成异步的"岛"，让故障留在局部；其 120 万芯片的事件磁带给出 88 % 的 goodput，对比弹性 DP 的 58 %，跨数据中心带宽降低数个数量级。真实训练只做到 O(1k) 颗 TPU，而且训练语义随之改变，收敛性需要按模型重新验证。</li>
+<li><strong>接近零的暴露检查点开销与快速恢复读。</strong>内存级与对等副本检查点（GEMINI 把有效训练时间从 85 % 提到 97 %；Epoch 估算对等显存保存 0.32 s、存储 2.4 s），异步分级检查点（ByteCheckpoint、Check-N-Run），以及单独核算的恢复读带宽（读回一个 405B 状态约 5 分钟）。在 50 万卡最优间隔降到分钟级，所以暴露的保存时间必须压到秒级；HAC-D 的无故障上界是快速的可行性筛查。</li>
+<li><strong>把静默错误当作独立预算管理。</strong>发生次数随 N 增长。工具有：在线两阶段检测（AEGIS 以 0.86–2.6 % 的开销在 3,500 万 GPU·h 中发现 18 例，全部为持续性故障且在同一设备上复发，因此检出之后要隔离），选择性双模冗余（SpareTrain，开销 3–14 %），带末步重算的逐步检测器（2026 年的注入研究 <span class="tag web">web</span>），说明 loss 曲线不足以作为监控的器件刻画（LLM-PRISM），以及"保留最后干净点"的检查点语义，使晚发现的错误能回退到已验证的干净状态。</li>
+<li><strong>把备件与维修当作队列。</strong>按分位数确定备件数，把备件区划在平衡 stranding 与维修的块大小上（Meta 对 72 / 36 / 18 卡块给出 8.6 / 4.7 / 2.6 % 的块间备件），以天计的维修周转（Unicron 的 1–7 天），会打满维修人力的故障风暴，以及把处置时间从 60–120 分钟压到 5–10 分钟的自动换机。这正是 HAC-D 把账本内的资源队列作为首个联合仿真对象的原因。</li>
+<li><strong>机队卫生与预测。</strong>验收筛查与持续巡检，柠檬节点剔除（Meta 的大作业故障从 14 % 降到 4 %），修复反复引发网络故障的部件（SkeletonHunter 修复 1,302 个问题部件中的 98 % 后，月故障率下降 99.1 %），以及把中断变成下一个检查点处计划迁移的故障预测。</li>
+<li><strong>可观测与标定闭环。</strong>按根因去重、带暴露小时与各阶段时间戳的事件台账；持续标定；自主恢复引擎（NVIDIA Mission Control 是其产品化形态 <span class="tag web">web</span>）。HAC-D 的分配结果给出实用规则：在 50 万卡仅靠硬件无法达标，检测是必要机制；检测到位之后，5 万卡算例中部件故障率可以放宽约 4 倍。</li>
+</ol>
+</section>
+
+<section id="z4">
+<h2>4　领域的薄弱之处</h2>
+<ul>
+<li><strong>对生产数据的确认。</strong>多数已发表的可靠性模型只做解析对仿真的检查；AIReSim 的验证只有一句话，SPARe 与 Epoch 没有真机对照。HAC-D 的确认层（事件台账、注入实验、留出窗口）正是为补这一缺口而设。</li>
+<li><strong>共因参数。</strong>没有任何来源公开供电、制冷、交换机或存储域的 β 因子；LANL 给的是条件放大倍数，硬件规格只给结构。</li>
+<li><strong>非指数与时变故障率。</strong>婴儿期（形状 0.7–0.8）与耗损（形状约 5）指向相反方向；检查点间隔与备件公式仍假设恒定速率。</li>
+<li><strong>规模化的弹性。</strong>没有弹性机制自身失效率的数据；Gemini 2.5 报告的残余损失约一半来自弹性机制自身的尾部。降级吞吐通常按在线卡数线性假设，偏乐观。</li>
+<li><strong>静默错误率。</strong>现场率以不兼容的单位报告（累计万分比、每器件、每 GPU·h）；器件级注入只给相对率。</li>
+<li><strong>跨数据中心与百万加速器训练。</strong>模型存在（DiLoCo scaling law、跨 DC 环模型），但验证是仿真或投影；公开的最大端到端实测是 2,048 张 H100。</li>
+</ul>
+</section>
+
+<section id="z5">
+<h2>来源</h2>
+<p><strong>综述（研究截点 2026-10-13）。</strong>主综述《AI 集群建模图谱》：§2 建模栈与方法谱系；§3–§7 负载、训练、推理与网络仿真器；§11 可靠性、弹性与 goodput（故障统计、评估方法、解析模型与仿真器、弹性与韧性推理、清单）；§13 标定与陷阱；§16 设计手册与可靠性一阶模型。可靠性章《AI 集群可靠性建模》：§2 度量；§3 一手故障数据；§4 RBD、CTMC、相关故障与已发表模型的清点；§5 MTTR 分解；§6 检查点、备机、故障域、TCO 与设计评审清单；§7 预测、筛查、静默数据损坏、故障注入与开放问题。</p>
+<p><strong>HAC-D 文档。</strong><code>docs/REFERENCE_COMPARISON_100K_500K.md</code>（50 万卡三类故障基线 25.2 %，95 % 检出 73.1 %，六机制 82.8 %；单项机制增益）、<code>docs/MECHANISM_CONTRIBUTIONS.md</code>（机制目录与补充方法）、<code>docs/ALLOCATION_PRACTICE.md</code>（5 万卡 90 %；50 万卡需覆盖率 ≥ 99 % 且恢复 120 s）、<code>docs/ARCHITECTURE.zh.html</code>（阶段阶梯与联合仿真顺序）。</p>
+<p><strong>网络检索，2026-10-15。</strong>
+<a href="https://www.hpcwire.com/2026/03/11/clockwork-io-introduces-live-gpu-migration-for-ai-cluster-failures/">Clockwork 的 GPU 在线迁移（HPCwire）</a> ·
+<a href="https://perspectives.nvidia.com/ai-infrastructure/task/faq/automated-fault-tolerance-fast-recovery-training/">NVIDIA 自动容错与快速恢复</a> ·
+<a href="https://www.usenix.org/conference/osdi26/presentation/lei">AEGIS，OSDI'26</a> ·
+<a href="https://iclr.cc/virtual/2026/poster/10007813">SpareTrain，ICLR'26</a> ·
+<a href="https://arxiv.org/abs/2604.00726">LLM 训练中的静默数据损坏，arXiv 2604.00726</a> ·
+<a href="https://arxiv.org/pdf/2605.04213">The Anatomy of Silent Data Corruption</a> ·
+<a href="https://www.themoonlight.io/en/review/llm-prism-characterizing-silent-data-corruption-from-permanent-gpu-faults-in-llm-training">LLM-PRISM（评述）</a> ·
+<a href="https://arxiv.org/pdf/2604.21428">Decoupled DiLoCo，arXiv 2604.21428</a> ·
+<a href="https://deepmind.google/blog/decoupled-diloco">DeepMind 博客：Decoupled DiLoCo</a> ·
+<a href="https://github.com/pytorch-labs/torchft">torchft</a> ·
+<a href="https://www.techradar.com/pro/huawei-throws-massive-1-million-npu-gauntlet-at-nvidia-and-amd-as-it-positions-itself-an-alternative-to-us-ai-giants">华为超节点与超集群宣称（TechRadar）</a> ·
+<a href="https://aimagazine.com/news/how-powerful-are-huaweis-new-superpods-and-superclusters">华为超节点（AI Magazine）</a>。</p>
+<p class="small">引自综述的数字保留原论文的口径；不同来源的数字不能直接比较，厂商自报的可用度缺少分母。本文没有任何一个数字是 50 万卡集群的实测；所有 50 万卡数字都是外推或仿真，来源本身亦如此说明。</p>
+</section>
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var titles = { en: 'AI-Cluster Reliability: Modeling Technologies and 500k-NPU Design', zh: 'AI 集群可靠性：建模技术与 50 万卡 NPU 设计' };
+  var langBtns = document.querySelectorAll('[data-lang-choice]'), themeBtns = document.querySelectorAll('[data-theme-choice]');
+  function setLang(l) {
+    root.setAttribute('data-lang', l); root.setAttribute('lang', l === 'zh' ? 'zh-CN' : 'en'); document.title = titles[l];
+    langBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-lang-choice') === l)); });
+    try { localStorage.setItem('hacd-survey-lang', l); } catch (e) {}
+  }
+  function setTheme(c) {
+    if (c === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', c);
+    themeBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-theme-choice') === c)); });
+    try { localStorage.setItem('hacd-survey-theme', c); } catch (e) {}
+  }
+  var lang = null, theme = 'auto';
+  try { lang = localStorage.getItem('hacd-survey-lang'); theme = localStorage.getItem('hacd-survey-theme') || 'auto'; } catch (e) {}
+  if (!lang) { var q = new URLSearchParams(location.search).get('lang'); lang = q || ((navigator.language || '').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en'); }
+  setLang(lang === 'zh' ? 'zh' : 'en'); setTheme(theme);
+  langBtns.forEach(function (b) { b.addEventListener('click', function () { setLang(b.getAttribute('data-lang-choice')); }); });
+  themeBtns.forEach(function (b) { b.addEventListener('click', function () { setTheme(b.getAttribute('data-theme-choice')); }); });
+})();
+</script>
+</body>
+</html>

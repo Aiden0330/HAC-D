@@ -3,6 +3,7 @@ import * as Comlink from 'comlink';
 import {
   evaluateScenario, compareScenarios, tornadoForScenario, allocateScenario, buildMcRun, finishMcRun, simulateReplications, summarize,
   mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, planToTarget, auditMechanisms, allocationStudy,
+  allocateStrategy, strategyAcrossSizes, type StrategyOptions,
   type AuditOptions, type StudyOptions, type StudyPhase,
   type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication, type PlanOptions, type PlanPhase,
 } from '@hac-d/core';
@@ -20,6 +21,10 @@ export interface ComputeApi {
   audit(s: Scenario, opts: AuditOptions): ReturnType<typeof auditMechanisms>;
   /** v3.7 cross-scale allocation study */
   study(s: Scenario, opts: StudyOptions, onProgress?: (done: number, total: number, phase: StudyPhase) => void): ReturnType<typeof allocationStudy>;
+  /** v4 allocation strategy (optimal / MTTR-preferred / MTTF-preferred) */
+  strategy(s: Scenario, opts: Omit<StrategyOptions, 'onProgress'>, onProgress?: (done: number, total: number) => void): ReturnType<typeof allocateStrategy>;
+  /** v4 the strategy at several sizes */
+  strategySizes(s: Scenario, sizes: number[], opts: Omit<StrategyOptions, 'onProgress'>, onProgress?: (done: number, total: number) => void): ReturnType<typeof strategyAcrossSizes>;
 }
 
 const api: ComputeApi = {
@@ -44,6 +49,8 @@ const api: ComputeApi = {
   plan: (s, opts, onProgress) => planToTarget(s, { ...opts, onProgress }),
   audit: (s, opts) => auditMechanisms(s, opts),
   study: (s, opts, onProgress) => allocationStudy(s, { ...opts, onProgress }),
+  strategy: (s, opts, onProgress) => allocateStrategy(s, { ...opts, onProgress }),
+  strategySizes: (s, sizes, opts, onProgress) => strategyAcrossSizes(s, sizes, { ...opts, onProgress }),
   ledger: (s, opts, onProgress) => {
     const run = buildLedgerRun(s, opts);
     const rows: LedgerReplication[] = [];

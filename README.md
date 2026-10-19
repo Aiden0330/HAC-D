@@ -1,8 +1,16 @@
-# HAC-D — AI cluster availability, MTBF/MTTR and goodput modeling
+# HAC-D — NPU cluster availability, MTBF/MTTR and goodput modeling
 
 [中文说明 (README.zh.md)](README.zh.md) · User manual: [English](docs/USER_MANUAL.html) · [中文](docs/USER_MANUAL.zh.html)
 
 HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training and inference clusters. It takes a cluster design — topology, component classes with 口径-typed failure parameters and provenance, workload, recovery pipeline, spares — and returns availability, MTBF/MTBI, MTTR, goodput and its loss terms, spare counts, N+k replica sizing and the cost of unavailability. It allocates a goodput or availability target to subsystem budgets, compares design options, runs one-at-a-time sensitivity, and cross-checks the closed forms with a Monte Carlo discrete-event simulation. It is grounded in the survey chapter *AI 集群可靠性建模：MTBF、MTTR 与可靠性框图* (2026-10).
+
+## v4 (2026-10-18): NPU tool, topology first
+
+- **Topology & hardware** is the first page: three Ascend templates — A2 (Atlas 800T A2 servers on a RoCE Clos), A3 / CloudMatrix384 (UB supernode, paper geometry) and Atlas 950 (UB 2.0 SuperPoD, vendor totals) — at any scale (built-in 10k / 100k / 200k / 500k NPUs or any N) give the hardware bill of materials (NPUs, nodes, CPUs, cabinets, SuperPoDs, UB L1 / L2 chips and links, RoCE switches per tier and links), a live schematic, the KPI strip and the former Training page as the Reliability tab (`packages/core/src/topology`).
+- **Fault types per hardware unit**: the 54-event catalog attached to its units and converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit), so the topology changes the interruption rate (A2 3,086 / A3 3,371 / Atlas 950 3,238 FIT per NPU at 10k); CloudMatrix384 without scale-out reproduces the catalog exactly. Golden vectors in `packages/core/test/golden/compute_golden_v4.py`.
+- **Default mechanisms**: the six ReMAP mechanisms (D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST) are applied on every topology scenario and edited on the Mechanisms page, which is now the single owner of the silent-corruption policy and the chain (tabs: selection & attribution, silent corruption & chain, single-point audit).
+- **Allocation strategies** (`packages/core/src/strategy`): optimal (least total effort), MTTR reduction preferred and MTTF reduction preferred, over library mechanisms, recovery levers moved to limits and per-class interruption FIT with floors and an effort per halving; hardware split minimum effort / AGREE / ARINC; derated feasibility, slack, ledger check, and the same across sizes (Allocation → Strategies, Cross-scale). CLI `hacd topology`, `hacd strategy`; MCP `topology_bom`, `allocation_strategy`.
+- **GPU removed from the UI**: the five GPU examples and the GPU wording left the app (still reachable by id in the CLI / MCP; the GPU tool can be forked from the git tag `v3.7-gpu`); GPU fleet records stay in the library as tagged analogues. Pages: Topology & hardware, Mechanisms, Allocation, Fault library; the scenario editor, Compare, Simulate, Report, Inference, Spares and Import behind "All pages". Plan and decisions: `docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md`.
 
 ## Documentation
 
@@ -16,7 +24,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 
 ```bash
 npm install            # Node 20+, workspaces (core, importers, cli, mcp, web)
-npm test               # 327 tests incl. 143 + 26 independently computed golden vectors (v1 + v2 models)
+npm test               # 690 core + 29 importer tests incl. the independently computed golden vectors (v1–v4)
 npm run dev            # web app at http://localhost:5173 (bilingual zh/en, light/dark)
 npm run build -w @hac-d/web   # static bundle in apps/web/dist
 ```
@@ -24,15 +32,17 @@ npm run build -w @hac-d/web   # static bundle in apps/web/dist
 CLI (no build step):
 
 ```bash
-node --import tsx packages/cli/src/main.ts examples
-node --import tsx packages/cli/src/main.ts example survey-ex1 > ex1.json
+node --import tsx packages/cli/src/main.ts examples                                   # the three topology templates (the built-in examples since v4.1)
+node --import tsx packages/cli/src/main.ts example topology-a3-ub384 --npus 200000 > a3.json   # any template at any scale
+node --import tsx packages/cli/src/main.ts topology a3-ub384 --npus 10000 --out a3.json   # v4 bill of materials at 10k / 100k / 200k / 500k
+node --import tsx packages/cli/src/main.ts strategy --template a3-ub384 --npus 500000 --target 0.985   # v4 allocation strategies
+node --import tsx packages/cli/src/main.ts example survey-ex1 > ex1.json   # v3.7 GPU example, reachable by id
 node --import tsx packages/cli/src/main.ts eval ex1.json
 node --import tsx packages/cli/src/main.ts compare ex1.json nvl72.json
 node --import tsx packages/cli/src/main.ts allocate nvl72.json --goodput 0.98 --method arinc
 node --import tsx packages/cli/src/main.ts simulate ex1.json --reps 100
-node --import tsx packages/cli/src/main.ts example ascend-cm384 > cm384.json          # CloudMatrix384 supernode (v2)
+node --import tsx packages/cli/src/main.ts example topology-a3-ub384 --npus 384 > cm384.json   # one CloudMatrix384 supernode
 node --import tsx packages/cli/src/main.ts measures cm384.json                       # original vs compensated + waterfall
-node --import tsx packages/cli/src/main.ts example ascend-supercluster-100k > sc.json  # 100,000 NPUs as 261 + 3 supernodes (capacity availability)
 node --import tsx packages/cli/src/main.ts methods book.xlsx                         # which availability methods a spreadsheet uses
 node --import tsx packages/cli/src/main.ts import-excel book.xlsx --out imported.json # topology + parameters → scenario, reconciled
 node --import tsx packages/cli/src/main.ts export-excel cm384.json cm384.xlsx        # workbook with live formulas
@@ -56,7 +66,7 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 - **Mechanism chain with per-class applicability**: replay → DP-domain elasticity → process rescheduling → global checkpoint recovery, each rung with applicable fraction, success probability and distinct success / failure times; pause-only vs rollback events enter a generalised exact renewal `λ_rb τ/[(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)]`; detected sub-healthy units are isolated after saving progress.
 - **Mechanism library and attribution** (`packages/core/src/mechanisms`): the reference catalog's twelve mechanisms as scenario transforms with target parameters; single, last-added and exact Shapley gains over all 2^n coalitions with the closed forms; a Mechanisms page in the web app.
 - **Window-ledger Monte Carlo** (`mc/ledger.ts`): the reference engine's semantics (three fault classes, chain, clean-checkpoint retention, terminal discard) with a conserved ledger, CI, quantiles and P(≥ target); Simulate page default mode.
-- Example `ref-three-classes-100k` (the reference's confirmed baseline) and `scripts/ref-compare-v3.ts` for the cross-check; `docs/MODEL_REFERENCE.md` §19–§22, `docs/REFERENCE_COMPARISON_100K_500K.md` §5.
+- Reference fixture `ref-three-classes-100k` (the reference's confirmed baseline; not listed, `hacd example ref-three-classes-100k`) and `scripts/ref-compare-v3.ts` for the cross-check; `docs/MODEL_REFERENCE.md` §19–§22, `docs/REFERENCE_COMPARISON_100K_500K.md` §5.
 - **Allocation with mechanisms** (v3.1): the Allocation page accepts a delivered-goodput target (feasibility by hardware alone, required silent-corruption detection and fallback delay), and the Mechanisms page plans the cheapest feasible mechanism set by effort score with derated parameters, necessary mechanisms, a coverage × recovery scan and a ledger verification of P(window ≥ target); practice notes in `docs/ALLOCATION_PRACTICE.md`.
 
 ## v3.5 (2026-10-13): from the comparison with the reference engine and ReMAP
@@ -79,7 +89,7 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 | `packages/importers` | Spreadsheet importer / exporter: workbook reader, formula fingerprinting, topology draft, scenario conversion, reconciliation, xlsx export |
 | `packages/cli` | `hacd` command line |
 | `packages/mcp` | MCP server over the same core |
-| `apps/web` | Vite + React app: Scenario, Training, Inference, Spares & domains, Allocation, Compare, Simulate (Web Worker), Report, Import, Library |
+| `apps/web` | Vite + React app (v4): Topology & hardware (picture, hardware, reliability, allocation tabs), Mechanisms, Allocation (strategies, cross-scale, classic methods, planner), Fault library; behind All pages: scenario editor, Compare, Simulate, Report, Inference, Spares & domains, Import |
 | `docs` | Development plan (+ v2 enhancement plan), model reference (§10–17 = v2 models), user guide, Ascend source notes |
 | `.claude/skills` | `model-check`, `add-parameter`, `scenario-review`, `release-check` |
 

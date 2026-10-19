@@ -1,0 +1,3517 @@
+{
+ "generated": "2026-10-16T11:11:28.477Z",
+ "target": 0.985,
+ "sizes": [
+  10000,
+  100000,
+  200000,
+  500000
+ ],
+ "notes": [
+  "hardware factor f: every hard event rate × f (ARINC: identical factor per class) with the recovery of the row; allowed FIT = current × f; f > 1 = slack (acceptance limit above the current value), f < 1 = improvement task",
+  "recovery factor g: detection, automatic attempt and manual stages × g with the baseline hardware; effective recovery factor of a mechanism set = its job-level mean pause ÷ the baseline mean pause",
+  "iso-target curve: for each g the hardware factor f(g) at which A_op = 98.5 % (bisection on the full engine, not the first-order product)",
+  "per-class MTBF (builder): MTBF_card,i = 1e9 / FIT_i hours per card for that event class (business-impact rate after the existing protection), cluster-level MTBF_i(N) = MTBF_card,i / N, hardware MTBI = 1 / Σ λ_i"
+ ],
+ "perSize": {
+  "10000": {
+   "N": 10000,
+   "baseline": {
+    "aOp": 0.997484785105263,
+    "unavailability": 0.00251521489473705,
+    "meanPauseS": 264.25970152620886,
+    "recoveryS": 264.50000000000006,
+    "lambdaJob": 0.03398668929874994,
+    "hardware": 0.03333333333333333,
+    "mtbiHours": 29.423283662900957,
+    "stages": [
+     {
+      "name": "detection",
+      "meanS": 12.500000000000004
+     },
+     {
+      "name": "automatic",
+      "meanS": 180
+     },
+     {
+      "name": "manual",
+      "meanS": 72.00000000000006
+     }
+    ],
+    "byGroup": {
+     "npu": 0.0011555292123678839,
+     "network": 0.00020521026181586103,
+     "host": 0.0003908766891730686,
+     "facility": 0.0002931575168798015,
+     "storageSoftware": 0.0003982056270950638,
+     "isolation": 0.00004562110164456979,
+     "falseAlarm": 0,
+     "sdcDetected": 0,
+     "sdcPause": 0.000026614485760797166
+    }
+   },
+   "hardwareOnly": {
+    "factor": 6.188506864771673
+   },
+   "recoveryOnly": {
+    "factor": 6.039273716265261,
+    "recoveryStarS": 1597.387897952162,
+    "meanPauseStarS": 1595.936669695336
+   },
+   "iso": [
+    {
+     "g": 0.05,
+     "f": 124.33270497353905,
+     "meanPauseS": 13.212985076310439
+    },
+    {
+     "g": 0.1,
+     "f": 62.15158716637183,
+     "meanPauseS": 26.425970152620877
+    },
+    {
+     "g": 0.15,
+     "f": 41.4245289007256,
+     "meanPauseS": 39.638955228931316
+    },
+    {
+     "g": 0.2,
+     "f": 31.060996007586123,
+     "meanPauseS": 52.851940305241754
+    },
+    {
+     "g": 0.3,
+     "f": 20.69746056357189,
+     "meanPauseS": 79.27791045786263
+    },
+    {
+     "g": 0.4,
+     "f": 15.51569188931757,
+     "meanPauseS": 105.70388061048351
+    },
+    {
+     "g": 0.5,
+     "f": 12.406630391720668,
+     "meanPauseS": 132.12985076310443
+    },
+    {
+     "g": 0.7,
+     "f": 8.853417011605515,
+     "meanPauseS": 184.98179106834607
+    },
+    {
+     "g": 1,
+     "f": 6.188506864771673,
+     "meanPauseS": 264.25970152620886
+    },
+    {
+     "g": 1.5,
+     "f": 4.115799019410458,
+     "meanPauseS": 396.38955228931314
+    },
+    {
+     "g": 2,
+     "f": 3.079445215601221,
+     "meanPauseS": 528.5194030524177
+    }
+   ],
+   "sets": {
+    "remapAgree": {
+     "label": "ReMAP 原有机制 · AGREE 集",
+     "ids": [],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.997484785105263,
+     "unavailability": 0.00251521489473705,
+     "meanPauseS": 264.25970152620886,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 1,
+     "removedPts": 0,
+     "byGroup": {
+      "npu": 0.0011555292123678839,
+      "network": 0.00020521026181586103,
+      "host": 0.0003908766891730686,
+      "facility": 0.0002931575168798015,
+      "storageSoftware": 0.0003982056270950638,
+      "isolation": 0.00004562110164456979,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000026614485760797166
+     },
+     "hardwareFactor": 6.188506864771673,
+     "recoveryFactorUniform": 6.039273716265261
+    },
+    "latestAgree": {
+     "label": "ReMAP 最新机制集 · AGREE 集",
+     "ids": [],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.997484785105263,
+     "unavailability": 0.00251521489473705,
+     "meanPauseS": 264.25970152620886,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 1,
+     "removedPts": 0,
+     "byGroup": {
+      "npu": 0.0011555292123678839,
+      "network": 0.00020521026181586103,
+      "host": 0.0003908766891730686,
+      "facility": 0.0002931575168798015,
+      "storageSoftware": 0.0003982056270950638,
+      "isolation": 0.00004562110164456979,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000026614485760797166
+     },
+     "hardwareFactor": 6.188506864771673,
+     "recoveryFactorUniform": 6.039273716265261
+    },
+    "latestPlanner": {
+     "label": "ReMAP 最新机制集 · 规划器集",
+     "ids": [],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.997484785105263,
+     "unavailability": 0.00251521489473705,
+     "meanPauseS": 264.25970152620886,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 1,
+     "removedPts": 0,
+     "byGroup": {
+      "npu": 0.0011555292123678839,
+      "network": 0.00020521026181586103,
+      "host": 0.0003908766891730686,
+      "facility": 0.0002931575168798015,
+      "storageSoftware": 0.0003982056270950638,
+      "isolation": 0.00004562110164456979,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000026614485760797166
+     },
+     "hardwareFactor": 6.188506864771673,
+     "recoveryFactorUniform": 6.039273716265261
+    },
+    "remapPlanner": {
+     "label": "ReMAP 原有机制 · 规划器集",
+     "ids": [],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.997484785105263,
+     "unavailability": 0.00251521489473705,
+     "meanPauseS": 264.25970152620886,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 1,
+     "removedPts": 0,
+     "byGroup": {
+      "npu": 0.0011555292123678839,
+      "network": 0.00020521026181586103,
+      "host": 0.0003908766891730686,
+      "facility": 0.0002931575168798015,
+      "storageSoftware": 0.0003982056270950638,
+      "isolation": 0.00004562110164456979,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000026614485760797166
+     },
+     "hardwareFactor": 6.188506864771673,
+     "recoveryFactorUniform": 6.039273716265261
+    },
+    "latestAll": {
+     "label": "ReMAP 最新机制集 · 全部 23 项",
+     "ids": [
+      "D-HARD",
+      "D-SLOW",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC",
+      "C-FAST",
+      "R-LINK-LOCAL",
+      "R-FABRIC-DEGRADE",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "C-ASYNC",
+      "C-LOSSLESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-SDC-FP8",
+      "D-SDC-FP4",
+      "D-ABFT",
+      "D-NET-SDC",
+      "H-SDC-SCREEN",
+      "R-HCCL-ELASTIC",
+      "R-CANN-GRAPH"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9995918980106744,
+     "unavailability": 0.0004081019893256155,
+     "meanPauseS": 42.73693517978037,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 0.034016325995524094,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.397648650579757,
+     "recoveryFactorEff": 0.16172324017985687,
+     "removedPts": 0.0021071129054114346,
+     "byGroup": {
+      "npu": 0.00002570339628802116,
+      "network": 0.0000017025224253673363,
+      "host": 0.000007093208531315689,
+      "facility": 0.00013126973560418989,
+      "storageSoftware": 0.00020940885150943364,
+      "isolation": 0.000032512358052458664,
+      "falseAlarm": 0,
+      "sdcDetected": 3.045836565478409e-7,
+      "sdcPause": 1.0733325831160056e-7
+     },
+     "hardwareFactor": 40.48558504052959,
+     "recoveryFactorUniform": 42.29498314836875
+    }
+   },
+   "levers": [
+    {
+     "id": "auto60",
+     "label": "自动尝试 180 → 60 s",
+     "patch": {
+      "autoSeconds": 60
+     },
+     "aOp": 0.9986259606953416,
+     "unavailability": 0.0013740393046584032,
+     "meanPauseS": 144.25970152620872,
+     "recoveryS": 144.50000000000006,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 0.5459012505238195,
+     "removedPts": 0.0011411755900786469,
+     "byGroup": {
+      "npu": 0.0006319957542357437,
+      "network": 0.00011223603246469871,
+      "host": 0.00021378291898037843,
+      "facility": 0.00016033718923528384,
+      "storageSoftware": 0.00021779134871126058,
+      "isolation": 0.000023923803108270863,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000013972257922757197
+     },
+     "hardwareFactor": 11.353559780402788
+    },
+    {
+     "id": "ps999",
+     "label": "自动成功率 99 → 99.9 %",
+     "patch": {
+      "success": 0.999
+     },
+     "aOp": 0.9981006958824873,
+     "unavailability": 0.0018993041175127123,
+     "meanPauseS": 199.4597015262087,
+     "recoveryS": 199.70000000000002,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 0.7547866752828623,
+     "removedPts": 0.0006159107772243377,
+     "byGroup": {
+      "npu": 0.0008729681955122971,
+      "network": 0.00015503029264911833,
+      "host": 0.00029529579552213016,
+      "facility": 0.0002214718466415976,
+      "storageSoftware": 0.0003008325916881701,
+      "isolation": 0.00003391065479116481,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000019794740708251168
+     },
+     "hardwareFactor": 8.206680280251154
+    },
+    {
+     "id": "manual30",
+     "label": "人工 120 → 30 min",
+     "patch": {
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9979979912866396,
+     "unavailability": 0.002002008713360426,
+     "meanPauseS": 210.25970152620874,
+     "recoveryS": 210.5,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 0.7956555627357186,
+     "removedPts": 0.0005132061813766242,
+     "byGroup": {
+      "npu": 0.0009200856590430174,
+      "network": 0.00016339787602455278,
+      "host": 0.0003112340495705767,
+      "facility": 0.00023342553717793256,
+      "storageSoftware": 0.0003170696880000251,
+      "isolation": 0.00003586338896052747,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000020932514583800167
+     },
+     "hardwareFactor": 7.784030423666229
+    },
+    {
+     "id": "all3",
+     "label": "三项同时",
+     "patch": {
+      "autoSeconds": 60,
+      "success": 0.999,
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9992947594399484,
+     "unavailability": 0.0007052405600516121,
+     "meanPauseS": 74.05970152620873,
+     "recoveryS": 74.3,
+     "lambdaJob": 0.03398668929874994,
+     "hardware": 0.03333333333333333,
+     "mtbiHours": 29.423283662900957,
+     "recoveryFactorEff": 0.2802534820802543,
+     "removedPts": 0.001809974334685438,
+     "byGroup": {
+      "npu": 0.00032517912309766264,
+      "network": 0.00005774851234715363,
+      "host": 0.00010999716637553073,
+      "facility": 0.00008249787478164805,
+      "storageSoftware": 0.00011205961324507196,
+      "isolation": 0.000011208107600565053,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000006550162603953112
+     },
+     "hardwareFactor": 22.109952560994866
+    }
+   ],
+   "ledgers": {
+    "remapAgree": {
+     "baselineU": 0.00251521489473705,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0,
+     "residualU": 0.00251521489473705,
+     "gap": -0.012484785105262963,
+     "hardwareFactor": 6.188506864771673,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 0
+    },
+    "latestAgree": {
+     "baselineU": 0.00251521489473705,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0,
+     "residualU": 0.00251521489473705,
+     "gap": -0.012484785105262963,
+     "hardwareFactor": 6.188506864771673,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 0
+    },
+    "latestPlanner": {
+     "baselineU": 0.00251521489473705,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0,
+     "residualU": 0.00251521489473705,
+     "gap": -0.012484785105262963,
+     "hardwareFactor": 6.188506864771673,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 0
+    },
+    "remapPlanner": {
+     "baselineU": 0.00251521489473705,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0,
+     "residualU": 0.00251521489473705,
+     "gap": -0.012484785105262963,
+     "hardwareFactor": 6.188506864771673,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 0
+    },
+    "latestAll": {
+     "baselineU": 0.00251521489473705,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.0021071129054114346,
+     "residualU": 0.0004081019893256155,
+     "gap": -0.014591898010674398,
+     "hardwareFactor": 40.48558504052959,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 0
+    }
+   }
+  },
+  "100000": {
+   "N": 100000,
+   "baseline": {
+    "aOp": 0.9754833207699292,
+    "unavailability": 0.024516679230070837,
+    "meanPauseS": 264.25970152620886,
+    "recoveryS": 264.50000000000006,
+    "lambdaJob": 0.33986689298749934,
+    "hardware": 0.33333333333333326,
+    "mtbiHours": 2.9423283662900968,
+    "stages": [
+     {
+      "name": "detection",
+      "meanS": 12.500000000000004
+     },
+     {
+      "name": "automatic",
+      "meanS": 180
+     },
+     {
+      "name": "manual",
+      "meanS": 72.00000000000006
+     }
+    ],
+    "byGroup": {
+     "npu": 0.011302153235207904,
+     "network": 0.0020071477204174717,
+     "host": 0.0038231385150808983,
+     "facility": 0.0028673538863106737,
+     "storageSoftware": 0.0038948223622386653,
+     "isolation": 0.00044621691604778487,
+     "falseAlarm": 0,
+     "sdcDetected": 0,
+     "sdcPause": 0.0001758465947674257
+    }
+   },
+   "hardwareOnly": {
+    "factor": 0.5955812251015073
+   },
+   "recoveryOnly": {
+    "factor": 0.6059314824141161,
+    "recoveryStarS": 160.26887709853375,
+    "meanPauseStarS": 160.12327268808758
+   },
+   "iso": [
+    {
+     "g": 0.05,
+     "f": 12.410627654071506,
+     "meanPauseS": 13.212985076310442
+    },
+    {
+     "g": 0.1,
+     "f": 6.192192934435525,
+     "meanPauseS": 26.425970152620884
+    },
+    {
+     "g": 0.15,
+     "f": 4.119375887667828,
+     "meanPauseS": 39.63895522893133
+    },
+    {
+     "g": 0.2,
+     "f": 3.0829663494019206,
+     "meanPauseS": 52.85194030524177
+    },
+    {
+     "g": 0.3,
+     "f": 2.046556162842554,
+     "meanPauseS": 79.27791045786266
+    },
+    {
+     "g": 0.4,
+     "f": 1.5283508535016224,
+     "meanPauseS": 105.70388061048354
+    },
+    {
+     "g": 0.5,
+     "f": 1.2174276195714648,
+     "meanPauseS": 132.12985076310443
+    },
+    {
+     "g": 0.7,
+     "f": 0.862086778893433,
+     "meanPauseS": 184.98179106834615
+    },
+    {
+     "g": 1,
+     "f": 0.5955812251015073,
+     "meanPauseS": 264.25970152620886
+    },
+    {
+     "g": 1.5,
+     "f": 0.3882993273203412,
+     "meanPauseS": 396.38955228931314
+    },
+    {
+     "g": 2,
+     "f": 0.2846585848184229,
+     "meanPauseS": 528.5194030524177
+    }
+   ],
+   "sets": {
+    "remapAgree": {
+     "label": "ReMAP 原有机制 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.988554946409285,
+     "unavailability": 0.011445053590715015,
+     "meanPauseS": 120.67878497663814,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.45666737788496825,
+     "removedPts": 0.013071625639355822,
+     "byGroup": {
+      "npu": 0.0016965508616208535,
+      "network": 0.0009726043247274977,
+      "host": 0.0012904827426494106,
+      "facility": 0.002905783360647864,
+      "storageSoftware": 0.003947022398213349,
+      "isolation": 0.0004521973015195419,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000180412601336404
+     },
+     "hardwareFactor": 1.3338624891995672,
+     "recoveryFactorUniform": 1.380419050046192
+    },
+    "latestAgree": {
+     "label": "ReMAP 最新机制集 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "D-RECOVERY-CLASSIFY"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9873379755538652,
+     "unavailability": 0.012662024446134845,
+     "meanPauseS": 134.36283059463986,
+     "recoveryS": 202.93999999999966,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.5084499445758814,
+     "removedPts": 0.011854654783935992,
+     "byGroup": {
+      "npu": 0.0031644062619075146,
+      "network": 0.000800234328809951,
+      "host": 0.0029688589731209926,
+      "facility": 0.0022266442298407444,
+      "storageSoftware": 0.003024525078867012,
+      "isolation": 0.00034129601526177984,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00013605955832683039
+     },
+     "hardwareFactor": 1.1948309213459747,
+     "recoveryFactorUniform": 1.1906256209216335
+    },
+    "latestPlanner": {
+     "label": "ReMAP 最新机制集 · 规划器集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.988554946409285,
+     "unavailability": 0.011445053590715015,
+     "meanPauseS": 120.67878497663814,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.45666737788496825,
+     "removedPts": 0.013071625639355822,
+     "byGroup": {
+      "npu": 0.0016965508616208535,
+      "network": 0.0009726043247274977,
+      "host": 0.0012904827426494106,
+      "facility": 0.002905783360647864,
+      "storageSoftware": 0.003947022398213349,
+      "isolation": 0.0004521973015195419,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.000180412601336404
+     },
+     "hardwareFactor": 1.3338624891995672,
+     "recoveryFactorUniform": 1.380419050046192
+    },
+    "remapPlanner": {
+     "label": "ReMAP 原有机制 · 规划器集",
+     "ids": [
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.9906601729036602,
+     "unavailability": 0.009339827096339848,
+     "meanPauseS": 97.9050751517018,
+     "recoveryS": 264.50000000000006,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.37048810161466,
+     "removedPts": 0.01517685213373099,
+     "byGroup": {
+      "npu": 0.0003762363474389891,
+      "network": 0.0013342508917386531,
+      "host": 0.0001272681090702712,
+      "facility": 0.002911973602862171,
+      "storageSoftware": 0.00395543081055445,
+      "isolation": 0.000453160625510921,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.0001815067091644379
+     },
+     "hardwareFactor": 1.6602356019509614,
+     "recoveryFactorUniform": 1.6290383604564256
+    },
+    "latestAll": {
+     "label": "ReMAP 最新机制集 · 全部 23 项",
+     "ids": [
+      "D-HARD",
+      "D-SLOW",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC",
+      "C-FAST",
+      "R-LINK-LOCAL",
+      "R-FABRIC-DEGRADE",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "C-ASYNC",
+      "C-LOSSLESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-SDC-FP8",
+      "D-SDC-FP4",
+      "D-ABFT",
+      "D-NET-SDC",
+      "H-SDC-SCREEN",
+      "R-HCCL-ELASTIC",
+      "R-CANN-GRAPH"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9959339179642721,
+     "unavailability": 0.0040660820357278915,
+     "meanPauseS": 42.73693517978036,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 0.3401632599552409,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.939764865057976,
+     "recoveryFactorEff": 0.16172324017985684,
+     "removedPts": 0.020450597194342945,
+     "byGroup": {
+      "npu": 0.0002560935994997058,
+      "network": 0.00001696293716424108,
+      "host": 0.00007067257900206875,
+      "facility": 0.0013078948291327063,
+      "storageSoftware": 0.00208642725456259,
+      "isolation": 0.00032393411005213093,
+      "falseAlarm": 0,
+      "sdcDetected": 0.0000030346933175702854,
+      "sdcPause": 0.0000010620329968244074
+     },
+     "hardwareFactor": 3.969579006491012,
+     "recoveryFactorUniform": 4.105658817367596
+    }
+   },
+   "levers": [
+    {
+     "id": "auto60",
+     "label": "自动尝试 180 → 60 s",
+     "patch": {
+      "autoSeconds": 60
+     },
+     "aOp": 0.9944238147474094,
+     "unavailability": 0.005576185252590626,
+     "meanPauseS": 58.850835492946125,
+     "recoveryS": 82.93999999999966,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.22270075669146017,
+     "removedPts": 0.01894049397748021,
+     "byGroup": {
+      "npu": 0.0016398796375256557,
+      "network": 0.0003749685421917149,
+      "host": 0.0012219516282024599,
+      "facility": 0.0009164637211518449,
+      "storageSoftware": 0.001244863221231256,
+      "isolation": 0.00012713363470118547,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00005092486758647248
+     },
+     "hardwareFactor": 2.7724983883048635
+    },
+    {
+     "id": "ps999",
+     "label": "自动成功率 99 → 99.9 %",
+     "patch": {
+      "success": 0.999
+     },
+     "aOp": 0.9875279718348502,
+     "unavailability": 0.012472028165149807,
+     "meanPauseS": 132.32400672689434,
+     "recoveryS": 199.70000000000002,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.5007347165030028,
+     "removedPts": 0.01204465106492103,
+     "byGroup": {
+      "npu": 0.0031235260385388407,
+      "network": 0.0007888308150437947,
+      "host": 0.002922015604613988,
+      "facility": 0.0021915117034604905,
+      "storageSoftware": 0.0029768033972005,
+      "isolation": 0.0003355532451359804,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.0001337873611562059
+     },
+     "hardwareFactor": 1.213857583943929
+    },
+    {
+     "id": "manual30",
+     "label": "人工 120 → 30 min",
+     "patch": {
+      "manualSeconds": 1800
+     },
+     "aOp": 0.987797257936226,
+     "unavailability": 0.01220274206377403,
+     "meanPauseS": 129.43567291425447,
+     "recoveryS": 195.1099999999999,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.4898048100664234,
+     "removedPts": 0.012313937166296807,
+     "byGroup": {
+      "npu": 0.0030655857748386906,
+      "network": 0.0007726684132692099,
+      "host": 0.0028556236698287617,
+      "facility": 0.0021417177523715713,
+      "storageSoftware": 0.0029091666136380513,
+      "isolation": 0.00032741391545430766,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00013056592437347652
+     },
+     "hardwareFactor": 1.2418344590688242
+    },
+    {
+     "id": "all3",
+     "label": "三项同时",
+     "patch": {
+      "autoSeconds": 60,
+      "success": 0.999,
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9949379062989357,
+     "unavailability": 0.005062093701064252,
+     "meanPauseS": 53.413971845624374,
+     "recoveryS": 74.3,
+     "lambdaJob": 0.33986689298749934,
+     "hardware": 0.33333333333333326,
+     "mtbiHours": 2.9423283662900968,
+     "recoveryFactorEff": 0.20212681516378259,
+     "removedPts": 0.019454585529006585,
+     "byGroup": {
+      "npu": 0.0015292790788363373,
+      "network": 0.00034411658274463016,
+      "host": 0.0010952179095277798,
+      "facility": 0.0008214134321458349,
+      "storageSoftware": 0.0011157532453314259,
+      "isolation": 0.00011159669453797824,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00004471675794022791
+     },
+     "hardwareFactor": 3.0567730250622476
+    }
+   ],
+   "ledgers": {
+    "remapAgree": {
+     "baselineU": 0.024516679230070837,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.013071625639355822,
+     "residualU": 0.011445053590715015,
+     "gap": -0.003554946409284998,
+     "hardwareFactor": 1.3338624891995672,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "latestAgree": {
+     "baselineU": 0.024516679230070837,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.011854654783935992,
+     "residualU": 0.012662024446134845,
+     "gap": -0.002337975553865168,
+     "hardwareFactor": 1.1948309213459747,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "latestPlanner": {
+     "baselineU": 0.024516679230070837,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.013071625639355822,
+     "residualU": 0.011445053590715015,
+     "gap": -0.003554946409284998,
+     "hardwareFactor": 1.3338624891995672,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "remapPlanner": {
+     "baselineU": 0.024516679230070837,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.01517685213373099,
+     "residualU": 0.009339827096339848,
+     "gap": -0.005660172903660166,
+     "hardwareFactor": 1.6602356019509614,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "latestAll": {
+     "baselineU": 0.024516679230070837,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.020450597194342945,
+     "residualU": 0.0040660820357278915,
+     "gap": -0.010933917964272122,
+     "hardwareFactor": 3.969579006491012,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    }
+   }
+  },
+  "200000": {
+   "N": 200000,
+   "baseline": {
+    "aOp": 0.9522230479194774,
+    "unavailability": 0.04777695208052257,
+    "meanPauseS": 264.25970152620886,
+    "recoveryS": 264.50000000000006,
+    "lambdaJob": 0.6797337859749987,
+    "hardware": 0.6666666666666665,
+    "mtbiHours": 1.4711641831450484,
+    "stages": [
+     {
+      "name": "detection",
+      "meanS": 12.500000000000004
+     },
+     {
+      "name": "automatic",
+      "meanS": 180
+     },
+     {
+      "name": "manual",
+      "meanS": 72.00000000000006
+     }
+    ],
+    "byGroup": {
+     "npu": 0.022067173103177292,
+     "network": 0.003918906005638251,
+     "host": 0.007464582867882382,
+     "facility": 0.005598437150911787,
+     "storageSoftware": 0.0076045437966551785,
+     "isolation": 0.0008712274310100756,
+     "falseAlarm": 0,
+     "sdcDetected": 0,
+     "sdcPause": 0.00025208172524754813
+    }
+   },
+   "hardwareOnly": {
+    "factor": 0.28659249322755015
+   },
+   "recoveryOnly": {
+    "factor": 0.30353949625666143,
+    "recoveryStarS": 80.28619675988696,
+    "meanPauseStarS": 80.21325668220115
+   },
+   "iso": [
+    {
+     "g": 0.05,
+     "f": 6.194171190197251,
+     "meanPauseS": 13.212985076310442
+    },
+    {
+     "g": 0.1,
+     "f": 3.0849221450680435,
+     "meanPauseS": 26.425970152620884
+    },
+    {
+     "g": 0.15,
+     "f": 2.048504128025919,
+     "meanPauseS": 39.63895522893133
+    },
+    {
+     "g": 0.2,
+     "f": 1.530294843346888,
+     "meanPauseS": 52.85194030524177
+    },
+    {
+     "g": 0.3,
+     "f": 1.0120854156186385,
+     "meanPauseS": 79.27791045786266
+    },
+    {
+     "g": 0.4,
+     "f": 0.7529806828305448,
+     "meanPauseS": 105.70388061048354
+    },
+    {
+     "g": 0.5,
+     "f": 0.5975178630598168,
+     "meanPauseS": 132.12985076310443
+    },
+    {
+     "g": 0.7,
+     "f": 0.4198461398324747,
+     "meanPauseS": 184.98179106834615
+    },
+    {
+     "g": 1,
+     "f": 0.28659249322755015,
+     "meanPauseS": 264.25970152620886
+    },
+    {
+     "g": 1.5,
+     "f": 0.18295104446695085,
+     "meanPauseS": 396.38955228931314
+    },
+    {
+     "g": 2,
+     "f": 0.13113058434927435,
+     "meanPauseS": 528.5194030524177
+    }
+   ],
+   "sets": {
+    "remapAgree": {
+     "label": "ReMAP 原有机制 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-HARD",
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.9833638386746245,
+     "unavailability": 0.016636161325375487,
+     "meanPauseS": 88.13664946750674,
+     "recoveryS": 253.05900000000005,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.3335228525517936,
+     "removedPts": 0.031140790755147085,
+     "byGroup": {
+      "npu": 0.0005602128021536626,
+      "network": 0.0017209020509601942,
+      "host": 0.00014319275907955593,
+      "facility": 0.0055314811008216665,
+      "storageSoftware": 0.007513595161949431,
+      "isolation": 0.0008997255541715444,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00026705189623941425
+     },
+     "hardwareFactor": 0.8925987808087084,
+     "recoveryFactorUniform": 0.8959315932102506
+    },
+    "latestAgree": {
+     "label": "ReMAP 最新机制集 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "C-LOSSLESS",
+      "D-HARD",
+      "R-WARM-PROCESS",
+      "H-CONTROL-CONTINUITY",
+      "R-RUNTIME-SNAPSHOT",
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9905437258357938,
+     "unavailability": 0.009456274164206246,
+     "meanPauseS": 49.56866256970147,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.1875755640509014,
+     "removedPts": 0.038320677916316326,
+     "byGroup": {
+      "npu": 0.0005610872801980235,
+      "network": 0.0012011632460829386,
+      "host": 0.0001406060988400663,
+      "facility": 0.0026021123357060708,
+      "storageSoftware": 0.0041510356763554395,
+      "isolation": 0.0006165151071503125,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00018375441987339184
+     },
+     "hardwareFactor": 1.6503164045488117,
+     "recoveryFactorUniform": 1.6682936434670863
+    },
+    "latestPlanner": {
+     "label": "ReMAP 最新机制集 · 规划器集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9895444029081265,
+     "unavailability": 0.010455597091873492,
+     "meanPauseS": 54.96774023175399,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.20800651750642493,
+     "removedPts": 0.03732135498864908,
+     "byGroup": {
+      "npu": 0.0005616181168627909,
+      "network": 0.0011999748326287875,
+      "host": 0.00014171788894957462,
+      "facility": 0.0025994869218262007,
+      "storageSoftware": 0.00515342821611744,
+      "isolation": 0.0006158930712384682,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00018347804425019313
+     },
+     "hardwareFactor": 1.4778658274163847,
+     "recoveryFactorUniform": 1.4722694821540332
+    },
+    "remapPlanner": {
+     "label": "ReMAP 原有机制 · 规划器集",
+     "ids": [
+      "D-HARD",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.9835977833476224,
+     "unavailability": 0.01640221665237762,
+     "meanPauseS": 87.00232911008506,
+     "recoveryS": 253.05900000000005,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.3292304070867056,
+     "removedPts": 0.03137473542814495,
+     "byGroup": {
+      "npu": 0.0005602085872861173,
+      "network": 0.0017208891034263727,
+      "host": 0.00014319168174160393,
+      "facility": 0.005531439483671755,
+      "storageSoftware": 0.007513538631987469,
+      "isolation": 0.0008997187849152487,
+      "falseAlarm": 0,
+      "sdcDetected": 0.0000075236901411834455,
+      "sdcPause": 0.000025706689207927482
+     },
+     "hardwareFactor": 0.9079706590839582,
+     "recoveryFactorUniform": 0.9094297893755143
+    },
+    "latestAll": {
+     "label": "ReMAP 最新机制集 · 全部 23 项",
+     "ids": [
+      "D-HARD",
+      "D-SLOW",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC",
+      "C-FAST",
+      "R-LINK-LOCAL",
+      "R-FABRIC-DEGRADE",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "C-ASYNC",
+      "C-LOSSLESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-SDC-FP8",
+      "D-SDC-FP4",
+      "D-ABFT",
+      "D-NET-SDC",
+      "H-SDC-SCREEN",
+      "R-HCCL-ELASTIC",
+      "R-CANN-GRAPH"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9919007755975389,
+     "unavailability": 0.008099224402461136,
+     "meanPauseS": 42.73693517978036,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 0.6803265199104818,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.469882432528988,
+     "recoveryFactorEff": 0.16172324017985684,
+     "removedPts": 0.039677727678061436,
+     "byGroup": {
+      "npu": 0.0005101135771047987,
+      "network": 0.00003378852330538189,
+      "host": 0.00014077291329574285,
+      "facility": 0.0026051994703074205,
+      "storageSoftware": 0.004155960446778326,
+      "isolation": 0.0006452452851135854,
+      "falseAlarm": 0,
+      "sdcDetected": 0.000006044814343919539,
+      "sdcPause": 0.0000020993722120374217
+     },
+     "hardwareFactor": 1.9409127602548524,
+     "recoveryFactorUniform": 1.9840305501358855
+    }
+   },
+   "levers": [
+    {
+     "id": "auto60",
+     "label": "自动尝试 180 → 60 s",
+     "patch": {
+      "autoSeconds": 60
+     },
+     "aOp": 0.9953541817493827,
+     "unavailability": 0.004645818250617273,
+     "meanPauseS": 24.313503544405116,
+     "recoveryS": 71.49899999999965,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.09200609629082526,
+     "removedPts": 0.0431311338299053,
+     "byGroup": {
+      "npu": 0.0005621154604761295,
+      "network": 0.0005365734884717522,
+      "host": 0.00013940476059459066,
+      "facility": 0.0010877689144828976,
+      "storageSoftware": 0.0019893998315577786,
+      "isolation": 0.000254511568124469,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00007604422690968517
+     },
+     "hardwareFactor": 3.4362354468699667
+    },
+    {
+     "id": "ps999",
+     "label": "自动成功率 99 → 99.9 %",
+     "patch": {
+      "success": 0.999
+     },
+     "aOp": 0.9907243909985718,
+     "unavailability": 0.009275609001428209,
+     "meanPauseS": 48.612476545158586,
+     "recoveryS": 169.25900000000001,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.18395720673413868,
+     "removedPts": 0.03850134307909436,
+     "byGroup": {
+      "npu": 0.0005611044227863843,
+      "network": 0.0011799728087252095,
+      "host": 0.00014053612643555972,
+      "facility": 0.0025538253416309787,
+      "storageSoftware": 0.0040548678153945455,
+      "isolation": 0.0006049719585830552,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.0001803305278725159
+     },
+     "hardwareFactor": 1.6846137774981567
+    },
+    {
+     "id": "manual30",
+     "label": "人工 120 → 30 min",
+     "patch": {
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9909804450840097,
+     "unavailability": 0.009019554915990269,
+     "meanPauseS": 47.25787967705597,
+     "recoveryS": 164.6689999999999,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.17883120053539078,
+     "removedPts": 0.0387573971645323,
+     "byGroup": {
+      "npu": 0.0005611287186221317,
+      "network": 0.0011499400403646807,
+      "host": 0.00014043695599463526,
+      "facility": 0.002485389184160424,
+      "storageSoftware": 0.00391857109611457,
+      "isolation": 0.0005886120929880598,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.0001754768277457287
+     },
+     "hardwareFactor": 1.7355811511709656
+    },
+    {
+     "id": "all3",
+     "label": "三项同时",
+     "patch": {
+      "autoSeconds": 60,
+      "success": 0.999,
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9958407452290194,
+     "unavailability": 0.004159254770980558,
+     "meanPauseS": 21.763674145623884,
+     "recoveryS": 62.859,
+     "lambdaJob": 0.6797337859749987,
+     "hardware": 0.6666666666666665,
+     "mtbiHours": 1.4711641831450484,
+     "recoveryFactorEff": 0.08235714344612395,
+     "removedPts": 0.043617697309542014,
+     "byGroup": {
+      "npu": 0.0005621618978269017,
+      "network": 0.0004794617093948992,
+      "host": 0.00013921664944953045,
+      "facility": 0.0009576274077359023,
+      "storageSoftware": 0.00173062102145735,
+      "isolation": 0.00022340085878266562,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00006676522633331949
+     },
+     "hardwareFactor": 3.844844176577512
+    }
+   ],
+   "ledgers": {
+    "remapAgree": {
+     "baselineU": 0.04777695208052257,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.031140790755147085,
+     "residualU": 0.016636161325375487,
+     "gap": 0.0016361613253754737,
+     "hardwareFactor": 0.8925987808087084,
+     "hardwareShareOfReduction": 0.04991804367153923,
+     "mechanismShareOfReduction": 0.9500819563284608
+    },
+    "latestAgree": {
+     "baselineU": 0.04777695208052257,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.038320677916316326,
+     "residualU": 0.009456274164206246,
+     "gap": -0.005543725835793767,
+     "hardwareFactor": 1.6503164045488117,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "latestPlanner": {
+     "baselineU": 0.04777695208052257,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.03732135498864908,
+     "residualU": 0.010455597091873492,
+     "gap": -0.004544402908126521,
+     "hardwareFactor": 1.4778658274163847,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    },
+    "remapPlanner": {
+     "baselineU": 0.04777695208052257,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.03137473542814495,
+     "residualU": 0.01640221665237762,
+     "gap": 0.001402216652377608,
+     "hardwareFactor": 0.9079706590839582,
+     "hardwareShareOfReduction": 0.04278056876468584,
+     "mechanismShareOfReduction": 0.9572194312353142
+    },
+    "latestAll": {
+     "baselineU": 0.04777695208052257,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.039677727678061436,
+     "residualU": 0.008099224402461136,
+     "gap": -0.006900775597538877,
+     "hardwareFactor": 1.9409127602548524,
+     "hardwareShareOfReduction": 0,
+     "mechanismShareOfReduction": 1
+    }
+   }
+  },
+  "500000": {
+   "N": 500000,
+   "baseline": {
+    "aOp": 0.8887676367567452,
+    "unavailability": 0.1112323632432548,
+    "meanPauseS": 264.2597015262089,
+    "recoveryS": 264.50000000000006,
+    "lambdaJob": 1.6993344649374966,
+    "hardware": 1.6666666666666663,
+    "mtbiHours": 0.5884656732580194,
+    "stages": [
+     {
+      "name": "detection",
+      "meanS": 12.500000000000004
+     },
+     {
+      "name": "automatic",
+      "meanS": 180
+     },
+     {
+      "name": "manual",
+      "meanS": 72.00000000000006
+     }
+    ],
+    "byGroup": {
+     "npu": 0.051496860340839924,
+     "network": 0.009145319806829923,
+     "host": 0.01741965677491414,
+     "facility": 0.013064742581185604,
+     "storageSoftware": 0.01774627533944378,
+     "isolation": 0.002033132070431566,
+     "falseAlarm": 0,
+     "sdcDetected": 0,
+     "sdcPause": 0.00032637632960982253
+    }
+   },
+   "hardwareOnly": {
+    "factor": 0.10249140478984592
+   },
+   "recoveryOnly": {
+    "factor": 0.12170578358765997,
+    "recoveryStarS": 32.19117975893607,
+    "meanPauseStarS": 32.1619340448884
+   },
+   "iso": [
+    {
+     "g": 0.05,
+     "f": 2.4654913367432,
+     "meanPauseS": 13.212985076310439
+    },
+    {
+     "g": 0.1,
+     "f": 1.2218066215845353,
+     "meanPauseS": 26.425970152620877
+    },
+    {
+     "g": 0.15,
+     "f": 0.8072451026747959,
+     "meanPauseS": 39.638955228931316
+    },
+    {
+     "g": 0.2,
+     "f": 0.5999643751773349,
+     "meanPauseS": 52.851940305241754
+    },
+    {
+     "g": 0.3,
+     "f": 0.39268370641734207,
+     "meanPauseS": 79.27791045786263
+    },
+    {
+     "g": 0.4,
+     "f": 0.28904342921012594,
+     "meanPauseS": 105.70388061048351
+    },
+    {
+     "g": 0.5,
+     "f": 0.226859308207938,
+     "meanPauseS": 132.12985076310446
+    },
+    {
+     "g": 0.7,
+     "f": 0.15579183815549033,
+     "meanPauseS": 184.98179106834615
+    },
+    {
+     "g": 1,
+     "f": 0.10249140478984592,
+     "meanPauseS": 264.2597015262089
+    },
+    {
+     "g": 1.5,
+     "f": 0.06103581270387983,
+     "meanPauseS": 396.3895522893133
+    },
+    {
+     "g": 2,
+     "f": 0.04030829828529894,
+     "meanPauseS": 528.5194030524178
+    }
+   ],
+   "sets": {
+    "remapAgree": {
+     "label": "ReMAP 原有机制 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-HARD",
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.9596923033477283,
+     "unavailability": 0.04030769665227174,
+     "meanPauseS": 88.13664946750674,
+     "recoveryS": 253.05900000000005,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.33352285255179354,
+     "removedPts": 0.07092466659098307,
+     "byGroup": {
+      "npu": 0.001366967933841389,
+      "network": 0.004199150594025898,
+      "host": 0.00034940277920735236,
+      "facility": 0.013497294710874625,
+      "storageSoftware": 0.018333825315604704,
+      "isolation": 0.0021954085609647003,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.0003656467577531071
+     },
+     "hardwareFactor": 0.3192117297443277,
+     "recoveryFactorUniform": 0.33541253447688335
+    },
+    "latestAgree": {
+     "label": "ReMAP 最新机制集 · AGREE 集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "C-LOSSLESS",
+      "R-ELASTIC",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-LINK-LOCAL",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9798471867863691,
+     "unavailability": 0.020152813213630938,
+     "meanPauseS": 43.052219186949124,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.16291632412473328,
+     "removedPts": 0.09107955002962387,
+     "byGroup": {
+      "npu": 0.0012600865695941749,
+      "network": 0.00008346467597506135,
+      "host": 0.00034773835743283544,
+      "facility": 0.006435384218314618,
+      "storageSoftware": 0.010266086177263427,
+      "isolation": 0.001524727251958207,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00023532596309260446
+     },
+     "hardwareFactor": 0.7155344126606586,
+     "recoveryFactorUniform": 0.7052848765601978
+    },
+    "latestPlanner": {
+     "label": "ReMAP 最新机制集 · 规划器集",
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY",
+      "R-LINK-LOCAL",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9798471867863691,
+     "unavailability": 0.020152813213630938,
+     "meanPauseS": 43.052219186949124,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.16291632412473328,
+     "removedPts": 0.09107955002962387,
+     "byGroup": {
+      "npu": 0.0012600865695941749,
+      "network": 0.00008346467597506135,
+      "host": 0.00034773835743283544,
+      "facility": 0.006435384218314618,
+      "storageSoftware": 0.010266086177263427,
+      "isolation": 0.001524727251958207,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00023532596309260446
+     },
+     "hardwareFactor": 0.7155344126606586,
+     "recoveryFactorUniform": 0.7052848765601978
+    },
+    "remapPlanner": {
+     "label": "ReMAP 原有机制 · 规划器集",
+     "ids": [
+      "D-HARD",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      }
+     },
+     "aOp": 0.959983791233723,
+     "unavailability": 0.040016208766276984,
+     "meanPauseS": 87.00232911008507,
+     "recoveryS": 253.05900000000005,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.3292304070867056,
+     "removedPts": 0.07121615447697782,
+     "byGroup": {
+      "npu": 0.001366942838689968,
+      "network": 0.00419907350493157,
+      "host": 0.0003493963647806245,
+      "facility": 0.013497046924042067,
+      "storageSoftware": 0.018333488738490476,
+      "isolation": 0.0021953682570856523,
+      "falseAlarm": 0,
+      "sdcDetected": 0.000018358259034969794,
+      "sdcPause": 0.00005653387922172534
+     },
+     "hardwareFactor": 0.3270986895404318,
+     "recoveryFactorUniform": 0.33769174067980473
+    },
+    "latestAll": {
+     "label": "ReMAP 最新机制集 · 全部 23 项",
+     "ids": [
+      "D-HARD",
+      "D-SLOW",
+      "D-SDC",
+      "R-SDC",
+      "R-REPLAY",
+      "R-PROCESS",
+      "R-ELASTIC",
+      "C-FAST",
+      "R-LINK-LOCAL",
+      "R-FABRIC-DEGRADE",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "C-ASYNC",
+      "C-LOSSLESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-SDC-FP8",
+      "D-SDC-FP4",
+      "D-ABFT",
+      "D-NET-SDC",
+      "H-SDC-SCREEN",
+      "R-HCCL-ELASTIC",
+      "R-CANN-GRAPH"
+     ],
+     "params": {
+      "D-HARD": {
+       "coverage": 0.999,
+       "detectSeconds": 1
+      },
+      "D-SLOW": {
+       "coverage": 0.99,
+       "detectSeconds": 30
+      },
+      "D-SDC": {
+       "coverage": 0.95,
+       "detectSeconds": 1
+      },
+      "R-SDC": {
+       "stepSeconds": 1,
+       "recoverSeconds": 1
+      },
+      "R-REPLAY": {
+       "success": 0.9,
+       "successSeconds": 5,
+       "failureSeconds": 10
+      },
+      "R-PROCESS": {
+       "success": 0.95,
+       "successSeconds": 60,
+       "failureSeconds": 120
+      },
+      "R-ELASTIC": {
+       "domains": 50,
+       "success": 0.98,
+       "recoverSeconds": 180,
+       "failureSeconds": 120,
+       "syncSeconds": 1
+      },
+      "C-FAST": {
+       "computeSeconds": 60,
+       "saveSeconds": 1
+      },
+      "R-LINK-LOCAL": {
+       "successSeconds": 2,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-FABRIC-DEGRADE": {
+       "switchSeconds": 2,
+       "exposedCommunicationFraction": 0.3,
+       "remainingBandwidthRatio": 0.75,
+       "repairSeconds": 1800,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "H-CONTROL-CONTINUITY": {
+       "pauseSeconds": 1,
+       "eligibleShare": 1,
+       "success": 0.95,
+       "failureSeconds": 0,
+       "overhead": 0
+      },
+      "R-WARM-PROCESS": {
+       "startupTargetSeconds": 20,
+       "eligibleShare": 0.95
+      },
+      "R-RUNTIME-SNAPSHOT": {
+       "startupTargetSeconds": 15,
+       "eligibleShare": 0.95
+      },
+      "C-ASYNC": {
+       "blockingTargetSeconds": 1.15,
+       "durableLagSeconds": 10
+      },
+      "C-LOSSLESS": {
+       "compressionRatio": 2,
+       "decompressSeconds": 10,
+       "share": 0.95
+      },
+      "D-RECOVERY-CLASSIFY": {
+       "manualProbabilityTarget": 0.001,
+       "eligibleShare": 1,
+       "success": 0.95
+      },
+      "D-SDC-FP8": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-SDC-FP4": {
+       "detectionTarget": 0.95,
+       "detectSeconds": 1,
+       "riskShare": 0.475
+      },
+      "D-ABFT": {
+       "upstreamDetection": 0.95,
+       "conditionalMissDetection": 0.855,
+       "overhead": 0.001
+      },
+      "D-NET-SDC": {
+       "detectionTarget": 0.9025,
+       "detectSeconds": 1
+      },
+      "H-SDC-SCREEN": {
+       "occurrenceReduction": 0.25,
+       "eligibleShare": 0.95
+      },
+      "R-HCCL-ELASTIC": {
+       "communicationBeforeSeconds": 60,
+       "communicationTargetSeconds": 15,
+       "share": 0.95
+      },
+      "R-CANN-GRAPH": {
+       "graphTargetSeconds": 7.5,
+       "eligibleShare": 0.95
+      }
+     },
+     "aOp": 0.9799950304078653,
+     "unavailability": 0.020004969592134714,
+     "meanPauseS": 42.73693517978038,
+     "recoveryS": 172.49899999999965,
+     "lambdaJob": 1.7008162997762042,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5879529730115953,
+     "recoveryFactorEff": 0.1617232401798569,
+     "removedPts": 0.09122739365112009,
+     "byGroup": {
+      "npu": 0.0012599806119361974,
+      "network": 0.00008345765763060507,
+      "host": 0.00034770911694822793,
+      "facility": 0.00643484308228761,
+      "storageSoftware": 0.01026522292669463,
+      "isolation": 0.0015937559509797922,
+      "falseAlarm": 0,
+      "sdcDetected": 0.000014930692335851564,
+      "sdcPause": 0.0000050695533217485545
+     },
+     "hardwareFactor": 0.7237148959495856,
+     "recoveryFactorUniform": 0.711053258557688
+    }
+   },
+   "levers": [
+    {
+     "id": "auto60",
+     "label": "自动尝试 180 → 60 s",
+     "patch": {
+      "autoSeconds": 60
+     },
+     "aOp": 0.9899223229765293,
+     "unavailability": 0.010077677023470732,
+     "meanPauseS": 21.354787057883126,
+     "recoveryS": 71.49899999999965,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.0808098508192903,
+     "removedPts": 0.10115468621978407,
+     "byGroup": {
+      "npu": 0.0012689634112554777,
+      "network": 0.00008014443658489672,
+      "host": 0.00034661783653306126,
+      "facility": 0.0027046429847719907,
+      "storageSoftware": 0.004946469996237351,
+      "isolation": 0.0006328209218944237,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00009801743619355773
+     },
+     "hardwareFactor": 1.5347008461035572
+    },
+    {
+     "id": "ps999",
+     "label": "自动成功率 99 → 99.9 %",
+     "patch": {
+      "success": 0.999
+     },
+     "aOp": 0.9802334630418681,
+     "unavailability": 0.01976653695813191,
+     "meanPauseS": 42.21017251725484,
+     "recoveryS": 169.25900000000001,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.15972988796049364,
+     "removedPts": 0.0914658262851229,
+     "byGroup": {
+      "npu": 0.0012603801265704516,
+      "network": 0.00008336482947349228,
+      "host": 0.0003476385639615042,
+      "facility": 0.006317295039294966,
+      "storageSoftware": 0.010030363438569948,
+      "isolation": 0.0014964948035281627,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00023100015673336937
+     },
+     "hardwareFactor": 0.7316997351094086
+    },
+    {
+     "id": "manual30",
+     "label": "人工 120 → 30 min",
+     "patch": {
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9807812054707409,
+     "unavailability": 0.01921879452925912,
+     "meanPauseS": 41.01727306852112,
+     "recoveryS": 164.6689999999999,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.15521577006115359,
+     "removedPts": 0.09201356871399569,
+     "byGroup": {
+      "npu": 0.0012607963908406994,
+      "network": 0.0000832232469717295,
+      "host": 0.0003474970566567072,
+      "facility": 0.006149844391209635,
+      "storageSoftware": 0.009696108211373344,
+      "isolation": 0.0014564611456952142,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00022486408651177154
+     },
+     "hardwareFactor": 0.7557401081314117
+    },
+    {
+     "id": "all3",
+     "label": "三项同时",
+     "patch": {
+      "autoSeconds": 60,
+      "success": 0.999,
+      "manualSeconds": 1800
+     },
+     "aOp": 0.9909742048653719,
+     "unavailability": 0.00902579513462809,
+     "meanPauseS": 19.10932927203155,
+     "recoveryS": 62.859,
+     "lambdaJob": 1.6993344649374966,
+     "hardware": 1.6666666666666663,
+     "mtbiHours": 0.5884656732580194,
+     "recoveryFactorEff": 0.07231268771465071,
+     "removedPts": 0.10220656810862672,
+     "byGroup": {
+      "npu": 0.0012697640145690771,
+      "network": 0.00007987181401670568,
+      "host": 0.0003463476676331177,
+      "facility": 0.002382416330534645,
+      "storageSoftware": 0.004305494757334274,
+      "isolation": 0.0005557838569779823,
+      "falseAlarm": 0,
+      "sdcDetected": 0,
+      "sdcPause": 0.00008611669356230312
+     },
+     "hardwareFactor": 1.7234982338832794
+    }
+   ],
+   "ledgers": {
+    "remapAgree": {
+     "baselineU": 0.1112323632432548,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.07092466659098307,
+     "residualU": 0.04030769665227174,
+     "gap": 0.025307696652271727,
+     "hardwareFactor": 0.3192117297443277,
+     "hardwareShareOfReduction": 0.26298529724661646,
+     "mechanismShareOfReduction": 0.7370147027533835
+    },
+    "latestAgree": {
+     "baselineU": 0.1112323632432548,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.09107955002962387,
+     "residualU": 0.020152813213630938,
+     "gap": 0.005152813213630925,
+     "hardwareFactor": 0.7155344126606586,
+     "hardwareShareOfReduction": 0.053545533331710006,
+     "mechanismShareOfReduction": 0.94645446666829
+    },
+    "latestPlanner": {
+     "baselineU": 0.1112323632432548,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.09107955002962387,
+     "residualU": 0.020152813213630938,
+     "gap": 0.005152813213630925,
+     "hardwareFactor": 0.7155344126606586,
+     "hardwareShareOfReduction": 0.053545533331710006,
+     "mechanismShareOfReduction": 0.94645446666829
+    },
+    "remapPlanner": {
+     "baselineU": 0.1112323632432548,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.07121615447697782,
+     "residualU": 0.040016208766276984,
+     "gap": 0.02501620876627697,
+     "hardwareFactor": 0.3270986895404318,
+     "hardwareShareOfReduction": 0.25995629664670455,
+     "mechanismShareOfReduction": 0.7400437033532954
+    },
+    "latestAll": {
+     "baselineU": 0.1112323632432548,
+     "budget": 0.015000000000000013,
+     "removedByMechanisms": 0.09122739365112009,
+     "residualU": 0.020004969592134714,
+     "gap": 0.0050049695921347,
+     "hardwareFactor": 0.7237148959495856,
+     "hardwareShareOfReduction": 0.05200921419214459,
+     "mechanismShareOfReduction": 0.9479907858078555
+    }
+   }
+  }
+ }
+}

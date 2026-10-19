@@ -3,7 +3,8 @@
  * HAC-D MCP server (stdio). Tools: list_examples, get_example, evaluate_scenario, compare_scenarios,
  * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
  * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, apply_mechanisms, simulate_ledger, plan_mechanisms (v3),
- * estimate_rate (v3.5), audit_mechanisms, allocation_study (v3.7: single-point benefit audit and cross-scale allocation study, each with an optional standalone HTML report).
+ * estimate_rate (v3.5), audit_mechanisms, allocation_study (v3.7: single-point benefit audit and cross-scale allocation study, each with an optional standalone HTML report),
+ * topology_bom, allocation_strategy (v4: topology templates with per-unit fault types; optimal / MTTR-preferred / MTTF-preferred allocation).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -19,6 +20,7 @@ import {
   type Library, type AllocationMethod, type TornadoMetric, type AttributionMetric,
   rateFromCounts, unitRateFromCounts, type LossBudgetMethod, type LedgerLossLine,
   auditMechanisms, auditReportHtml, allocationStudy, studyReportHtml, type StudyMetric, type ReportLang,
+  GPU_EXAMPLES, REFERENCE_FIXTURES, TOPOLOGY_SCALES, resizeTopology, topologyScenario, topologyBom, bomAtSizes, TOPOLOGY_TEMPLATES, allocateStrategy, strategyAcrossSizes, type TopologyTemplate,
 } from '@hac-d/core';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -30,12 +32,12 @@ const text = (v: unknown) => ({ content: [{ type: 'text' as const, text: JSON.st
 const scenarioArg = z.union([z.string(), z.record(z.string(), z.unknown())]).describe('Scenario JSON (object or string)');
 const toScenario = (s: string | Record<string, unknown>) => parseScenario(typeof s === 'string' ? JSON.parse(s) : s);
 
-server.registerTool('list_examples', { description: 'List the built-in example scenarios (survey worked examples and an NVL72 design).' }, async () => text(Object.keys(EXAMPLES).map((id) => ({ id, name: EXAMPLES[id]().meta.name }))));
+server.registerTool('list_examples', { description: 'List the built-in NPU example scenarios: the three topology templates (A2 RoCE, A3 CloudMatrix384, Atlas 950) at 10,000 NPUs with the six default mechanisms; the scale is a parameter (get_example with npus: built-in 10k / 100k / 200k / 500k or any N). The reference fixtures (ref-catalog-100k, ref-three-classes-100k) and the v3.7 GPU examples (survey-ex1/3/4, nvl72-16k, ref-baseline-100k) stay reachable by id with get_example.' }, async () => text(Object.keys(EXAMPLES).map((id) => ({ id, name: EXAMPLES[id]().meta.name }))));
 
-server.registerTool('get_example', { description: 'Return an example scenario as JSON, ready to edit and evaluate.', inputSchema: { id: z.string() } }, async ({ id }) => {
-  const f = EXAMPLES[id];
+server.registerTool('get_example', { description: `Return an example scenario as JSON, ready to edit and evaluate; npus resizes it (every topology count follows the template geometry; built-in ${TOPOLOGY_SCALES.join(' / ')}).`, inputSchema: { id: z.string(), npus: z.number().int().positive().optional() } }, async ({ id, npus }) => {
+  const f = EXAMPLES[id] ?? REFERENCE_FIXTURES[id] ?? GPU_EXAMPLES[id];
   if (!f) throw new Error(`unknown example '${id}'`);
-  return text(f());
+  return text(npus ? resizeTopology(f(), npus) : f());
 });
 
 server.registerTool('scenario_schema', { description: 'JSON Schema of the scenario file (topology, components with 口径-typed rates and provenance, workload, recovery pipeline, spares, targets, costs).' }, async () => text(scenarioJsonSchema()));
@@ -168,6 +170,30 @@ server.registerTool(
     if (htmlPath) writeFileSync(htmlPath, studyReportHtml(r, (lang as ReportLang | undefined) ?? 'zh'));
     if (summary) return text({ target: r.target, metric: r.metric, players: r.players, htmlPath, sizes: r.sizes.map((N) => { const z = r.perSize[N]; return { N, baseline: z.baseline.value, hardwareFactor: z.hardwareOnly.factor, recoveryStarS: z.recoveryOnly.recoveryStarS, plan: z.plan, residualFactor: z.residualFactor, verification: z.verification, shapley: Object.fromEntries(z.gains.map((g) => [g.id, g.byMetric[r.metric].shapley])), residualByGroup: z.planned.byGroup }; }), maxN: Object.fromEntries(Object.entries(r.curves).map(([k, c]) => [k, c.maxN])), notes: r.notes });
     return text(htmlPath ? { ...r, htmlPath } : r);
+  },
+);
+
+server.registerTool(
+  'topology_bom',
+  { description: 'v4 topology template → hardware bill of materials and scenario: template a2-roce (Atlas 800T A2 servers, RoCE Clos), a3-ub384 (CloudMatrix384 UB supernode, paper geometry) or a950-ub2 (Atlas 950 SuperPoD, vendor totals, fabric assumed); counts at the given sizes (default the built-in 10k / 100k / 200k / 500k NPUs); fault types per hardware unit from the 54-event catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit), interruption FIT per NPU by unit. `scenario: true` also returns the scenario (six ReMAP default mechanisms applied).', inputSchema: { template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2']), npus: z.number().optional(), sizes: z.array(z.number()).optional(), scaleOut: z.boolean().optional(), fabricFill: z.enum(['proportional', 'full-pod']).optional(), radix: z.number().optional(), fit: z.record(z.string(), z.number()).optional(), mechanisms: z.array(z.string()).optional(), scenario: z.boolean().optional() } },
+  async ({ template, npus, sizes, scaleOut, fabricFill, radix, fit, mechanisms, scenario }) => {
+    const base = TOPOLOGY_TEMPLATES[template as TopologyTemplate].topology;
+    const s = topologyScenario(template as TopologyTemplate, npus ?? 10000, { scaleOut, fit, mechanisms, topology: { ...(fabricFill ? { fabricFill } : {}), ...(radix && base.scaleOut ? { scaleOut: { ...base.scaleOut, radix } as never } : {}) } });
+    const at = bomAtSizes(s, sizes);
+    return text({ template: TOPOLOGY_TEMPLATES[template as TopologyTemplate], bom: topologyBom(s), sizes: at.map((x) => ({ npus: x.npus, counts: x.bom.counts, hardFitPerNpu: x.bom.hardFitPerNpu, hardFitPerNpuTotal: x.bom.hardFitPerNpuTotal, hardPerHour: x.bom.hardPerHour })), ...(scenario ? { scenario: s } : {}) });
+  },
+);
+
+server.registerTool(
+  'allocation_strategy',
+  { description: 'v4 allocation strategies: reach an A_op or delivered-goodput target (nominal and derated) with mechanisms from the library, recovery levers moved to limits (automatic attempt, automatic success, manual time) and hardware: the interruption FIT of each class × x_i ∈ [floor_i, 1], effort e_i·log2(1/x_i). strategy optimal (least total effort), mttr-first (recovery side first, remaining gap to hardware) or mttf-first (hardware to the floors first, mechanisms only for the rest); hardware split min-effort, agree or arinc. Floors / effort per halving from component.allocation (minLambdaFactor, effortPerHalving, fixed). `sizes` runs the strategy at several cluster sizes. Pass a scenario or a topology template.', inputSchema: { scenario: scenarioArg.optional(), template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2']).optional(), npus: z.number().optional(), strategy: z.enum(['optimal', 'mttr-first', 'mttf-first']), target: z.number(), metric: z.enum(['aOp', 'delivered']).optional(), split: z.enum(['min-effort', 'agree', 'arinc']).optional(), candidates: z.array(z.string()).optional(), levers: z.boolean().optional(), derate: z.boolean().optional(), trials: z.number().int().nonnegative().optional(), sizes: z.array(z.number()).optional(), includeScenario: z.boolean().optional() } },
+  async ({ scenario, template, npus, strategy, target, metric, split, candidates, levers, derate, trials, sizes, includeScenario }) => {
+    if (!scenario && !template) throw new Error('pass a scenario or a template');
+    const s = scenario ? toScenario(scenario) : topologyScenario(template as TopologyTemplate, npus ?? 10000);
+    const opts = { strategy, target, metric, hardwareSplit: split, candidates, levers: levers === false ? (false as const) : undefined, derate: derate === false ? null : undefined, verify: trials ? { trials } : undefined };
+    if (sizes?.length) return text(strategyAcrossSizes(s, sizes, opts));
+    const { scenario: finalScenario, ...r } = allocateStrategy(s, opts);
+    return text(includeScenario ? { ...r, scenario: finalScenario } : r);
   },
 );
 

@@ -108,6 +108,14 @@ export const CountRuleSchema = z.discriminatedUnion('per', [
   z.object({ per: z.literal('subplane'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('optical_link'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('transceiver'), factor: z.number().positive().default(1) }),
+  /** v4 host CPUs (nodes × CPUs per node, from the superpod geometry or topology.cpusPerNode) */
+  z.object({ per: z.literal('cpu'), factor: z.number().positive().default(1) }),
+  /** v4 UB switch chips of the supernodes (L1 + L2) */
+  z.object({ per: z.literal('ub_switch'), factor: z.number().positive().default(1) }),
+  /** v4 scale-out (RoCE) network from topology.scaleOut: NPU ports, switches of every tier, links (NPU–leaf and inter-tier) */
+  z.object({ per: z.literal('roce_port'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('roce_switch'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('roce_link'), factor: z.number().positive().default(1) }),
 ]);
 
 export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack']);
@@ -196,6 +204,8 @@ export const ComponentSchema = z.object({
     costB: z.number().positive().optional(),
     minLambdaFactor: z.number().min(0).max(1).optional(),
     fixed: z.boolean().optional(),
+    /** v4 allocation strategies: effort of halving this class's interruption FIT (in mechanism-effort units; default 2) */
+    effortPerHalving: z.number().nonnegative().optional(),
   }).optional(),
   /**
    * v3 mechanism applicability: the fraction of this class's hard interruptions that each recovery mechanism of
@@ -226,6 +236,20 @@ export const ComponentSchema = z.object({
   enabled: z.boolean().default(true),
 });
 
+/**
+ * v4 scale-out (RoCE / RDMA) network: a folded Clos over the NPU ports, non-blocking above the leaves. With switch radix k and
+ * leaf down:up ratio o, a leaf has d = ⌊k·o/(1 + o)⌋ down ports; t tiers carry at most d·k·(k/2)^(t−2) ports; tier 1 has ⌈P/d⌉
+ * switches, the middle tiers ⌈H/(k/2)⌉ and the top tier ⌈H/k⌉ with H = ⌈P/o⌉ uplinks; links = P + (t − 1)·H. Radix and
+ * oversubscription are assumptions unless a design states them.
+ */
+export const ScaleOutSchema = z.object({
+  portsPerNpu: z.number().int().positive().default(1),
+  radix: z.number().int().min(4).default(64),
+  oversubscription: z.number().min(1).default(1),
+  transceiversPerLink: z.number().int().nonnegative().default(2),
+});
+export type ScaleOut = z.infer<typeof ScaleOutSchema>;
+
 export const TopologySchema = z.object({
   gpusPerNode: z.number().int().positive().default(8),
   nodesPerRack: z.number().int().positive().default(4),
@@ -238,6 +262,18 @@ export const TopologySchema = z.object({
   cooling: z.object({ modules: z.number().int().positive(), required: z.number().int().positive() }).prefault({ modules: 6, required: 5 }),
   /** v2: supernode geometry; when present it defines gpusPerNode / nodesPerRack and the superpod count scopes */
   superpod: SuperpodSchema.optional(),
+  /** v4 topology template the scenario was generated from (topology page); informational */
+  template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2']).optional(),
+  /** v4 host CPUs per node without a superpod geometry (count rule `cpu`) */
+  cpusPerNode: z.number().int().nonnegative().optional(),
+  /**
+   * v4 fabric of a partially populated supernode: 'full-pod' counts the whole pod's L2 tier and communication cabinets (v2
+   * behaviour), 'proportional' installs only the L2 chips the populated nodes' links need (⌈links per sub-plane / L2 ports⌉,
+   * parallel L1–L2 links allowed) and the communication cabinets that hold them
+   */
+  fabricFill: z.enum(['full-pod', 'proportional']).default('full-pod'),
+  /** v4 scale-out (RoCE / RDMA) Clos network over the NPU ports */
+  scaleOut: ScaleOutSchema.optional(),
 });
 
 const BlockBaseSchema = z.object({ id: z.string(), name: z.string().optional() });
@@ -431,6 +467,8 @@ export const SparesSchema = z.object({
 
 export const TargetsSchema = z.object({
   availability: z.number().min(0).max(1).optional(),
+  /** v4 operational-availability (A_op) target of the allocation strategies */
+  operational: z.number().min(0).max(1).optional(),
   goodput: z.number().min(0).max(1).optional(),
   capacityAvailability: z.number().min(0).max(1).optional(),
 });

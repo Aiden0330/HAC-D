@@ -1,0 +1,87 @@
+<svg class="viz" id="fig-mttr" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 274" width="100%" role="img" aria-label="MTTR 组成"><style>
+svg.viz { --on-detect:#ffffff; --on-local:#0b0b0b; --on-auto:#0b0b0b; --on-manual:#0b0b0b; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --band:#e9e7e1; --ok:#eef4ec; --acc:#2f4fb8; --box:#f2f1ec; font-family:system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) svg.viz { --on-detect:#ffffff; --on-local:#ffffff; --on-auto:#ffffff; --on-manual:#ffffff; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --band:#34342f; --ok:#1f2a20; --acc:#9cb0ef; --box:#242421; } }
+:root[data-theme="dark"] svg.viz { --on-detect:#ffffff; --on-local:#ffffff; --on-auto:#ffffff; --on-manual:#ffffff; --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --band:#34342f; --ok:#1f2a20; --acc:#9cb0ef; --box:#242421; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; } svg.viz .lab { font-size: 11px; } svg.viz .b { font-weight: 600; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .hit { fill: transparent; pointer-events: all; }
+svg.viz .bx { fill: var(--box); stroke: var(--axis); } svg.viz .bxa { fill: var(--box); stroke: var(--acc); stroke-width: 1.5; } svg.viz .arr { stroke: var(--ink2); stroke-width: 1.3; fill: none; } svg.viz .arrh { fill: var(--ink2); }
+svg.viz .dash { stroke: var(--ink2); stroke-width: 1.2; stroke-dasharray: 5 4; fill: none; }
+</style><rect width="960" height="274" fill="var(--surface)" rx="8"/><text x="14" y="20" class="ttl">图 2 · 每次硬件中断的平均暂停 MTTR_hw 由哪些部分构成（秒，按事件率加权）</text><rect x="14" y="38" width="12" height="12" rx="2" fill="var(--s1)"/><text x="32" y="48" class="t2">检测延迟</text><rect x="104" y="38" width="12" height="12" rx="2" fill="var(--s2)"/><text x="122" y="48" class="t2">局部梯级（含失败尝试）</text><rect x="278" y="38" width="12" height="12" rx="2" fill="var(--s3)"/><text x="296" y="48" class="t2">全局恢复：自动尝试</text><rect x="428" y="38" width="12" height="12" rx="2" fill="var(--s4)"/><text x="446" y="48" class="t2">全局恢复：人工份额</text><line x1="190" x2="190" y1="60" y2="244" class="grid"/><text x="190" y="260" text-anchor="middle" class="m tick">0 s</text><line x1="306.66666666666663" x2="306.66666666666663" y1="60" y2="244" class="grid"/><text x="306.66666666666663" y="260" text-anchor="middle" class="m tick">20 s</text><line x1="423.3333333333333" x2="423.3333333333333" y1="60" y2="244" class="grid"/><text x="423.3333333333333" y="260" text-anchor="middle" class="m tick">40 s</text><line x1="540" x2="540" y1="60" y2="244" class="grid"/><text x="540" y="260" text-anchor="middle" class="m tick">60 s</text><line x1="656.6666666666666" x2="656.6666666666666" y1="60" y2="244" class="grid"/><text x="656.6666666666666" y="260" text-anchor="middle" class="m tick">80 s</text><line x1="773.3333333333334" x2="773.3333333333334" y1="60" y2="244" class="grid"/><text x="773.3333333333334" y="260" text-anchor="middle" class="m tick">100 s</text><line x1="890" x2="890" y1="60" y2="244" class="grid"/><text x="890" y="260" text-anchor="middle" class="m tick">120 s</text><text x="182" y="81" text-anchor="end" class="lab">现状 · 名义</text><path d="M190 70H239.58852578892072V87H190Z" fill="var(--s1)" data-tip="现状 · 名义 · 检测延迟
+8.84 s （占10 %）
+MTTR_hw 93.0 s"/><text x="214.79426289446036" y="82.5" text-anchor="middle" class="lab b" style="fill:var(--on-detect)">9</text><path d="M241.58852578892072 70H261.30181231103654V87H241.58852578892072Z" fill="var(--s2)" data-tip="现状 · 名义 · 局部梯级（含失败尝试）
+3.72 s （占4 %）
+MTTR_hw 93.0 s"/><path d="M263.30181231103654 70H596.6179566130128V87H263.30181231103654Z" fill="var(--s3)" data-tip="现状 · 名义 · 全局恢复：自动尝试
+57.48 s （占62 %）
+MTTR_hw 93.0 s"/><text x="429.95988446202466" y="82.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">57</text><path d="M598.6179566130128 70H728.7444143338034Q732.7444143338034 70 732.7444143338034 74V83Q732.7444143338034 87 728.7444143338034 87H598.6179566130128Z" fill="var(--s4)" data-tip="现状 · 名义 · 全局恢复：人工份额
+22.99 s （占25 %）
+MTTR_hw 93.0 s"/><text x="664.681185473408" y="82.5" text-anchor="middle" class="lab b" style="fill:var(--on-manual)">23</text><text x="738.7444143338034" y="82" class="t2 tick b">93.0 s</text><rect x="190" y="64" width="760" height="30" class="hit" data-tip="现状 · 名义
+检测延迟 8.84 s
+局部梯级（含失败尝试） 3.72 s
+全局恢复：自动尝试 57.48 s
+全局恢复：人工份额 22.99 s
+MTTR_hw 93.04 s"/><text x="182" y="111" text-anchor="end" class="lab">现状 · 降额</text><path d="M190 100H239.26099725654882V117H190Z" fill="var(--s1)" data-tip="现状 · 降额 · 检测延迟
+8.79 s （占8 %）
+MTTR_hw 104.4 s"/><text x="214.6304986282744" y="112.5" text-anchor="middle" class="lab b" style="fill:var(--on-detect)">9</text><path d="M241.26099725654882 100H318.02496021652934V117H241.26099725654882Z" fill="var(--s2)" data-tip="现状 · 降额 · 局部梯级（含失败尝试）
+13.50 s （占13 %）
+MTTR_hw 104.4 s"/><text x="279.6429787365391" y="112.5" text-anchor="middle" class="lab b" style="fill:var(--on-local)">14</text><path d="M320.02496021652934 100H660.1326179599839V117H320.02496021652934Z" fill="var(--s3)" data-tip="现状 · 降额 · 全局恢复：自动尝试
+58.65 s （占56 %）
+MTTR_hw 104.4 s"/><text x="490.0787890882566" y="112.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">59</text><path d="M662.1326179599839 100H794.9756810573658Q798.9756810573658 100 798.9756810573658 104V113Q798.9756810573658 117 794.9756810573658 117H662.1326179599839Z" fill="var(--s4)" data-tip="现状 · 降额 · 全局恢复：人工份额
+23.46 s （占22 %）
+MTTR_hw 104.4 s"/><text x="729.5541495086749" y="112.5" text-anchor="middle" class="lab b" style="fill:var(--on-manual)">23</text><text x="804.9756810573658" y="112" class="t2 tick b">104.4 s</text><rect x="190" y="94" width="760" height="30" class="hit" data-tip="现状 · 降额
+检测延迟 8.79 s
+局部梯级（含失败尝试） 13.50 s
+全局恢复：自动尝试 58.65 s
+全局恢复：人工份额 23.46 s
+MTTR_hw 104.40 s"/><text x="182" y="141" text-anchor="end" class="lab">200k 推荐 · 名义</text><path d="M190 130H239.58853083113888V147H190Z" fill="var(--s1)" data-tip="200k 推荐 · 名义 · 检测延迟
+8.84 s （占16 %）
+MTTR_hw 54.7 s"/><text x="214.79426541556944" y="142.5" text-anchor="middle" class="lab b" style="fill:var(--on-detect)">9</text><path d="M241.58853083113888 130H261.30181221998373V147H241.58853083113888Z" fill="var(--s2)" data-tip="200k 推荐 · 名义 · 局部梯级（含失败尝试）
+3.72 s （占7 %）
+MTTR_hw 54.7 s"/><path d="M263.30181221998373 130H373.0739166404738V147H263.30181221998373Z" fill="var(--s3)" data-tip="200k 推荐 · 名义 · 全局恢复：自动尝试
+19.16 s （占35 %）
+MTTR_hw 54.7 s"/><text x="318.18786443022873" y="142.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">19</text><path d="M375.0739166404738 130H505.200441945062Q509.200441945062 130 509.200441945062 134V143Q509.200441945062 147 505.200441945062 147H375.0739166404738Z" fill="var(--s4)" data-tip="200k 推荐 · 名义 · 全局恢复：人工份额
+22.99 s （占42 %）
+MTTR_hw 54.7 s"/><text x="441.1371792927679" y="142.5" text-anchor="middle" class="lab b" style="fill:var(--on-manual)">23</text><text x="515.200441945062" y="142" class="t2 tick b">54.7 s</text><rect x="190" y="124" width="760" height="30" class="hit" data-tip="200k 推荐 · 名义
+检测延迟 8.84 s
+局部梯级（含失败尝试） 3.72 s
+全局恢复：自动尝试 19.16 s
+全局恢复：人工份额 22.99 s
+MTTR_hw 54.72 s"/><text x="182" y="171" text-anchor="end" class="lab">200k 推荐 · 降额</text><path d="M190 160H239.26100237619843V177H190Z" fill="var(--s1)" data-tip="200k 推荐 · 降额 · 检测延迟
+8.79 s （占12 %）
+MTTR_hw 75.1 s"/><text x="214.63050118809923" y="172.5" text-anchor="middle" class="lab b" style="fill:var(--on-detect)">9</text><path d="M241.26100237619843 160H318.02494671547106V177H241.26100237619843Z" fill="var(--s2)" data-tip="200k 推荐 · 降额 · 局部梯级（含失败尝试）
+13.50 s （占18 %）
+MTTR_hw 75.1 s"/><text x="279.6429745458347" y="172.5" text-anchor="middle" class="lab b" style="fill:var(--on-local)">14</text><path d="M320.02494671547106 160H489.07885926414934V177H320.02494671547106Z" fill="var(--s3)" data-tip="200k 推荐 · 降额 · 全局恢复：自动尝试
+29.32 s （占39 %）
+MTTR_hw 75.1 s"/><text x="404.5519029898102" y="172.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">29</text><path d="M491.07885926414934 160H623.921989303092Q627.921989303092 160 627.921989303092 164V173Q627.921989303092 177 623.921989303092 177H491.07885926414934Z" fill="var(--s4)" data-tip="200k 推荐 · 降额 · 全局恢复：人工份额
+23.46 s （占31 %）
+MTTR_hw 75.1 s"/><text x="558.5004242836208" y="172.5" text-anchor="middle" class="lab b" style="fill:var(--on-manual)">23</text><text x="633.921989303092" y="172" class="t2 tick b">75.1 s</text><rect x="190" y="154" width="760" height="30" class="hit" data-tip="200k 推荐 · 降额
+检测延迟 8.79 s
+局部梯级（含失败尝试） 13.50 s
+全局恢复：自动尝试 29.32 s
+全局恢复：人工份额 23.46 s
+MTTR_hw 75.07 s"/><text x="182" y="201" text-anchor="end" class="lab">500k 推荐 · 名义</text><path d="M190 190H191.34921060712193V207H190Z" fill="var(--s1)" data-tip="500k 推荐 · 名义 · 检测延迟
+0.57 s （占4 %）
+MTTR_hw 15.8 s"/><path d="M193.34921060712193 190H216.67380179082883V207H193.34921060712193Z" fill="var(--s2)" data-tip="500k 推荐 · 名义 · 局部梯级（含失败尝试）
+4.34 s （占27 %）
+MTTR_hw 15.8 s"/><path d="M218.67380179082883 190H265.5388994293986V207H218.67380179082883Z" fill="var(--s3)" data-tip="500k 推荐 · 名义 · 全局恢复：自动尝试
+8.38 s （占53 %）
+MTTR_hw 15.8 s"/><text x="242.1063506101137" y="202.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">8</text><path d="M267.5388994293986 190H278.19842872096956Q282.19842872096956 190 282.19842872096956 194V203Q282.19842872096956 207 278.19842872096956 207H267.5388994293986Z" fill="var(--s4)" data-tip="500k 推荐 · 名义 · 全局恢复：人工份额
+2.51 s （占16 %）
+MTTR_hw 15.8 s"/><text x="288.19842872096956" y="202" class="t2 tick b">15.8 s</text><rect x="190" y="184" width="760" height="30" class="hit" data-tip="500k 推荐 · 名义
+检测延迟 0.57 s
+局部梯级（含失败尝试） 4.34 s
+全局恢复：自动尝试 8.38 s
+全局恢复：人工份额 2.51 s
+MTTR_hw 15.81 s"/><text x="182" y="231" text-anchor="end" class="lab">500k 推荐 · 降额</text><path d="M190 220H202.3278768419951V237H190Z" fill="var(--s1)" data-tip="500k 推荐 · 降额 · 检测延迟
+2.46 s （占7 %）
+MTTR_hw 35.8 s"/><path d="M204.3278768419951 220H295.494246850834V237H204.3278768419951Z" fill="var(--s2)" data-tip="500k 推荐 · 降额 · 局部梯级（含失败尝试）
+15.97 s （占45 %）
+MTTR_hw 35.8 s"/><text x="249.91106184641453" y="232.5" text-anchor="middle" class="lab b" style="fill:var(--on-local)">16</text><path d="M297.494246850834 220H373.4907128383385V237H297.494246850834Z" fill="var(--s3)" data-tip="500k 推荐 · 降额 · 全局恢复：自动尝试
+13.37 s （占37 %）
+MTTR_hw 35.8 s"/><text x="335.4924798445862" y="232.5" text-anchor="middle" class="lab b" style="fill:var(--on-auto)">13</text><path d="M375.4907128383385 220H394.8896526345899Q398.8896526345899 220 398.8896526345899 224V233Q398.8896526345899 237 394.8896526345899 237H375.4907128383385Z" fill="var(--s4)" data-tip="500k 推荐 · 降额 · 全局恢复：人工份额
+4.01 s （占11 %）
+MTTR_hw 35.8 s"/><text x="404.8896526345899" y="232" class="t2 tick b">35.8 s</text><rect x="190" y="214" width="760" height="30" class="hit" data-tip="500k 推荐 · 降额
+检测延迟 2.46 s
+局部梯级（含失败尝试） 15.97 s
+全局恢复：自动尝试 13.37 s
+全局恢复：人工份额 4.01 s
+MTTR_hw 35.81 s"/></svg>

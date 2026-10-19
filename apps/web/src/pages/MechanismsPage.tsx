@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, provisionalParameters, integrationStatus, type MechanismReport, type AttributionMetric, type MechanismPlan, type Scenario } from '@hac-d/core';
+import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, provisionalParameters, integrationStatus, type MechanismReport, type AttributionMetric, type Scenario } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
 import { Kpi, Card, DataTable, Field, Select, Badge, NumberInput } from '../components/ui.js';
 import { Tornado } from '../charts/Tornado.js';
-import { Heatmap } from '../charts/Heatmap.js';
+import { SdcChainEditor } from '../panels/SdcChainEditor.js';
+import { AuditPanel } from '../panels/AuditPanel.js';
 import { fmtPct, fmtNum } from '../lib/format.js';
 
 const METRICS: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
@@ -17,11 +18,11 @@ export function MechanismsPage() {
   const scenarios = useStore((s) => s.scenarios);
   const activeId = useStore((s) => s.activeId);
   const replaceScenario = useStore((s) => s.replaceScenario);
-  // the page attributes on the 54-event reference catalog by default (per-event mechanism flags reproduce combinations
-  // exactly); any scenario can be chosen here; the other pages keep working on the active scenario
-  const catalogId = scenarios.find((x) => x.meta.id?.startsWith('ref-catalog'))?.meta.id;
+  // v4 the page works on the active scenario by default (topology scenarios carry per-event mechanism flags like the catalog);
+  // another scenario can be chosen here for the attribution and the audit
   const [chosenId, setChosenId] = useState<string | undefined>(undefined);
-  const targetId = chosenId && scenarios.some((x) => x.meta.id === chosenId) ? chosenId : catalogId ?? activeId;
+  const [tab, setTab] = useState<'selection' | 'chain' | 'audit'>('selection');
+  const targetId = chosenId && scenarios.some((x) => x.meta.id === chosenId) ? chosenId : activeId;
   const scenario: Scenario | undefined = scenarios.find((x) => x.meta.id === targetId);
   const scenarioKey = scenario ? JSON.stringify(scenario) : '';
   const active = useMemo(() => {
@@ -41,22 +42,16 @@ export function MechanismsPage() {
   const [overrides, setOverrides] = useState<Record<string, Record<string, number>>>({});
   // v3.7 audited mechanisms carry null integration fields: with the switch on, the provisional assumptions (tagged assumed) are merged below the user's overrides
   const [provisional, setProvisional] = useState(false);
-  const paramsFor = (ids: string[]) => { const base = provisional ? provisionalParameters(ids) : {}; const out: Record<string, Record<string, number>> = { ...base }; for (const [id, p] of Object.entries(overrides)) out[id] = { ...(out[id] ?? {}), ...p }; return out; };
+  // provisional assumptions < the parameters recorded in the scenario (applied mechanisms own theirs) < the overrides typed below for mechanisms not applied
+  const paramsFor = (ids: string[]) => { const base = provisional ? provisionalParameters(ids) : {}; const out: Record<string, Record<string, number>> = { ...base }; for (const [id, rec] of Object.entries(scenario?.mechanisms.applied ?? {})) out[id] = { ...(out[id] ?? {}), ...rec.parameters }; for (const [id, p] of Object.entries(overrides)) if (!scenario?.mechanisms.applied?.[id]) out[id] = { ...(out[id] ?? {}), ...p }; return out; };
   const [report, setReport] = useState<MechanismReport | null>(null);
-  const [plan, setPlan] = useState<MechanismPlan | null>(null);
-  const [planTarget, setPlanTarget] = useState<number>(scenario?.targets.goodput ?? 0.9);
-  const [derate, setDerate] = useState(true);
-  const [verify, setVerify] = useState(true);
-  const [trials, setTrials] = useState(200);
-  const [confidence, setConfidence] = useState(0.9);
   const [efforts, setEfforts] = useState<Record<string, number>>({});
-  const [planning, setPlanning] = useState(false);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; phase?: string } | null>(null);
   const [err, setErr] = useState<{ text: string; tone: 'crit' | 'info' } | null>(null);
   const fail = (e: unknown) => setErr(e instanceof ComputeCancelled ? { text: t('mechanisms.cancelled'), tone: 'info' } : { text: (e as Error).message, tone: 'crit' });
-  const busy = running || planning;
-  useEffect(() => { setReport(null); setPlan(null); }, [scenarioKey]);
+  const busy = running;
+  useEffect(() => { setReport(null); }, [scenarioKey]);
   const inScenario = useMemo(() => (active && !active.error ? activeMechanisms(active.scenario) : []), [active]);
   const fractional = useMemo(() => (scenario ? scenario.components.some((c) => c.enabled && c.mechanisms && Object.values(c.mechanisms).some((v) => typeof v === 'number' && v > 0 && v < 1)) : false), [scenario]);
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
@@ -84,23 +79,14 @@ export function MechanismsPage() {
       setProgress(null);
     }
   };
-  const runPlan = async () => {
-    if (!checkPlayers()) return;
-    setPlanning(true);
-    setErr(null);
-    setProgress({ done: 0, total: 1 << players.length, phase: 'coalitions' });
-    try {
-      setPlan(await compute().plan(active.scenario, { target: planTarget, players, metric, parameters: paramsFor(players), effort: efforts, derate: derate ? undefined : null, scan: true, verify: verify ? { trials, confidence } : undefined }, progressCallback((done: number, total: number, phase: string) => setProgress({ done, total, phase }))));
-    } catch (e) {
-      fail(e);
-    } finally {
-      setPlanning(false);
-      setProgress(null);
-    }
-  };
   const progressText = () => (progress ? ` ${progress.phase ? t(`mechanisms.phase_${progress.phase}`) + ' ' : ''}${progress.done} / ${progress.total}` : '');
   const cancelButton = <button type="button" className="btn" onClick={cancelCompute}>{t('mechanisms.cancel')}</button>;
   const fmtMetric = (v: number) => fmtPct(v, 2);
+  const tabs = (
+    <div className="tabs" role="tablist">
+      {(['selection', 'chain', 'audit'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`mechanisms.tab_${k}`)}</button>)}
+    </div>
+  );
   const pts = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(3)} pt`;
   const base = report ? report.baseline[report.metric] : 0;
   return (
@@ -111,12 +97,16 @@ export function MechanismsPage() {
       </div>
       <Card>
         <div className="form-grid">
-          <Field label={t('mechanisms.scenarioFor')} hint={t('mechanisms.defaultCatalog')}>
+          <Field label={t('mechanisms.scenarioFor')} hint={t('mechanisms.defaultActive')}>
             <Select value={targetId ?? ''} onChange={setChosenId} options={scenarios.map((x) => ({ value: x.meta.id!, label: `${x.meta.name}${x.meta.id === activeId ? ` (${t('mechanisms.activeTag')})` : ''}` }))} />
           </Field>
         </div>
         {fractional && <div className="callout warn" style={{ marginTop: 8 }}>{t('mechanisms.fractionWarn')}</div>}
       </Card>
+      {tabs}
+      {tab === 'chain' && <SdcChainEditor s={active.scenario} upd={updateActive} />}
+      {tab === 'audit' && <AuditPanel scenario={active.scenario} />}
+      {tab === 'selection' && (<>
       <Card title={t('mechanisms.players')} sub={t('mechanisms.hint')}>
         <div className="btn-row">
           {applicable.map((m) => (
@@ -139,56 +129,6 @@ export function MechanismsPage() {
         <label style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 8, fontSize: 13 }} title={t('audit.provisionalHint')}><input type="checkbox" checked={provisional} onChange={(e) => setProvisional(e.target.checked)} />{t('audit.provisionalShort')} <span className="muted" style={{ fontSize: 12 }}>({t('mechanisms.provisionalNote')})</span></label>
         <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>● {t('mechanisms.inScenario')} · {t('mechanisms.oneJob')}</div>
         {err && <div className={`callout ${err.tone === 'crit' ? 'crit' : ''}`} style={{ marginTop: 8 }}>{err.text}</div>}
-      </Card>
-      <Card title={t('mechanisms.planTitle')} sub={t('mechanisms.planSub')} formula="min Σ effort_i s.t. v(S) ≥ G* and v_derated(S) ≥ G*; necessary = ∩ feasible S; Pareto over (effort, v)">
-        <div className="form-grid">
-          <Field label={t('mechanisms.planTarget')}><NumberInput value={planTarget} min={0.5} max={0.9999} step={0.005} onChange={setPlanTarget} /></Field>
-          <Field label={t('mechanisms.planDerate')} hint={t('mechanisms.planDerateHint')}>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0', fontSize: 13 }}><input type="checkbox" checked={derate} onChange={(e) => setDerate(e.target.checked)} />{t('mechanisms.planDerate')}</label>
-          </Field>
-          <Field label={t('mechanisms.planVerify')}>
-            <label style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0', fontSize: 13 }}><input type="checkbox" checked={verify} onChange={(e) => setVerify(e.target.checked)} />{t('mechanisms.planVerify')}</label>
-          </Field>
-          {verify && <Field label={t('mechanisms.planTrials')}><NumberInput value={trials} min={20} max={5000} step={50} onChange={setTrials} /></Field>}
-          {verify && <Field label={t('mechanisms.planConfidence')}><NumberInput value={confidence} min={0.5} max={0.999} step={0.01} onChange={setConfidence} /></Field>}
-          <div className="field" style={{ justifyContent: 'end' }}>
-            <div className="btn-row">
-              <button type="button" className="btn primary" disabled={busy} onClick={runPlan}>{planning ? t('mechanisms.planning') + progressText() : t('mechanisms.planRun')}</button>
-              {planning && cancelButton}
-            </div>
-          </div>
-        </div>
-        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('mechanisms.planEffortHint')}</div>
-        {plan && (
-          <div className="grid" style={{ gap: 12, marginTop: 12 }}>
-            <div className="kpi-row">
-              {plan.plan ? (
-                <Kpi label={t('mechanisms.planChosen')} value={plan.plan.ids.join(' + ') || '∅'} note={`${t('mechanisms.effort')} ${plan.plan.effort} · ${t('mechanisms.planValue')} ${fmtMetric(plan.plan.value)} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.plan.derated)} · ${t('mechanisms.planMargin')} ${(plan.plan.margin * 100).toFixed(2)} pt`} hero />
-              ) : (
-                <Kpi label={t('mechanisms.planNone')} value={fmtMetric(plan.maxValue)} note={`${t('mechanisms.planMax')} · ${t('mechanisms.planDerated')} ${fmtMetric(plan.maxDerated)}${plan.bounds.provenInfeasible ? ` · ${t('mechanisms.planProven')}` : ''}`} tone="bad" hero />
-              )}
-              <Kpi label={t('mechanisms.planNecessary')} value={plan.necessary.join(', ') || '—'} note={`${plan.feasibleCount} / ${plan.coalitions.length} ${t('mechanisms.planFeasible')}`} />
-              <Kpi label={t('mechanisms.baseline')} value={fmtMetric(plan.baseline[plan.metric])} note={`${t('mechanisms.planTarget')} ${fmtMetric(plan.target)}`} />
-              <Kpi label={t('mechanisms.planBound')} value={fmtMetric(plan.bounds.finiteWindow)} note={`${t('mechanisms.planBoundNote')} ${fmtPct(plan.bounds.dutyCycle, 3)} · ${plan.bounds.bestIds.join(' + ') || '∅'}`} tone={plan.bounds.provenInfeasible ? 'bad' : undefined} />
-              {plan.verification && <Kpi label={t('mechanisms.planVerification')} value={`${t('mechanisms.planPTarget')} ${fmtPct(plan.verification.pAtLeastTarget, 1)} · ${t('mechanisms.verdict_' + plan.verification.verdict)}`} note={`${t('mechanisms.wilson')} ${fmtPct(plan.verification.pLow, 1)} – ${fmtPct(plan.verification.pHigh, 1)} · ${t('mechanisms.planMean')} ${fmtPct(plan.verification.mean, 2)} ± ${fmtPct(plan.verification.ci95, 2)} · P5 ${fmtPct(plan.verification.p05, 1)} · ${plan.verification.trials} ${t('simulate.trials')}`} tone={plan.verification.verdict === 'supported' ? undefined : plan.verification.verdict === 'below' ? 'bad' : 'warn'} />}
-            </div>
-            <div className="grid cols-2">
-              <Card title={t('mechanisms.planPareto')}>
-                <DataTable columns={[t('mechanisms.planCoalition'), t('mechanisms.effort'), t('mechanisms.planValue'), t('mechanisms.planDerated'), t('mechanisms.planMargin')]} numericFrom={1} rows={plan.pareto.map((c) => [c.ids.join(' + ') || '∅', String(c.effort), fmtMetric(c.value), fmtMetric(c.derated), `${(c.margin * 100).toFixed(2)} pt${c.feasible ? ' ✓' : ''}`])} highlight={(i) => !!plan.plan && plan.pareto[i].ids.join() === plan.plan.ids.join()} />
-              </Card>
-              {plan.scan && plan.scan.recoverySeconds.length > 0 && (
-                <Card>
-                  <Heatmap title={t('mechanisms.planScan')} subtitle={plan.scan.basis} xs={plan.scan.coverages} ys={plan.scan.recoverySeconds} values={plan.scan.recoverySeconds.map((sec) => plan.scan!.coverages.map((q) => plan.scan!.cells.find((c) => c.coverage === q && c.recoverySeconds === sec)?.value ?? NaN))} formatX={(v) => fmtPct(v, 1)} formatY={(v) => `${v} s`} formatV={(v) => fmtPct(v, 1)} xLabel={t('mechanisms.planScanX')} yLabel={t('mechanisms.planScanY')} />
-                </Card>
-              )}
-            </div>
-            <ul className="plain muted" style={{ fontSize: 12 }}>
-              {plan.notes.map((n) => (
-                <li key={n}>{n}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </Card>
       {report && (
         <>
@@ -245,7 +185,9 @@ export function MechanismsPage() {
             <tbody>
               {MECHANISM_LIBRARY.map((m) => {
                 const on = inScenario.includes(m.id);
-                const params = { ...m.parameters, ...(overrides[m.id] ?? {}) };
+                const recordedP = active.scenario.mechanisms.applied?.[m.id]?.parameters;
+                const params = recordedP ? { ...m.parameters, ...recordedP } : { ...m.parameters, ...(overrides[m.id] ?? {}) };
+                const setParam = (k: string, x: number) => (recordedP ? updateActive((sc) => applyMechanisms(sc, [m.id], { [m.id]: { ...params, [k]: x } })) : setOverrides((o) => ({ ...o, [m.id]: { ...(o[m.id] ?? {}), [k]: x } })));
                 return (
                   <tr key={m.id}>
                     <td style={{ whiteSpace: 'nowrap' }}>
@@ -263,7 +205,7 @@ export function MechanismsPage() {
                       {Object.keys(params).length === 0 ? <span className="muted">—</span> : Object.entries(params).map(([k, v]) => (
                         <div key={k} style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 11 }}>
                           <span className="mono" style={{ minWidth: 90 }}>{k}</span>
-                          <NumberInput value={v} min={0} step={k.toLowerCase().includes('coverage') || k === 'success' || k === 'reduction' ? 0.01 : 1} onChange={(x) => setOverrides((o) => ({ ...o, [m.id]: { ...(o[m.id] ?? {}), [k]: x } }))} />
+                          <NumberInput value={v} min={0} step={k.toLowerCase().includes('coverage') || k === 'success' || k === 'reduction' ? 0.01 : 1} onChange={(x) => setParam(k, x)} />
                         </div>
                       ))}
                     </td>
@@ -284,6 +226,7 @@ export function MechanismsPage() {
         </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{fmtNum(MECHANISM_LIBRARY.length, 0)} · ai-cluster-reliability catalogs/review-2026-10-09/mechanisms.json · mechanism-policy.json</div>
       </Card>
+      </>)}
     </div>
   );
 }

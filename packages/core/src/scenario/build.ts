@@ -64,6 +64,54 @@ export interface Counts {
   transceivers: number;
   gpusPerNode: number;
   nodesPerRack: number;
+  /** v4 host CPUs (nodes × CPUs per node; 0 when neither the superpod geometry nor topology.cpusPerNode gives it) */
+  cpus: number;
+  /** v4 UB switch chips (L1 + L2) */
+  ubSwitches: number;
+  /** v4 scale-out (RoCE) Clos from topology.scaleOut (0 without it): NPU ports, tiers, switches per tier (leaf first), links, transceivers */
+  scaleOutPorts: number;
+  scaleOutTiers: number;
+  scaleOutPerTier: number[];
+  scaleOutSwitches: number;
+  scaleOutLinks: number;
+  scaleOutTransceivers: number;
+}
+
+export interface ClosCounts {
+  ports: number;
+  tiers: number;
+  /** switches per tier, leaf tier first */
+  perTier: number[];
+  switches: number;
+  /** NPU–leaf links plus the inter-tier links */
+  links: number;
+  transceivers: number;
+  /** most ports the tier count can carry */
+  capacity: number;
+}
+
+/**
+ * v4 folded Clos over `ports` NPU ports: switch radix k, leaf down:up ratio o (1 = non-blocking). A leaf has d = ⌊k·o/(1 + o)⌋
+ * down ports; t tiers carry at most d·k·(k/2)^(t−2) ports (t ≥ 2; one switch when ports ≤ k); tier 1 has ⌈P/d⌉ switches, the
+ * middle tiers ⌈H/(k/2)⌉ and the top tier ⌈H/k⌉ with H = ⌈P/o⌉ uplinks (switches filled in proportion to the ports); links =
+ * P + (t − 1)·H.
+ */
+export function closCounts(ports: number, radix: number, oversubscription = 1, transceiversPerLink = 2): ClosCounts {
+  const P = Math.max(0, Math.ceil(ports));
+  if (P === 0) return { ports: 0, tiers: 0, perTier: [], switches: 0, links: 0, transceivers: 0, capacity: 0 };
+  const k = Math.max(4, Math.floor(radix));
+  if (P <= k) return { ports: P, tiers: 1, perTier: [1], switches: 1, links: P, transceivers: P * transceiversPerLink, capacity: k };
+  const o = Math.max(1, oversubscription);
+  const d = Math.max(1, Math.floor((k * o) / (1 + o)));
+  let t = 2;
+  const capacityOf = (tiers: number) => d * k * Math.pow(k / 2, tiers - 2);
+  while (P > capacityOf(t) && t < 8) t++;
+  const H = Math.ceil(P / o);
+  const perTier = [Math.ceil(P / d)];
+  for (let i = 2; i < t; i++) perTier.push(Math.ceil(H / (k / 2)));
+  perTier.push(Math.ceil(H / k));
+  const links = P + (t - 1) * H;
+  return { ports: P, tiers: t, perTier, switches: perTier.reduce((a, b) => a + b, 0), links, transceivers: links * transceiversPerLink, capacity: capacityOf(t) };
 }
 
 /** GPUs per node and nodes per rack, from the superpod geometry when present. */
@@ -87,6 +135,7 @@ export function computeCounts(s: Scenario): Counts {
   const nodes = Math.ceil(gpus / gpusPerNode);
   const racks = Math.ceil(nodes / nodesPerRack);
   const zones = Math.ceil(racks / t.racksPerZone);
+  const so = t.scaleOut ? closCounts(gpus * t.scaleOut.portsPerNpu, t.scaleOut.radix, t.scaleOut.oversubscription, t.scaleOut.transceiversPerLink) : undefined;
   const base: Counts = {
     gpus,
     nodes,
@@ -104,21 +153,42 @@ export function computeCounts(s: Scenario): Counts {
     transceivers: 0,
     gpusPerNode,
     nodesPerRack,
+    cpus: nodes * (t.superpod?.cpusPerNode ?? t.cpusPerNode ?? 0),
+    ubSwitches: 0,
+    scaleOutPorts: so?.ports ?? 0,
+    scaleOutTiers: so?.tiers ?? 0,
+    scaleOutPerTier: so?.perTier ?? [],
+    scaleOutSwitches: so?.switches ?? 0,
+    scaleOutLinks: so?.links ?? 0,
+    scaleOutTransceivers: so?.transceivers ?? 0,
   };
   const sp = t.superpod;
   if (!sp) return base;
   const nodesPerSupernode = sp.nodesPerRack * sp.computeRacks;
   const supernodes = Math.max(1, Math.ceil(nodes / nodesPerSupernode));
   const links = nodes * sp.l1PerNode * sp.linksPerL1;
+  const l2FullPod = sp.subPlanes * sp.l2PerSubPlane;
+  let l2Switches = supernodes * l2FullPod;
+  let commRacks = supernodes * sp.commRacks;
+  if (t.fabricFill === 'proportional') {
+    // v4 port-count fill of the last, partially populated supernode: L2 chips per sub-plane = ⌈links of the populated nodes in that sub-plane / L2 ports⌉ (never above the full pod), communication cabinets in proportion to the L2 chips they hold
+    const fullPods = Math.floor(nodes / nodesPerSupernode);
+    const rem = nodes - fullPods * nodesPerSupernode;
+    const l2For = (n: number) => sp.subPlanes * Math.min(sp.l2PerSubPlane, Math.ceil((n * sp.l1PerNode * sp.linksPerL1) / sp.subPlanes / sp.l2Ports));
+    const l2Rem = rem > 0 ? l2For(rem) : 0;
+    l2Switches = fullPods * l2FullPod + l2Rem;
+    commRacks = fullPods * sp.commRacks + (rem > 0 && sp.commRacks > 0 && l2FullPod > 0 ? Math.min(sp.commRacks, Math.ceil((l2Rem * sp.commRacks) / l2FullPod)) : 0);
+  }
   return {
     ...base,
     supernodes,
-    commRacks: supernodes * sp.commRacks,
+    commRacks,
     l1Switches: nodes * sp.l1PerNode,
-    l2Switches: supernodes * sp.subPlanes * sp.l2PerSubPlane,
+    l2Switches,
     subPlanes: supernodes * sp.subPlanes,
     opticalLinks: links,
     transceivers: links * sp.transceiversPerLink,
+    ubSwitches: nodes * sp.l1PerNode + l2Switches,
   };
 }
 
@@ -202,6 +272,26 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
       break;
     case 'transceiver':
       instances = counts.transceivers;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'cpu':
+      instances = counts.cpus;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'ub_switch':
+      instances = counts.ubSwitches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'roce_port':
+      instances = counts.scaleOutPorts;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'roce_switch':
+      instances = counts.scaleOutSwitches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'roce_link':
+      instances = counts.scaleOutLinks;
       unitsPerInstance = c.countRule.factor;
       break;
   }
@@ -312,7 +402,7 @@ export function ccfLeaves(items: ComponentInstances[]): LeafBlock[] {
   }));
 }
 
-const PER_UNIT_SCOPES = new Set(['gpu', 'node']);
+const PER_UNIT_SCOPES = new Set(['gpu', 'node', 'cpu']);
 
 /* ---------------------------------------------------------------------- */
 /* Replica composition (v2): which classes live inside one replica unit     */
@@ -327,12 +417,16 @@ export function scopeOfCountRule(per: Component['countRule']['per']): ScopeLevel
     case 'gpu':
       return 'gpu';
     case 'node':
+    case 'cpu':
       return 'node';
     case 'rack':
       return 'rack';
     case 'zone':
       return 'zone';
     case 'fixed':
+    case 'roce_port':
+    case 'roce_switch':
+    case 'roce_link':
       return 'cluster';
     default:
       return 'supernode';

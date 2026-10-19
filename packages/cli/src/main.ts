@@ -1,8 +1,10 @@
 #!/usr/bin/env -S node --import tsx
 /**
  * hacd — command-line access to the HAC-D core.
- *   hacd examples                                   list example scenarios
- *   hacd example <id>                               print an example scenario as JSON
+ *   hacd examples                                   list the example scenarios (the three topology templates; scale with --npus)
+ *   hacd example <id> [--npus N]                    print an example scenario as JSON at N NPUs (built-in 10k / 100k / 200k / 500k, any N)
+ *   hacd topology <a2-roce|a3-ub384|a950-ub2> [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
+ *   hacd strategy <scenario.json | --template a3-ub384 [--npus 10000]> [--strategy optimal|mttr-first|mttf-first] [--target 0.985] [--metric aOp|delivered] [--split min-effort|agree|arinc] [--candidates D-HARD,…] [--no-levers] [--no-derate] [--sizes 1000,10000] [--trials 0] [--json]   allocation strategy (v4)
  *   hacd eval <scenario.json> [--json]              evaluate a scenario (table or JSON)
  *   hacd compare <a.json> <b.json> ... [--json]     side-by-side KPIs
  *   hacd allocate <scenario.json> [--goodput 0.97] [--availability 0.999] [--method arinc] [--json]
@@ -28,6 +30,8 @@ import {
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
   rateFromCounts, unitRateFromCounts,
   importRemapCatalog,
+  GPU_EXAMPLES, REFERENCE_FIXTURES, resizeTopology, scaleLabel, topologyScenario, topologyBom, bomAtSizes, bomRowsAcross, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, allocateStrategy, strategyAcrossSizes, STRATEGY_IDS,
+  type TopologyTemplate, type StrategyId, type StrategyMetric, type HardwareSplit,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 
@@ -53,19 +57,82 @@ function printTable(rows: (string | number)[][]): void {
 switch (cmd) {
   case 'examples':
     for (const id of Object.keys(EXAMPLES)) console.log(`${id}\t${EXAMPLES[id]().meta.name}`);
+    console.error(`scale with: hacd example <id> --npus N (built-in ${TOPOLOGY_SCALES.map(scaleLabel).join(' / ')}, any N)`);
     break;
   case 'example': {
-    const f = EXAMPLES[rest[0]];
+    // v4.1 the registry is the three topology templates (scale with --npus); the reference fixtures (ref-catalog-100k,
+    // ref-three-classes-100k) and the v3.7 GPU examples stay reachable by id, not listed (the GPU tool is forked at tag v3.7-gpu)
+    const f = EXAMPLES[rest[0]] ?? REFERENCE_FIXTURES[rest[0]] ?? GPU_EXAMPLES[rest[0]];
     if (!f) {
-      console.error(`unknown example '${rest[0]}'`);
+      console.error(`unknown example '${rest[0]}' (examples: ${Object.keys(EXAMPLES).join(', ')}; reference fixtures: ${Object.keys(REFERENCE_FIXTURES).join(', ')})`);
       process.exit(1);
     }
-    out(f());
+    const npus = flag('npus');
+    out(npus !== undefined ? resizeTopology(f(), Number(npus)) : f());
     break;
   }
   case 'schema':
     out(scenarioJsonSchema());
     break;
+  case 'topology': {
+    const t = rest[0] as TopologyTemplate;
+    if (!TOPOLOGY_TEMPLATES[t]) {
+      console.error(`usage: hacd topology <${Object.keys(TOPOLOGY_TEMPLATES).join('|')}> [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]`);
+      process.exit(1);
+    }
+    const npus = Number(flag('npus') ?? 10000);
+    const radix = flag('radix');
+    const fill = flag('fill') as 'proportional' | 'full-pod' | undefined;
+    const base = TOPOLOGY_TEMPLATES[t].topology;
+    const s = topologyScenario(t, npus, { scaleOut: !rest.includes('--no-scale-out'), topology: { ...(fill ? { fabricFill: fill } : {}), ...(radix && base.scaleOut ? { scaleOut: { ...base.scaleOut, radix: Number(radix) } as never } : {}) } });
+    const sizes = (flag('sizes') ?? TOPOLOGY_SCALES.join(',')).split(',').map(Number).filter((x) => x > 0);
+    const at = bomAtSizes(s, sizes);
+    const bom = topologyBom(s);
+    if (flag('out')) writeFileSync(flag('out')!, JSON.stringify(s, null, 2));
+    if (json) {
+      out({ template: TOPOLOGY_TEMPLATES[t], bom, sizes: at.map((x) => ({ npus: x.npus, counts: x.bom.counts, hardFitPerNpu: x.bom.hardFitPerNpu, hardFitPerNpuTotal: x.bom.hardFitPerNpuTotal })) });
+      break;
+    }
+    console.log(`# ${TOPOLOGY_TEMPLATES[t].name.en} — ${npus.toLocaleString('en-US')} NPUs`);
+    console.log(TOPOLOGY_TEMPLATES[t].summary.en + '\n');
+    printTable([['unit', 'per NPU', ...sizes.map((n) => n.toLocaleString('en-US')), 'hard FIT / unit', 'impact'], ...bomRowsAcross(bom, at).map((r) => [r.name.en, r.count === 0 ? '—' : r.perNpu < 0.01 ? r.perNpu.toExponential(2) : r.perNpu.toFixed(3), ...at.map((x) => x.bom.rows.find((q) => q.id === r.id)?.count.toLocaleString('en-US') ?? '—'), r.fit ? r.fit.hard.toFixed(1) : '—', r.impact.en])]);
+    console.log('\nhard (interruption) FIT per NPU by unit:');
+    printTable([['NPUs', ...Object.keys(bom.hardFitPerNpu), 'total'], ...at.map((x) => [x.npus.toLocaleString('en-US'), ...Object.keys(bom.hardFitPerNpu).map((u) => (x.bom.hardFitPerNpu[u as keyof typeof x.bom.hardFitPerNpu] ?? 0).toFixed(1)), x.bom.hardFitPerNpuTotal.toFixed(1)])]);
+    for (const n of bom.notes) console.log(`- ${n}`);
+    break;
+  }
+  case 'strategy': {
+    const tpl = flag('template') as TopologyTemplate | undefined;
+    const path = files[0];
+    if (!path && !tpl) {
+      console.error('usage: hacd strategy <scenario.json | --template a3-ub384 [--npus 10000]> [--strategy optimal|mttr-first|mttf-first] [--target 0.985] [--metric aOp|delivered] [--split min-effort|agree|arinc] [--candidates D-HARD,…] [--no-levers] [--no-derate] [--sizes 1000,10000] [--trials 0] [--json]');
+      process.exit(1);
+    }
+    const s = tpl ? topologyScenario(tpl, Number(flag('npus') ?? 10000)) : load(path);
+    const metric = (flag('metric') ?? 'aOp') as StrategyMetric;
+    const strategies = (flag('strategy') ? [flag('strategy')] : STRATEGY_IDS) as StrategyId[];
+    const target = Number(flag('target') ?? (metric === 'aOp' ? s.targets.operational ?? 0.985 : s.targets.goodput ?? 0.9));
+    const base = { target, metric, hardwareSplit: (flag('split') ?? 'min-effort') as HardwareSplit, candidates: flag('candidates')?.split(','), levers: rest.includes('--no-levers') ? (false as const) : undefined, derate: rest.includes('--no-derate') ? null : undefined, verify: Number(flag('trials') ?? 0) > 0 ? { trials: Number(flag('trials')) } : undefined };
+    const sizes = flag('sizes')?.split(',').map(Number).filter((x) => x > 0);
+    if (sizes) {
+      const rows = strategies.flatMap((st) => strategyAcrossSizes(s, sizes, { ...base, strategy: st }).map((r) => ({ ...r, strategy: st })));
+      if (json) { out(rows); break; }
+      printTable([['strategy', 'NPUs', 'baseline', 'final (nominal / derated)', 'mechanisms', 'levers', 'hardware effort', 'total effort', 'feasible'], ...rows.map((r) => [r.strategy, r.npus.toLocaleString('en-US'), pct(r.baseline.value, 3), `${pct(r.final.value, 3)} / ${pct(r.final.derated, 3)}`, r.mechanisms.join('+') || '—', r.levers.join('+') || '—', r.effort.hardware.toFixed(2), r.effort.total.toFixed(2), r.feasible ? 'yes' : 'no'])]);
+      break;
+    }
+    const results = strategies.map((st) => allocateStrategy(s, { ...base, strategy: st }));
+    if (json) { out(results.map(({ scenario: _s, ...r }) => r)); break; }
+    console.log(`# ${s.meta.name} — target ${metric === 'aOp' ? 'A_op' : 'delivered goodput'} ${pct(target, 2)} (nominal and derated)`);
+    for (const r of results) {
+      console.log(`\n## ${r.strategy}: ${r.feasible ? 'feasible' : 'NOT feasible'} · ${pct(r.baseline.value, 3)} → ${pct(r.final.value, 3)} (derated ${pct(r.final.derated, 3)}) · effort ${r.effort.total.toFixed(2)} = mechanisms ${r.effort.mechanisms} + levers ${r.effort.levers} + hardware ${r.effort.hardware.toFixed(2)}`);
+      console.log(`mechanisms added: ${r.mechanisms.join(', ') || '—'} · levers: ${r.levers.join(', ') || '—'}${r.hardware.slackFactor !== undefined ? ` · hardware slack ×${r.hardware.slackFactor.toFixed(2)}` : ''}`);
+      const cut = r.hardware.rows.filter((h) => h.factor < 1);
+      if (cut.length) printTable([['class', 'units', 'FIT now', 'FIT allowed', 'factor', 'floor', 'effort'], ...cut.map((h) => [h.id, h.count.toLocaleString('en-US'), h.currentFit.toFixed(2), h.allowedFit.toFixed(2), `×${h.factor.toFixed(3)}`, h.atFloor ? `floor ${h.floor}` : String(h.floor), h.effort.toFixed(2)])]);
+      if (r.verification) console.log(`ledger check: P(window ≥ target) ${pct(r.verification.pAtLeastTarget, 1)} [${pct(r.verification.wilson[0], 1)}, ${pct(r.verification.wilson[1], 1)}] · ${r.verification.verdict}`);
+      for (const n of r.notes) console.log(`- ${n}`);
+    }
+    break;
+  }
   case 'eval': {
     const path = files[0];
     if (!path) {
@@ -78,7 +145,7 @@ switch (cmd) {
       break;
     }
     console.log(`# ${r.scenarioName}`);
-    console.log(`GPUs ${r.counts.gpus} · nodes ${r.counts.nodes} · racks ${r.counts.racks} · NVLink domains ${r.counts.nvlinkDomains}\n`);
+    console.log(`NPUs ${r.counts.gpus} · nodes ${r.counts.nodes} · cabinets ${r.counts.racks} · scale-up domains ${r.counts.nvlinkDomains}\n`);
     console.log('## System (structure)');
     printTable([
       ['availability', pct(r.system.availability, 4), r.formulas.availability],
@@ -103,7 +170,7 @@ switch (cmd) {
         ['blocked (spares exhausted)', pct(t.blockedProbability, 4), ''],
         ['effective goodput', pct(t.effectiveGoodput), ''],
         ['interruptions / day', t.interruptionsPerDay.toFixed(2), ''],
-        ['wasted GPU·h / day', t.wastedGpuHoursPerDay.toFixed(0), ''],
+        ['wasted NPU·h / day', t.wastedGpuHoursPerDay.toFixed(0), ''],
         ['lost $ / day', `$${t.lostDollarsPerDay.toFixed(0)}`, r.formulas.cost],
       ]);
       console.log('\n## Scale extrapolation');
@@ -493,5 +560,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
 }

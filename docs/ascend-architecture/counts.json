@@ -1,0 +1,464 @@
+{
+ "generated": "2026-10-16T19:49:59.676Z",
+ "presets": {
+  "cloudmatrix384": {
+   "values": {
+    "preset": "cloudmatrix384",
+    "npusPerNode": 8,
+    "cpusPerNode": 4,
+    "l1PerNode": 7,
+    "nodesPerRack": 4,
+    "computeRacks": 12,
+    "commRacks": 4,
+    "subPlanes": 7,
+    "l2PerSubPlane": 16,
+    "l2Ports": 48,
+    "linksPerL1": 16,
+    "transceiversPerLink": 2,
+    "rdmaPortsPerNpu": 2,
+    "vpcNicsPerNode": 1
+   },
+   "assumed": [
+    "transceiversPerLink"
+   ],
+   "source": "Huawei, Serving Large Language Models on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3.1–3.3.3 (8 NPU + 4 CPU + 7 L1 UB chips per node; 48 nodes in 12 compute + 4 communication racks; 7 sub-planes × 16 L2 chips × 48 ports; 16 links per L1 chip; 7 UB transceivers and 1 RDMA interface per die, 2 dies and 8 HBM stacks per NPU); The Register 2025-07-29 (14 × 28 GB/s UB links per NPU)"
+  },
+  "atlas950": {
+   "values": {
+    "preset": "atlas950",
+    "npusPerNode": 8,
+    "cpusPerNode": 4,
+    "l1PerNode": 7,
+    "nodesPerRack": 8,
+    "computeRacks": 128,
+    "commRacks": 32,
+    "subPlanes": 7,
+    "l2PerSubPlane": 342,
+    "l2Ports": 48,
+    "linksPerL1": 16,
+    "transceiversPerLink": 2,
+    "rdmaPortsPerNpu": 2,
+    "vpcNicsPerNode": 1
+   },
+   "assumed": [
+    "npusPerNode",
+    "cpusPerNode",
+    "l1PerNode",
+    "nodesPerRack",
+    "subPlanes",
+    "l2PerSubPlane",
+    "l2Ports",
+    "linksPerL1",
+    "transceiversPerLink",
+    "rdmaPortsPerNpu",
+    "vpcNicsPerNode"
+   ],
+   "source": "Huawei Connect 2025 press (8,192 NPUs; cabinet split from secondary coverage); fabric geometry assumed from CloudMatrix384"
+  }
+ },
+ "perPod": {
+  "cm384": {
+   "gpus": 384,
+   "nodes": 48,
+   "racks": 12,
+   "zones": 1,
+   "nvlinkDomains": 1,
+   "planes": 7,
+   "workloadGpus": 384,
+   "supernodes": 1,
+   "commRacks": 4,
+   "l1Switches": 336,
+   "l2Switches": 112,
+   "subPlanes": 7,
+   "opticalLinks": 5376,
+   "transceivers": 10752,
+   "gpusPerNode": 8,
+   "nodesPerRack": 4
+  },
+  "atlas950": {
+   "gpus": 8192,
+   "nodes": 1024,
+   "racks": 128,
+   "zones": 1,
+   "nvlinkDomains": 1,
+   "planes": 7,
+   "workloadGpus": 8192,
+   "supernodes": 1,
+   "commRacks": 32,
+   "l1Switches": 7168,
+   "l2Switches": 2394,
+   "subPlanes": 7,
+   "opticalLinks": 114688,
+   "transceivers": 229376,
+   "gpusPerNode": 8,
+   "nodesPerRack": 8
+  }
+ },
+ "at100k": {
+  "server8": {
+   "gpus": 100000,
+   "nodes": 12500,
+   "racks": 391,
+   "zones": 7,
+   "nvlinkDomains": 12500,
+   "planes": 1,
+   "workloadGpus": 100000,
+   "supernodes": 0,
+   "commRacks": 0,
+   "l1Switches": 0,
+   "l2Switches": 0,
+   "subPlanes": 0,
+   "opticalLinks": 0,
+   "transceivers": 0,
+   "gpusPerNode": 8,
+   "nodesPerRack": 32
+  },
+  "cm384": {
+   "gpus": 100000,
+   "nodes": 12500,
+   "racks": 3125,
+   "zones": 196,
+   "nvlinkDomains": 261,
+   "planes": 7,
+   "workloadGpus": 100000,
+   "supernodes": 261,
+   "commRacks": 1044,
+   "l1Switches": 87500,
+   "l2Switches": 29232,
+   "subPlanes": 1827,
+   "opticalLinks": 1400000,
+   "transceivers": 2800000,
+   "gpusPerNode": 8,
+   "nodesPerRack": 4
+  },
+  "atlas950": {
+   "gpus": 100000,
+   "nodes": 12500,
+   "racks": 1563,
+   "zones": 10,
+   "nvlinkDomains": 13,
+   "planes": 7,
+   "workloadGpus": 100000,
+   "supernodes": 13,
+   "commRacks": 416,
+   "l1Switches": 87500,
+   "l2Switches": 31122,
+   "subPlanes": 91,
+   "opticalLinks": 1400000,
+   "transceivers": 2800000,
+   "gpusPerNode": 8,
+   "nodesPerRack": 8
+  }
+ },
+ "cardsPerCabinet": {
+  "cm384": 32,
+  "atlas950": 64
+ },
+ "domains": [
+  {
+   "id": "CORE",
+   "name": "AI Core计算单元 · 运行异常/算子中断",
+   "group": "npu",
+   "fit": 466.6666666666666,
+   "flags": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "SRAM",
+   "name": "片内SRAM/缓存 · 不可纠正缓存异常",
+   "group": "npu",
+   "fit": 166.6666666666666,
+   "flags": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "IOD",
+   "name": "芯片内IO Die/D2D · D2D/IO通路失效",
+   "group": "npu",
+   "fit": 199.99999999999997,
+   "flags": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "MODULE",
+   "name": "HiAM模组/板级连接 · 模组或连接故障",
+   "group": "npu",
+   "fit": 169.99999999999994,
+   "flags": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "MEMT",
+   "name": "NPU内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+   "group": "npu",
+   "fit": 399.99999999999994,
+   "flags": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "MEMP",
+   "name": "NPU内存持续失效 · 持续UCE/器件失效",
+   "group": "npu",
+   "fit": 173.33333333333331,
+   "flags": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "NIC",
+   "name": "UB网卡/RoCE接口 · 接口/连接中断",
+   "group": "network",
+   "fit": 100.00000000000001,
+   "flags": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "OPT",
+   "name": "光模块/光纤保护组 · 保护失效后的连接中断",
+   "group": "network",
+   "fit": 66.66666666666666,
+   "flags": {
+    "replay": 1,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perL1L2Link": 4.761904761904761,
+    "perLinkEnd": 2.3809523809523805
+   }
+  },
+  {
+   "id": "BOXIO",
+   "name": "框内IO转换/交换板 · 协议转换或交换板失效",
+   "group": "network",
+   "fit": 46.666666666666664,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perNode": 373.3333333333333
+   }
+  },
+  {
+   "id": "FABRIC",
+   "name": "L1/L2互联设备 · 保护后残余平面中断",
+   "group": "network",
+   "fit": 66.66666666666666,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perUbChip": 57.14285714285713,
+    "perL2ChipOnly": 228.57142857142853
+   }
+  },
+  {
+   "id": "CPU",
+   "name": "CPU计算刀片 · 处理器/主机中断",
+   "group": "host",
+   "fit": 166.66666666666666,
+   "flags": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {
+    "perCpu": 333.3333333333333
+   }
+  },
+  {
+   "id": "DDR",
+   "name": "CPU DDR内存 · 内存UCE导致进程/主机退出",
+   "group": "host",
+   "fit": 199.99999999999997,
+   "flags": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "SSD",
+   "name": "本地SSD/系统盘 · 盘故障或IO超时",
+   "group": "host",
+   "fit": 166.66666666666666,
+   "flags": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "perDevice": {}
+  },
+  {
+   "id": "POWER",
+   "name": "柜级供电残余故障 · 保护后掉电",
+   "group": "facility",
+   "fit": 166.66666666666666,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perComputeCabinetCm384": 5333.333333333333,
+    "perComputeCabinetAtlas950": 10666.666666666666
+   }
+  },
+  {
+   "id": "COOL",
+   "name": "液冷/风扇/热管理 · 过热保护/漏液隔离",
+   "group": "facility",
+   "fit": 99.99999999999999,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perComputeCabinetCm384": 3199.9999999999995,
+    "perComputeCabinetAtlas950": 6399.999999999999
+   }
+  },
+  {
+   "id": "MGMT",
+   "name": "管理刀片/BMC/UBM · 控制异常影响作业",
+   "group": "facility",
+   "fit": 133.33333333333331,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "perNode": 1066.6666666666665,
+    "perComputeCabinetCm384": 4266.666666666666,
+    "perComputeCabinetAtlas950": 8533.333333333332
+   }
+  },
+  {
+   "id": "STORAGE",
+   "name": "共享检查点/存储服务 · 存储不可用影响训练",
+   "group": "storageSoftware",
+   "fit": 133.33333333333331,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "clusterEventsPerHourAt100k": 0.01333333333333333
+   }
+  },
+  {
+   "id": "UNKNOWN",
+   "name": "未知/软件/未归因 · 未归因中断",
+   "group": "storageSoftware",
+   "fit": 410.00000000000006,
+   "flags": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "perDevice": {
+    "clusterEventsPerHourAt100k": 0.04100000000000001
+   }
+  }
+ ],
+ "opticsVendor": {
+  "traditionalAfr": 0.004,
+  "traditionalFit": 456.62100456621005,
+  "channelLossResistantAfr": 0.0004,
+  "channelLossResistantFit": 45.662100456621005
+ },
+ "notes": [
+  "perPod.cm384 = paper geometry (arXiv 2506.12708 §3.3); perPod.atlas950 = vendor totals (8,192 NPUs, 128 + 32 cabinets, 64 NPUs per cabinet) with the CloudMatrix384 fabric radix assumed",
+  "at100k.server8 = the reference catalog topology (8 NPUs per node); its rack and zone counts are HAC-D defaults, not an Ascend fact",
+  "per-device FIT: business-impact rate per device if every event of the class originates in that device type (derived); the catalog states rates per card-hour"
+ ]
+}

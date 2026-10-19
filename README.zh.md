@@ -1,8 +1,16 @@
-# HAC-D — AI 集群可用性 / MTBF / MTTR / goodput 建模工具
+# HAC-D — NPU 集群可用性 / MTBF / MTTR / goodput 建模工具
 
 [English README](README.md) · 用户手册：[中文](docs/USER_MANUAL.zh.html) · [English](docs/USER_MANUAL.html)
 
 HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载、恢复策略、故障管理机制）转换为可用率、平均中断间隔、恢复时间、goodput 与成本，并把目标反向分配到子系统和机制。以综述章节《AI 集群可靠性建模》为依据，并与一个独立的参考引擎（经审核的单作业 30 天离散事件仿真器）交叉校核。
+
+## v4（2026-10-18）：NPU 工具，拓扑优先
+
+- **拓扑与硬件**成为首页：三种昇腾模板——A2（Atlas 800T A2 服务器 + RoCE Clos）、A3 / CloudMatrix384（UB 超节点，论文几何）、Atlas 950（UB 2.0 SuperPoD，厂商总数）——在任意规模下（内置 10k / 100k / 200k / 500k NPU，或任意 N）给出硬件清单（NPU、节点、CPU、机柜、超节点、UB L1 / L2 芯片与链路、各层 RoCE 交换机与链路）、实时示意图、指标条，原训练作业页成为「可靠性」页签（`packages/core/src/topology`）。
+- **各硬件单元的故障类型**：54 事件目录挂到对应单元，并在 CloudMatrix384 几何下换算（每单元 FIT = 每卡 FIT × 每单元对应卡数），因此拓扑会改变中断率（10k 时 A2 / A3 / Atlas 950 每 NPU 分别为 3,086 / 3,371 / 3,238 FIT）；不含 scale-out 的 CloudMatrix384 精确复现目录。黄金向量见 `packages/core/test/golden/compute_golden_v4.py`。
+- **默认机制**：每个拓扑方案默认应用 ReMAP 六项机制（D-SDC、R-SDC、R-REPLAY、R-PROCESS、R-ELASTIC、C-FAST），在机制页修改；机制页现为静默错误策略与恢复链的唯一归属处（页签：选择与归因、静默错误与恢复链、单点收益审核）。
+- **分配策略**（`packages/core/src/strategy`）：最优（总工作量最小）、MTTR 降低优先、MTTF 提升优先，可用手段为机制库机制、推到上限的恢复杠杆，以及带下限与每减半工作量的各类中断 FIT；硬件分配方式为最小工作量 / AGREE / ARINC；降额可行性、余量、账本校核，并可跨规模运行（分配 → 策略、跨规模）。命令行 `hacd topology`、`hacd strategy`；MCP `topology_bom`、`allocation_strategy`。
+- **界面移除 GPU**：五个 GPU 示例与 GPU 用语已从应用中移除（命令行 / MCP 仍可按 ID 取用；GPU 工具可从 git 标签 `v3.7-gpu` 分出）；GPU 集群记录作为已标注的类比保留在参数库中。页面：拓扑与硬件、机制、分配、故障库；方案编辑器、对比、仿真、报告、推理、备件与导入在「全部页面」中。计划与决策见 `docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md`。
 
 ## 原则
 
@@ -16,12 +24,12 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ```bash
 npm install                      # Node ≥ 20
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 358 个核心测试 + 29 个导入器测试（含独立 Python 计算的黄金向量）
+npm test                         # 690 个核心测试 + 29 个导入器测试（含独立 Python 计算的黄金向量，v1–v4）
 node --import tsx packages/cli/src/main.ts examples        # 命令行
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 ```
 
-Web 应用：「方案」页 → 加载示例（九个内置方案）→ 其他页面在每次编辑后自动重算。界面支持中文 / 英文与浅色 / 深色。
+Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置三种拓扑模板，规模为参数：10k / 100k / 200k / 500k 或任意 N）→ 各页面在每次编辑后自动重算。界面支持中文 / 英文与浅色 / 深色。
 
 ## 功能概览
 

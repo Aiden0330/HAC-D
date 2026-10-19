@@ -1,0 +1,86 @@
+<svg class="viz" id="fig-split" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 387" width="100%" role="img" aria-label="Water-filling of the minimum-effort hardware split"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --ghost:#e4e2dc; --acc:#2f4fb8; --box:#f2f1ec; font-family:system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ghost:#34342f; --acc:#9cb0ef; --box:#242421; } }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ghost:#34342f; --acc:#9cb0ef; --box:#242421; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; } svg.viz .lab { font-size: 11px; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .ref { stroke: var(--ink2); stroke-width: 1.5; } svg.viz .hit { fill: transparent; pointer-events: all; }
+svg.viz .bx { fill: var(--box); stroke: var(--axis); } svg.viz .bxa { fill: var(--box); stroke: var(--acc); stroke-width: 1.5; } svg.viz .arr { stroke: var(--ink2); stroke-width: 1.4; fill: none; } svg.viz .arrh { fill: var(--ink2); }
+</style><rect width="960" height="387" fill="var(--surface)" rx="8"/><text x="14" y="20" class="ttl">Figure 1 · Hardware only, minimum effort: every class above the level L is cut down to it (or to its floor)</text><rect x="14" y="36" width="12" height="12" rx="2" fill="var(--ghost)"/><text x="32" y="46" class="t2">contribution with today’s FIT</text><rect x="239.60000000000008" y="36" width="12" height="12" rx="2" fill="var(--s1)"/><text x="257.6000000000001" y="46" class="t2">contribution with the allowed FIT</text><line x1="490.8000000000002" x2="506.8000000000002" y1="42" y2="42" stroke="var(--ink2)" stroke-width="2"/><text x="512.8000000000002" y="46" class="t2">level L = 0.0678 pt</text><text x="800" y="56" class="m">x · FIT now → allowed</text><line x1="170" x2="170" y1="60" y2="361" class="grid"/><text x="170" y="377" text-anchor="middle" class="m tick">0.00 pt</text><line x1="376.09925491657475" x2="376.09925491657475" y1="60" y2="361" class="grid"/><text x="376.09925491657475" y="377" text-anchor="middle" class="m tick">0.50 pt</text><line x1="582.1985098331495" x2="582.1985098331495" y1="60" y2="361" class="grid"/><text x="582.1985098331495" y="377" text-anchor="middle" class="m tick">1.00 pt</text><line x1="788.2977647497243" x2="788.2977647497243" y1="60" y2="361" class="grid"/><text x="788.2977647497243" y="377" text-anchor="middle" class="m tick">1.50 pt</text><text x="162" y="77" text-anchor="end" class="lab">UNKNOWN</text><path d="M170 66H756.4761904761905Q760.4761904761905 66 760.4761904761905 70V76Q760.4761904761905 80 756.4761904761905 80H170Z" fill="var(--ghost)" data-tip="UNKNOWN-hard · units 500,000
+now 410 FIT → allowed 20.5 FIT (×0.050, at the floor)
+unavailability points 1.4325 → 0.0742 pt · effort 8.64"/><path d="M170 66H196.58001367807458Q200.58001367807458 66 200.58001367807458 70V76Q200.58001367807458 80 196.58001367807458 80H170Z" fill="var(--s1)" data-tip="UNKNOWN-hard · units 500,000
+now 410 FIT → allowed 20.5 FIT (×0.050, at the floor)
+unavailability points 1.4325 → 0.0742 pt · effort 8.64"/><rect x="170" y="62" width="780" height="23" class="hit" data-tip="UNKNOWN-hard · units 500,000
+now 410 FIT → allowed 20.5 FIT (×0.050, at the floor)
+unavailability points 1.4325 → 0.0742 pt · effort 8.64"/><text x="800" y="77" class="t2 tick">×0.05 · 410 → 20.5 (floor)</text><text x="162" y="100" text-anchor="end" class="lab">POWER</text><path d="M170 89H406.0309717382888Q410.0309717382888 89 410.0309717382888 93V99Q410.0309717382888 103 406.0309717382888 103H170Z" fill="var(--ghost)" data-tip="POWER-hard · units 15,625
+now 5,333 FIT → allowed 599 FIT (×0.112)
+unavailability points 0.5823 → 0.0678 pt · effort 6.31"/><path d="M170 89H193.93769878644983Q197.93769878644983 89 197.93769878644983 93V99Q197.93769878644983 103 193.93769878644983 103H170Z" fill="var(--s1)" data-tip="POWER-hard · units 15,625
+now 5,333 FIT → allowed 599 FIT (×0.112)
+unavailability points 0.5823 → 0.0678 pt · effort 6.31"/><rect x="170" y="85" width="780" height="23" class="hit" data-tip="POWER-hard · units 15,625
+now 5,333 FIT → allowed 599 FIT (×0.112)
+unavailability points 0.5823 → 0.0678 pt · effort 6.31"/><text x="800" y="100" class="t2 tick">×0.11 · 5,333 → 599</text><text x="162" y="123" text-anchor="end" class="lab">MGMT</text><path d="M170 112H358.024777390631Q362.024777390631 112 362.024777390631 116V122Q362.024777390631 126 358.024777390631 126H170Z" fill="var(--ghost)" data-tip="MGMT-hard · units 62,500
+now 1,067 FIT → allowed 150 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><path d="M170 112H193.93769878644983Q197.93769878644983 112 197.93769878644983 116V122Q197.93769878644983 126 193.93769878644983 126H170Z" fill="var(--s1)" data-tip="MGMT-hard · units 62,500
+now 1,067 FIT → allowed 150 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><rect x="170" y="108" width="780" height="23" class="hit" data-tip="MGMT-hard · units 62,500
+now 1,067 FIT → allowed 150 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><text x="800" y="123" class="t2 tick">×0.14 · 1,067 → 150</text><text x="162" y="146" text-anchor="end" class="lab">STORAGE</text><path d="M170 135H358.024777390631Q362.024777390631 135 362.024777390631 139V145Q362.024777390631 149 358.024777390631 149H170Z" fill="var(--ghost)" data-tip="STORAGE-hard · units 500,000
+now 133 FIT → allowed 18.7 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><path d="M170 135H193.93769878644983Q197.93769878644983 135 197.93769878644983 139V145Q197.93769878644983 149 193.93769878644983 149H170Z" fill="var(--s1)" data-tip="STORAGE-hard · units 500,000
+now 133 FIT → allowed 18.7 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><rect x="170" y="131" width="780" height="23" class="hit" data-tip="STORAGE-hard · units 500,000
+now 133 FIT → allowed 18.7 FIT (×0.140)
+unavailability points 0.4659 → 0.0678 pt · effort 5.66"/><text x="800" y="146" class="t2 tick">×0.14 · 133 → 18.7</text><text x="162" y="169" text-anchor="end" class="lab">COOL</text><path d="M170 158H310.01858304297326Q314.01858304297326 158 314.01858304297326 162V168Q314.01858304297326 172 310.01858304297326 172H170Z" fill="var(--ghost)" data-tip="COOL-hard · units 15,625
+now 3,200 FIT → allowed 599 FIT (×0.187)
+unavailability points 0.3494 → 0.0678 pt · effort 4.83"/><path d="M170 158H193.93769878644983Q197.93769878644983 158 197.93769878644983 162V168Q197.93769878644983 172 193.93769878644983 172H170Z" fill="var(--s1)" data-tip="COOL-hard · units 15,625
+now 3,200 FIT → allowed 599 FIT (×0.187)
+unavailability points 0.3494 → 0.0678 pt · effort 4.83"/><rect x="170" y="154" width="780" height="23" class="hit" data-tip="COOL-hard · units 15,625
+now 3,200 FIT → allowed 599 FIT (×0.187)
+unavailability points 0.3494 → 0.0678 pt · effort 4.83"/><text x="800" y="169" class="t2 tick">×0.19 · 3,200 → 599</text><text x="162" y="192" text-anchor="end" class="lab">FABRIC</text><path d="M170 181H262.0131567944251Q266.0131567944251 181 266.0131567944251 185V191Q266.0131567944251 195 262.0131567944251 195H170Z" fill="var(--ghost)" data-tip="FABRIC-hard · units 583,338
+now 57.1 FIT → allowed 16.1 FIT (×0.281)
+unavailability points 0.2329 → 0.0678 pt · effort 3.66"/><path d="M170 181H193.93769878644983Q197.93769878644983 181 197.93769878644983 185V191Q197.93769878644983 195 193.93769878644983 195H170Z" fill="var(--s1)" data-tip="FABRIC-hard · units 583,338
+now 57.1 FIT → allowed 16.1 FIT (×0.281)
+unavailability points 0.2329 → 0.0678 pt · effort 3.66"/><rect x="170" y="177" width="780" height="23" class="hit" data-tip="FABRIC-hard · units 583,338
+now 57.1 FIT → allowed 16.1 FIT (×0.281)
+unavailability points 0.2329 → 0.0678 pt · effort 3.66"/><text x="800" y="192" class="t2 tick">×0.28 · 57.1 → 16.1</text><text x="162" y="215" text-anchor="end" class="lab">BOXIO</text><path d="M170 204H233.20867208672087Q237.20867208672087 204 237.20867208672087 208V214Q237.20867208672087 218 233.20867208672087 218H170Z" fill="var(--ghost)" data-tip="BOXIO-hard · units 62,500
+now 373 FIT → allowed 150 FIT (×0.401)
+unavailability points 0.1630 → 0.0678 pt · effort 2.63"/><path d="M170 204H193.93769878644983Q197.93769878644983 204 197.93769878644983 208V214Q197.93769878644983 218 193.93769878644983 218H170Z" fill="var(--s1)" data-tip="BOXIO-hard · units 62,500
+now 373 FIT → allowed 150 FIT (×0.401)
+unavailability points 0.1630 → 0.0678 pt · effort 2.63"/><rect x="170" y="200" width="780" height="23" class="hit" data-tip="BOXIO-hard · units 62,500
+now 373 FIT → allowed 150 FIT (×0.401)
+unavailability points 0.1630 → 0.0678 pt · effort 2.63"/><text x="800" y="215" class="t2 tick">×0.40 · 373 → 150</text><text x="162" y="238" text-anchor="end" class="lab">CORE</text><path d="M170 227H230.10431749837346Q234.10431749837346 227 234.10431749837346 231V237Q234.10431749837346 241 230.10431749837346 241H170Z" fill="var(--ghost)" data-tip="CORE-hard · units 500,000
+now 467 FIT → allowed 196 FIT (×0.421)
+unavailability points 0.1555 → 0.0678 pt · effort 2.50"/><path d="M170 227H193.93769878644983Q197.93769878644983 227 197.93769878644983 231V237Q197.93769878644983 241 193.93769878644983 241H170Z" fill="var(--s1)" data-tip="CORE-hard · units 500,000
+now 467 FIT → allowed 196 FIT (×0.421)
+unavailability points 0.1555 → 0.0678 pt · effort 2.50"/><rect x="170" y="223" width="780" height="23" class="hit" data-tip="CORE-hard · units 500,000
+now 467 FIT → allowed 196 FIT (×0.421)
+unavailability points 0.1555 → 0.0678 pt · effort 2.50"/><text x="800" y="238" class="t2 tick">×0.42 · 467 → 196</text><text x="162" y="261" text-anchor="end" class="lab">MEMT</text><path d="M170 250H220.94655785574867Q224.94655785574867 250 224.94655785574867 254V260Q224.94655785574867 264 220.94655785574867 264H170Z" fill="var(--ghost)" data-tip="MEMT-hard · units 500,000
+now 400 FIT → allowed 196 FIT (×0.491)
+unavailability points 0.1333 → 0.0678 pt · effort 2.05"/><path d="M170 250H193.93769878644983Q197.93769878644983 250 197.93769878644983 254V260Q197.93769878644983 264 193.93769878644983 264H170Z" fill="var(--s1)" data-tip="MEMT-hard · units 500,000
+now 400 FIT → allowed 196 FIT (×0.491)
+unavailability points 0.1333 → 0.0678 pt · effort 2.05"/><rect x="170" y="246" width="780" height="23" class="hit" data-tip="MEMT-hard · units 500,000
+now 400 FIT → allowed 196 FIT (×0.491)
+unavailability points 0.1333 → 0.0678 pt · effort 2.05"/><text x="800" y="261" class="t2 tick">×0.49 · 400 → 196</text><text x="162" y="284" text-anchor="end" class="lab">DDR</text><path d="M170 273H203.07566486412904Q207.07566486412904 273 207.07566486412904 277V283Q207.07566486412904 287 203.07566486412904 287H170Z" fill="var(--ghost)" data-tip="DDR-hard · units 62,500
+now 1,600 FIT → allowed 1,164 FIT (×0.728)
+unavailability points 0.0899 → 0.0678 pt · effort 0.92"/><path d="M170 273H193.93769878644983Q197.93769878644983 273 197.93769878644983 277V283Q197.93769878644983 287 193.93769878644983 287H170Z" fill="var(--s1)" data-tip="DDR-hard · units 62,500
+now 1,600 FIT → allowed 1,164 FIT (×0.728)
+unavailability points 0.0899 → 0.0678 pt · effort 0.92"/><rect x="170" y="269" width="780" height="23" class="hit" data-tip="DDR-hard · units 62,500
+now 1,600 FIT → allowed 1,164 FIT (×0.728)
+unavailability points 0.0899 → 0.0678 pt · effort 0.92"/><text x="800" y="284" class="t2 tick">×0.73 · 1,600 → 1,164</text><text x="162" y="307" text-anchor="end" class="lab">MEMP</text><path d="M170 296H198.13224288224518Q202.13224288224518 296 202.13224288224518 300V306Q202.13224288224518 310 198.13224288224518 310H170Z" fill="var(--ghost)" data-tip="MEMP-hard · units 500,000
+now 173 FIT → allowed 146 FIT (×0.839)
+unavailability points 0.0780 → 0.0678 pt · effort 0.51"/><path d="M170 296H193.93769878644983Q197.93769878644983 296 197.93769878644983 300V306Q197.93769878644983 310 193.93769878644983 310H170Z" fill="var(--s1)" data-tip="MEMP-hard · units 500,000
+now 173 FIT → allowed 146 FIT (×0.839)
+unavailability points 0.0780 → 0.0678 pt · effort 0.51"/><rect x="170" y="292" width="780" height="23" class="hit" data-tip="MEMP-hard · units 500,000
+now 173 FIT → allowed 146 FIT (×0.839)
+unavailability points 0.0780 → 0.0678 pt · effort 0.51"/><text x="800" y="307" class="t2 tick">×0.84 · 173 → 146</text><text x="162" y="330" text-anchor="end" class="lab">MODULE</text><path d="M170 319H197.51431513450967Q201.51431513450967 319 201.51431513450967 323V329Q201.51431513450967 333 197.51431513450967 333H170Z" fill="var(--ghost)" data-tip="MODULE-hard · units 500,000
+now 170 FIT → allowed 146 FIT (×0.856)
+unavailability points 0.0765 → 0.0678 pt · effort 0.45"/><path d="M170 319H193.93769878644983Q197.93769878644983 319 197.93769878644983 323V329Q197.93769878644983 333 193.93769878644983 333H170Z" fill="var(--s1)" data-tip="MODULE-hard · units 500,000
+now 170 FIT → allowed 146 FIT (×0.856)
+unavailability points 0.0765 → 0.0678 pt · effort 0.45"/><rect x="170" y="315" width="780" height="23" class="hit" data-tip="MODULE-hard · units 500,000
+now 170 FIT → allowed 146 FIT (×0.856)
+unavailability points 0.0765 → 0.0678 pt · effort 0.45"/><text x="800" y="330" class="t2 tick">×0.86 · 170 → 146</text><text x="162" y="353" text-anchor="end" class="lab">CPU</text><path d="M170 342H196.8963873867742Q200.8963873867742 342 200.8963873867742 346V352Q200.8963873867742 356 196.8963873867742 356H170Z" fill="var(--ghost)" data-tip="CPU-hard · units 250,000
+now 333 FIT → allowed 291 FIT (×0.873)
+unavailability points 0.0750 → 0.0678 pt · effort 0.39"/><path d="M170 342H193.93769878644983Q197.93769878644983 342 197.93769878644983 346V352Q197.93769878644983 356 193.93769878644983 356H170Z" fill="var(--s1)" data-tip="CPU-hard · units 250,000
+now 333 FIT → allowed 291 FIT (×0.873)
+unavailability points 0.0750 → 0.0678 pt · effort 0.39"/><rect x="170" y="338" width="780" height="23" class="hit" data-tip="CPU-hard · units 250,000
+now 333 FIT → allowed 291 FIT (×0.873)
+unavailability points 0.0750 → 0.0678 pt · effort 0.39"/><text x="800" y="353" class="t2 tick">×0.87 · 333 → 291</text><line x1="197.93769878644983" x2="197.93769878644983" y1="60" y2="365" class="ref"/></svg>

@@ -1,0 +1,6174 @@
+{
+ "generated": "2026-10-19T02:30:36.031Z",
+ "scenario": {
+  "template": "a3-ub384",
+  "npus": 500000,
+  "target": 0.985,
+  "goodputTarget": 0.9,
+  "mechanisms": [
+   "D-SDC",
+   "R-SDC",
+   "R-REPLAY",
+   "R-PROCESS",
+   "R-ELASTIC",
+   "C-FAST"
+  ],
+  "window": 30,
+  "sizes": [
+   10000,
+   100000,
+   200000,
+   500000
+  ]
+ },
+ "baseline": {
+  "nominal": {
+   "aOp": 0.9558859607640934,
+   "delivered": 0.8253518849760761,
+   "effective": 0.9301147577130542,
+   "mtbiHours": 0.5795807689233353,
+   "meanPauseS": 94.89554830548332,
+   "recoveryS": 264.50000000000006,
+   "runningFraction": 0.9559430836536186,
+   "eventsPerDay": 41.4092414497877,
+   "lambdaJob": 1.7253850604078207
+  },
+  "derated": {
+   "aOp": 0.950982284923952,
+   "delivered": 0.7311182824340953,
+   "effective": 0.9158231826206922,
+   "mtbiHours": 0.5795807689233353,
+   "meanPauseS": 105.973060848916,
+   "recoveryS": 264.50000000000006,
+   "runningFraction": 0.9510841329976928,
+   "eventsPerDay": 41.4092414497877,
+   "lambdaJob": 1.7253850604078207
+  },
+  "sumC": 176.63404553333334,
+  "F": 8.520048724627657,
+  "phi": 0.0001070862925867111,
+  "budgetB": 45.91090492683181,
+  "hardFitPerNpu": 3383.929104761904
+ },
+ "classes": [
+  {
+   "id": "UNKNOWN-hard",
+   "group": "storageSoftware",
+   "units": 500000,
+   "fitPerUnit": 410.00000000000006,
+   "ratePerHour": 0.20500000000000002,
+   "meanPauseS": 264.50000000000006,
+   "c": 54.22250000000002,
+   "share": 0.3069764938932312,
+   "points": 0.014325044278185397,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "POWER-hard",
+   "group": "facility",
+   "units": 15625,
+   "fitPerUnit": 5333.333333333333,
+   "ratePerHour": 0.08333333333333333,
+   "meanPauseS": 264.50000000000006,
+   "c": 22.04166666666667,
+   "share": 0.12478719263952485,
+   "points": 0.005823188730969673,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "MGMT-hard",
+   "group": "facility",
+   "units": 62500,
+   "fitPerUnit": 1066.6666666666665,
+   "ratePerHour": 0.06666666666666665,
+   "meanPauseS": 264.50000000000006,
+   "c": 17.633333333333333,
+   "share": 0.09982975411161986,
+   "points": 0.0046585509847757375,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "STORAGE-hard",
+   "group": "storageSoftware",
+   "units": 500000,
+   "fitPerUnit": 133.33333333333331,
+   "ratePerHour": 0.06666666666666665,
+   "meanPauseS": 264.50000000000006,
+   "c": 17.633333333333333,
+   "share": 0.09982975411161986,
+   "points": 0.0046585509847757375,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "COOL-hard",
+   "group": "facility",
+   "units": 15625,
+   "fitPerUnit": 3199.9999999999995,
+   "ratePerHour": 0.04999999999999999,
+   "meanPauseS": 264.50000000000006,
+   "c": 13.225,
+   "share": 0.07487231558371489,
+   "points": 0.0034939132385818027,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "FABRIC-hard",
+   "group": "network",
+   "units": 583338,
+   "fitPerUnit": 57.14285714285713,
+   "ratePerHour": 0.03333359999999999,
+   "meanPauseS": 264.50000000000006,
+   "c": 8.8167372,
+   "share": 0.04991527637482638,
+   "points": 0.0023292941265918078,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "BOXIO-hard",
+   "group": "network",
+   "units": 62500,
+   "fitPerUnit": 373.3333333333333,
+   "ratePerHour": 0.02333333333333333,
+   "meanPauseS": 264.50000000000006,
+   "c": 6.171666666666668,
+   "share": 0.03494041393906696,
+   "points": 0.0016304928446715084,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "CORE-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 466.6666666666666,
+   "ratePerHour": 0.23333333333333328,
+   "meanPauseS": 25.22828,
+   "c": 5.886598666666666,
+   "share": 0.033326523484713946,
+   "points": 0.0015551807192200116,
+   "pGlobal": 0.0023399999999999988,
+   "pRollback": 0.017999999999999988
+  },
+  {
+   "id": "MEMT-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 399.99999999999994,
+   "ratePerHour": 0.19999999999999996,
+   "meanPauseS": 25.22828,
+   "c": 5.045655999999999,
+   "share": 0.02856559155832624,
+   "points": 0.0013330120450457243,
+   "pGlobal": 0.0023399999999999988,
+   "pRollback": 0.017999999999999988
+  },
+  {
+   "id": "DDR-hard",
+   "group": "host",
+   "units": 62500,
+   "fitPerUnit": 1599.9999999999998,
+   "ratePerHour": 0.09999999999999998,
+   "meanPauseS": 34.04599999999999,
+   "c": 3.4045999999999985,
+   "share": 0.019274879821271504,
+   "points": 0.0008994613997788735,
+   "pGlobal": 0.012999999999999998,
+   "pRollback": 0.09999999999999998
+  },
+  {
+   "id": "MEMP-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 173.33333333333331,
+   "ratePerHour": 0.08666666666666666,
+   "meanPauseS": 34.04599999999999,
+   "c": 2.9506533333333325,
+   "share": 0.016704895845101972,
+   "points": 0.0007795332131416904,
+   "pGlobal": 0.012999999999999998,
+   "pRollback": 0.09999999999999998
+  },
+  {
+   "id": "MODULE-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 169.99999999999994,
+   "ratePerHour": 0.08499999999999996,
+   "meanPauseS": 34.04599999999999,
+   "c": 2.893909999999998,
+   "share": 0.016383647848080773,
+   "points": 0.0007645421898120423,
+   "pGlobal": 0.012999999999999998,
+   "pRollback": 0.09999999999999998
+  },
+  {
+   "id": "CPU-hard",
+   "group": "host",
+   "units": 250000,
+   "fitPerUnit": 333.3333333333333,
+   "ratePerHour": 0.08333333333333333,
+   "meanPauseS": 34.04599999999999,
+   "c": 2.8371666666666657,
+   "share": 0.01606239985105959,
+   "points": 0.0007495511664823946,
+   "pGlobal": 0.012999999999999998,
+   "pRollback": 0.09999999999999998
+  },
+  {
+   "id": "SSD-hard",
+   "group": "host",
+   "units": 62500,
+   "fitPerUnit": 1333.3333333333333,
+   "ratePerHour": 0.08333333333333333,
+   "meanPauseS": 34.04599999999999,
+   "c": 2.8371666666666657,
+   "share": 0.01606239985105959,
+   "points": 0.0007495511664823946,
+   "pGlobal": 0.012999999999999998,
+   "pRollback": 0.09999999999999998
+  },
+  {
+   "id": "IOD-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 199.99999999999997,
+   "ratePerHour": 0.09999999999999998,
+   "meanPauseS": 25.22828,
+   "c": 2.5228279999999996,
+   "share": 0.01428279577916312,
+   "points": 0.0006665060225228621,
+   "pGlobal": 0.0023399999999999988,
+   "pRollback": 0.017999999999999988
+  },
+  {
+   "id": "OPT-hard",
+   "group": "network",
+   "units": 7000000,
+   "fitPerUnit": 4.761904761904761,
+   "ratePerHour": 0.033333333333333326,
+   "meanPauseS": 66.71000000000001,
+   "c": 2.2236666666666665,
+   "share": 0.012589117007157202,
+   "points": 0.0005874705788173713,
+   "pGlobal": 0.17999999999999994,
+   "pRollback": 0.17999999999999994
+  },
+  {
+   "id": "SRAM-hard",
+   "group": "npu",
+   "units": 500000,
+   "fitPerUnit": 166.6666666666666,
+   "ratePerHour": 0.0833333333333333,
+   "meanPauseS": 25.22828,
+   "c": 2.1023566666666658,
+   "share": 0.011902329815969262,
+   "points": 0.0005554216854357182,
+   "pGlobal": 0.0023399999999999988,
+   "pRollback": 0.017999999999999988
+  },
+  {
+   "id": "FABRIC-hard@roce",
+   "group": "network",
+   "units": 109375,
+   "fitPerUnit": 57.14285714285713,
+   "ratePerHour": 0.006249999999999999,
+   "meanPauseS": 264.50000000000006,
+   "c": 1.653125,
+   "share": 0.009359039447964361,
+   "points": 0.00043673915482272534,
+   "pGlobal": 1,
+   "pRollback": 1
+  },
+  {
+   "id": "OPT-hard@roce",
+   "group": "network",
+   "units": 4000000,
+   "fitPerUnit": 4.761904761904761,
+   "ratePerHour": 0.019047619047619046,
+   "meanPauseS": 66.71000000000001,
+   "c": 1.2706666666666666,
+   "share": 0.0071937811469469735,
+   "points": 0.00033569747360992643,
+   "pGlobal": 0.17999999999999994,
+   "pRollback": 0.17999999999999994
+  },
+  {
+   "id": "NIC-hard",
+   "group": "network",
+   "units": 500000,
+   "fitPerUnit": 100.00000000000001,
+   "ratePerHour": 0.05,
+   "meanPauseS": 25.22828,
+   "c": 1.2614140000000003,
+   "share": 0.007141397889581562,
+   "points": 0.0003332530112614312,
+   "pGlobal": 0.0023399999999999988,
+   "pRollback": 0.017999999999999988
+  }
+ ],
+ "moves": {
+  "scenario": [
+   {
+    "id": "D-SDC",
+    "name": {
+     "zh": "静默即时检测",
+     "en": "Immediate silent-corruption detection"
+    },
+    "kind": "detect",
+    "effort": 5,
+    "nominal": {
+     "coverage": 0.95,
+     "detectSeconds": 1
+    },
+    "derated": {
+     "coverage": 0.8999999999999999,
+     "detectSeconds": 1.5
+    }
+   },
+   {
+    "id": "R-SDC",
+    "name": {
+     "zh": "干净状态恢复与 step 重算",
+     "en": "Clean step-state recovery"
+    },
+    "kind": "recover",
+    "effort": 4,
+    "nominal": {
+     "stepSeconds": 1,
+     "recoverSeconds": 1
+    },
+    "derated": {
+     "stepSeconds": 1.5,
+     "recoverSeconds": 1.5
+    }
+   },
+   {
+    "id": "R-REPLAY",
+    "name": {
+     "zh": "通信 / 算子重执行",
+     "en": "Operator / communication replay"
+    },
+    "kind": "recover",
+    "effort": 2,
+    "nominal": {
+     "success": 0.9,
+     "successSeconds": 5,
+     "failureSeconds": 10
+    },
+    "derated": {
+     "success": 0.8200000000000001,
+     "successSeconds": 7.5,
+     "failureSeconds": 15
+    }
+   },
+   {
+    "id": "R-PROCESS",
+    "name": {
+     "zh": "进程 / Pod 重调度",
+     "en": "Process / pod rescheduling"
+    },
+    "kind": "recover",
+    "effort": 3,
+    "nominal": {
+     "success": 0.95,
+     "successSeconds": 60,
+     "failureSeconds": 120
+    },
+    "derated": {
+     "success": 0.87,
+     "successSeconds": 90,
+     "failureSeconds": 180
+    }
+   },
+   {
+    "id": "R-ELASTIC",
+    "name": {
+     "zh": "DP 域弹性恢复",
+     "en": "DP-domain elastic recovery"
+    },
+    "kind": "recover",
+    "effort": 5,
+    "nominal": {
+     "domains": 50,
+     "success": 0.98,
+     "recoverSeconds": 180,
+     "failureSeconds": 120,
+     "syncSeconds": 1
+    },
+    "derated": {
+     "domains": 50,
+     "success": 0.9,
+     "recoverSeconds": 270,
+     "failureSeconds": 180,
+     "syncSeconds": 1.5
+    }
+   },
+   {
+    "id": "C-FAST",
+    "name": {
+     "zh": "缩短 CKPT 周期和保存阻塞",
+     "en": "Faster checkpoints"
+    },
+    "kind": "checkpoint",
+    "effort": 3,
+    "nominal": {
+     "computeSeconds": 60,
+     "saveSeconds": 1
+    },
+    "derated": {
+     "computeSeconds": 60,
+     "saveSeconds": 1.5
+    }
+   }
+  ],
+  "candidates": [
+   {
+    "id": "D-HARD",
+    "name": {
+     "zh": "中断检测 / 超时兜底",
+     "en": "Interruption detection / timeout fallback"
+    },
+    "kind": "detect",
+    "effort": 2,
+    "nominal": {
+     "coverage": 0.999,
+     "detectSeconds": 1
+    },
+    "derated": {
+     "coverage": 0.949,
+     "detectSeconds": 1.5
+    },
+    "change": {
+     "zh": "基线 95 % 在 10 s 发现、其余 60 s 超时 → 99.9 % 在 1 s 发现、其余 60 s；只改变停机中的发现时间",
+     "en": "baseline 95 % detected in 10 s, rest by a 60 s timeout → 99.9 % in 1 s, rest 60 s; only the detection part of the outage changes"
+    }
+   },
+   {
+    "id": "D-SLOW",
+    "name": {
+     "zh": "亚健康检测",
+     "en": "Sub-health detection"
+    },
+    "kind": "detect",
+    "effort": 3,
+    "nominal": {
+     "coverage": 0.99,
+     "detectSeconds": 30
+    },
+    "derated": {
+     "coverage": 0.94,
+     "detectSeconds": 45
+    },
+    "change": {
+     "zh": "95 % 在 5 min 发现 → 99 % 在 30 s 发现；漏检仍降速 24 h；恢复仍 3 min、零回滚",
+     "en": "95 % detected in 5 min → 99 % in 30 s; undetected units stay slow for 24 h; recovery unchanged (3 min, no rollback)"
+    }
+   },
+   {
+    "id": "P-PREDICT",
+    "name": {
+     "zh": "故障预测与预先迁移",
+     "en": "Failure prediction and pre-emptive migration"
+    },
+    "kind": "detect",
+    "effort": 3,
+    "nominal": {
+     "recall": 0.5,
+     "precision": 0.8,
+     "migrationSeconds": 180
+    },
+    "derated": {
+     "recall": 0.42,
+     "precision": 0.7200000000000001,
+     "migrationSeconds": 270
+    },
+    "change": {
+     "zh": "预测器召回 50 % 的即将发生的中断，在下一个 checkpoint 做计划内迁移（180 s 停顿、不回滚、无检测时延）；精度 80 %，误报按 r(1 − p)/p 增加同样的停顿",
+     "en": "the predictor catches 50 % of impending interruptions, which become planned migrations at the next checkpoint (180 s pause, no rollback, no detection delay); precision 80 %, false alarms add the same pause at r(1 − p)/p per interruption"
+    }
+   },
+   {
+    "id": "R-NETFAIL",
+    "name": {
+     "zh": "容错集合通信 / 多网卡切换",
+     "en": "Fault-tolerant collectives and multi-NIC failover"
+    },
+    "kind": "recover",
+    "effort": 3,
+    "nominal": {
+     "success": 0.95,
+     "successSeconds": 2,
+     "failureSeconds": 10
+    },
+    "derated": {
+     "success": 0.87,
+     "successSeconds": 3,
+     "failureSeconds": 15
+    },
+    "change": {
+     "zh": "网卡或链路故障在一次迭代内被集合通信库吸收：95 % 在 2 s 内切换、不回滚、无检测时延；失败耗时 10 s 后进入检测与恢复链",
+     "en": "NIC or link failures are absorbed inside the collective: 95 % fail over in 2 s with no rollback and no detection delay; a failure costs 10 s before the normal detection and chain"
+    }
+   },
+   {
+    "id": "R-HOTSWAP",
+    "name": {
+     "zh": "故障卡热替换（零开销 checkpoint）",
+     "en": "Hot-swap of failed devices with zero-overhead checkpoints"
+    },
+    "kind": "recover",
+    "effort": 4,
+    "nominal": {
+     "success": 0.9,
+     "successSeconds": 180,
+     "failureSeconds": 60
+    },
+    "derated": {
+     "success": 0.8200000000000001,
+     "successSeconds": 270,
+     "failureSeconds": 90
+    },
+    "change": {
+     "zh": "卡 / 服务器级中断 90 % 在 180 s 内由备用设备热替换、不回滚；失败 60 s 后进入弹性 / 进程 / 全局",
+     "en": "card / server interruptions are hot-swapped from a spare in 180 s with 90 % success and no rollback; a failure costs 60 s before elastic / process / global"
+    }
+   },
+   {
+    "id": "C-MEM",
+    "name": {
+     "zh": "内存 / 分层 checkpoint",
+     "en": "In-memory and tiered checkpointing"
+    },
+    "kind": "checkpoint",
+    "effort": 3,
+    "nominal": {
+     "computeSeconds": 60,
+     "saveSeconds": 0.5,
+     "loadSavingSeconds": 60,
+     "overhead": 0.01
+    },
+    "derated": {
+     "computeSeconds": 60,
+     "saveSeconds": 0.75,
+     "loadSavingSeconds": 40,
+     "overhead": 0.015
+    },
+    "change": {
+     "zh": "暴露保存时间降到 0.5 s、每 60 s 一次；从主机 / 邻居内存加载使全局恢复缩短 60 s；主机内存与流量干扰计 1 % 开销",
+     "en": "exposed save time 0.5 s every 60 s; loading from host / peer memory shortens the global recovery by 60 s; host-memory and traffic interference cost 1 % of throughput"
+    }
+   }
+  ],
+  "levers": [
+   {
+    "id": "auto",
+    "limit": 60,
+    "effort": 3,
+    "current": 180,
+    "nominalValue": 60,
+    "deratedValue": 90
+   },
+   {
+    "id": "success",
+    "limit": 0.999,
+    "effort": 3,
+    "current": 0.99,
+    "nominalValue": 0.999,
+    "deratedValue": 0.99
+   },
+   {
+    "id": "manual",
+    "limit": 1800,
+    "effort": 2,
+    "current": 7200,
+    "nominalValue": 1800,
+    "deratedValue": 2700
+   }
+  ],
+  "derate": {
+   "coverageDelta": 0.05,
+   "successDelta": 0.08,
+   "timeFactor": 1.5,
+   "reductionFactor": 0.5
+  }
+ },
+ "results": {
+  "optimal": {
+   "strategy": "optimal",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "min-effort",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [
+    "D-HARD",
+    "R-NETFAIL"
+   ],
+   "levers": [
+    "auto",
+    "manual"
+   ],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 466.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0011510032537053918,
+      "pointsAfter": 0.001161646973593472,
+      "mtbfHours": 2142857.142857143
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 166.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0004110725906090685,
+      "pointsAfter": 0.00041487391914052564,
+      "mtbfHours": 6000000.000000003
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 199.99999999999997,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0004932871087308822,
+      "pointsAfter": 0.0004978487029686309,
+      "mtbfHours": 5000000.000000001
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 169.99999999999994,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007256730547168476,
+      "pointsAfter": 0.0007323836011031138,
+      "mtbfHours": 5882352.941176472
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 399.99999999999994,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0009865742174617644,
+      "pointsAfter": 0.0009956974059372617,
+      "mtbfHours": 2500000.0000000005
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 173.33333333333331,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007399019381426683,
+      "pointsAfter": 0.0007467440638698417,
+      "mtbfHours": 5769230.76923077
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 100.00000000000001,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0000938785694140309,
+      "pointsAfter": 0.00009474669658319384,
+      "mtbfHours": 9999999.999999998
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00008161696046156325,
+      "pointsAfter": 0.00008237170034824279,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.000046638263120893295,
+      "pointsAfter": 0.000047069543056138747,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 373.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00012875393161455552,
+      "pointsAfter": 0.00012994456315984664,
+      "mtbfHours": 2678571.4285714286
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00018393565949429777,
+      "pointsAfter": 0.0001856365753090741,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0000344876602538988,
+      "pointsAfter": 0.00003480657941781605,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 333.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007114441712910272,
+      "pointsAfter": 0.0007180231383363864,
+      "mtbfHours": 3000000
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 1599.9999999999998,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0008537330055492326,
+      "pointsAfter": 0.0008616277660036635,
+      "mtbfHours": 625000.0000000001
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 1333.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007114441712910272,
+      "pointsAfter": 0.0007180231383363864,
+      "mtbfHours": 750000
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 2476.4842335499307,
+      "factor": 0.46434079379061205,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.2134881262893775,
+      "pointsBefore": 0.0027446971113418836,
+      "pointsAfter": 0.0012862603391362085,
+      "mtbfHours": 403798.2501372699
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 2476.484233549931,
+      "factor": 0.7739013229843535,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.7395569379569649,
+      "pointsBefore": 0.00164681826680513,
+      "pointsAfter": 0.0012862603391362087,
+      "mtbfHours": 403798.2501372698
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 619.1210583874828,
+      "factor": 0.5804259922382652,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5696319365146523,
+      "pointsBefore": 0.002195757689073507,
+      "pointsAfter": 0.0012862603391362087,
+      "mtbfHours": 1615193.0005490792
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 77.39013229843535,
+      "factor": 0.5804259922382652,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5696319365146523,
+      "pointsBefore": 0.002195757689073507,
+      "pointsAfter": 0.0012862603391362087,
+      "mtbfHours": 12921544.004392633
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 77.39013229843535,
+      "factor": 0.18875642024008618,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 4.810804757418408,
+      "pointsBefore": 0.006751954893901036,
+      "pointsAfter": 0.0012862603391362087,
+      "mtbfHours": 12921544.004392633
+     }
+    ],
+    "effort": 10.903113694694055,
+    "needed": true,
+    "atFloors": []
+   },
+   "effort": {
+    "mechanisms": 5,
+    "levers": 5,
+    "hardware": 10.903113694694055,
+    "total": 20.903113694694056
+   },
+   "final": {
+    "value": 0.9930786079424431,
+    "aOp": 0.9930786079424431,
+    "delivered": 0.8585302594583849,
+    "mtbiHours": 0.690992493319657,
+    "meanPauseS": 17.018860583456902,
+    "recoveryS": 79.05900000000001,
+    "derated": 0.9850000002730261
+   },
+   "steps": [
+    {
+     "kind": "mechanism",
+     "id": "D-HARD",
+     "effort": 2,
+     "value": 0.9593747627134787,
+     "derated": 0.9533837886776512
+    },
+    {
+     "kind": "mechanism",
+     "id": "R-NETFAIL",
+     "effort": 3,
+     "value": 0.9636477850524552,
+     "derated": 0.957635730914242
+    },
+    {
+     "kind": "lever",
+     "id": "auto",
+     "effort": 3,
+     "value": 0.9796936661104988,
+     "derated": 0.9697845947224449
+    },
+    {
+     "kind": "lever",
+     "id": "manual",
+     "effort": 2,
+     "value": 0.9870899314183369,
+     "derated": 0.9759752866919568
+    },
+    {
+     "kind": "hardware",
+     "id": "min-effort",
+     "effort": 10.903113694694055,
+     "value": 0.9930786079424431,
+     "derated": 0.9850000002730261
+    }
+   ],
+   "alternatives": [
+    {
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 10.903113694694055,
+      "total": 20.903113694694056
+     },
+     "value": 0.9870899314183369,
+     "derated": 0.9759752866919568,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 3,
+      "levers": 5,
+      "hardware": 14.715677753641033,
+      "total": 22.71567775364103
+     },
+     "value": 0.9838655906962197,
+     "derated": 0.973747479760867,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-HARD",
+      "D-SLOW",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 10.884866680800116,
+      "total": 23.884866680800116
+     },
+     "value": 0.9870579287864452,
+     "derated": 0.975983157606162,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "success",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 8,
+      "hardware": 10.902058755820404,
+      "total": 23.902058755820406
+     },
+     "value": 0.9893306332423268,
+     "derated": 0.9759752866919568,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "C-MEM"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 10.90206381593784,
+      "total": 23.90206381593784
+     },
+     "value": 0.987089930858264,
+     "derated": 0.9759752844902714,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 16.930523231478155,
+      "total": 23.930523231478155
+     },
+     "value": 0.9856380554860785,
+     "derated": 0.9737960173254918,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 3,
+      "hardware": 16.94687301271054,
+      "total": 24.94687301271054
+     },
+     "value": 0.9796936661104988,
+     "derated": 0.9697845947224449,
+     "feasible": true
+    },
+    {
+     "mechanisms": [
+      "D-SLOW",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 6,
+      "levers": 5,
+      "hardware": 14.693990535071105,
+      "total": 25.693990535071105
+     },
+     "value": 0.9838337967938271,
+     "derated": 0.9737553147826092,
+     "feasible": true
+    }
+   ],
+   "evaluations": 1128,
+   "notes": [
+    "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+    "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  },
+  "mttr-first": {
+   "strategy": "mttr-first",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "min-effort",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [
+    "D-HARD",
+    "R-NETFAIL",
+    "D-SLOW"
+   ],
+   "levers": [
+    "auto",
+    "manual"
+   ],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 466.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0011510125365371481,
+      "pointsAfter": 0.0011616469737506258,
+      "mtbfHours": 2142857.142857143
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 166.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0004110759059061243,
+      "pointsAfter": 0.000414873919196652,
+      "mtbfHours": 6000000.000000003
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 199.99999999999997,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0004932910870873491,
+      "pointsAfter": 0.0004978487030359825,
+      "mtbfHours": 5000000.000000001
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 169.99999999999994,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007256789072640537,
+      "pointsAfter": 0.0007323836012021946,
+      "mtbfHours": 5882352.941176472
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 399.99999999999994,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0009865821741746983,
+      "pointsAfter": 0.000995697406071965,
+      "mtbfHours": 2500000.0000000005
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 173.33333333333331,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007399079054457023,
+      "pointsAfter": 0.0007467440639708654,
+      "mtbfHours": 5769230.76923077
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 100.00000000000001,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0000938793265439196,
+      "pointsAfter": 0.00009474669659601169,
+      "mtbfHours": 9999999.999999998
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0000816176187016768,
+      "pointsAfter": 0.00008237170035938648,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00004663863925810104,
+      "pointsAfter": 0.000047069543062506564,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 373.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00012875497001395297,
+      "pointsAfter": 0.00012994456317742624,
+      "mtbfHours": 2678571.4285714286
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00018393714293387582,
+      "pointsAfter": 0.00018563657533418804,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.000034487938396594544,
+      "pointsAfter": 0.00003480657942252488,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 333.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.000711449909082406,
+      "pointsAfter": 0.0007180231384335243,
+      "mtbfHours": 3000000
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 1599.9999999999998,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0008537398908988871,
+      "pointsAfter": 0.000861627766120229,
+      "mtbfHours": 625000.0000000001
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 1333.3333333333333,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.000711449909082406,
+      "pointsAfter": 0.0007180231384335243,
+      "mtbfHours": 750000
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 2479.618439314592,
+      "factor": 0.464928457371486,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.2098387235105896,
+      "pointsBefore": 0.002744719247301469,
+      "pointsAfter": 0.001287888213421312,
+      "mtbfHours": 403287.85435085604
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 2479.6184393145923,
+      "factor": 0.7748807622858102,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.7359075351781771,
+      "pointsBefore": 0.0016468315483808811,
+      "pointsAfter": 0.0012878882134213121,
+      "mtbfHours": 403287.8543508559
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 619.9046098286481,
+      "factor": 0.5811605717143576,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5659825337358644,
+      "pointsBefore": 0.0021957753978411746,
+      "pointsAfter": 0.0012878882134213121,
+      "mtbfHours": 1613151.4174034237
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 77.48807622858101,
+      "factor": 0.5811605717143576,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5659825337358644,
+      "pointsBefore": 0.0021957753978411746,
+      "pointsAfter": 0.0012878882134213121,
+      "mtbfHours": 12905211.33922739
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 77.48807622858101,
+      "factor": 0.1889953078745878,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 4.807155354639621,
+      "pointsBefore": 0.006752009348361614,
+      "pointsAfter": 0.0012878882134213121,
+      "mtbfHours": 12905211.33922739
+     }
+    ],
+    "effort": 10.884866680800116,
+    "needed": true,
+    "atFloors": []
+   },
+   "effort": {
+    "mechanisms": 8,
+    "levers": 5,
+    "hardware": 10.884866680800116,
+    "total": 23.884866680800116
+   },
+   "final": {
+    "value": 0.9930409130690929,
+    "aOp": 0.9930409130690929,
+    "delivered": 0.8600224945576022,
+    "mtbiHours": 0.6901527660536242,
+    "meanPauseS": 17.0919856697661,
+    "recoveryS": 79.05900000000001,
+    "derated": 0.9850000004901329
+   },
+   "steps": [
+    {
+     "kind": "lever",
+     "id": "auto",
+     "effort": 3,
+     "value": 0.9737144271339974,
+     "derated": 0.9644256125753352
+    },
+    {
+     "kind": "lever",
+     "id": "manual",
+     "effort": 2,
+     "value": 0.9819560071301311,
+     "derated": 0.9712907417754244
+    },
+    {
+     "kind": "mechanism",
+     "id": "D-HARD",
+     "effort": 2,
+     "value": 0.9856380554860785,
+     "derated": 0.9737960173254918
+    },
+    {
+     "kind": "mechanism",
+     "id": "R-NETFAIL",
+     "effort": 3,
+     "value": 0.9870899314183369,
+     "derated": 0.9759752866919568
+    },
+    {
+     "kind": "mechanism",
+     "id": "D-SLOW",
+     "effort": 3,
+     "value": 0.9870579287864452,
+     "derated": 0.975983157606162
+    },
+    {
+     "kind": "hardware",
+     "id": "min-effort",
+     "effort": 10.884866680800116,
+     "value": 0.9930409130690929,
+     "derated": 0.9850000004901329
+    }
+   ],
+   "evaluations": 116,
+   "notes": [
+    "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  },
+  "mttf-first": {
+   "strategy": "mttf-first",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "min-effort",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [],
+   "levers": [],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.42076351001881923,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.4978370000844055,
+      "pointsBefore": 0.0015551807192200116,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 166.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005554216854357183,
+      "pointsAfter": 0.00057529170563257,
+      "mtbfHours": 6000000.000000003
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.9817815233772449,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.05305215741150963,
+      "pointsBefore": 0.0006665060225228621,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 145.50114063671316,
+      "factor": 0.8558890625689013,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.4490085667409056,
+      "pointsBefore": 0.0007645421898120423,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 6872798.354871988
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.49089076168862245,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.0530521574115097,
+      "pointsBefore": 0.0013330120450457243,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 145.50114063671316,
+      "factor": 0.839429657519499,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.5050373190801,
+      "pointsBefore": 0.0007795332131416903,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 6872798.354871988
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 100.00000000000001,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0003332530112614311,
+      "pointsAfter": 0.00034517502337954204,
+      "mtbfHours": 9999999.999999998
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005874705788173713,
+      "pointsAfter": 0.0006084871371769894,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00033569747360992643,
+      "pointsAfter": 0.0003477069355297082,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 149.82931823417874,
+      "factor": 0.40132853098440735,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.634288743990102,
+      "pointsBefore": 0.0016304928446715082,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 6674261.164540774
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 16.053012815273767,
+      "factor": 0.280927724267291,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.6634581726779403,
+      "pointsBefore": 0.0023292941265918078,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 62293602.54721419
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00043673915482272534,
+      "pointsAfter": 0.0004523633482142305,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 291.0022812734263,
+      "factor": 0.873006843820279,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.39187026234736483,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 3436399.177435994
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 1164.0091250937055,
+      "factor": 0.727505703183566,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.917939074014952,
+      "pointsBefore": 0.0008994613997788735,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 859099.7943589983
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 1164.0091250937053,
+      "factor": 0.873006843820279,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.39187026234736483,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 859099.7943589985
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 599.317272936715,
+      "factor": 0.11237198867563405,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 6.307291279424343,
+      "pointsBefore": 0.005823188730969673,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 1668565.2911351935
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 599.317272936715,
+      "factor": 0.18728664779272347,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 4.83336009109193,
+      "pointsBefore": 0.0034939132385818027,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 1668565.2911351935
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 149.82931823417874,
+      "factor": 0.1404649858445426,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 5.663435089649618,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 6674261.164540774
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 18.728664779272343,
+      "factor": 0.1404649858445426,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 5.663435089649618,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 53394089.31632619
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 20.500000000000004,
+      "factor": 0.05,
+      "floor": 0.05,
+      "atFloor": true,
+      "effortPerHalving": 2,
+      "effort": 8.643856189774725,
+      "pointsBefore": 0.014325044278185393,
+      "pointsAfter": 0.0007418758910713385,
+      "mtbfHours": 48780487.80487804
+     }
+    ],
+    "effort": 44.668791455696386,
+    "needed": true,
+    "atFloors": [
+     "UNKNOWN-hard"
+    ]
+   },
+   "effort": {
+    "mechanisms": 0,
+    "levers": 0,
+    "hardware": 44.668791455696386,
+    "total": 44.668791455696386
+   },
+   "final": {
+    "value": 0.9891573338738808,
+    "aOp": 0.9891573338738808,
+    "delivered": 0.8562481649626273,
+    "mtbiHours": 1.0525118178554682,
+    "meanPauseS": 40.320533081441866,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.9850000000256748
+   },
+   "steps": [
+    {
+     "kind": "hardware",
+     "id": "min-effort",
+     "effort": 44.668791455696386,
+     "value": 0.9891573338738808,
+     "derated": 0.9850000000256748
+    }
+   ],
+   "evaluations": 38,
+   "notes": [
+    "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  }
+ },
+ "splits": {
+  "min-effort": {
+   "strategy": "mttf-first",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "min-effort",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [],
+   "levers": [],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.42076351001881923,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.4978370000844055,
+      "pointsBefore": 0.0015551807192200116,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 166.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005554216854357183,
+      "pointsAfter": 0.00057529170563257,
+      "mtbfHours": 6000000.000000003
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.9817815233772449,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.05305215741150963,
+      "pointsBefore": 0.0006665060225228621,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 145.50114063671316,
+      "factor": 0.8558890625689013,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.4490085667409056,
+      "pointsBefore": 0.0007645421898120423,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 6872798.354871988
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 196.35630467544894,
+      "factor": 0.49089076168862245,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.0530521574115097,
+      "pointsBefore": 0.0013330120450457243,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 5092782.743354577
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 145.50114063671316,
+      "factor": 0.839429657519499,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.5050373190801,
+      "pointsBefore": 0.0007795332131416903,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 6872798.354871988
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 100.00000000000001,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0003332530112614311,
+      "pointsAfter": 0.00034517502337954204,
+      "mtbfHours": 9999999.999999998
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005874705788173713,
+      "pointsAfter": 0.0006084871371769894,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00033569747360992643,
+      "pointsAfter": 0.0003477069355297082,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 149.82931823417874,
+      "factor": 0.40132853098440735,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 2.634288743990102,
+      "pointsBefore": 0.0016304928446715082,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 6674261.164540774
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 16.053012815273767,
+      "factor": 0.280927724267291,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.6634581726779403,
+      "pointsBefore": 0.0023292941265918078,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 62293602.54721419
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 57.14285714285713,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00043673915482272534,
+      "pointsAfter": 0.0004523633482142305,
+      "mtbfHours": 17500000.000000004
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 291.0022812734263,
+      "factor": 0.873006843820279,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.39187026234736483,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 3436399.177435994
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 1164.0091250937055,
+      "factor": 0.727505703183566,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.917939074014952,
+      "pointsBefore": 0.0008994613997788735,
+      "pointsAfter": 0.0006777729205706857,
+      "mtbfHours": 859099.7943589983
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 1164.0091250937053,
+      "factor": 0.873006843820279,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.39187026234736483,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0006777729205706856,
+      "mtbfHours": 859099.7943589985
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 599.317272936715,
+      "factor": 0.11237198867563405,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 6.307291279424343,
+      "pointsBefore": 0.005823188730969673,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 1668565.2911351935
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 599.317272936715,
+      "factor": 0.18728664779272347,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 4.83336009109193,
+      "pointsBefore": 0.0034939132385818027,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 1668565.2911351935
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 149.82931823417874,
+      "factor": 0.1404649858445426,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 5.663435089649618,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 6674261.164540774
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 18.728664779272343,
+      "factor": 0.1404649858445426,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 5.663435089649618,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.000677772920570686,
+      "mtbfHours": 53394089.31632619
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 20.500000000000004,
+      "factor": 0.05,
+      "floor": 0.05,
+      "atFloor": true,
+      "effortPerHalving": 2,
+      "effort": 8.643856189774725,
+      "pointsBefore": 0.014325044278185393,
+      "pointsAfter": 0.0007418758910713385,
+      "mtbfHours": 48780487.80487804
+     }
+    ],
+    "effort": 44.668791455696386,
+    "needed": true,
+    "atFloors": [
+     "UNKNOWN-hard"
+    ]
+   },
+   "effort": {
+    "mechanisms": 0,
+    "levers": 0,
+    "hardware": 44.668791455696386,
+    "total": 44.668791455696386
+   },
+   "final": {
+    "value": 0.9891573338738808,
+    "aOp": 0.9891573338738808,
+    "delivered": 0.8562481649626273,
+    "mtbiHours": 1.0525118178554682,
+    "meanPauseS": 40.320533081441866,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.9850000000256748
+   },
+   "steps": [
+    {
+     "kind": "hardware",
+     "id": "min-effort",
+     "effort": 44.668791455696386,
+     "value": 0.9891573338738808,
+     "derated": 0.9850000000256748
+    }
+   ],
+   "evaluations": 38,
+   "notes": [
+    "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  },
+  "agree": {
+   "strategy": "mttf-first",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "agree",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [],
+   "levers": [],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 354.91949711877686,
+      "factor": 0.7605417795402363,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.7898011837373651,
+      "pointsBefore": 0.0015551807192200116,
+      "pointsAfter": 0.0012250934664948812,
+      "mtbfHours": 2817540.3383526755
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 166.6666666666666,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005554216854357183,
+      "pointsAfter": 0.0005752917100169396,
+      "mtbfHours": 6000000.000000003
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 199.99999999999997,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0006665060225228621,
+      "pointsAfter": 0.0006903500520203278,
+      "mtbfHours": 5000000.000000001
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 169.99999999999994,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007645421898120423,
+      "pointsAfter": 0.0007918934303258668,
+      "mtbfHours": 5882352.941176472
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 354.9194971187769,
+      "factor": 0.8872987427969424,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.3450163410644688,
+      "pointsBefore": 0.0013330120450457243,
+      "pointsAfter": 0.0012250934664948814,
+      "mtbfHours": 2817540.338352675
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 173.33333333333331,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0007795332131416903,
+      "pointsAfter": 0.0008074207524891192,
+      "mtbfHours": 5769230.76923077
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 100.00000000000001,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0003332530112614311,
+      "pointsAfter": 0.00034517502601016394,
+      "mtbfHours": 9999999.999999998
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.0005874705788173713,
+      "pointsAfter": 0.0006084871418143458,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 4.761904761904761,
+      "factor": 1,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0,
+      "pointsBefore": 0.00033569747360992643,
+      "pointsAfter": 0.00034770693817962614,
+      "mtbfHours": 210000000.00000003
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 33.85258393486463,
+      "factor": 0.09067656411124456,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 6.926252927643061,
+      "pointsBefore": 0.0016304928446715082,
+      "pointsAfter": 0.00015313668331186017,
+      "mtbfHours": 29539842.56930249
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 33.85258393486463,
+      "factor": 0.5924202188601312,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5106144306296814,
+      "pointsBefore": 0.0023292941265918078,
+      "pointsAfter": 0.001429287145116382,
+      "mtbfHours": 29539842.56930249
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 33.85258393486463,
+      "factor": 0.5924202188601312,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 1.5106144306296814,
+      "pointsBefore": 0.00043673915482272534,
+      "pointsAfter": 0.00026798919579575526,
+      "mtbfHours": 29539842.56930249
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 262.9973697577307,
+      "factor": 0.7889921092731922,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 0.683834446000324,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0006125467332474408,
+      "mtbfHours": 3802319.395517853
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 262.9973697577307,
+      "factor": 0.16437335609858172,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 5.209903257667911,
+      "pointsBefore": 0.0008994613997788735,
+      "pointsAfter": 0.0001531366833118602,
+      "mtbfHours": 3802319.395517853
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 262.9973697577307,
+      "factor": 0.19724802731829805,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 4.683834446000324,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0001531366833118602,
+      "mtbfHours": 3802319.395517853
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 266.6666666666667,
+      "factor": 0.05,
+      "floor": 0.05,
+      "atFloor": true,
+      "effortPerHalving": 2,
+      "effort": 8.643856189774725,
+      "pointsBefore": 0.005823188730969673,
+      "pointsAfter": 0.0003015755677744987,
+      "mtbfHours": 3749999.9999999995
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 160,
+      "factor": 0.05,
+      "floor": 0.05,
+      "atFloor": true,
+      "effortPerHalving": 2,
+      "effort": 8.643856189774725,
+      "pointsBefore": 0.0034939132385818027,
+      "pointsAfter": 0.00018094534066469923,
+      "mtbfHours": 6250000
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 53.33333333333333,
+      "factor": 0.05,
+      "floor": 0.05,
+      "atFloor": true,
+      "effortPerHalving": 2,
+      "effort": 8.643856189774725,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.000241260454219599,
+      "mtbfHours": 18750000
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 33.85258393486463,
+      "factor": 0.2538943795114848,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.955399273302577,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.0012250934664948814,
+      "mtbfHours": 29539842.56930249
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 33.85258393486463,
+      "factor": 0.08256727788991373,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 7.196572094206333,
+      "pointsBefore": 0.014325044278185393,
+      "pointsAfter": 0.0012250934664948814,
+      "mtbfHours": 29539842.56930249
+     }
+    ],
+    "effort": 58.74341140020589,
+    "needed": true,
+    "atFloors": [
+     "POWER-hard",
+     "COOL-hard",
+     "MGMT-hard"
+    ]
+   },
+   "effort": {
+    "mechanisms": 0,
+    "levers": 0,
+    "hardware": 58.74341140020589,
+    "total": 58.74341140020589
+   },
+   "final": {
+    "value": 0.9887704333260416,
+    "aOp": 0.9887704333260416,
+    "delivered": 0.8560390510203952,
+    "mtbiHours": 0.9864233945635424,
+    "meanPauseS": 39.21851919725295,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.9850000003499984
+   },
+   "steps": [
+    {
+     "kind": "hardware",
+     "id": "agree",
+     "effort": 58.74341140020589,
+     "value": 0.9887704333260416,
+     "derated": 0.9850000003499984
+    }
+   ],
+   "evaluations": 38,
+   "notes": [
+    "hardware split agree: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = units × importance (AGREE complexity); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  },
+  "arinc": {
+   "strategy": "mttf-first",
+   "metric": "aOp",
+   "target": 0.985,
+   "hardwareSplit": "arinc",
+   "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+   },
+   "npus": 500000,
+   "feasible": true,
+   "baseline": {
+    "value": 0.9558859607640934,
+    "aOp": 0.9558859607640934,
+    "delivered": 0.8253518849760761,
+    "mtbiHours": 0.5795807689233353,
+    "meanPauseS": 94.89554830548332,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.950982284923952
+   },
+   "mechanisms": [],
+   "levers": [],
+   "hardware": {
+    "rows": [
+     {
+      "id": "CORE-hard",
+      "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+      "count": 500000,
+      "currentFit": 466.6666666666666,
+      "allowedFit": 121.26385166370204,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0015551807192200116,
+      "pointsAfter": 0.00041857251961679884,
+      "mtbfHours": 8246480.5981363235
+     },
+     {
+      "id": "SRAM-hard",
+      "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+      "count": 500000,
+      "currentFit": 166.6666666666666,
+      "allowedFit": 43.30851845132215,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0005554216854357183,
+      "pointsAfter": 0.00014949018557742813,
+      "mtbfHours": 23090145.67478171
+     },
+     {
+      "id": "IOD-hard",
+      "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+      "count": 500000,
+      "currentFit": 199.99999999999997,
+      "allowedFit": 51.97022214158659,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0006665060225228621,
+      "pointsAfter": 0.00017938822269291383,
+      "mtbfHours": 19241788.062318087
+     },
+     {
+      "id": "MODULE-hard",
+      "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+      "count": 500000,
+      "currentFit": 169.99999999999994,
+      "allowedFit": 44.17468882034859,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0007645421898120423,
+      "pointsAfter": 0.00020577438158021468,
+      "mtbfHours": 22637397.720374227
+     },
+     {
+      "id": "MEMT-hard",
+      "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+      "count": 500000,
+      "currentFit": 399.99999999999994,
+      "allowedFit": 103.94044428317318,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0013330120450457243,
+      "pointsAfter": 0.00035877644538582766,
+      "mtbfHours": 9620894.031159043
+     },
+     {
+      "id": "MEMP-hard",
+      "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+      "count": 500000,
+      "currentFit": 173.33333333333331,
+      "allowedFit": 45.04085918937505,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0007795332131416903,
+      "pointsAfter": 0.00020980917337590528,
+      "mtbfHours": 22202063.148828562
+     },
+     {
+      "id": "NIC-hard",
+      "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+      "count": 500000,
+      "currentFit": 100.00000000000001,
+      "allowedFit": 25.9851110707933,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0003332530112614311,
+      "pointsAfter": 0.00008969411134645693,
+      "mtbfHours": 38483576.124636166
+     },
+     {
+      "id": "OPT-hard",
+      "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 7000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 1.2373862414663472,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0005874705788173713,
+      "pointsAfter": 0.00015811605515509151,
+      "mtbfHours": 808155098.6173598
+     },
+     {
+      "id": "OPT-hard@roce",
+      "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+      "count": 4000000,
+      "currentFit": 4.761904761904761,
+      "allowedFit": 1.2373862414663472,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.00033569747360992643,
+      "pointsAfter": 0.00009035203151719516,
+      "mtbfHours": 808155098.6173598
+     },
+     {
+      "id": "BOXIO-hard",
+      "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+      "count": 62500,
+      "currentFit": 373.3333333333333,
+      "allowedFit": 97.01108133096164,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0016304928446715082,
+      "pointsAfter": 0.00043884256651124584,
+      "mtbfHours": 10308100.747670403
+     },
+     {
+      "id": "FABRIC-hard",
+      "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 583338,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 14.848634897596169,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0023292941265918078,
+      "pointsAfter": 0.0006269229675025398,
+      "mtbfHours": 67346258.2181133
+     },
+     {
+      "id": "FABRIC-hard@roce",
+      "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+      "count": 109375,
+      "currentFit": 57.14285714285713,
+      "allowedFit": 14.848634897596169,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.00043673915482272534,
+      "pointsAfter": 0.00011754711602979797,
+      "mtbfHours": 67346258.2181133
+     },
+     {
+      "id": "CPU-hard",
+      "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+      "count": 250000,
+      "currentFit": 333.3333333333333,
+      "allowedFit": 86.61703690264433,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0002017395897845243,
+      "mtbfHours": 11545072.837390851
+     },
+     {
+      "id": "DDR-hard",
+      "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+      "count": 62500,
+      "currentFit": 1599.9999999999998,
+      "allowedFit": 415.7617771326927,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0008994613997788735,
+      "pointsAfter": 0.0002420875077414291,
+      "mtbfHours": 2405223.507789761
+     },
+     {
+      "id": "SSD-hard",
+      "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+      "count": 62500,
+      "currentFit": 1333.3333333333333,
+      "allowedFit": 346.4681476105773,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0007495511664823946,
+      "pointsAfter": 0.0002017395897845243,
+      "mtbfHours": 2886268.209347713
+     },
+     {
+      "id": "POWER-hard",
+      "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+      "count": 15625,
+      "currentFit": 5333.333333333333,
+      "allowedFit": 1385.8725904423093,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.005823188730969673,
+      "pointsAfter": 0.0015672948803973066,
+      "mtbfHours": 721567.0523369282
+     },
+     {
+      "id": "COOL-hard",
+      "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+      "count": 15625,
+      "currentFit": 3199.9999999999995,
+      "allowedFit": 831.5235542653854,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0034939132385818027,
+      "pointsAfter": 0.0009403769282383838,
+      "mtbfHours": 1202611.7538948804
+     },
+     {
+      "id": "MGMT-hard",
+      "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+      "count": 62500,
+      "currentFit": 1066.6666666666665,
+      "allowedFit": 277.1745180884618,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.001253835904317845,
+      "mtbfHours": 3607835.2616846412
+     },
+     {
+      "id": "STORAGE-hard",
+      "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+      "count": 500000,
+      "currentFit": 133.33333333333331,
+      "allowedFit": 34.646814761057726,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.0046585509847757375,
+      "pointsAfter": 0.001253835904317845,
+      "mtbfHours": 28862682.09347713
+     },
+     {
+      "id": "UNKNOWN-hard",
+      "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+      "count": 500000,
+      "currentFit": 410.00000000000006,
+      "allowedFit": 106.53895539025254,
+      "factor": 0.259851110707933,
+      "floor": 0.05,
+      "atFloor": false,
+      "effortPerHalving": 2,
+      "effort": 3.8884857384215343,
+      "pointsBefore": 0.014325044278185393,
+      "pointsAfter": 0.0038555454057773745,
+      "mtbfHours": 9386238.079179551
+     }
+    ],
+    "effort": 77.7697147684307,
+    "needed": true,
+    "atFloors": []
+   },
+   "effort": {
+    "mechanisms": 0,
+    "levers": 0,
+    "hardware": 77.7697147684307,
+    "total": 77.7697147684307
+   },
+   "final": {
+    "value": 0.9864033550822949,
+    "aOp": 0.9864033550822949,
+    "delivered": 0.8539136632162205,
+    "mtbiHours": 2.113810176940569,
+    "meanPauseS": 99.57484785124379,
+    "recoveryS": 264.50000000000006,
+    "derated": 0.9850000014309088
+   },
+   "steps": [
+    {
+     "kind": "hardware",
+     "id": "arinc",
+     "effort": 77.7697147684307,
+     "value": 0.9864033550822949,
+     "derated": 0.9850000014309088
+    }
+   ],
+   "evaluations": 38,
+   "notes": [
+    "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+    "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+   ]
+  }
+ },
+ "uniform": {
+  "hardwareNominal": 0.2928811411324548,
+  "hardwareDerated": 0.25985114076605076,
+  "recoveryNominal": 0.30327831630799107,
+  "recoveryDerated": 0.1960402096609892
+ },
+ "delivered": {
+  "strategy": "optimal",
+  "metric": "delivered",
+  "target": 0.9,
+  "hardwareSplit": "min-effort",
+  "derate": {
+   "coverageDelta": 0.05,
+   "successDelta": 0.08,
+   "timeFactor": 1.5,
+   "reductionFactor": 0.5
+  },
+  "npus": 500000,
+  "feasible": false,
+  "baseline": {
+   "value": 0.8253518849760761,
+   "aOp": 0.9558859607640934,
+   "delivered": 0.8253518849760761,
+   "mtbiHours": 0.5795807689233353,
+   "meanPauseS": 94.89554830548332,
+   "recoveryS": 264.50000000000006,
+   "derated": 0.7311182824340953
+  },
+  "mechanisms": [
+   "R-NETFAIL",
+   "D-HARD"
+  ],
+  "levers": [
+   "auto",
+   "manual"
+  ],
+  "hardware": {
+   "rows": [
+    {
+     "id": "CORE-hard",
+     "name": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+     "count": 500000,
+     "currentFit": 466.6666666666666,
+     "allowedFit": 23.33333333333333,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0011510032537053918,
+     "pointsAfter": 0.000058829348551743724,
+     "mtbfHours": 42857142.857142866
+    },
+    {
+     "id": "SRAM-hard",
+     "name": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+     "count": 500000,
+     "currentFit": 166.6666666666666,
+     "allowedFit": 8.33333333333333,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0004110725906090685,
+     "pointsAfter": 0.000021010481625622753,
+     "mtbfHours": 120000000.00000004
+    },
+    {
+     "id": "IOD-hard",
+     "name": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+     "count": 500000,
+     "currentFit": 199.99999999999997,
+     "allowedFit": 10,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0004932871087308822,
+     "pointsAfter": 0.000025212577950747317,
+     "mtbfHours": 100000000
+    },
+    {
+     "id": "MODULE-hard",
+     "name": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+     "count": 500000,
+     "currentFit": 169.99999999999994,
+     "allowedFit": 8.499999999999998,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0007256730547168476,
+     "pointsAfter": 0.00003709014108614595,
+     "mtbfHours": 117647058.82352944
+    },
+    {
+     "id": "MEMT-hard",
+     "name": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+     "count": 500000,
+     "currentFit": 399.99999999999994,
+     "allowedFit": 20,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0009865742174617644,
+     "pointsAfter": 0.000050425155901494635,
+     "mtbfHours": 50000000
+    },
+    {
+     "id": "MEMP-hard",
+     "name": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+     "count": 500000,
+     "currentFit": 173.33333333333331,
+     "allowedFit": 8.666666666666666,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0007399019381426683,
+     "pointsAfter": 0.00003781739875450176,
+     "mtbfHours": 115384615.38461539
+    },
+    {
+     "id": "NIC-hard",
+     "name": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+     "count": 500000,
+     "currentFit": 100.00000000000001,
+     "allowedFit": 5.000000000000001,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0000938785694140309,
+     "pointsAfter": 0.000004798261919605918,
+     "mtbfHours": 199999999.99999997
+    },
+    {
+     "id": "OPT-hard",
+     "name": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+     "count": 7000000,
+     "currentFit": 4.761904761904761,
+     "allowedFit": 0.23809523809523805,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.00008161696046156325,
+     "pointsAfter": 0.0000041715543368534776,
+     "mtbfHours": 4200000000.000001
+    },
+    {
+     "id": "OPT-hard@roce",
+     "name": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+     "count": 4000000,
+     "currentFit": 4.761904761904761,
+     "allowedFit": 0.23809523809523805,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.000046638263120893295,
+     "pointsAfter": 0.000002383745335344844,
+     "mtbfHours": 4200000000.000001
+    },
+    {
+     "id": "BOXIO-hard",
+     "name": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+     "count": 62500,
+     "currentFit": 373.3333333333333,
+     "allowedFit": 18.666666666666668,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.00012875393161455552,
+     "pointsAfter": 0.000006580789320947322,
+     "mtbfHours": 53571428.57142857
+    },
+    {
+     "id": "FABRIC-hard",
+     "name": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+     "count": 583338,
+     "currentFit": 57.14285714285713,
+     "allowedFit": 2.8571428571428568,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.00018393565949429777,
+     "pointsAfter": 0.000009401202810374127,
+     "mtbfHours": 350000000.00000006
+    },
+    {
+     "id": "FABRIC-hard@roce",
+     "name": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+     "count": 109375,
+     "currentFit": 57.14285714285713,
+     "allowedFit": 2.8571428571428568,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0000344876602538988,
+     "pointsAfter": 0.0000017627114252537464,
+     "mtbfHours": 350000000.00000006
+    },
+    {
+     "id": "CPU-hard",
+     "name": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+     "count": 250000,
+     "currentFit": 333.3333333333333,
+     "allowedFit": 16.666666666666668,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0007114441712910272,
+     "pointsAfter": 0.000036362883417790155,
+     "mtbfHours": 59999999.99999999
+    },
+    {
+     "id": "DDR-hard",
+     "name": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+     "count": 62500,
+     "currentFit": 1599.9999999999998,
+     "allowedFit": 80,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0008537330055492326,
+     "pointsAfter": 0.000043635460101348187,
+     "mtbfHours": 12500000
+    },
+    {
+     "id": "SSD-hard",
+     "name": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+     "count": 62500,
+     "currentFit": 1333.3333333333333,
+     "allowedFit": 66.66666666666667,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0007114441712910272,
+     "pointsAfter": 0.000036362883417790155,
+     "mtbfHours": 14999999.999999998
+    },
+    {
+     "id": "POWER-hard",
+     "name": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+     "count": 15625,
+     "currentFit": 5333.333333333333,
+     "allowedFit": 266.6666666666667,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.0027446971113418836,
+     "pointsAfter": 0.00014028521857977735,
+     "mtbfHours": 3749999.9999999995
+    },
+    {
+     "id": "COOL-hard",
+     "name": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+     "count": 15625,
+     "currentFit": 3199.9999999999995,
+     "allowedFit": 160,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.00164681826680513,
+     "pointsAfter": 0.00008417113114786642,
+     "mtbfHours": 6250000
+    },
+    {
+     "id": "MGMT-hard",
+     "name": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+     "count": 62500,
+     "currentFit": 1066.6666666666665,
+     "allowedFit": 53.33333333333333,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.002195757689073507,
+     "pointsAfter": 0.00011222817486382189,
+     "mtbfHours": 18750000
+    },
+    {
+     "id": "STORAGE-hard",
+     "name": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+     "count": 500000,
+     "currentFit": 133.33333333333331,
+     "allowedFit": 6.666666666666666,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.002195757689073507,
+     "pointsAfter": 0.00011222817486382189,
+     "mtbfHours": 150000000
+    },
+    {
+     "id": "UNKNOWN-hard",
+     "name": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+     "count": 500000,
+     "currentFit": 410.00000000000006,
+     "allowedFit": 20.500000000000004,
+     "factor": 0.05,
+     "floor": 0.05,
+     "atFloor": true,
+     "effortPerHalving": 2,
+     "effort": 8.643856189774725,
+     "pointsBefore": 0.006751954893901036,
+     "pointsAfter": 0.0003451016377062524,
+     "mtbfHours": 48780487.80487804
+    }
+   ],
+   "effort": 172.87712379549455,
+   "needed": true,
+   "atFloors": [
+    "CORE-hard",
+    "SRAM-hard",
+    "IOD-hard",
+    "MODULE-hard",
+    "MEMT-hard",
+    "MEMP-hard",
+    "NIC-hard",
+    "OPT-hard",
+    "OPT-hard@roce",
+    "BOXIO-hard",
+    "FABRIC-hard",
+    "FABRIC-hard@roce",
+    "CPU-hard",
+    "DDR-hard",
+    "SSD-hard",
+    "POWER-hard",
+    "COOL-hard",
+    "MGMT-hard",
+    "STORAGE-hard",
+    "UNKNOWN-hard"
+   ]
+  },
+  "effort": {
+   "mechanisms": 5,
+   "levers": 5,
+   "hardware": 172.87712379549455,
+   "total": 182.87712379549455
+  },
+  "final": {
+   "value": 0.8644777159558328,
+   "aOp": 0.9986234664146698,
+   "delivered": 0.8644777159558328,
+   "mtbiHours": 8.473230919878956,
+   "meanPauseS": 34.69420636541451,
+   "recoveryS": 79.05900000000001,
+   "derated": 0.7662781809881227
+  },
+  "steps": [
+   {
+    "kind": "mechanism",
+    "id": "R-NETFAIL",
+    "effort": 3,
+    "value": 0.8298425260633482,
+    "derated": 0.7347137788979294
+   },
+   {
+    "kind": "mechanism",
+    "id": "D-HARD",
+    "effort": 2,
+    "value": 0.8325030811284835,
+    "derated": 0.7362587038013574
+   },
+   {
+    "kind": "lever",
+    "id": "auto",
+    "effort": 3,
+    "value": 0.8459308773786007,
+    "derated": 0.7447388860002233
+   },
+   {
+    "kind": "lever",
+    "id": "manual",
+    "effort": 2,
+    "value": 0.8519398712214726,
+    "derated": 0.7489449064268169
+   },
+   {
+    "kind": "hardware",
+    "id": "min-effort",
+    "effort": 172.87712379549455,
+    "value": 0.8644777159558328,
+    "derated": 0.7662781809881227
+   }
+  ],
+  "alternatives": [
+   {
+    "mechanisms": [
+     "R-NETFAIL",
+     "D-HARD"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 5,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 182.87712379549455
+    },
+    "value": 0.8519398712214726,
+    "derated": 0.7489449064268169,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL",
+     "D-HARD"
+    ],
+    "levers": [
+     "auto",
+     "manual",
+     "success"
+    ],
+    "effort": {
+     "mechanisms": 5,
+     "levers": 8,
+     "hardware": 172.87712379549455,
+     "total": 185.87712379549455
+    },
+    "value": 0.8537384173329776,
+    "derated": 0.7489449064268169,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL",
+     "D-HARD",
+     "D-SLOW"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 8,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 185.87712379549455
+    },
+    "value": 0.8534261130693215,
+    "derated": 0.7487319666102394,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL",
+     "D-HARD",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 8,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 185.87712379549455
+    },
+    "value": 0.850691352878452,
+    "derated": 0.7474503853002017,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 3,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 180.87712379549455
+    },
+    "value": 0.8493078298622352,
+    "derated": 0.7474242385419653,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL"
+    ],
+    "levers": [
+     "auto",
+     "manual",
+     "success"
+    ],
+    "effort": {
+     "mechanisms": 3,
+     "levers": 8,
+     "hardware": 172.87712379549455,
+     "total": 183.87712379549455
+    },
+    "value": 0.8511091268896733,
+    "derated": 0.7474242385419653,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "R-NETFAIL",
+     "D-SLOW"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 6,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 183.87712379549455
+    },
+    "value": 0.8507893606118897,
+    "derated": 0.7472117523838924,
+    "feasible": false
+   },
+   {
+    "mechanisms": [
+     "D-HARD"
+    ],
+    "levers": [
+     "auto",
+     "manual"
+    ],
+    "effort": {
+     "mechanisms": 2,
+     "levers": 5,
+     "hardware": 172.87712379549455,
+     "total": 179.87712379549455
+    },
+    "value": 0.8503427694335155,
+    "derated": 0.7471285290827495,
+    "feasible": false
+   }
+  ],
+  "evaluations": 156,
+  "notes": [
+   "optimal: 9 moves > 6: greedy descent on the total effort (mechanisms + levers + hardware), 36 plans evaluated",
+   "the target is out of reach with these candidates, levers and hardware floors: the result shows the best design found (hardware at its floors where needed)",
+   "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+   "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+  ]
+ },
+ "versions": {
+  "a2-roce": {
+   "10000": {
+    "npus": 10000,
+    "baseline": {
+     "aOp": 0.999246930827312,
+     "aOpDerated": 0.9991447404191475,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3086.066666666666,
+    "v30": {
+     "lambdaJob": 0.03143959657465152,
+     "lambdaHw": 0.03086066666666666,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9976953864859772,
+     "uniformFactor": 6.615501614897037,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.999246930827312,
+       "aOpDerated": 0.9991447404191475,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 18
+      },
+      "agree": {
+       "aOp": 0.9993094223114571,
+       "aOpDerated": 0.9992076468658592,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 5.70802053878255,
+       "improved": 3,
+       "minFactor": 0.2919957982019633,
+       "relaxed": 15
+      },
+      "minimum-effort": {
+       "aOp": 0.999246930827312,
+       "aOpDerated": 0.9991447404191475,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.999246930827312,
+       "aOpDerated": 0.9991447404191475,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 18
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.999246930827312,
+     "aOpDerated": 0.9991447404191475,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.999246930827312,
+      "derated": 0.999246930827312,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 21.34842289850667,
+      "planDerated": 21.34842289850667,
+      "allOn": 15.017513087591848,
+      "allOnDerated": 11.214307655201202
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 21.34842289850667,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.999246930827312,
+       "valueDerated": 0.999246930827312,
+       "residualFactor": 21.34842289850667
+      },
+      {
+       "id": "auto60",
+       "value": 0.9995545930661177,
+       "valueDerated": 0.9995545930661177,
+       "residualFactor": 35.924954645225824
+      },
+      {
+       "id": "ps999",
+       "value": 0.9994130449048982,
+       "valueDerated": 0.9994130449048982,
+       "residualFactor": 27.343028867200537
+      },
+      {
+       "id": "manual30",
+       "value": 0.9993853553893138,
+       "valueDerated": 0.9993853553893138,
+       "residualFactor": 26.121281786709805
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9997208094782677,
+       "valueDerated": 0.9997208094782677,
+       "residualFactor": 56.83994915244681
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9996931029033772,
+       "valueDerated": 0.9996931029033772,
+       "residualFactor": 51.81523546976099
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.999426890238192,
+       "valueDerated": 0.999426890238192,
+       "residualFactor": 27.997667576345485
+      },
+      {
+       "id": "all3",
+       "value": 0.999734663341746,
+       "valueDerated": 0.999734663341746,
+       "residualFactor": 59.73583814100786
+      }
+     ],
+     "ms": 1219
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.999246930827312,
+      "aOpDerated": 0.9991447404191475,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.69649016557128,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 2884
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.999246930827312,
+      "aOpDerated": 0.9991447404191475,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.69649016557128,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 71
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.999246930827312,
+      "aOpDerated": 0.9991447404191475,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.69649016557128,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 70
+     }
+    }
+   },
+   "100000": {
+    "npus": 100000,
+    "baseline": {
+     "aOp": 0.9925049743737986,
+     "aOpDerated": 0.9914955645092,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3092.007238095238,
+    "v30": {
+     "lambdaJob": 0.31500712826026467,
+     "lambdaHw": 0.30920072380952374,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9773792667140023,
+     "uniformFactor": 0.6602791470045198,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.994896033983645,
+       "aOpDerated": 0.9942212309132463,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 21.55867241551047,
+       "improved": 18,
+       "minFactor": 0.6602791470045198,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9967973536863008,
+       "aOpDerated": 0.9963051812425607,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 55.325289315218335,
+       "improved": 14,
+       "minFactor": 0.027070750091168976,
+       "relaxed": 4
+      },
+      "minimum-effort": {
+       "aOp": 0.9947386501537778,
+       "aOpDerated": 0.9939782577629366,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 12.947902983972295,
+       "improved": 10,
+       "minFactor": 0.31491014220130437,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9953597285154147,
+       "aOpDerated": 0.9947609495354733,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 21.3554692808735,
+       "improved": 12,
+       "minFactor": 0.24304617877396728,
+       "relaxed": 6
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9925049743737986,
+     "aOpDerated": 0.9914955645092,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9925049743737986,
+      "derated": 0.9925049743737986,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 2.0770168219458363,
+      "planDerated": 2.0770168219458363,
+      "allOn": 1.4720029745336645,
+      "allOnDerated": 1.0979426212189902
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 2.0770168219458363,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9925049743737986,
+       "valueDerated": 0.9925049743737986,
+       "residualFactor": 2.0770168219458363
+      },
+      {
+       "id": "auto60",
+       "value": 0.9955544756881767,
+       "valueDerated": 0.9955544756881767,
+       "residualFactor": 3.537502167508119
+      },
+      {
+       "id": "ps999",
+       "value": 0.9941493810158695,
+       "valueDerated": 0.9941493810158695,
+       "residualFactor": 2.677667617653354
+      },
+      {
+       "id": "manual30",
+       "value": 0.9938749349573172,
+       "valueDerated": 0.9938749349573172,
+       "residualFactor": 2.555253224365695
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9972090109161424,
+       "valueDerated": 0.9972090109161424,
+       "residualFactor": 5.632697866208492
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9969328732590762,
+       "valueDerated": 0.9969328732590762,
+       "residualFactor": 5.1293780169235195
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9942866608897295,
+       "valueDerated": 0.9942866608897295,
+       "residualFactor": 2.7432593090632547
+      },
+      {
+       "id": "all3",
+       "value": 0.9973471371156478,
+       "valueDerated": 0.9973471371156478,
+       "residualFactor": 5.922764416723252
+      }
+     ],
+     "ms": 1219
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9925049743737986,
+      "aOpDerated": 0.9914955645092,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8171715009242988,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 2920
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9925049743737986,
+      "aOpDerated": 0.9914955645092,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8171715009242988,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 66
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9925049743737986,
+      "aOpDerated": 0.9914955645092,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8171715009242988,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 66
+     }
+    }
+   },
+   "200000": {
+    "npus": 200000,
+    "baseline": {
+     "aOp": 0.9851227455052405,
+     "aOpDerated": 0.9831375606940406,
+     "meets": false,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3091.964285714285,
+    "v30": {
+     "lambdaJob": 0.6300053686913064,
+     "lambdaHw": 0.618392857142857,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9557598872210723,
+     "uniformFactor": 0.3301441596744852,
+     "ms": 14,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9944775586058084,
+       "aOpDerated": 0.9937907826188775,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 57.557950931356395,
+       "improved": 18,
+       "minFactor": 0.3301441596744851,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9962072103877666,
+       "aOpDerated": 0.9956809782225433,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 86.03593827195475,
+       "improved": 16,
+       "minFactor": 0.013535389403540706,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9934648418449841,
+       "aOpDerated": 0.9927650234107407,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 43.09067624039786,
+       "improved": 14,
+       "minFactor": 0.13757596915352707,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9939456802366282,
+       "aOpDerated": 0.9933208777324066,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 48.1026213556785,
+       "improved": 14,
+       "minFactor": 0.12152308938698364,
+       "relaxed": 4
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9851227455052405,
+     "aOpDerated": 0.9831375606940406,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9851227455052405,
+      "derated": 0.9851227455052405,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.0088738195502311,
+      "planDerated": 1.0088738195502311,
+      "allOn": 0.7193454148483692,
+      "allOnDerated": 0.5359179235275073
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 1.0088738195502311,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9851227455052405,
+       "valueDerated": 0.9851227455052405,
+       "residualFactor": 1.0088738195502311
+      },
+      {
+       "id": "auto60",
+       "value": 0.991148998357678,
+       "valueDerated": 0.991148998357678,
+       "residualFactor": 1.7424857844964041
+      },
+      {
+       "id": "ps999",
+       "value": 0.9883677914922907,
+       "valueDerated": 0.9883677914922907,
+       "residualFactor": 1.310585566722552
+      },
+      {
+       "id": "manual30",
+       "value": 0.9878254668082275,
+       "valueDerated": 0.9878254668082275,
+       "residualFactor": 1.2490959035242868
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9944339299770648,
+       "valueDerated": 0.9944339299770648,
+       "residualFactor": 2.794907525964557
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.993884930241684,
+       "valueDerated": 0.993884930241684,
+       "residualFactor": 2.5420898185892296
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9886391771815218,
+       "valueDerated": 0.9886391771815218,
+       "residualFactor": 1.3435327468263163
+      },
+      {
+       "id": "all3",
+       "value": 0.9947086573285004,
+       "valueDerated": 0.9947086573285004,
+       "residualFactor": 2.940607740178376
+      }
+     ],
+     "ms": 1219
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.986992719586546,
+      "aOpDerated": 0.9850000002959862,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 1.1094940919246226,
+       "total": 1.1094940919246226
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.6807764112947403
+       }
+      ],
+      "ms": 3321
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.991148998357678,
+      "aOpDerated": 0.9877138223957039,
+      "mechanisms": [],
+      "levers": [
+       "auto"
+      ],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 3,
+       "hardware": 0,
+       "total": 3
+      },
+      "slack": 1.2349326787950932,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 99
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.986992719586546,
+      "aOpDerated": 0.9850000002959862,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 1.1094940919246226,
+       "total": 1.1094940919246226
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.6807764112947403
+       }
+      ],
+      "ms": 40
+     }
+    }
+   },
+   "500000": {
+    "npus": 500000,
+    "baseline": {
+     "aOp": 0.9636225628523677,
+     "aOpDerated": 0.958897354233485,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3091.9728761904753,
+    "v30": {
+     "lambdaJob": 1.5750178656428777,
+     "lambdaHw": 1.545986438095238,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.8962821710350326,
+     "uniformFactor": 0.13205729697193863,
+     "ms": 14,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9932272138328649,
+       "aOpDerated": 0.9925127770570634,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 105.14750664493411,
+       "improved": 18,
+       "minFactor": 0.13205729697193863,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9948607341381803,
+       "aOpDerated": 0.9942695557845781,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 130.30710246483582,
+       "improved": 17,
+       "minFactor": 0.005414154612777916,
+       "relaxed": 1
+      },
+      "minimum-effort": {
+       "aOp": 0.991959585436997,
+       "aOpDerated": 0.9912397179551914,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 86.99395341877248,
+       "improved": 16,
+       "minFactor": 0.05129730859148958,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9922509471842111,
+       "aOpDerated": 0.9915622371556524,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 89.47883924955723,
+       "improved": 16,
+       "minFactor": 0.04860923575479346,
+       "relaxed": 2
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9867984870027596,
+     "aOpDerated": 0.9826198298012019,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "D-HARD",
+       "R-NETFAIL",
+       "C-MEM"
+      ],
+      "feasible": false,
+      "nominal": 0.9753723752468637,
+      "derated": 0.9720069213228836,
+      "effort": 8,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 0.5760137868888063,
+      "planDerated": 0.49772819633403415,
+      "allOn": 0.2677815499526197,
+      "allOnDerated": 0.1987326816599617
+     },
+     "hardwareFactor": 0.49772819633403415,
+     "hardwareClasses": 18,
+     "effort": {
+      "mechanisms": 8,
+      "levers": 0,
+      "hardware": 36.236519164489955,
+      "total": 44.236519164489955
+     },
+     "hardwareOnlyFactor": 0.3680260833565656,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9753723752468637,
+       "valueDerated": 0.9720069213228836,
+       "residualFactor": 0.5760137868888063
+      },
+      {
+       "id": "auto60",
+       "value": 0.9823475488548756,
+       "valueDerated": 0.9813117868777144,
+       "residualFactor": 0.8373542602075918
+      },
+      {
+       "id": "ps999",
+       "value": 0.9829098740287172,
+       "valueDerated": 0.9795301817913851,
+       "residualFactor": 0.8676486672337402
+      },
+      {
+       "id": "manual30",
+       "value": 0.9816455463463158,
+       "valueDerated": 0.9782682297862078,
+       "residualFactor": 0.8021226959962997
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9899936372784692,
+       "valueDerated": 0.9889803108002125,
+       "residualFactor": 1.5373326816108348
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9887110360168263,
+       "valueDerated": 0.987693913053873,
+       "residualFactor": 1.354441963978451
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9835432596990004,
+       "valueDerated": 0.980162379241953,
+       "residualFactor": 0.9042321755488706
+      },
+      {
+       "id": "all3",
+       "value": 0.9906361863290837,
+       "valueDerated": 0.9896247667928475,
+       "residualFactor": 1.6475483018165638
+      }
+     ],
+     "ms": 1219
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9929864593227039,
+      "aOpDerated": 0.9850000003353405,
+      "mechanisms": [
+       "D-HARD"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 2,
+       "levers": 5,
+       "hardware": 8.269102250652253,
+       "total": 15.269102250652253
+      },
+      "slack": null,
+      "improved": 4,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.18704113788765842
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5751514990045498
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.5751514990045498
+       }
+      ],
+      "ms": 3461
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9929467543296462,
+      "aOpDerated": 0.9850000001972865,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL",
+       "D-SLOW"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 8,
+       "levers": 5,
+       "hardware": 6.293485265289249,
+       "total": 19.29348526528925
+      },
+      "slack": null,
+      "improved": 3,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.228567921790434
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.7028463595055847
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.7028463595055847
+       }
+      ],
+      "ms": 216
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9895203565887672,
+      "aOpDerated": 0.9850000002591529,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 29.422423735423337,
+       "total": 29.422423735423337
+      },
+      "slack": null,
+      "improved": 9,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.05767078579342368
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.17733766631477788
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.17733766631477788
+       }
+      ],
+      "ms": 41
+     }
+    }
+   }
+  },
+  "a3-ub384": {
+   "10000": {
+    "npus": 10000,
+    "baseline": {
+     "aOp": 0.9990813895356668,
+     "aOpDerated": 0.9989739342990346,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3371.2761904761905,
+    "v30": {
+     "lambdaJob": 0.034377483606174944,
+     "lambdaHw": 0.0337127619047619,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9974805734277776,
+     "uniformFactor": 6.055831045432537,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9990813895356668,
+       "aOpDerated": 0.9989739342990346,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      },
+      "agree": {
+       "aOp": 0.9992885099117306,
+       "aOpDerated": 0.9991973661808636,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 16.76285940279508,
+       "improved": 5,
+       "minFactor": 0.12196526186007395,
+       "relaxed": 15
+      },
+      "minimum-effort": {
+       "aOp": 0.9990813895356668,
+       "aOpDerated": 0.9989739342990346,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9990813895356668,
+       "aOpDerated": 0.9989739342990346,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9990813895356668,
+     "aOpDerated": 0.9989739342990346,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9990813895356668,
+      "derated": 0.9990813895356668,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 17.42569236233215,
+      "planDerated": 17.42569236233215,
+      "allOn": 13.9818814371086,
+      "allOnDerated": 10.523541946377163
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 17.42569236233215,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9990813895356668,
+       "valueDerated": 0.9990813895356668,
+       "residualFactor": 17.42569236233215
+      },
+      {
+       "id": "auto60",
+       "value": 0.9994625189862424,
+       "valueDerated": 0.9994625189862424,
+       "residualFactor": 29.677213411831794
+      },
+      {
+       "id": "ps999",
+       "value": 0.9992871633251902,
+       "valueDerated": 0.9992871633251902,
+       "residualFactor": 22.4291991271288
+      },
+      {
+       "id": "manual30",
+       "value": 0.9992528618067209,
+       "valueDerated": 0.9992528618067209,
+       "residualFactor": 21.40551698195681
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9996684498383696,
+       "valueDerated": 0.9996684498383696,
+       "residualFactor": 47.772609600523154
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9996341221360582,
+       "valueDerated": 0.9996341221360582,
+       "residualFactor": 43.36834664196851
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9993043149676544,
+       "valueDerated": 0.9993043149676544,
+       "residualFactor": 22.978542372616893
+      },
+      {
+       "id": "all3",
+       "value": 0.9996856145737666,
+       "valueDerated": 0.9996856145737666,
+       "residualFactor": 50.327596038316535
+      }
+     ],
+     "ms": 1274
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9990813895356668,
+      "aOpDerated": 0.9989739342990346,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 15.532113733758003,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3195
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9990813895356668,
+      "aOpDerated": 0.9989739342990346,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 15.532113733758003,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 75
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9990813895356668,
+      "aOpDerated": 0.9989739342990346,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 15.532113733758003,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 76
+     }
+    }
+   },
+   "100000": {
+    "npus": 100000,
+    "baseline": {
+     "aOp": 0.9908531968895767,
+     "aOpDerated": 0.9897920970391594,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3383.9299047619033,
+    "v30": {
+     "lambdaJob": 0.3450770934394669,
+     "lambdaHw": 0.3383929904761904,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9752733287663534,
+     "uniformFactor": 0.603318614498598,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9942710474872904,
+       "aOpDerated": 0.9936204140514783,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 29.160319985053224,
+       "improved": 20,
+       "minFactor": 0.6033186144985979,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9976054913386961,
+       "aOpDerated": 0.9973215435123621,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 93.78222542269671,
+       "improved": 16,
+       "minFactor": 0.011444583181172176,
+       "relaxed": 4
+      },
+      "minimum-effort": {
+       "aOp": 0.9937527082289453,
+       "aOpDerated": 0.993049709446054,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 19.144710373845783,
+       "improved": 13,
+       "minFactor": 0.2655480214735308,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9944439177008858,
+       "aOpDerated": 0.9938456326250107,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 26.4180913420135,
+       "improved": 13,
+       "minFactor": 0.21874156089657054,
+       "relaxed": 7
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9908531968895767,
+     "aOpDerated": 0.9897920970391594,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9908531968895767,
+      "derated": 0.9908531968895767,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.6857257273237685,
+      "planDerated": 1.6857257273237685,
+      "allOn": 1.3661289698422383,
+      "allOnDerated": 1.0268113734003477
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 1.6857257273237685,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9908531968895767,
+       "valueDerated": 0.9908531968895767,
+       "residualFactor": 1.6857257273237685
+      },
+      {
+       "id": "auto60",
+       "value": 0.9946292960904264,
+       "valueDerated": 0.9946292960904264,
+       "residualFactor": 2.910873729224341
+      },
+      {
+       "id": "ps999",
+       "value": 0.9928887222093873,
+       "valueDerated": 0.9928887222093873,
+       "residualFactor": 2.1861077634149466
+      },
+      {
+       "id": "manual30",
+       "value": 0.9925488874265342,
+       "valueDerated": 0.9925488874265342,
+       "residualFactor": 2.083736844162164
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9966803811505556,
+       "valueDerated": 0.9966803811505556,
+       "residualFactor": 4.719907129576276
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9963379464068842,
+       "valueDerated": 0.9963379464068842,
+       "residualFactor": 4.279658953494581
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9930587268790726,
+       "valueDerated": 0.9930587268790726,
+       "residualFactor": 2.2410427522440113
+      },
+      {
+       "id": "all3",
+       "value": 0.9968516868042406,
+       "valueDerated": 0.9968516868042406,
+       "residualFactor": 4.975286254179474
+      }
+     ],
+     "ms": 1274
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9908531968895767,
+      "aOpDerated": 0.9897920970391594,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.5008916723821912,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3270
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9908531968895767,
+      "aOpDerated": 0.9897920970391594,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.5008916723821912,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 68
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9908531968895767,
+      "aOpDerated": 0.9897920970391594,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.5008916723821912,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 68
+     }
+    }
+   },
+   "200000": {
+    "npus": 200000,
+    "baseline": {
+     "aOp": 0.9818728700312997,
+     "aOpDerated": 0.9797929086725031,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3383.9299047619033,
+    "v30": {
+     "lambdaJob": 0.6901541868789338,
+     "lambdaHw": 0.6767859809523809,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9517399674902993,
+     "uniformFactor": 0.301659307249299,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.993792015201031,
+       "aOpDerated": 0.9931293380507488,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 69.1603199850532,
+       "improved": 20,
+       "minFactor": 0.30165930724929896,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9969588563798153,
+       "aOpDerated": 0.9965945666487646,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 129.40170843689452,
+       "improved": 18,
+       "minFactor": 0.005722291590586088,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9928619951233713,
+       "aOpDerated": 0.9921678977984937,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 54.78051068015467,
+       "improved": 17,
+       "minFactor": 0.11641160244816276,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9931755962918685,
+       "aOpDerated": 0.9925184349576933,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 57.84076556685899,
+       "improved": 17,
+       "minFactor": 0.10937078044828527,
+       "relaxed": 3
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9870609356895514,
+     "aOpDerated": 0.9833251693912661,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "D-HARD",
+       "C-MEM"
+      ],
+      "feasible": true,
+      "nominal": 0.9870609356895514,
+      "derated": 0.9853757563557413,
+      "effort": 5,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.1713955048223323,
+      "planDerated": 1.027605955073474,
+      "allOn": 0.6652780729894319,
+      "allOnDerated": 0.49936140382020316
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 5,
+      "levers": 0,
+      "hardware": 0,
+      "total": 5
+     },
+     "hardwareOnlyFactor": 0.8151465972969579,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9870609356895514,
+       "valueDerated": 0.9853757563557413,
+       "residualFactor": 1.1713955048223323
+      },
+      {
+       "id": "auto60",
+       "value": 0.9908079705096621,
+       "valueDerated": 0.9903610239394767,
+       "residualFactor": 1.6789325011853222
+      },
+      {
+       "id": "ps999",
+       "value": 0.9911089625571834,
+       "valueDerated": 0.9894099454914376,
+       "residualFactor": 1.7381688464502718
+      },
+      {
+       "id": "manual30",
+       "value": 0.9904319874209891,
+       "valueDerated": 0.9887352884522635,
+       "residualFactor": 1.6101481221934337
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9948868507339758,
+       "valueDerated": 0.9944362176178908,
+       "residualFactor": 3.069512819948649
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9942047069705999,
+       "valueDerated": 0.9937546914387998,
+       "residualFactor": 2.7017174050889508
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.991447797259752,
+       "valueDerated": 0.9897476193637511,
+       "residualFactor": 1.8098150876731842
+      },
+      {
+       "id": "all3",
+       "value": 0.9952282737338131,
+       "valueDerated": 0.9947773313487707,
+       "residualFactor": 3.292712150278709
+      }
+     ],
+     "ms": 1274
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9893163302369414,
+      "aOpDerated": 0.9854560094149056,
+      "mechanisms": [],
+      "levers": [
+       "auto"
+      ],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 3,
+       "hardware": 0,
+       "total": 3
+      },
+      "slack": 1.0332868025077748,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3813
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9893163302369414,
+      "aOpDerated": 0.9854560094149056,
+      "mechanisms": [],
+      "levers": [
+       "auto"
+      ],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 3,
+       "hardware": 0,
+       "total": 3
+      },
+      "slack": 1.0332868025077748,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 106
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9871021475099524,
+      "aOpDerated": 0.985000000816391,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 5.193772762083923,
+       "total": 5.193772762083923
+      },
+      "slack": null,
+      "improved": 4,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.29034108079849963
+       },
+       {
+        "id": "POWER-hard",
+        "factor": 0.7142390587643092
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.8927988234553865
+       }
+      ],
+      "ms": 42
+     }
+    }
+   },
+   "500000": {
+    "npus": 500000,
+    "baseline": {
+     "aOp": 0.9558859607640934,
+     "aOpDerated": 0.950982284923952,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3383.929104761904,
+    "v30": {
+     "lambdaJob": 1.7253850604078207,
+     "lambdaHw": 1.691964552380952,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.8874942413274297,
+     "uniformFactor": 0.12066375142602005,
+     "ms": 17,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9923612381965519,
+       "aOpDerated": 0.9916708544253133,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 122.0374301377572,
+       "improved": 20,
+       "minFactor": 0.12066375142602004,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9951453327174845,
+       "aOpDerated": 0.9945495450582311,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 176.991098114024,
+       "improved": 18,
+       "minFactor": 0.002288917594287328,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9912654029697396,
+       "aOpDerated": 0.9905514805617808,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 105.86403127239208,
+       "improved": 19,
+       "minFactor": 0.04464108048950357,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9913819721496636,
+       "aOpDerated": 0.9906810225403194,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 106.97152561597593,
+       "improved": 19,
+       "minFactor": 0.04374831217931411,
+       "relaxed": 1
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9868499291997107,
+     "aOpDerated": 0.9829738080730385,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "D-HARD",
+       "R-NETFAIL",
+       "C-MEM"
+      ],
+      "feasible": false,
+      "nominal": 0.9716044925479527,
+      "derated": 0.9675847870953251,
+      "effort": 8,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 0.48871796173397875,
+      "planDerated": 0.4192003513810687,
+      "allOn": 0.2448178115693881,
+      "allOnDerated": 0.1829332324277787
+     },
+     "hardwareFactor": 0.4192003513810687,
+     "hardwareClasses": 20,
+     "effort": {
+      "mechanisms": 8,
+      "levers": 0,
+      "hardware": 50.17152674877072,
+      "total": 58.17152674877072
+     },
+     "hardwareOnlyFactor": 0.2928811411324548,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9716044925479527,
+       "valueDerated": 0.9675847870953251,
+       "residualFactor": 0.48871796173397875
+      },
+      {
+       "id": "auto60",
+       "value": 0.9796936651752458,
+       "valueDerated": 0.9784265607196907,
+       "residualFactor": 0.7172840360116217
+      },
+      {
+       "id": "ps999",
+       "value": 0.9803466205305964,
+       "valueDerated": 0.9763479709100574,
+       "residualFactor": 0.7438882716832035
+      },
+      {
+       "id": "manual30",
+       "value": 0.9788786928797977,
+       "valueDerated": 0.9748764359000993,
+       "residualFactor": 0.6863726163372231
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9885826029117768,
+       "valueDerated": 0.9873880985644922,
+       "residualFactor": 1.3378611647268088
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.987089930858264,
+       "valueDerated": 0.9858831285005921,
+       "residualFactor": 1.1745253894502683
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9810822362564536,
+       "valueDerated": 0.9770854052729591,
+       "residualFactor": 0.7760458601508192
+      },
+      {
+       "id": "all3",
+       "value": 0.9893306327967893,
+       "valueDerated": 0.9881423076047865,
+       "residualFactor": 1.4367039361163272
+      }
+     ],
+     "ms": 1274
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9930786079424431,
+      "aOpDerated": 0.9850000002730261,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 5,
+       "levers": 5,
+       "hardware": 10.903113694694055,
+       "total": 20.903113694694056
+      },
+      "slack": null,
+      "improved": 5,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.18875642024008618
+       },
+       {
+        "id": "POWER-hard",
+        "factor": 0.46434079379061205
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5804259922382652
+       }
+      ],
+      "ms": 3891
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9930409130690929,
+      "aOpDerated": 0.9850000004901329,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL",
+       "D-SLOW"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 8,
+       "levers": 5,
+       "hardware": 10.884866680800116,
+       "total": 23.884866680800116
+      },
+      "slack": null,
+      "improved": 5,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.1889953078745878
+       },
+       {
+        "id": "POWER-hard",
+        "factor": 0.464928457371486
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5811605717143576
+       }
+      ],
+      "ms": 235
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9891573338738808,
+      "aOpDerated": 0.9850000000256748,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 44.668791455696386,
+       "total": 44.668791455696386
+      },
+      "slack": null,
+      "improved": 15,
+      "atFloors": 1,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.05
+       },
+       {
+        "id": "POWER-hard",
+        "factor": 0.11237198867563405
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.1404649858445426
+       }
+      ],
+      "ms": 42
+     }
+    }
+   }
+  },
+  "a950-ub2": {
+   "10000": {
+    "npus": 10000,
+    "baseline": {
+     "aOp": 0.9991822270457666,
+     "aOpDerated": 0.9990747500905814,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3238.1961904761906,
+    "v30": {
+     "lambdaJob": 0.03300045463178933,
+     "lambdaHw": 0.0323819619047619,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9975812478108971,
+     "uniformFactor": 6.304707255557301,
+     "ms": 16,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9991822270457666,
+       "aOpDerated": 0.9990747500905814,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      },
+      "agree": {
+       "aOp": 0.9993065274274541,
+       "aOpDerated": 0.9992153677143909,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 16.74883280708411,
+       "improved": 5,
+       "minFactor": 0.12208390019190386,
+       "relaxed": 15
+      },
+      "minimum-effort": {
+       "aOp": 0.9991822270457666,
+       "aOpDerated": 0.9990747500905814,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9991822270457666,
+       "aOpDerated": 0.9990747500905814,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9991822270457666,
+     "aOpDerated": 0.9990747500905814,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9991822270457666,
+      "derated": 0.9991822270457666,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 19.63303697193359,
+      "planDerated": 19.63303697193359,
+      "allOn": 14.967790937301686,
+      "allOnDerated": 11.143469048032584
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 19.63303697193359,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9991822270457666,
+       "valueDerated": 0.9991822270457666,
+       "residualFactor": 19.63303697193359
+      },
+      {
+       "id": "auto60",
+       "value": 0.99951757466982,
+       "valueDerated": 0.99951757466982,
+       "residualFactor": 33.13569626590766
+      },
+      {
+       "id": "ps999",
+       "value": 0.9993632868051645,
+       "valueDerated": 0.9993632868051645,
+       "residualFactor": 25.17667921158847
+      },
+      {
+       "id": "manual30",
+       "value": 0.999333105621137,
+       "valueDerated": 0.999333105621137,
+       "residualFactor": 24.045786164158066
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9996987560153849,
+       "valueDerated": 0.9996987560153849,
+       "residualFactor": 52.64530604520326
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9996685545624042,
+       "valueDerated": 0.9996685545624042,
+       "residualFactor": 47.943571647154464
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.999378378080932,
+       "valueDerated": 0.999378378080932,
+       "residualFactor": 25.782859058744812
+      },
+      {
+       "id": "all3",
+       "value": 0.9997138574263171,
+       "valueDerated": 0.9997138574263171,
+       "residualFactor": 55.35928292894801
+      }
+     ],
+     "ms": 1279
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9991822270457666,
+      "aOpDerated": 0.9990747500905814,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 17.262627419209064,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3164
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9991822270457666,
+      "aOpDerated": 0.9990747500905814,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 17.262627419209064,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 76
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9991822270457666,
+      "aOpDerated": 0.9990747500905814,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 17.262627419209064,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 76
+     }
+    }
+   },
+   "100000": {
+    "npus": 100000,
+    "baseline": {
+     "aOp": 0.9918472566128582,
+     "aOpDerated": 0.9907840272734476,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3250.6712380952376,
+    "v30": {
+     "lambdaJob": 0.331288330683713,
+     "lambdaHw": 0.32506712380952374,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9762378915089566,
+     "uniformFactor": 0.628051178407575,
+     "ms": 16,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9946973158552844,
+       "aOpDerated": 0.9940200426615093,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 26.841838766715597,
+       "improved": 20,
+       "minFactor": 0.628051178407575,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.997650359416204,
+       "aOpDerated": 0.9973662012497183,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 93.73986017491316,
+       "improved": 16,
+       "minFactor": 0.011455090320674032,
+       "relaxed": 4
+      },
+      "minimum-effort": {
+       "aOp": 0.9942579143964424,
+       "aOpDerated": 0.993517721762655,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 16.2437806021603,
+       "improved": 12,
+       "minFactor": 0.2817113089772774,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9949751973452723,
+       "aOpDerated": 0.9943762727442303,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 25.0035435235547,
+       "improved": 12,
+       "minFactor": 0.21874156089657054,
+       "relaxed": 8
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9918472566128582,
+     "aOpDerated": 0.9907840272734476,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9918472566128582,
+      "derated": 0.9918472566128582,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.9024031872636036,
+      "planDerated": 1.9024031872636036,
+      "allOn": 1.4648873867980128,
+      "allOnDerated": 1.0891595316698002
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 1.9024031872636036,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9918472566128582,
+       "valueDerated": 0.9918472566128582,
+       "residualFactor": 1.9024031872636036
+      },
+      {
+       "id": "auto60",
+       "value": 0.9951755416855536,
+       "valueDerated": 0.9951755416855536,
+       "residualFactor": 3.2523926418509665
+      },
+      {
+       "id": "ps999",
+       "value": 0.9936417606548082,
+       "valueDerated": 0.9936417606548082,
+       "residualFactor": 2.456686087823525
+      },
+      {
+       "id": "manual30",
+       "value": 0.9933422258660223,
+       "valueDerated": 0.9933422258660223,
+       "residualFactor": 2.3436170132077168
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9969821199305415,
+       "valueDerated": 0.9969821199305415,
+       "residualFactor": 5.202484370002362
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.996680568216655,
+       "valueDerated": 0.996680568216655,
+       "residualFactor": 4.7325711913882555
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.993791595799011,
+       "valueDerated": 0.993791595799011,
+       "residualFactor": 2.517292460680814
+      },
+      {
+       "id": "all3",
+       "value": 0.9971329642227742,
+       "valueDerated": 0.9971329642227742,
+       "residualFactor": 5.473717152384511
+      }
+     ],
+     "ms": 1279
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9918472566128582,
+      "aOpDerated": 0.9907840272734476,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.6709062798319958,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3260
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9918472566128582,
+      "aOpDerated": 0.9907840272734476,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.6709062798319958,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 70
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9918472566128582,
+      "aOpDerated": 0.9907840272734476,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.6709062798319958,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 70
+     }
+    }
+   },
+   "200000": {
+    "npus": 200000,
+    "baseline": {
+     "aOp": 0.9838276663315625,
+     "aOpDerated": 0.9817394254232925,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3250.6285714285705,
+    "v30": {
+     "lambdaJob": 0.6625678316509909,
+     "lambdaHw": 0.6501257142857142,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.953579437387186,
+     "uniformFactor": 0.3140297109989557,
+     "ms": 16,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9942500545867154,
+       "aOpDerated": 0.9935607007613549,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 66.8410813183257,
+       "improved": 20,
+       "minFactor": 0.31402971099895566,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9970353174962439,
+       "aOpDerated": 0.9966707874342287,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 129.35403199116735,
+       "improved": 18,
+       "minFactor": 0.005727546874279364,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9929666873852605,
+       "aOpDerated": 0.9922693702296121,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 50.79212731190428,
+       "improved": 16,
+       "minFactor": 0.11699089902974436,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9932546168047196,
+       "aOpDerated": 0.9925973510081888,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 53.90153356399536,
+       "improved": 16,
+       "minFactor": 0.10937078044828527,
+       "relaxed": 4
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9871019574981389,
+     "aOpDerated": 0.9839614433956605,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "C-MEM"
+      ],
+      "feasible": true,
+      "nominal": 0.9871019574981389,
+      "derated": 0.9860081084212099,
+      "effort": 3,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.1746968197624499,
+      "planDerated": 1.0773029143278117,
+      "allOn": 0.714692910567315,
+      "allOnDerated": 0.5307125359754163
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 3,
+      "levers": 0,
+      "hardware": 0,
+      "total": 3
+     },
+     "hardwareOnlyFactor": 0.9221159199600771,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9871019574981389,
+       "valueDerated": 0.9860081084212099,
+       "residualFactor": 1.1746968197624499
+      },
+      {
+       "id": "auto60",
+       "value": 0.9903981143574082,
+       "valueDerated": 0.9903981144452968,
+       "residualFactor": 1.600350583863671
+      },
+      {
+       "id": "ps999",
+       "value": 0.9906627580510718,
+       "valueDerated": 0.9895610080243857,
+       "residualFactor": 1.6473579086803984
+      },
+      {
+       "id": "manual30",
+       "value": 0.990067508490735,
+       "valueDerated": 0.9889670812212705,
+       "residualFactor": 1.545095042447363
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9939827763961596,
+       "valueDerated": 0.9939827764412119,
+       "residualFactor": 2.5800686441726954
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9933835319656591,
+       "valueDerated": 0.993383532017892,
+       "residualFactor": 2.3439870627483477
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9909606512966628,
+       "valueDerated": 0.9898582389968902,
+       "residualFactor": 1.7035117436420275
+      },
+      {
+       "id": "all3",
+       "value": 0.9942826697842753,
+       "valueDerated": 0.9942826698257311,
+       "residualFactor": 2.71633412777493
+      }
+     ],
+     "ms": 1279
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9871021469933952,
+      "aOpDerated": 0.9850000003006765,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 2.3666264670663733,
+       "total": 2.3666264670663733
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.4403390716120376
+       }
+      ],
+      "ms": 3670
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9903981145331847,
+      "aOpDerated": 0.9867531480793379,
+      "mechanisms": [],
+      "levers": [
+       "auto"
+      ],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 3,
+       "hardware": 0,
+       "total": 3
+      },
+      "slack": 1.1406862356850322,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 105
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9871021469933952,
+      "aOpDerated": 0.9850000003006765,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 2.3666264670663733,
+       "total": 2.3666264670663733
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.4403390716120376
+       }
+      ],
+      "ms": 42
+     }
+    }
+   },
+   "500000": {
+    "npus": 500000,
+    "baseline": {
+     "aOp": 0.9605306602784143,
+     "aOpDerated": 0.9555793873953063,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3250.636304761904,
+    "v30": {
+     "lambdaJob": 1.6564235871961808,
+     "lambdaHw": 1.625318152380952,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.8915030755364975,
+     "uniformFactor": 0.12561158556622118,
+     "ms": 16,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9929137815869916,
+       "aOpDerated": 0.992196642463987,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 119.71834240207848,
+       "improved": 20,
+       "minFactor": 0.12561158556622118,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9953178272058655,
+       "aOpDerated": 0.9947216516580156,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 176.94342475673693,
+       "improved": 18,
+       "minFactor": 0.0022910195724068316,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9914246657175904,
+       "aOpDerated": 0.9907105162086779,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 101.86578523437862,
+       "improved": 19,
+       "minFactor": 0.04464108048950357,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9915412723604264,
+       "aOpDerated": 0.9908400997907548,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 102.9732795779625,
+       "improved": 19,
+       "minFactor": 0.04374831217931411,
+       "relaxed": 1
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.986895688720449,
+     "aOpDerated": 0.9826623068886868,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "D-HARD",
+       "R-NETFAIL",
+       "C-MEM"
+      ],
+      "feasible": false,
+      "nominal": 0.9751083822904719,
+      "derated": 0.9714809344810791,
+      "effort": 8,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 0.5673094008580877,
+      "planDerated": 0.48537641711748236,
+      "allOn": 0.2646084000163521,
+      "allOnDerated": 0.19567507675871781
+     },
+     "hardwareFactor": 0.48537641711748236,
+     "hardwareClasses": 20,
+     "effort": {
+      "mechanisms": 8,
+      "levers": 0,
+      "hardware": 41.7129632247152,
+      "total": 49.7129632247152
+     },
+     "hardwareOnlyFactor": 0.3339861336011094,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9751083822904719,
+       "valueDerated": 0.9714809344810791,
+       "residualFactor": 0.5673094008580877
+      },
+      {
+       "id": "auto60",
+       "value": 0.9821460651406476,
+       "valueDerated": 0.9809335703933015,
+       "residualFactor": 0.8263243719470957
+      },
+      {
+       "id": "ps999",
+       "value": 0.9827134698669142,
+       "valueDerated": 0.9791234437741521,
+       "residualFactor": 0.8563222524473394
+      },
+      {
+       "id": "manual30",
+       "value": 0.9814377297707192,
+       "valueDerated": 0.977841354622183,
+       "residualFactor": 0.7914306212061525
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.989861735094205,
+       "valueDerated": 0.9887260914700613,
+       "residualFactor": 1.518025282589356
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9885673844255761,
+       "valueDerated": 0.9874187535017737,
+       "residualFactor": 1.3375845760091836
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9833525841671651,
+       "valueDerated": 0.9797657496516528,
+       "residualFactor": 0.8925402182069351
+      },
+      {
+       "id": "all3",
+       "value": 0.9905101820129827,
+       "valueDerated": 0.9893810592068222,
+       "residualFactor": 1.6266665678753096
+      }
+     ],
+     "ms": 1279
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9930798168433482,
+      "aOpDerated": 0.9850000002393365,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 5,
+       "levers": 5,
+       "hardware": 7.034842346209435,
+       "total": 17.034842346209434
+      },
+      "slack": null,
+      "improved": 3,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.2098070897907288
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.6451568011064912
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.6451568011064912
+       }
+      ],
+      "ms": 3836
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9930447328060278,
+      "aOpDerated": 0.9850000002009901,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL",
+       "D-SLOW"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 8,
+       "levers": 5,
+       "hardware": 7.0195666189795,
+       "total": 20.0195666189795
+      },
+      "slack": null,
+      "improved": 3,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.21017766769928117
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.6462963281752898
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.6462963281752898
+       }
+      ],
+      "ms": 232
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9892161397122112,
+      "aOpDerated": 0.9850000006497829,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 39.9965780077965,
+       "total": 39.9965780077965
+      },
+      "slack": null,
+      "improved": 15,
+      "atFloors": 1,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.05
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.142828196188449
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.142828196188449
+       }
+      ],
+      "ms": 44
+     }
+    }
+   }
+  }
+ }
+}

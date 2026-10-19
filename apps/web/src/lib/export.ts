@@ -79,7 +79,7 @@ main{max-width:1100px;margin:0 auto}.card{background:var(--surface);border:1px s
 h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:0 0 8px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}td.n{text-align:right;font-variant-numeric:tabular-nums}
 .f{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;color:var(--ink-3)}li.pass b{color:var(--ok)}li.warn b{color:var(--warn)}li.fail b{color:var(--crit)}.muted{color:var(--ink-3)}
 </style></head><body><main>
-<h1>${esc(s.meta.name)}</h1><div class="muted">HAC-D ${zh ? '设计评审报告' : 'design-review report'} · ${new Date().toISOString().slice(0, 10)} · GPUs ${r.counts.gpus} · nodes ${r.counts.nodes} · racks ${r.counts.racks}</div>
+<h1>${esc(s.meta.name)}</h1><div class="muted">HAC-D ${zh ? '设计评审报告' : 'design-review report'} · ${new Date().toISOString().slice(0, 10)} · NPUs ${r.counts.gpus} · nodes ${r.counts.nodes} · cabinets ${r.counts.racks}</div>
 <div class="card"><h2>${zh ? '关键指标' : 'Key figures'}</h2><table>${rows.map((x) => `<tr><td>${esc(x[0])}</td><td class="n"><b>${esc(x[1])}</b></td><td class="f">${esc(x[2] ?? '')}</td></tr>`).join('')}</table></div>
 <div class="card"><h2>${zh ? '部件类' : 'Component classes'}</h2><table><thead><tr><th>${zh ? '部件' : 'Component'}</th><th>n</th><th>λ /1e6 h</th><th>${zh ? '中断占比' : 'Share'}</th><th>MTTR h</th><th>${zh ? '置信' : 'Confidence'}</th><th>口径</th></tr></thead><tbody>${comps}</tbody></table></div>
 <div class="card"><h2>${zh ? '设计评审清单' : 'Design-review checklist'}</h2><ul>${check}</ul></div>

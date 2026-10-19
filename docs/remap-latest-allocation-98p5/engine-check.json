@@ -1,0 +1,349 @@
+{
+ "generated": "2026-10-15T23:37:25.687Z",
+ "trials": 400,
+ "sizes": [
+  100000,
+  200000
+ ],
+ "remap": "/Users/liqingchuan/Documents/projects/HAC-D/remap/remap-latest",
+ "results": [
+  {
+   "N": 100000,
+   "coalition": "originals",
+   "ids": [
+    "D-HARD",
+    "D-SLOW",
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.991922786477512,
+     "sd": 0.0027482470793099146,
+     "ci95": 0.00027014269745750914,
+     "p05": 0.9870261574074092,
+     "p50": 0.9926809413580263,
+     "p95": 0.9948947337962966,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.9542992669838405,
+     "sd": 0.05399945230940347,
+     "ci95": 0.005307949862991691,
+     "p05": 0.8118049112176424,
+     "p50": 0.9744808245362779,
+     "p95": 0.9776768338833299,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 237.60749999999993,
+     "slow": 4.947499999999989,
+     "sdc": 3.3899999999999846,
+     "manual": 0.7449999999999981,
+     "sdcRecoveries": 0.10750000000000005
+    }
+   },
+   "hacd": {
+    "aOp": 0.99171024453979,
+    "delivered": 0.9489038770814432,
+    "sdcCoverage": 0.9499999999999996,
+    "recoveryS": 253.05900000000005
+   }
+  },
+  {
+   "N": 100000,
+   "coalition": "extensions",
+   "ids": [
+    "R-LINK-LOCAL",
+    "R-FABRIC-DEGRADE",
+    "H-CONTROL-CONTINUITY",
+    "R-WARM-PROCESS",
+    "R-RUNTIME-SNAPSHOT",
+    "C-ASYNC",
+    "C-LOSSLESS",
+    "D-RECOVERY-CLASSIFY",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN",
+    "R-HCCL-ELASTIC",
+    "R-CANN-GRAPH"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.9883952186944307,
+     "sd": 0.0016272198026417968,
+     "ci95": 0.0001599497913238244,
+     "p05": 0.9853516107253109,
+     "p50": 0.988890046296298,
+     "p95": 0.9903878182870388,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.9208888749152586,
+     "sd": 0.08414113079959303,
+     "ci95": 0.00827076728742843,
+     "p05": 0.8056030357756524,
+     "p50": 0.970003063653647,
+     "p95": 0.9740245857249014,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 237.76249999999996,
+     "slow": 5.012499999999997,
+     "sdc": 2.6049999999999875,
+     "manual": 0.3100000000000002,
+     "sdcRecoveries": 0.2900000000000002
+    }
+   },
+   "hacd": {
+    "aOp": 0.9884265699495504,
+    "delivered": 0.9172563548513667,
+    "sdcCoverage": 0.8529734248250184,
+    "recoveryS": 183.93999999999966
+   }
+  },
+  {
+   "N": 100000,
+   "coalition": "all",
+   "ids": [
+    "D-HARD",
+    "D-SLOW",
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST",
+    "R-LINK-LOCAL",
+    "R-FABRIC-DEGRADE",
+    "H-CONTROL-CONTINUITY",
+    "R-WARM-PROCESS",
+    "R-RUNTIME-SNAPSHOT",
+    "C-ASYNC",
+    "C-LOSSLESS",
+    "D-RECOVERY-CLASSIFY",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN",
+    "R-HCCL-ELASTIC",
+    "R-CANN-GRAPH"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.9960149531304917,
+     "sd": 0.0008181298332211488,
+     "ci95": 0.00008041918853683247,
+     "p05": 0.9937013406635781,
+     "p50": 0.9961560570987633,
+     "p95": 0.9968819444444423,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.9730723505550963,
+     "sd": 0.025998999640724007,
+     "ci95": 0.0025556071530168176,
+     "p05": 0.9743867896856193,
+     "p50": 0.9777667301287785,
+     "p95": 0.9786965537984371,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 240.0475,
+     "slow": 4.874999999999994,
+     "sdc": 2.632499999999983,
+     "manual": 0.06000000000000002,
+     "sdcRecoveries": 0.024999999999999998
+    }
+   },
+   "hacd": {
+    "aOp": 0.9959339179642721,
+    "delivered": 0.9742399843877215,
+    "sdcCoverage": 0.9926486712412509,
+    "recoveryS": 172.49899999999965
+   }
+  },
+  {
+   "N": 200000,
+   "coalition": "originals",
+   "ids": [
+    "D-HARD",
+    "D-SLOW",
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.983814087707012,
+     "sd": 0.003779094922857361,
+     "ci95": 0.000371471293136064,
+     "p05": 0.9771070216049405,
+     "p50": 0.9845769675925952,
+     "p95": 0.9888636188271628,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.9258564105963885,
+     "sd": 0.08143171735858967,
+     "ci95": 0.00800444179544826,
+     "p05": 0.7952216740570626,
+     "p50": 0.9642544926395292,
+     "p95": 0.9704018769348195,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 471.54749999999973,
+     "slow": 10.055000000000007,
+     "sdc": 6.70749999999999,
+     "manual": 1.5174999999999932,
+     "sdcRecoveries": 0.22250000000000017
+    }
+   },
+   "hacd": {
+    "aOp": 0.9835574643478615,
+    "delivered": 0.9166106125715926,
+    "sdcCoverage": 0.9499999999999996,
+    "recoveryS": 253.05900000000005
+   }
+  },
+  {
+   "N": 200000,
+   "coalition": "extensions",
+   "ids": [
+    "R-LINK-LOCAL",
+    "R-FABRIC-DEGRADE",
+    "H-CONTROL-CONTINUITY",
+    "R-WARM-PROCESS",
+    "R-RUNTIME-SNAPSHOT",
+    "C-ASYNC",
+    "C-LOSSLESS",
+    "D-RECOVERY-CLASSIFY",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN",
+    "R-HCCL-ELASTIC",
+    "R-CANN-GRAPH"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.977061625231389,
+     "sd": 0.0024850041139180086,
+     "ci95": 0.00024426687090135405,
+     "p05": 0.9724330439814852,
+     "p50": 0.9776499639320875,
+     "p95": 0.9802088252314851,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.8512011010281619,
+     "sd": 0.10684579593581159,
+     "ci95": 0.010502553334230186,
+     "p05": 0.6331901391958908,
+     "p50": 0.841540415657327,
+     "p95": 0.9517142487123583,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 468.3374999999999,
+     "slow": 9.727500000000001,
+     "sdc": 5.349999999999991,
+     "manual": 0.6199999999999984,
+     "sdcRecoveries": 0.5549999999999995
+    }
+   },
+   "hacd": {
+    "aOp": 0.9771202673611746,
+    "delivered": 0.8494814549806149,
+    "sdcCoverage": 0.8529734248250184,
+    "recoveryS": 183.93999999999966
+   }
+  },
+  {
+   "N": 200000,
+   "coalition": "all",
+   "ids": [
+    "D-HARD",
+    "D-SLOW",
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST",
+    "R-LINK-LOCAL",
+    "R-FABRIC-DEGRADE",
+    "H-CONTROL-CONTINUITY",
+    "R-WARM-PROCESS",
+    "R-RUNTIME-SNAPSHOT",
+    "C-ASYNC",
+    "C-LOSSLESS",
+    "D-RECOVERY-CLASSIFY",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN",
+    "R-HCCL-ELASTIC",
+    "R-CANN-GRAPH"
+   ],
+   "remap": {
+    "aOp": {
+     "mean": 0.9919693261344494,
+     "sd": 0.001278842645482936,
+     "ci95": 0.00012570558319712836,
+     "p05": 0.9892718749999961,
+     "p50": 0.9923285046276711,
+     "p95": 0.9933792631172813,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "delivered": {
+     "mean": 0.9622097402491364,
+     "sd": 0.037763451287469635,
+     "ci95": 0.0037120099837107436,
+     "p05": 0.8298015570788809,
+     "p50": 0.9727150571204739,
+     "p95": 0.9742333313461992,
+     "n": 400,
+     "ciMethod": "student-t"
+    },
+    "counts": {
+     "hard": 477.5374999999998,
+     "slow": 9.762500000000005,
+     "sdc": 5.224999999999994,
+     "manual": 0.1525000000000001,
+     "sdcRecoveries": 0.05000000000000001
+    }
+   },
+   "hacd": {
+    "aOp": 0.9919007755975389,
+    "delivered": 0.9662070845328979,
+    "sdcCoverage": 0.9926486712412509,
+    "recoveryS": 172.49899999999965
+   }
+  }
+ ]
+}

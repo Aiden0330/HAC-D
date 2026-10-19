@@ -85,8 +85,8 @@ describe('allocation method weights (v3.3)', () => {
 
 describe('v3.6: target out of reach of detection alone', () => {
   it('budgets at q = 1 with a meaningful interruption budget and an explicit note', async () => {
-    const { EXAMPLES } = await import('../src/index.js');
-    const a = allocateScenario(EXAMPLES['ref-catalog-100k'](), { goodputTarget: 0.95, basis: 'delivered', method: 'arinc' });
+    const { REFERENCE_FIXTURES } = await import('../src/index.js');
+    const a = allocateScenario(REFERENCE_FIXTURES['ref-catalog-100k'](), { goodputTarget: 0.95, basis: 'delivered', method: 'arinc' });
     expect(a.sdc).toBeDefined();
     expect(a.sdc!.feasibleByHardware).toBe(false);
     expect(a.sdc!.requiredCoverage).toBeUndefined();

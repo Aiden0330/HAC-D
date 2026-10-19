@@ -1,0 +1,2821 @@
+{
+ "generated_by": "compute_golden_v4.py",
+ "cases": [
+  {
+   "id": "clos-1000-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 1000,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 2,
+    "switches": 48,
+    "links": 2000,
+    "transceivers": 4000,
+    "tier1": 32,
+    "tier2": 16
+   }
+  },
+  {
+   "id": "clos-2048-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 2048,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 2,
+    "switches": 96,
+    "links": 4096,
+    "transceivers": 8192,
+    "tier1": 64,
+    "tier2": 32
+   }
+  },
+  {
+   "id": "clos-2049-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 2049,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 3,
+    "switches": 163,
+    "links": 6147,
+    "transceivers": 12294,
+    "tier1": 65,
+    "tier2": 65,
+    "tier3": 33
+   }
+  },
+  {
+   "id": "clos-10000-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 10000,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 3,
+    "switches": 783,
+    "links": 30000,
+    "transceivers": 60000,
+    "tier1": 313,
+    "tier2": 313,
+    "tier3": 157
+   }
+  },
+  {
+   "id": "clos-50000-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 50000,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 3,
+    "switches": 3908,
+    "links": 150000,
+    "transceivers": 300000,
+    "tier1": 1563,
+    "tier2": 1563,
+    "tier3": 782
+   }
+  },
+  {
+   "id": "clos-100000-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 100000,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 4,
+    "switches": 10938,
+    "links": 400000,
+    "transceivers": 800000,
+    "tier1": 3125,
+    "tier2": 3125,
+    "tier3": 3125,
+    "tier4": 1563
+   }
+  },
+  {
+   "id": "clos-100000-k128-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 100000,
+    "radix": 128,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 3,
+    "switches": 3908,
+    "links": 300000,
+    "transceivers": 600000,
+    "tier1": 1563,
+    "tier2": 1563,
+    "tier3": 782
+   }
+  },
+  {
+   "id": "clos-40-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 40,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 1,
+    "switches": 1,
+    "links": 40,
+    "transceivers": 80,
+    "tier1": 1
+   }
+  },
+  {
+   "id": "clos-64-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 64,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 1,
+    "switches": 1,
+    "links": 64,
+    "transceivers": 128,
+    "tier1": 1
+   }
+  },
+  {
+   "id": "clos-65-k64-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 65,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 2,
+    "switches": 5,
+    "links": 130,
+    "transceivers": 260,
+    "tier1": 3,
+    "tier2": 2
+   }
+  },
+  {
+   "id": "clos-20000-k64-o3",
+   "group": "clos",
+   "inputs": {
+    "ports": 20000,
+    "radix": 64,
+    "oversubscription": 3,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 3,
+    "switches": 731,
+    "links": 33334,
+    "transceivers": 66668,
+    "tier1": 417,
+    "tier2": 209,
+    "tier3": 105
+   }
+  },
+  {
+   "id": "clos-8192-k128-o1",
+   "group": "clos",
+   "inputs": {
+    "ports": 8192,
+    "radix": 128,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+   },
+   "expected": {
+    "tiers": 2,
+    "switches": 192,
+    "links": 16384,
+    "transceivers": 32768,
+    "tier1": 128,
+    "tier2": 64
+   }
+  },
+  {
+   "id": "a2-roce-384-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 384,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 384,
+    "nodes": 48,
+    "cpus": 192,
+    "cabinets": 6,
+    "roPorts": 384,
+    "roTiers": 2,
+    "roSwitches": 18,
+    "roLinks": 768,
+    "roTier1": 12,
+    "roTier2": 6,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.roce-switch": 2.6785714285714284,
+    "hardFitPerNpu.roce-link": 9.523809523809522,
+    "hardFitPerNpuTotal": 3078.8690476190473,
+    "hardPerHour": 0.001182285714285714
+   }
+  },
+  {
+   "id": "a2-roce-1000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 1000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 1000,
+    "nodes": 125,
+    "cpus": 500,
+    "cabinets": 16,
+    "roPorts": 1000,
+    "roTiers": 2,
+    "roSwitches": 48,
+    "roLinks": 2000,
+    "roTier1": 32,
+    "roTier2": 16,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 136.5333333333333,
+    "hardFitPerNpu.roce-switch": 2.742857142857142,
+    "hardFitPerNpu.roce-link": 9.523809523809522,
+    "hardFitPerNpuTotal": 3082.133333333333,
+    "hardPerHour": 0.003082133333333333
+   }
+  },
+  {
+   "id": "a2-roce-8192-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 8192,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 8192,
+    "nodes": 1024,
+    "cpus": 4096,
+    "cabinets": 128,
+    "roPorts": 8192,
+    "roTiers": 3,
+    "roSwitches": 640,
+    "roLinks": 24576,
+    "roTier1": 256,
+    "roTier2": 256,
+    "roTier3": 128,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.roce-switch": 4.4642857142857135,
+    "hardFitPerNpu.roce-link": 14.285714285714283,
+    "hardFitPerNpuTotal": 3085.416666666666,
+    "hardPerHour": 0.025275733333333328
+   }
+  },
+  {
+   "id": "a2-roce-10000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 10000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 157,
+    "roPorts": 10000,
+    "roTiers": 3,
+    "roSwitches": 783,
+    "roLinks": 30000,
+    "roTier1": 313,
+    "roTier2": 313,
+    "roTier3": 157,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.roce-switch": 4.474285714285714,
+    "hardFitPerNpu.roce-link": 14.285714285714285,
+    "hardFitPerNpuTotal": 3086.066666666666,
+    "hardPerHour": 0.03086066666666666
+   }
+  },
+  {
+   "id": "a2-roce-12345-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 12345,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 12345,
+    "nodes": 1544,
+    "cpus": 6176,
+    "cabinets": 193,
+    "roPorts": 12345,
+    "roTiers": 3,
+    "roSwitches": 965,
+    "roLinks": 37035,
+    "roTier1": 386,
+    "roTier2": 386,
+    "roTier3": 193,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.76117186445254,
+    "hardFitPerNpu.node": 546.9766437154042,
+    "hardFitPerNpu.cabinet": 133.408937491562,
+    "hardFitPerNpu.roce-switch": 4.4668171035121205,
+    "hardFitPerNpu.roce-link": 14.285714285714281,
+    "hardFitPerNpuTotal": 3085.899284460645,
+    "hardPerHour": 0.03809542666666666
+   }
+  },
+  {
+   "id": "a2-roce-20000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 20000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 20000,
+    "nodes": 2500,
+    "cpus": 10000,
+    "cabinets": 313,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.54666666666665,
+    "hardFitPerNpu.roce-switch": 4.465714285714284,
+    "hardFitPerNpu.roce-link": 14.285714285714285,
+    "hardFitPerNpuTotal": 3085.631428571428,
+    "hardPerHour": 0.06171262857142856
+   }
+  },
+  {
+   "id": "a2-roce-50000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 50000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 50000,
+    "nodes": 6250,
+    "cpus": 25000,
+    "cabinets": 782,
+    "roPorts": 50000,
+    "roTiers": 3,
+    "roSwitches": 3908,
+    "roLinks": 150000,
+    "roTier1": 1563,
+    "roTier2": 1563,
+    "roTier3": 782,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.46133333333333,
+    "hardFitPerNpu.roce-switch": 4.466285714285713,
+    "hardFitPerNpu.roce-link": 14.285714285714285,
+    "hardFitPerNpuTotal": 3085.5466666666657,
+    "hardPerHour": 0.1542773333333333
+   }
+  },
+  {
+   "id": "a2-roce-100000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 100000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 1563,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 10938,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 1563,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.37599999999998,
+    "hardFitPerNpu.roce-switch": 6.250285714285714,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3092.0072380952374,
+    "hardPerHour": 0.30920072380952374
+   }
+  },
+  {
+   "id": "a2-roce-200000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 200000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 100000,
+    "cabinets": 3125,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 21875,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 6250,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.roce-switch": 6.249999999999999,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3091.964285714285,
+    "hardPerHour": 0.618392857142857
+   }
+  },
+  {
+   "id": "a2-roce-500000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 500000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 500000,
+    "nodes": 62500,
+    "cpus": 250000,
+    "cabinets": 7813,
+    "roPorts": 500000,
+    "roTiers": 4,
+    "roSwitches": 54688,
+    "roLinks": 2000000,
+    "roTier1": 15625,
+    "roTier2": 15625,
+    "roTier3": 15625,
+    "roTier4": 7813,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.34186666666665,
+    "hardFitPerNpu.roce-switch": 6.250057142857142,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3091.972876190475,
+    "hardPerHour": 1.5459864380952375
+   }
+  },
+  {
+   "id": "a3-ub384-384-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 384,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 384,
+    "nodes": 48,
+    "cpus": 192,
+    "cabinets": 12,
+    "pods": 1,
+    "commCabinets": 4,
+    "l1": 336,
+    "l2": 112,
+    "ubLinks": 5376,
+    "ubTransceivers": 10752,
+    "roPorts": 768,
+    "roTiers": 2,
+    "roSwitches": 36,
+    "roLinks": 1536,
+    "roTier1": 24,
+    "roTier2": 12,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.66666666666666,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.357142857142857,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3357.738095238095,
+    "hardPerHour": 0.0012893714285714284
+   }
+  },
+  {
+   "id": "a3-ub384-384-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 384,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 384,
+    "nodes": 48,
+    "cpus": 192,
+    "cabinets": 12,
+    "pods": 1,
+    "commCabinets": 4,
+    "l1": 336,
+    "l2": 112,
+    "ubLinks": 5376,
+    "ubTransceivers": 10752,
+    "roPorts": 768,
+    "roTiers": 2,
+    "roSwitches": 36,
+    "roLinks": 1536,
+    "roTier1": 24,
+    "roTier2": 12,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.66666666666666,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.357142857142857,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3357.738095238095,
+    "hardPerHour": 0.0012893714285714284
+   }
+  },
+  {
+   "id": "a3-ub384-1000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 1000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 1000,
+    "nodes": 125,
+    "cpus": 500,
+    "cabinets": 32,
+    "pods": 3,
+    "commCabinets": 11,
+    "l1": 875,
+    "l2": 294,
+    "ubLinks": 14000,
+    "ubTransceivers": 28000,
+    "roPorts": 2000,
+    "roTiers": 2,
+    "roSwitches": 95,
+    "roLinks": 4000,
+    "roTier1": 63,
+    "roTier2": 32,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 273.0666666666666,
+    "hardFitPerNpu.ub-switch": 66.79999999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.428571428571428,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3364.342857142856,
+    "hardPerHour": 0.003364342857142856
+   }
+  },
+  {
+   "id": "a3-ub384-1000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 1000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 1000,
+    "nodes": 125,
+    "cpus": 500,
+    "cabinets": 32,
+    "pods": 3,
+    "commCabinets": 12,
+    "l1": 875,
+    "l2": 336,
+    "ubLinks": 14000,
+    "ubTransceivers": 28000,
+    "roPorts": 2000,
+    "roTiers": 2,
+    "roSwitches": 95,
+    "roLinks": 4000,
+    "roTier1": 63,
+    "roTier2": 32,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 273.0666666666666,
+    "hardFitPerNpu.ub-switch": 69.19999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.428571428571428,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3366.742857142856,
+    "hardPerHour": 0.003366742857142856
+   }
+  },
+  {
+   "id": "a3-ub384-8192-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 8192,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 8192,
+    "nodes": 1024,
+    "cpus": 4096,
+    "cabinets": 256,
+    "pods": 22,
+    "commCabinets": 86,
+    "l1": 7168,
+    "l2": 2394,
+    "ubLinks": 114688,
+    "ubTransceivers": 229376,
+    "roPorts": 16384,
+    "roTiers": 3,
+    "roSwitches": 1280,
+    "roLinks": 49152,
+    "roTier1": 512,
+    "roTier2": 512,
+    "roTier3": 256,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.69921874999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.571428571428566,
+    "hardFitPerNpuTotal": 3370.8658854166656,
+    "hardPerHour": 0.027614133333333325
+   }
+  },
+  {
+   "id": "a3-ub384-8192-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 8192,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 8192,
+    "nodes": 1024,
+    "cpus": 4096,
+    "cabinets": 256,
+    "pods": 22,
+    "commCabinets": 88,
+    "l1": 7168,
+    "l2": 2464,
+    "ubLinks": 114688,
+    "ubTransceivers": 229376,
+    "roPorts": 16384,
+    "roTiers": 3,
+    "roSwitches": 1280,
+    "roLinks": 49152,
+    "roTier1": 512,
+    "roTier2": 512,
+    "roTier3": 256,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 67.18749999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.571428571428566,
+    "hardFitPerNpuTotal": 3371.3541666666656,
+    "hardPerHour": 0.027618133333333326
+   }
+  },
+  {
+   "id": "a3-ub384-10000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 10000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 313,
+    "pods": 27,
+    "commCabinets": 105,
+    "l1": 8750,
+    "l2": 2919,
+    "ubLinks": 140000,
+    "ubTransceivers": 280000,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 267.0933333333333,
+    "hardFitPerNpu.ub-switch": 66.67999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.931428571428569,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3371.27619047619,
+    "hardPerHour": 0.033712761904761905
+   }
+  },
+  {
+   "id": "a3-ub384-10000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 10000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 313,
+    "pods": 27,
+    "commCabinets": 108,
+    "l1": 8750,
+    "l2": 3024,
+    "ubLinks": 140000,
+    "ubTransceivers": 280000,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 267.0933333333333,
+    "hardFitPerNpu.ub-switch": 67.27999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.931428571428569,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3371.8761904761905,
+    "hardPerHour": 0.033718761904761904
+   }
+  },
+  {
+   "id": "a3-ub384-12345-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 12345,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 12345,
+    "nodes": 1544,
+    "cpus": 6176,
+    "cabinets": 386,
+    "pods": 33,
+    "commCabinets": 129,
+    "l1": 10808,
+    "l2": 3605,
+    "ubLinks": 172928,
+    "ubTransceivers": 345856,
+    "roPorts": 24690,
+    "roTiers": 3,
+    "roSwitches": 1930,
+    "roLinks": 74070,
+    "roTier1": 772,
+    "roTier2": 772,
+    "roTier3": 386,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.76117186445254,
+    "hardFitPerNpu.node": 546.9766437154042,
+    "hardFitPerNpu.cabinet": 266.817874983124,
+    "hardFitPerNpu.ub-switch": 66.71526933981367,
+    "hardFitPerNpu.ub-link": 66.704468745781,
+    "hardFitPerNpu.roce-switch": 8.933634207024241,
+    "hardFitPerNpu.roce-link": 28.571428571428562,
+    "hardFitPerNpuTotal": 3371.4804914270276,
+    "hardPerHour": 0.041620926666666655
+   }
+  },
+  {
+   "id": "a3-ub384-12345-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 12345,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 12345,
+    "nodes": 1544,
+    "cpus": 6176,
+    "cabinets": 386,
+    "pods": 33,
+    "commCabinets": 132,
+    "l1": 10808,
+    "l2": 3696,
+    "ubLinks": 172928,
+    "ubTransceivers": 345856,
+    "roPorts": 24690,
+    "roTiers": 3,
+    "roSwitches": 1930,
+    "roLinks": 74070,
+    "roTier1": 772,
+    "roTier2": 772,
+    "roTier3": 386,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.76117186445254,
+    "hardFitPerNpu.node": 546.9766437154042,
+    "hardFitPerNpu.cabinet": 266.817874983124,
+    "hardFitPerNpu.ub-switch": 67.13649250708788,
+    "hardFitPerNpu.ub-link": 66.704468745781,
+    "hardFitPerNpu.roce-switch": 8.933634207024241,
+    "hardFitPerNpu.roce-link": 28.571428571428562,
+    "hardFitPerNpuTotal": 3371.9017145943017,
+    "hardPerHour": 0.04162612666666666
+   }
+  },
+  {
+   "id": "a3-ub384-20000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 20000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 20000,
+    "nodes": 2500,
+    "cpus": 10000,
+    "cabinets": 625,
+    "pods": 53,
+    "commCabinets": 209,
+    "l1": 17500,
+    "l2": 5838,
+    "ubLinks": 280000,
+    "ubTransceivers": 560000,
+    "roPorts": 40000,
+    "roTiers": 3,
+    "roSwitches": 3125,
+    "roLinks": 120000,
+    "roTier1": 1250,
+    "roTier2": 1250,
+    "roTier3": 625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.67999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3370.8466666666664,
+    "hardPerHour": 0.06741693333333333
+   }
+  },
+  {
+   "id": "a3-ub384-20000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 20000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 20000,
+    "nodes": 2500,
+    "cpus": 10000,
+    "cabinets": 625,
+    "pods": 53,
+    "commCabinets": 212,
+    "l1": 17500,
+    "l2": 5936,
+    "ubLinks": 280000,
+    "ubTransceivers": 560000,
+    "roPorts": 40000,
+    "roTiers": 3,
+    "roSwitches": 3125,
+    "roLinks": 120000,
+    "roTier1": 1250,
+    "roTier2": 1250,
+    "roTier3": 625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.96,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3371.1266666666666,
+    "hardPerHour": 0.06742253333333333
+   }
+  },
+  {
+   "id": "a3-ub384-50000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 50000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 50000,
+    "nodes": 6250,
+    "cpus": 25000,
+    "cabinets": 1563,
+    "pods": 131,
+    "commCabinets": 521,
+    "l1": 43750,
+    "l2": 14588,
+    "ubLinks": 700000,
+    "ubTransceivers": 1400000,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 10938,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 1563,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.75199999999995,
+    "hardFitPerNpu.ub-switch": 66.672,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.500571428571428,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3384.019809523809,
+    "hardPerHour": 0.16920099047619044
+   }
+  },
+  {
+   "id": "a3-ub384-50000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 50000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 50000,
+    "nodes": 6250,
+    "cpus": 25000,
+    "cabinets": 1563,
+    "pods": 131,
+    "commCabinets": 524,
+    "l1": 43750,
+    "l2": 14672,
+    "ubLinks": 700000,
+    "ubTransceivers": 1400000,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 10938,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 1563,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.75199999999995,
+    "hardFitPerNpu.ub-switch": 66.76799999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.500571428571428,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3384.115809523809,
+    "hardPerHour": 0.16920579047619044
+   }
+  },
+  {
+   "id": "a3-ub384-100000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 100000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 3125,
+    "pods": 261,
+    "commCabinets": 1042,
+    "l1": 87500,
+    "l2": 29169,
+    "ubLinks": 1400000,
+    "ubTransceivers": 2800000,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 21875,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 6250,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.66799999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.9299047619043,
+    "hardPerHour": 0.3383929904761904
+   }
+  },
+  {
+   "id": "a3-ub384-100000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 100000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 3125,
+    "pods": 261,
+    "commCabinets": 1044,
+    "l1": 87500,
+    "l2": 29232,
+    "ubLinks": 1400000,
+    "ubTransceivers": 2800000,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 21875,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 6250,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.704,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.9659047619043,
+    "hardPerHour": 0.3383965904761905
+   }
+  },
+  {
+   "id": "a3-ub384-200000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 200000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 100000,
+    "cabinets": 6250,
+    "pods": 521,
+    "commCabinets": 2084,
+    "l1": 175000,
+    "l2": 58338,
+    "ubLinks": 2800000,
+    "ubTransceivers": 5600000,
+    "roPorts": 400000,
+    "roTiers": 4,
+    "roSwitches": 43750,
+    "roLinks": 1600000,
+    "roTier1": 12500,
+    "roTier2": 12500,
+    "roTier3": 12500,
+    "roTier4": 6250,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.66799999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.9299047619043,
+    "hardPerHour": 0.6767859809523809
+   }
+  },
+  {
+   "id": "a3-ub384-200000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 200000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 100000,
+    "cabinets": 6250,
+    "pods": 521,
+    "commCabinets": 2084,
+    "l1": 175000,
+    "l2": 58352,
+    "ubLinks": 2800000,
+    "ubTransceivers": 5600000,
+    "roPorts": 400000,
+    "roTiers": 4,
+    "roSwitches": 43750,
+    "roLinks": 1600000,
+    "roTier1": 12500,
+    "roTier2": 12500,
+    "roTier3": 12500,
+    "roTier4": 6250,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.672,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.9339047619046,
+    "hardPerHour": 0.6767867809523809
+   }
+  },
+  {
+   "id": "a3-ub384-500000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 500000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 500000,
+    "nodes": 62500,
+    "cpus": 250000,
+    "cabinets": 15625,
+    "pods": 1303,
+    "commCabinets": 5209,
+    "l1": 437500,
+    "l2": 145838,
+    "ubLinks": 7000000,
+    "ubTransceivers": 14000000,
+    "roPorts": 1000000,
+    "roTiers": 4,
+    "roSwitches": 109375,
+    "roLinks": 4000000,
+    "roTier1": 31250,
+    "roTier2": 31250,
+    "roTier3": 31250,
+    "roTier4": 15625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.66719999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.9291047619035,
+    "hardPerHour": 1.691964552380952
+   }
+  },
+  {
+   "id": "a3-ub384-500000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 500000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 500000,
+    "nodes": 62500,
+    "cpus": 250000,
+    "cabinets": 15625,
+    "pods": 1303,
+    "commCabinets": 5212,
+    "l1": 437500,
+    "l2": 145936,
+    "ubLinks": 7000000,
+    "ubTransceivers": 14000000,
+    "roPorts": 1000000,
+    "roTiers": 4,
+    "roSwitches": 109375,
+    "roLinks": 4000000,
+    "roTier1": 31250,
+    "roTier2": 31250,
+    "roTier3": 31250,
+    "roTier4": 15625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 266.66666666666663,
+    "hardFitPerNpu.ub-switch": 66.67839999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3383.940304761904,
+    "hardPerHour": 1.6919701523809518
+   }
+  },
+  {
+   "id": "a950-ub2-384-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 384,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 384,
+    "nodes": 48,
+    "cpus": 192,
+    "cabinets": 6,
+    "pods": 1,
+    "commCabinets": 2,
+    "l1": 336,
+    "l2": 112,
+    "ubLinks": 5376,
+    "ubTransceivers": 10752,
+    "roPorts": 768,
+    "roTiers": 2,
+    "roSwitches": 36,
+    "roLinks": 1536,
+    "roTier1": 24,
+    "roTier2": 12,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 66.66666666666666,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.357142857142857,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3224.4047619047615,
+    "hardPerHour": 0.0012381714285714285
+   }
+  },
+  {
+   "id": "a950-ub2-384-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 384,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 384,
+    "nodes": 48,
+    "cpus": 192,
+    "cabinets": 6,
+    "pods": 1,
+    "commCabinets": 32,
+    "l1": 336,
+    "l2": 2394,
+    "ubLinks": 5376,
+    "ubTransceivers": 10752,
+    "roPorts": 768,
+    "roTiers": 2,
+    "roSwitches": 36,
+    "roLinks": 1536,
+    "roTier1": 24,
+    "roTier2": 12,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 406.24999999999994,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.357142857142857,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3563.988095238095,
+    "hardPerHour": 0.0013685714285714284
+   }
+  },
+  {
+   "id": "a950-ub2-1000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 1000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 1000,
+    "nodes": 125,
+    "cpus": 500,
+    "cabinets": 16,
+    "pods": 1,
+    "commCabinets": 4,
+    "l1": 875,
+    "l2": 294,
+    "ubLinks": 14000,
+    "ubTransceivers": 28000,
+    "roPorts": 2000,
+    "roTiers": 2,
+    "roSwitches": 95,
+    "roLinks": 4000,
+    "roTier1": 63,
+    "roTier2": 32,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 136.5333333333333,
+    "hardFitPerNpu.ub-switch": 66.79999999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.428571428571428,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3227.809523809523,
+    "hardPerHour": 0.003227809523809523
+   }
+  },
+  {
+   "id": "a950-ub2-1000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 1000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 1000,
+    "nodes": 125,
+    "cpus": 500,
+    "cabinets": 16,
+    "pods": 1,
+    "commCabinets": 32,
+    "l1": 875,
+    "l2": 2394,
+    "ubLinks": 14000,
+    "ubTransceivers": 28000,
+    "roPorts": 2000,
+    "roTiers": 2,
+    "roSwitches": 95,
+    "roLinks": 4000,
+    "roTier1": 63,
+    "roTier2": 32,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 136.5333333333333,
+    "hardFitPerNpu.ub-switch": 186.79999999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 5.428571428571428,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3347.809523809523,
+    "hardPerHour": 0.003347809523809523
+   }
+  },
+  {
+   "id": "a950-ub2-8192-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 8192,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 8192,
+    "nodes": 1024,
+    "cpus": 4096,
+    "cabinets": 128,
+    "pods": 1,
+    "commCabinets": 32,
+    "l1": 7168,
+    "l2": 2394,
+    "ubLinks": 114688,
+    "ubTransceivers": 229376,
+    "roPorts": 16384,
+    "roTiers": 3,
+    "roSwitches": 1280,
+    "roLinks": 49152,
+    "roTier1": 512,
+    "roTier2": 512,
+    "roTier3": 256,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 66.69921874999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.571428571428566,
+    "hardFitPerNpuTotal": 3237.5325520833326,
+    "hardPerHour": 0.02652186666666666
+   }
+  },
+  {
+   "id": "a950-ub2-8192-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 8192,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 8192,
+    "nodes": 1024,
+    "cpus": 4096,
+    "cabinets": 128,
+    "pods": 1,
+    "commCabinets": 32,
+    "l1": 7168,
+    "l2": 2394,
+    "ubLinks": 114688,
+    "ubTransceivers": 229376,
+    "roPorts": 16384,
+    "roTiers": 3,
+    "roSwitches": 1280,
+    "roLinks": 49152,
+    "roTier1": 512,
+    "roTier2": 512,
+    "roTier3": 256,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 66.69921874999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.571428571428566,
+    "hardFitPerNpuTotal": 3237.5325520833326,
+    "hardPerHour": 0.02652186666666666
+   }
+  },
+  {
+   "id": "a950-ub2-10000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 10000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 157,
+    "pods": 2,
+    "commCabinets": 40,
+    "l1": 8750,
+    "l2": 2926,
+    "ubLinks": 140000,
+    "ubTransceivers": 280000,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.ub-switch": 66.71999999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.931428571428569,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3238.1961904761906,
+    "hardPerHour": 0.032381961904761905
+   }
+  },
+  {
+   "id": "a950-ub2-10000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 10000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 157,
+    "pods": 2,
+    "commCabinets": 64,
+    "l1": 8750,
+    "l2": 4788,
+    "ubLinks": 140000,
+    "ubTransceivers": 280000,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.ub-switch": 77.35999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.931428571428569,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3248.8361904761905,
+    "hardPerHour": 0.032488361904761905
+   }
+  },
+  {
+   "id": "a950-ub2-12345-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 12345,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 12345,
+    "nodes": 1544,
+    "cpus": 6176,
+    "cabinets": 193,
+    "pods": 2,
+    "commCabinets": 49,
+    "l1": 10808,
+    "l2": 3612,
+    "ubLinks": 172928,
+    "ubTransceivers": 345856,
+    "roPorts": 24690,
+    "roTiers": 3,
+    "roSwitches": 1930,
+    "roLinks": 74070,
+    "roTier1": 772,
+    "roTier2": 772,
+    "roTier3": 386,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.76117186445254,
+    "hardFitPerNpu.node": 546.9766437154042,
+    "hardFitPerNpu.cabinet": 133.408937491562,
+    "hardFitPerNpu.ub-switch": 66.7476711219117,
+    "hardFitPerNpu.ub-link": 66.704468745781,
+    "hardFitPerNpu.roce-switch": 8.933634207024241,
+    "hardFitPerNpu.roce-link": 28.571428571428562,
+    "hardFitPerNpuTotal": 3238.103955717564,
+    "hardPerHour": 0.03997439333333333
+   }
+  },
+  {
+   "id": "a950-ub2-12345-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 12345,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 12345,
+    "nodes": 1544,
+    "cpus": 6176,
+    "cabinets": 193,
+    "pods": 2,
+    "commCabinets": 64,
+    "l1": 10808,
+    "l2": 4788,
+    "ubLinks": 172928,
+    "ubTransceivers": 345856,
+    "roPorts": 24690,
+    "roTiers": 3,
+    "roSwitches": 1930,
+    "roLinks": 74070,
+    "roTier1": 772,
+    "roTier2": 772,
+    "roTier3": 386,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.76117186445254,
+    "hardFitPerNpu.node": 546.9766437154042,
+    "hardFitPerNpu.cabinet": 133.408937491562,
+    "hardFitPerNpu.ub-switch": 72.19117051437829,
+    "hardFitPerNpu.ub-link": 66.704468745781,
+    "hardFitPerNpu.roce-switch": 8.933634207024241,
+    "hardFitPerNpu.roce-link": 28.571428571428562,
+    "hardFitPerNpuTotal": 3243.5474551100306,
+    "hardPerHour": 0.04004159333333333
+   }
+  },
+  {
+   "id": "a950-ub2-20000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 20000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 20000,
+    "nodes": 2500,
+    "cpus": 10000,
+    "cabinets": 313,
+    "pods": 3,
+    "commCabinets": 79,
+    "l1": 17500,
+    "l2": 5845,
+    "ubLinks": 280000,
+    "ubTransceivers": 560000,
+    "roPorts": 40000,
+    "roTiers": 3,
+    "roSwitches": 3125,
+    "roLinks": 120000,
+    "roTier1": 1250,
+    "roTier2": 1250,
+    "roTier3": 625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.54666666666665,
+    "hardFitPerNpu.ub-switch": 66.69999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3237.746666666667,
+    "hardPerHour": 0.06475493333333333
+   }
+  },
+  {
+   "id": "a950-ub2-20000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 20000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 20000,
+    "nodes": 2500,
+    "cpus": 10000,
+    "cabinets": 313,
+    "pods": 3,
+    "commCabinets": 96,
+    "l1": 17500,
+    "l2": 7182,
+    "ubLinks": 280000,
+    "ubTransceivers": 560000,
+    "roPorts": 40000,
+    "roTiers": 3,
+    "roSwitches": 3125,
+    "roLinks": 120000,
+    "roTier1": 1250,
+    "roTier2": 1250,
+    "roTier3": 625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.54666666666665,
+    "hardFitPerNpu.ub-switch": 70.51999999999998,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.928571428571427,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3241.566666666666,
+    "hardPerHour": 0.06483133333333332
+   }
+  },
+  {
+   "id": "a950-ub2-50000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 50000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 50000,
+    "nodes": 6250,
+    "cpus": 25000,
+    "cabinets": 782,
+    "pods": 7,
+    "commCabinets": 196,
+    "l1": 43750,
+    "l2": 14616,
+    "ubLinks": 700000,
+    "ubTransceivers": 1400000,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 10938,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 1563,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.46133333333333,
+    "hardFitPerNpu.ub-switch": 66.704,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.500571428571428,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3250.761142857142,
+    "hardPerHour": 0.1625380571428571
+   }
+  },
+  {
+   "id": "a950-ub2-50000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 50000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 50000,
+    "nodes": 6250,
+    "cpus": 25000,
+    "cabinets": 782,
+    "pods": 7,
+    "commCabinets": 224,
+    "l1": 43750,
+    "l2": 16758,
+    "ubLinks": 700000,
+    "ubTransceivers": 1400000,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 10938,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 1563,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.46133333333333,
+    "hardFitPerNpu.ub-switch": 69.15199999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.500571428571428,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3253.209142857142,
+    "hardPerHour": 0.1626604571428571
+   }
+  },
+  {
+   "id": "a950-ub2-100000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 100000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 1563,
+    "pods": 13,
+    "commCabinets": 391,
+    "l1": 87500,
+    "l2": 29225,
+    "ubLinks": 1400000,
+    "ubTransceivers": 2800000,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 21875,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 6250,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.37599999999998,
+    "hardFitPerNpu.ub-switch": 66.69999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3250.6712380952376,
+    "hardPerHour": 0.32506712380952374
+   }
+  },
+  {
+   "id": "a950-ub2-100000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 100000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 1563,
+    "pods": 13,
+    "commCabinets": 416,
+    "l1": 87500,
+    "l2": 31122,
+    "ubLinks": 1400000,
+    "ubTransceivers": 2800000,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 21875,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 6250,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.37599999999998,
+    "hardFitPerNpu.ub-switch": 67.78399999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3251.7552380952375,
+    "hardPerHour": 0.32517552380952375
+   }
+  },
+  {
+   "id": "a950-ub2-200000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 200000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 100000,
+    "cabinets": 3125,
+    "pods": 25,
+    "commCabinets": 782,
+    "l1": 175000,
+    "l2": 58450,
+    "ubLinks": 2800000,
+    "ubTransceivers": 5600000,
+    "roPorts": 400000,
+    "roTiers": 4,
+    "roSwitches": 43750,
+    "roLinks": 1600000,
+    "roTier1": 12500,
+    "roTier2": 12500,
+    "roTier3": 12500,
+    "roTier4": 6250,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 66.69999999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3250.628571428571,
+    "hardPerHour": 0.6501257142857142
+   }
+  },
+  {
+   "id": "a950-ub2-200000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 200000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 100000,
+    "cabinets": 3125,
+    "pods": 25,
+    "commCabinets": 800,
+    "l1": 175000,
+    "l2": 59850,
+    "ubLinks": 2800000,
+    "ubTransceivers": 5600000,
+    "roPorts": 400000,
+    "roTiers": 4,
+    "roSwitches": 43750,
+    "roLinks": 1600000,
+    "roTier1": 12500,
+    "roTier2": 12500,
+    "roTier3": 12500,
+    "roTier4": 6250,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.ub-switch": 67.1,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3251.0285714285706,
+    "hardPerHour": 0.6502057142857142
+   }
+  },
+  {
+   "id": "a950-ub2-500000-proportional",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 500000,
+    "fabricFill": "proportional"
+   },
+   "expected": {
+    "npus": 500000,
+    "nodes": 62500,
+    "cpus": 250000,
+    "cabinets": 7813,
+    "pods": 62,
+    "commCabinets": 1954,
+    "l1": 437500,
+    "l2": 146118,
+    "ubLinks": 7000000,
+    "ubTransceivers": 14000000,
+    "roPorts": 1000000,
+    "roTiers": 4,
+    "roSwitches": 109375,
+    "roLinks": 4000000,
+    "roTier1": 31250,
+    "roTier2": 31250,
+    "roTier3": 31250,
+    "roTier4": 15625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.34186666666665,
+    "hardFitPerNpu.ub-switch": 66.69919999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3250.636304761904,
+    "hardPerHour": 1.625318152380952
+   }
+  },
+  {
+   "id": "a950-ub2-500000-full-pod",
+   "group": "template",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 500000,
+    "fabricFill": "full-pod"
+   },
+   "expected": {
+    "npus": 500000,
+    "nodes": 62500,
+    "cpus": 250000,
+    "cabinets": 7813,
+    "pods": 62,
+    "commCabinets": 1984,
+    "l1": 437500,
+    "l2": 148428,
+    "ubLinks": 7000000,
+    "ubTransceivers": 14000000,
+    "roPorts": 1000000,
+    "roTiers": 4,
+    "roSwitches": 109375,
+    "roLinks": 4000000,
+    "roTier1": 31250,
+    "roTier2": 31250,
+    "roTier3": 31250,
+    "roTier4": 15625,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.34186666666665,
+    "hardFitPerNpu.ub-switch": 66.96319999999999,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 12.499999999999998,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3250.900304761904,
+    "hardPerHour": 1.625450152380952
+   }
+  },
+  {
+   "id": "calibration-384",
+   "group": "calibration",
+   "inputs": {
+    "npus": 384
+   },
+   "expected": {
+    "hardPerHour": 0.0012799999999999997,
+    "catalogHardPerHour": 0.00128
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "calibration-3840",
+   "group": "calibration",
+   "inputs": {
+    "npus": 3840
+   },
+   "expected": {
+    "hardPerHour": 0.012799999999999999,
+    "catalogHardPerHour": 0.012799999999999999
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "calibration-38400",
+   "group": "calibration",
+   "inputs": {
+    "npus": 38400
+   },
+   "expected": {
+    "hardPerHour": 0.12799999999999997,
+    "catalogHardPerHour": 0.12799999999999997
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "calibration-99840",
+   "group": "calibration",
+   "inputs": {
+    "npus": 99840
+   },
+   "expected": {
+    "hardPerHour": 0.33279999999999993,
+    "catalogHardPerHour": 0.33279999999999993
+   },
+   "tolerance": {
+    "rel": 1e-09
+   }
+  },
+  {
+   "id": "fit-CORE-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "CORE-hard"
+   },
+   "expected": {
+    "fitPerUnit": 466.6666666666666,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-CORE-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "CORE-slow"
+   },
+   "expected": {
+    "fitPerUnit": 14.163372859025031,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-CORE-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "CORE-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 41.06280193236715,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-SRAM-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "SRAM-hard"
+   },
+   "expected": {
+    "fitPerUnit": 166.6666666666666,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-SRAM-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "SRAM-slow"
+   },
+   "expected": {
+    "fitPerUnit": 0.8430579082752995,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-SRAM-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "SRAM-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-IOD-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "IOD-hard"
+   },
+   "expected": {
+    "fitPerUnit": 199.99999999999997,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-IOD-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "IOD-slow"
+   },
+   "expected": {
+    "fitPerUnit": 4.046677959721438,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-IOD-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "IOD-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 1.0305969095676324,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MODULE-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "MODULE-hard"
+   },
+   "expected": {
+    "fitPerUnit": 169.99999999999994,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MODULE-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "MODULE-slow"
+   },
+   "expected": {
+    "fitPerUnit": 1.719838132881611,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MODULE-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "MODULE-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMT-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMT-hard"
+   },
+   "expected": {
+    "fitPerUnit": 399.99999999999994,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMT-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMT-slow"
+   },
+   "expected": {
+    "fitPerUnit": 11.145779669968281,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMT-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMT-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMP-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMP-hard"
+   },
+   "expected": {
+    "fitPerUnit": 173.33333333333331,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMP-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMP-slow"
+   },
+   "expected": {
+    "fitPerUnit": 0.724475678547938,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-MEMP-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "MEMP-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-NIC-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "NIC-hard"
+   },
+   "expected": {
+    "fitPerUnit": 100.00000000000001,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-NIC-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "NIC-slow"
+   },
+   "expected": {
+    "fitPerUnit": 1.7929179740026897,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-NIC-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "NIC-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 1.0058431102498928,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-OPT-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-hard"
+   },
+   "expected": {
+    "fitPerUnit": 4.761904761904761,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-OPT-hard@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-hard@roce"
+   },
+   "expected": {
+    "fitPerUnit": 4.761904761904761,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-OPT-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-slow"
+   },
+   "expected": {
+    "fitPerUnit": 0.17075409276216094,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-OPT-slow@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-slow@roce"
+   },
+   "expected": {
+    "fitPerUnit": 0.17075409276216094,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-OPT-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-OPT-sdc@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "OPT-sdc@roce"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 0.07142857142857142
+   }
+  },
+  {
+   "id": "fit-BOXIO-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "BOXIO-hard"
+   },
+   "expected": {
+    "fitPerUnit": 373.3333333333333,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-BOXIO-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "BOXIO-slow"
+   },
+   "expected": {
+    "fitPerUnit": 3.3467802181383544,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-BOXIO-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "BOXIO-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 3.7551476115996,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-FABRIC-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-hard"
+   },
+   "expected": {
+    "fitPerUnit": 57.14285714285713,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-FABRIC-hard@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-hard@roce"
+   },
+   "expected": {
+    "fitPerUnit": 57.14285714285713,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-FABRIC-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-slow"
+   },
+   "expected": {
+    "fitPerUnit": 1.0245245565729657,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-FABRIC-slow@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-slow@roce"
+   },
+   "expected": {
+    "fitPerUnit": 1.0245245565729657,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-FABRIC-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.5747674915713672,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-FABRIC-sdc@roce",
+   "group": "fit",
+   "inputs": {
+    "id": "FABRIC-sdc@roce"
+   },
+   "expected": {
+    "fitPerUnit": 0.5747674915713672,
+    "cardsPerUnit": 0.8571428571428571
+   }
+  },
+  {
+   "id": "fit-CPU-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "CPU-hard"
+   },
+   "expected": {
+    "fitPerUnit": 333.3333333333333,
+    "cardsPerUnit": 2.0
+   }
+  },
+  {
+   "id": "fit-CPU-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "CPU-slow"
+   },
+   "expected": {
+    "fitPerUnit": 4.891649413388544,
+    "cardsPerUnit": 2.0
+   }
+  },
+  {
+   "id": "fit-CPU-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "CPU-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 2.0
+   }
+  },
+  {
+   "id": "fit-DDR-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "DDR-hard"
+   },
+   "expected": {
+    "fitPerUnit": 1599.9999999999998,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-DDR-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "DDR-slow"
+   },
+   "expected": {
+    "fitPerUnit": 23.479917184265005,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-DDR-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "DDR-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-SSD-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "SSD-hard"
+   },
+   "expected": {
+    "fitPerUnit": 1333.3333333333333,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-SSD-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "SSD-slow"
+   },
+   "expected": {
+    "fitPerUnit": 39.13319530710835,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-SSD-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "SSD-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-POWER-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "POWER-hard"
+   },
+   "expected": {
+    "fitPerUnit": 5333.333333333333,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-POWER-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "POWER-slow"
+   },
+   "expected": {
+    "fitPerUnit": 78.2663906142167,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-POWER-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "POWER-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-COOL-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "COOL-hard"
+   },
+   "expected": {
+    "fitPerUnit": 3199.9999999999995,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-COOL-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "COOL-slow"
+   },
+   "expected": {
+    "fitPerUnit": 234.79917184265008,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-COOL-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "COOL-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 32.0
+   }
+  },
+  {
+   "id": "fit-MGMT-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "MGMT-hard"
+   },
+   "expected": {
+    "fitPerUnit": 1066.6666666666665,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-MGMT-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "MGMT-slow"
+   },
+   "expected": {
+    "fitPerUnit": 4.695983436853002,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-MGMT-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "MGMT-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0.0,
+    "cardsPerUnit": 8.0
+   }
+  },
+  {
+   "id": "fit-STORAGE-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "STORAGE-hard"
+   },
+   "expected": {
+    "fitPerUnit": 133.33333333333331,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-STORAGE-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "STORAGE-slow"
+   },
+   "expected": {
+    "fitPerUnit": 3.913319530710835,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-STORAGE-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "STORAGE-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 0,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-UNKNOWN-hard",
+   "group": "fit",
+   "inputs": {
+    "id": "UNKNOWN-hard"
+   },
+   "expected": {
+    "fitPerUnit": 410.00000000000006,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-UNKNOWN-slow",
+   "group": "fit",
+   "inputs": {
+    "id": "UNKNOWN-slow"
+   },
+   "expected": {
+    "fitPerUnit": 6.016728778467909,
+    "cardsPerUnit": 1
+   }
+  },
+  {
+   "id": "fit-UNKNOWN-sdc",
+   "group": "fit",
+   "inputs": {
+    "id": "UNKNOWN-sdc"
+   },
+   "expected": {
+    "fitPerUnit": 4.0699812668268,
+    "cardsPerUnit": 1
+   }
+  }
+ ]
+}

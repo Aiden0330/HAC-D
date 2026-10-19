@@ -1,0 +1,77 @@
+<svg class="viz" id="chart-iso" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 412" width="100%" role="img"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+@media (prefers-color-scheme: dark) { svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; } }
+:root[data-theme="light"] svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; } svg.viz .lab { font-size: 10.5px; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .ref { stroke: var(--ink2); stroke-width: 1; } svg.viz .hit { fill: transparent; pointer-events: all; }
+</style><rect width="960" height="412" fill="var(--surface)" rx="8"/><text x="60" y="20" class="ttl">图 1 · 硬件与恢复的等目标曲线：恢复因子 g（所有恢复阶段 × g）对应为满足 98.5 % 所需的硬件因子 f（所有类故障率 × f）；f &gt; 1 余量，f &lt; 1 任务</text><line x1="60" x2="78" y1="40" y2="40" stroke="var(--s1)" stroke-width="2.5" stroke-linecap="round"/><text x="84" y="44" class="t2">10 万卡 等目标线 f(g)</text><line x1="235.39999999999998" x2="253.39999999999998" y1="40" y2="40" stroke="var(--s2)" stroke-width="2.5" stroke-linecap="round"/><text x="259.4" y="44" class="t2">20 万卡 等目标线 f(g)</text><line x1="410.79999999999995" x2="428.79999999999995" y1="40" y2="40" stroke="var(--s3)" stroke-width="2.5" stroke-linecap="round"/><text x="434.79999999999995" y="44" class="t2">50 万卡 等目标线 f(g)</text><line x1="60" x2="938" y1="340.22774287058076" y2="340.22774287058076" class="grid"/><text x="52" y="344.22774287058076" text-anchor="end" class="m tick">×0.1</text><line x1="60" x2="938" y1="297.4472047686237" y2="297.4472047686237" class="grid"/><text x="52" y="301.4472047686237" text-anchor="end" class="m tick">×0.2</text><line x1="60" x2="938" y1="240.89440953724738" y2="240.89440953724738" class="grid"/><text x="52" y="244.89440953724738" text-anchor="end" class="m tick">×0.5</text><line x1="60" x2="938" y1="198.11387143529035" y2="198.11387143529035" class="ref"/><text x="52" y="202.11387143529035" text-anchor="end" class="m tick">×1</text><line x1="60" x2="938" y1="155.33333333333331" y2="155.33333333333331" class="grid"/><text x="52" y="159.33333333333331" text-anchor="end" class="m tick">×2</text><line x1="60" x2="938" y1="98.780538101957" y2="98.780538101957" class="grid"/><text x="52" y="102.780538101957" text-anchor="end" class="m tick">×5</text><line x1="60" x2="938" y1="56" y2="56" class="grid"/><text x="52" y="60" text-anchor="end" class="m tick">×10</text><line x1="60" x2="60" y1="56" y2="354" class="grid"/><text x="60" y="370" text-anchor="middle" class="m tick">×0.05</text><line x1="224.97780209459648" x2="224.97780209459648" y1="56" y2="354" class="grid"/><text x="224.97780209459648" y="370" text-anchor="middle" class="m tick">×0.1</text><line x1="389.95560418919297" x2="389.95560418919297" y1="56" y2="354" class="grid"/><text x="389.95560418919297" y="370" text-anchor="middle" class="m tick">×0.2</text><line x1="486.46143186592803" x2="486.46143186592803" y1="56" y2="354" class="grid"/><text x="486.46143186592803" y="370" text-anchor="middle" class="m tick">×0.3</text><line x1="608.044395810807" x2="608.044395810807" y1="56" y2="354" class="grid"/><text x="608.044395810807" y="370" text-anchor="middle" class="m tick">×0.5</text><line x1="688.1290468351071" x2="688.1290468351071" y1="56" y2="354" class="grid"/><text x="688.1290468351071" y="370" text-anchor="middle" class="m tick">×0.7</text><line x1="773.0221979054036" x2="773.0221979054036" y1="56" y2="354" class="ref"/><text x="773.0221979054036" y="370" text-anchor="middle" class="m tick">×1</text><line x1="869.5280255821388" x2="869.5280255821388" y1="56" y2="354" class="grid"/><text x="869.5280255821388" y="370" text-anchor="middle" class="m tick">×1.5</text><line x1="938" x2="938" y1="56" y2="354" class="grid"/><text x="938" y="370" text-anchor="middle" class="m tick">×2</text><text x="499" y="404" text-anchor="middle" class="m">恢复因子 g = 方案的每次事件平均停顿 ÷ 基线（264 s）；对数轴，越靠左恢复越快</text><text x="499" y="388" text-anchor="middle" class="m">■ 基线（g = 1） ● 最新 AGREE 集 ○ 原有 AGREE 集 ◆ 杠杆 / 全部 23 项；点落在各自规模的曲线附近：横向 = 机制把恢复压到哪里，纵向 = 硬件还须改多少</text><text transform="translate(16 205) rotate(-90)" text-anchor="middle" class="m">硬件因子 f（允许 FIT ÷ 当前 FIT，对数轴）</text><text x="66" y="192.11387143529035" class="t2">f = 1：硬件保持现状即可达标</text><path d="M60.0 56.0 L225.0 85.6 L321.5 110.7 L390.0 128.6 L486.5 153.9 L554.9 171.9 L608.0 186.0 L688.1 207.3 L773.0 230.1 L869.5 256.5 L938.0 275.7" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/><circle cx="60.0" cy="56.0" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.05 → 平均停顿 13 s，硬件因子 f = 12.411（f · g = 0.621）"/><circle cx="225.0" cy="85.6" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.1 → 平均停顿 26 s，硬件因子 f = 6.192（f · g = 0.619）"/><circle cx="321.5" cy="110.7" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.15 → 平均停顿 40 s，硬件因子 f = 4.119（f · g = 0.618）"/><circle cx="390.0" cy="128.6" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.2 → 平均停顿 53 s，硬件因子 f = 3.083（f · g = 0.617）"/><circle cx="486.5" cy="153.9" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.3 → 平均停顿 79 s，硬件因子 f = 2.047（f · g = 0.614）"/><circle cx="554.9" cy="171.9" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.4 → 平均停顿 106 s，硬件因子 f = 1.528（f · g = 0.611）"/><circle cx="608.0" cy="186.0" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.5 → 平均停顿 132 s，硬件因子 f = 1.217（f · g = 0.609）"/><circle cx="688.1" cy="207.3" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 0.7 → 平均停顿 185 s，硬件因子 f = 0.862（f · g = 0.603）"/><circle cx="773.0" cy="230.1" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 1 → 平均停顿 264 s，硬件因子 f = 0.596（f · g = 0.596）"/><circle cx="869.5" cy="256.5" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 1.5 → 平均停顿 396 s，硬件因子 f = 0.388（f · g = 0.582）"/><circle cx="938.0" cy="275.7" r="2.5" fill="var(--s1)" data-tip="10 万卡 等目标线
+恢复 × 2 → 平均停顿 529 s，硬件因子 f = 0.285（f · g = 0.569）"/><g data-tip="10 万卡 · 基线
+仅改硬件：全部类 × 0.596
+恢复因子 g_eff = 1.000（平均停顿 264 s），硬件因子 f = 0.596 → 允许 FIT = 当前 × 0.60"><rect x="768.0" y="225.1" width="10" height="10" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="10 万卡 · 原有 AGREE 集（2）
+R-REPLAY + R-PROCESS：A_op 98.86 %
+恢复因子 g_eff = 0.457（平均停顿 121 s），硬件因子 f = 1.334 → 允许 FIT = 当前 × 1.33"><circle cx="586.5" cy="180.3" r="5" fill="var(--surface)" stroke="var(--s1)" stroke-width="2"/></g><g data-tip="10 万卡 · 最新 AGREE 集（2）
+2 项：A_op 98.73 %
+恢复因子 g_eff = 0.508（平均停顿 134 s），硬件因子 f = 1.195 → 允许 FIT = 当前 × 1.19"><circle cx="612.0" cy="187.1" r="5.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="10 万卡 · 全部 23 项
+A_op 99.59 %
+恢复因子 g_eff = 0.162（平均停顿 43 s），硬件因子 f = 3.970 → 允许 FIT = 当前 × 3.97"><circle cx="339.4" cy="113.0" r="5.5" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="10 万卡 · + 自动 60 s
+最新 AGREE 集 + 自动尝试 60 s：A_op 99.44 %
+恢复因子 g_eff = 0.223（平均停顿 59 s），硬件因子 f = 2.772 → 允许 FIT = 当前 × 2.77"><path d="M415.5 129.2 L421.5 135.2 L415.5 141.2 L409.5 135.2 Z" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="10 万卡 · + 三项杠杆
+最新 AGREE 集 + 自动 60 s、成功率 99.9 %、人工 30 min：A_op 99.49 %
+恢复因子 g_eff = 0.202（平均停顿 53 s），硬件因子 f = 3.057 → 允许 FIT = 当前 × 3.06"><path d="M392.5 123.2 L398.5 129.2 L392.5 135.2 L386.5 129.2 Z" fill="var(--s1)" stroke="var(--surface)" stroke-width="1.5"/></g><text x="781.0" y="234.1" class="lab" text-anchor="start" fill="var(--s1)">基线 ×0.60</text><text x="604.0" y="179.1" class="lab" text-anchor="end" fill="var(--s1)">最新 AGREE 集（2） ×1.19</text><text x="400.5" y="133.2" class="lab" text-anchor="start" fill="var(--s1)">+ 三项杠杆 ×3.06</text><path d="M60.0 85.6 L225.0 128.6 L321.5 153.9 L390.0 171.9 L486.5 197.4 L554.9 215.6 L608.0 229.9 L688.1 251.7 L773.0 275.2 L869.5 302.9 L938.0 323.5" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/><circle cx="60.0" cy="85.6" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.05 → 平均停顿 13 s，硬件因子 f = 6.194（f · g = 0.310）"/><circle cx="225.0" cy="128.6" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.1 → 平均停顿 26 s，硬件因子 f = 3.085（f · g = 0.308）"/><circle cx="321.5" cy="153.9" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.15 → 平均停顿 40 s，硬件因子 f = 2.049（f · g = 0.307）"/><circle cx="390.0" cy="171.9" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.2 → 平均停顿 53 s，硬件因子 f = 1.530（f · g = 0.306）"/><circle cx="486.5" cy="197.4" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.3 → 平均停顿 79 s，硬件因子 f = 1.012（f · g = 0.304）"/><circle cx="554.9" cy="215.6" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.4 → 平均停顿 106 s，硬件因子 f = 0.753（f · g = 0.301）"/><circle cx="608.0" cy="229.9" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.5 → 平均停顿 132 s，硬件因子 f = 0.598（f · g = 0.299）"/><circle cx="688.1" cy="251.7" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 0.7 → 平均停顿 185 s，硬件因子 f = 0.420（f · g = 0.294）"/><circle cx="773.0" cy="275.2" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 1 → 平均停顿 264 s，硬件因子 f = 0.287（f · g = 0.287）"/><circle cx="869.5" cy="302.9" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 1.5 → 平均停顿 396 s，硬件因子 f = 0.183（f · g = 0.274）"/><circle cx="938.0" cy="323.5" r="2.5" fill="var(--s2)" data-tip="20 万卡 等目标线
+恢复 × 2 → 平均停顿 529 s，硬件因子 f = 0.131（f · g = 0.262）"/><g data-tip="20 万卡 · 基线
+仅改硬件：全部类 × 0.287
+恢复因子 g_eff = 1.000（平均停顿 264 s），硬件因子 f = 0.287 → 允许 FIT = 当前 × 0.29"><rect x="768.0" y="270.2" width="10" height="10" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="20 万卡 · 原有 AGREE 集（4）
+R-REPLAY + R-PROCESS + D-HARD + R-ELASTIC：A_op 98.34 %
+恢复因子 g_eff = 0.334（平均停顿 88 s），硬件因子 f = 0.893 → 允许 FIT = 当前 × 0.89"><circle cx="511.7" cy="205.1" r="5" fill="var(--surface)" stroke="var(--s2)" stroke-width="2"/></g><g data-tip="20 万卡 · 最新 AGREE 集（9）
+9 项：A_op 99.05 %
+恢复因子 g_eff = 0.188（平均停顿 50 s），硬件因子 f = 1.650 → 允许 FIT = 当前 × 1.65"><circle cx="374.7" cy="167.2" r="5.5" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="20 万卡 · 全部 23 项
+A_op 99.19 %
+恢复因子 g_eff = 0.162（平均停顿 43 s），硬件因子 f = 1.941 → 允许 FIT = 当前 × 1.94"><circle cx="339.4" cy="157.2" r="5.5" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="20 万卡 · + 自动 60 s
+最新 AGREE 集 + 自动尝试 60 s：A_op 99.54 %
+恢复因子 g_eff = 0.092（平均停顿 24 s），硬件因子 f = 3.436 → 允许 FIT = 当前 × 3.44"><path d="M205.1 115.9 L211.1 121.9 L205.1 127.9 L199.1 121.9 Z" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="20 万卡 · + 三项杠杆
+最新 AGREE 集 + 自动 60 s、成功率 99.9 %、人工 30 min：A_op 99.58 %
+恢复因子 g_eff = 0.082（平均停顿 22 s），硬件因子 f = 3.845 → 允许 FIT = 当前 × 3.84"><path d="M178.8 109.0 L184.8 115.0 L178.8 121.0 L172.8 115.0 Z" fill="var(--s2)" stroke="var(--surface)" stroke-width="1.5"/></g><text x="781.0" y="279.2" class="lab" text-anchor="start" fill="var(--s2)">基线 ×0.29</text><text x="366.7" y="159.2" class="lab" text-anchor="end" fill="var(--s2)">最新 AGREE 集（9） ×1.65</text><text x="186.8" y="119.0" class="lab" text-anchor="start" fill="var(--s2)">+ 三项杠杆 ×3.84</text><path d="M60.0 142.4 L225.0 185.7 L321.5 211.3 L390.0 229.6 L486.5 255.8 L554.9 274.7 L608.0 289.7 L688.1 312.9 L773.0 338.7 L869.5 354.0 L938.0 354.0" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/><circle cx="60.0" cy="142.4" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.05 → 平均停顿 13 s，硬件因子 f = 2.465（f · g = 0.123）"/><circle cx="225.0" cy="185.7" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.1 → 平均停顿 26 s，硬件因子 f = 1.222（f · g = 0.122）"/><circle cx="321.5" cy="211.3" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.15 → 平均停顿 40 s，硬件因子 f = 0.807（f · g = 0.121）"/><circle cx="390.0" cy="229.6" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.2 → 平均停顿 53 s，硬件因子 f = 0.600（f · g = 0.120）"/><circle cx="486.5" cy="255.8" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.3 → 平均停顿 79 s，硬件因子 f = 0.393（f · g = 0.118）"/><circle cx="554.9" cy="274.7" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.4 → 平均停顿 106 s，硬件因子 f = 0.289（f · g = 0.116）"/><circle cx="608.0" cy="289.7" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.5 → 平均停顿 132 s，硬件因子 f = 0.227（f · g = 0.113）"/><circle cx="688.1" cy="312.9" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 0.7 → 平均停顿 185 s，硬件因子 f = 0.156（f · g = 0.109）"/><circle cx="773.0" cy="338.7" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 1 → 平均停顿 264 s，硬件因子 f = 0.102（f · g = 0.102）"/><circle cx="869.5" cy="354.0" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 1.5 → 平均停顿 396 s，硬件因子 f = 0.061（f · g = 0.092）"/><circle cx="938.0" cy="354.0" r="2.5" fill="var(--s3)" data-tip="50 万卡 等目标线
+恢复 × 2 → 平均停顿 529 s，硬件因子 f = 0.040（f · g = 0.081）"/><g data-tip="50 万卡 · 基线
+仅改硬件：全部类 × 0.102
+恢复因子 g_eff = 1.000（平均停顿 264 s），硬件因子 f = 0.102 → 允许 FIT = 当前 × 0.10"><rect x="768.0" y="333.7" width="10" height="10" fill="var(--s3)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="50 万卡 · 原有 AGREE 集（4）
+R-REPLAY + R-PROCESS + D-HARD + R-ELASTIC：A_op 95.97 %
+恢复因子 g_eff = 0.334（平均停顿 88 s），硬件因子 f = 0.319 → 允许 FIT = 当前 × 0.32"><circle cx="511.7" cy="268.6" r="5" fill="var(--surface)" stroke="var(--s3)" stroke-width="2"/></g><g data-tip="50 万卡 · 最新 AGREE 集（12）
+12 项：A_op 97.98 %
+恢复因子 g_eff = 0.163（平均停顿 43 s），硬件因子 f = 0.716 → 允许 FIT = 当前 × 0.72"><circle cx="341.1" cy="218.8" r="5.5" fill="var(--s3)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="50 万卡 · 全部 23 项
+A_op 98.00 %
+恢复因子 g_eff = 0.162（平均停顿 43 s），硬件因子 f = 0.724 → 允许 FIT = 当前 × 0.72"><circle cx="339.4" cy="218.1" r="5.5" fill="var(--s3)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="50 万卡 · + 自动 60 s
+最新 AGREE 集 + 自动尝试 60 s：A_op 98.99 %
+恢复因子 g_eff = 0.081（平均停顿 21 s），硬件因子 f = 1.535 → 允许 FIT = 当前 × 1.53"><path d="M174.3 165.7 L180.3 171.7 L174.3 177.7 L168.3 171.7 Z" fill="var(--s3)" stroke="var(--surface)" stroke-width="1.5"/></g><g data-tip="50 万卡 · + 三项杠杆
+最新 AGREE 集 + 自动 60 s、成功率 99.9 %、人工 30 min：A_op 99.10 %
+恢复因子 g_eff = 0.072（平均停顿 19 s），硬件因子 f = 1.723 → 允许 FIT = 当前 × 1.72"><path d="M147.8 158.5 L153.8 164.5 L147.8 170.5 L141.8 164.5 Z" fill="var(--s3)" stroke="var(--surface)" stroke-width="1.5"/></g><text x="781.0" y="342.7" class="lab" text-anchor="start" fill="var(--s3)">基线 ×0.10</text><text x="333.1" y="232.8" class="lab" text-anchor="end" fill="var(--s3)">最新 AGREE 集（12） ×0.72</text><text x="155.8" y="168.5" class="lab" text-anchor="start" fill="var(--s3)">+ 三项杠杆 ×1.72</text></svg>

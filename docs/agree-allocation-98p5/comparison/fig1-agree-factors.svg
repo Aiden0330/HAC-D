@@ -1,0 +1,872 @@
+<svg class="viz" id="chart-heat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" role="img"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+@media (prefers-color-scheme: dark) { svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; } }
+:root[data-theme="light"] svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .ref { stroke: var(--ink2); stroke-width: 1; } svg.viz .hit { fill: transparent; pointer-events: all; } svg.viz .xh { pointer-events: none; } svg.viz .cellt { font-size: 11.5px; font-variant-numeric: tabular-nums; } svg.viz .onDark { fill: var(--surface); }
+</style><rect width="960" height="480" fill="var(--surface)" rx="8"/><text x="14" y="20" class="ttl">图 1 · AGREE 分配：各事件类相对自身预算的改进倍数 k（当前中断率 ÷ 允许中断率；红 = 须改进，蓝 = 有余量；带框 = 松弛再分配后仍须改进的硬件任务）</text><text x="256" y="48" text-anchor="middle" class="t2" style="font-weight:600">1 万卡</text><text x="454" y="48" text-anchor="middle" class="t2" style="font-weight:600">10 万卡</text><text x="652" y="48" text-anchor="middle" class="t2" style="font-weight:600">20 万卡</text><text x="850" y="48" text-anchor="middle" class="t2" style="font-weight:600">50 万卡</text><text x="184" y="65" text-anchor="middle" class="m">仅硬件</text><text x="232" y="65" text-anchor="middle" class="m">原有</text><text x="280" y="65" text-anchor="middle" class="m">新增</text><text x="328" y="65" text-anchor="middle" class="m">合并</text><text x="382" y="65" text-anchor="middle" class="m">仅硬件</text><text x="430" y="65" text-anchor="middle" class="m">原有</text><text x="478" y="65" text-anchor="middle" class="m">新增</text><text x="526" y="65" text-anchor="middle" class="m">合并</text><text x="580" y="65" text-anchor="middle" class="m">仅硬件</text><text x="628" y="65" text-anchor="middle" class="m">原有</text><text x="676" y="65" text-anchor="middle" class="m">新增</text><text x="724" y="65" text-anchor="middle" class="m">合并</text><text x="778" y="65" text-anchor="middle" class="m">仅硬件</text><text x="826" y="65" text-anchor="middle" class="m">原有</text><text x="874" y="65" text-anchor="middle" class="m">新增</text><text x="922" y="65" text-anchor="middle" class="m">合并</text><text x="14" y="87.5" class="t2" style="font-size:11px">CORE <tspan class="m" style="font-size:9.5px">NPU 芯片与内存</tspan></text><rect x="161" y="75" width="46" height="17" fill="var(--h2)" data-tip="CORE AI Core计算单元 · 1 万卡 · 仅改硬件（无机制）
+当前 0.034 pt，AGREE 预算 0.083 pt → k = 0.41（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 650 s"/><text x="184" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.41</text><rect x="209" y="75" width="46" height="17" fill="var(--h2)" data-tip="CORE AI Core计算单元 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.034 pt，AGREE 预算 0.083 pt → k = 0.41（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 650 s"/><text x="232" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.41</text><rect x="257" y="75" width="46" height="17" fill="var(--h2)" data-tip="CORE AI Core计算单元 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.034 pt，AGREE 预算 0.083 pt → k = 0.41（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 650 s"/><text x="280" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.41</text><rect x="305" y="75" width="46" height="17" fill="var(--h2)" data-tip="CORE AI Core计算单元 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.034 pt，AGREE 预算 0.083 pt → k = 0.41（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 650 s"/><text x="328" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.41</text><rect x="359" y="75" width="46" height="17" fill="var(--n3)" data-tip="CORE AI Core计算单元 · 10 万卡 · 仅改硬件（无机制）
+当前 0.335 pt，AGREE 预算 0.080 pt → k = 4.2（须改进）
+再分配后 k′ = 3.8：硬件任务，允许 FIT 124（当前 467）
+每次事件平均停顿 265 s，预算允许 63 s"/><rect x="360.5" y="76.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="76.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.2</text><rect x="407" y="75" width="46" height="17" fill="var(--h2)" data-tip="CORE AI Core计算单元 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.033 pt，AGREE 预算 0.080 pt → k = 0.41（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 26 s，预算允许 63 s"/><text x="430" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.41</text><rect x="455" y="75" width="46" height="17" fill="var(--n2)" data-tip="CORE AI Core计算单元 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.173 pt，AGREE 预算 0.081 pt → k = 2.1（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 63 s"/><text x="478" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">2.1</text><rect x="503" y="75" width="46" height="17" fill="var(--h1)" data-tip="CORE AI Core计算单元 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.047 pt，AGREE 预算 0.081 pt → k = 0.58（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 63 s"/><text x="526" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.58</text><rect x="557" y="75" width="46" height="17" fill="var(--n4)" data-tip="CORE AI Core计算单元 · 20 万卡 · 仅改硬件（无机制）
+当前 0.653 pt，AGREE 预算 0.077 pt → k = 8.8（须改进）
+再分配后 k′ = 8.7：硬件任务，允许 FIT 54（当前 467）
+每次事件平均停顿 265 s，预算允许 30 s"/><rect x="558.5" y="76.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="76.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.8</text><rect x="605" y="75" width="46" height="17" fill="var(--h3)" data-tip="CORE AI Core计算单元 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.018 pt，AGREE 预算 0.077 pt → k = 0.23（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 30 s"/><text x="628" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.23</text><rect x="653" y="75" width="46" height="17" fill="var(--n3)" data-tip="CORE AI Core计算单元 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.342 pt，AGREE 预算 0.079 pt → k = 4.3（须改进）
+再分配后 k′ = 2.9：硬件任务，允许 FIT 159（当前 467）
+每次事件平均停顿 135 s，预算允许 31 s"/><rect x="654.5" y="76.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="76.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.3</text><rect x="701" y="75" width="46" height="17" fill="var(--h3)" data-tip="CORE AI Core计算单元 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.018 pt，AGREE 预算 0.079 pt → k = 0.22（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 31 s"/><text x="724" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.22</text><rect x="755" y="75" width="46" height="17" fill="var(--n4)" data-tip="CORE AI Core计算单元 · 50 万卡 · 仅改硬件（无机制）
+当前 1.524 pt，AGREE 预算 0.070 pt → k = 24（须改进）
+再分配后 k′ = 24：硬件任务，允许 FIT 19（当前 467）
+每次事件平均停顿 265 s，预算允许 11 s"/><rect x="756.5" y="76.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="76.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">24</text><rect x="803" y="75" width="46" height="17" fill="var(--h1)" data-tip="CORE AI Core计算单元 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.043 pt，AGREE 预算 0.069 pt → k = 0.64（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 11 s"/><text x="826" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.64</text><rect x="851" y="75" width="46" height="17" fill="var(--n4)" data-tip="CORE AI Core计算单元 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.827 pt，AGREE 预算 0.074 pt → k = 12（须改进）
+再分配后 k′ = 8.3：硬件任务，允许 FIT 56（当前 467）
+每次事件平均停顿 135 s，预算允许 12 s"/><rect x="852.5" y="76.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="76.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="87.5" text-anchor="middle" class="cellt onDark" pointer-events="none">12</text><rect x="899" y="75" width="46" height="17" fill="var(--h1)" data-tip="CORE AI Core计算单元 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.044 pt，AGREE 预算 0.074 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 12 s"/><text x="922" y="87.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><text x="14" y="106.5" class="t2" style="font-size:11px">SRAM</text><rect x="161" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 1 万卡 · 仅改硬件（无机制）
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="184" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="232" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="280" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="328" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="94" width="46" height="17" fill="var(--n1)" data-tip="SRAM 片内SRAM/缓存 · 10 万卡 · 仅改硬件（无机制）
+当前 0.119 pt，AGREE 预算 0.080 pt → k = 1.51（须改进）
+再分配后 k′ = 1.35：硬件任务，允许 FIT 124（当前 167）
+每次事件平均停顿 265 s，预算允许 175 s"/><rect x="360.5" y="95.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="95.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="106.5" text-anchor="middle" class="cellt" pointer-events="none">1.51</text><rect x="407" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.080 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 26 s，预算允许 175 s"/><text x="430" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="455" y="94" width="46" height="17" fill="var(--h1)" data-tip="SRAM 片内SRAM/缓存 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.062 pt，AGREE 预算 0.081 pt → k = 0.76（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 178 s"/><text x="478" y="106.5" text-anchor="middle" class="cellt" pointer-events="none">0.76</text><rect x="503" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.017 pt，AGREE 预算 0.081 pt → k = 0.21（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 177 s"/><text x="526" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.21</text><rect x="557" y="94" width="46" height="17" fill="var(--n2)" data-tip="SRAM 片内SRAM/缓存 · 20 万卡 · 仅改硬件（无机制）
+当前 0.233 pt，AGREE 预算 0.077 pt → k = 3.1（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 54（当前 167）
+每次事件平均停顿 265 s，预算允许 85 s"/><rect x="558.5" y="95.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="95.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="106.5" text-anchor="middle" class="cellt" pointer-events="none">3.1</text><rect x="605" y="94" width="46" height="17" fill="var(--h4)" data-tip="SRAM 片内SRAM/缓存 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.006 pt，AGREE 预算 0.077 pt → k = 0.08（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 84 s"/><text x="628" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.08</text><rect x="653" y="94" width="46" height="17" fill="var(--n1)" data-tip="SRAM 片内SRAM/缓存 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.122 pt，AGREE 预算 0.079 pt → k = 1.55（须改进）
+再分配后 k′ = 1.05：硬件任务，允许 FIT 159（当前 167）
+每次事件平均停顿 135 s，预算允许 87 s"/><rect x="654.5" y="95.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="95.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="106.5" text-anchor="middle" class="cellt" pointer-events="none">1.55</text><rect x="701" y="94" width="46" height="17" fill="var(--h4)" data-tip="SRAM 片内SRAM/缓存 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.006 pt，AGREE 预算 0.079 pt → k = 0.08（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 87 s"/><text x="724" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.08</text><rect x="755" y="94" width="46" height="17" fill="var(--n4)" data-tip="SRAM 片内SRAM/缓存 · 50 万卡 · 仅改硬件（无机制）
+当前 0.544 pt，AGREE 预算 0.070 pt → k = 8.6（须改进）
+再分配后 k′ = 8.6：硬件任务，允许 FIT 19（当前 167）
+每次事件平均停顿 265 s，预算允许 31 s"/><rect x="756.5" y="95.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="95.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.6</text><rect x="803" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.069 pt → k = 0.23（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 30 s"/><text x="826" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.23</text><rect x="851" y="94" width="46" height="17" fill="var(--n3)" data-tip="SRAM 片内SRAM/缓存 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.295 pt，AGREE 预算 0.074 pt → k = 4.1（须改进）
+再分配后 k′ = 3.0：硬件任务，允许 FIT 56（当前 167）
+每次事件平均停顿 135 s，预算允许 33 s"/><rect x="852.5" y="95.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="95.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.1</text><rect x="899" y="94" width="46" height="17" fill="var(--h3)" data-tip="SRAM 片内SRAM/缓存 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.016 pt，AGREE 预算 0.074 pt → k = 0.21（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 32 s"/><text x="922" y="106.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.21</text><text x="14" y="125.5" class="t2" style="font-size:11px">IOD</text><rect x="161" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 1 万卡 · 仅改硬件（无机制）
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="184" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="209" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="232" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="257" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="280" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="305" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="328" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="359" y="113" width="46" height="17" fill="var(--n1)" data-tip="IOD 芯片内IO Die/D2D · 10 万卡 · 仅改硬件（无机制）
+当前 0.143 pt，AGREE 预算 0.080 pt → k = 1.81（须改进）
+再分配后 k′ = 1.61：硬件任务，允许 FIT 124（当前 200）
+每次事件平均停顿 265 s，预算允许 146 s"/><rect x="360.5" y="114.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="114.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="125.5" text-anchor="middle" class="cellt" pointer-events="none">1.81</text><rect x="407" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.014 pt，AGREE 预算 0.080 pt → k = 0.18（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 26 s，预算允许 146 s"/><text x="430" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.18</text><rect x="455" y="113" width="46" height="17" fill="var(--h4)" data-tip="IOD 芯片内IO Die/D2D · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.009 pt，AGREE 预算 0.081 pt → k = 0.11（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 16 s，预算允许 148 s"/><text x="478" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.11</text><rect x="503" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.020 pt，AGREE 预算 0.081 pt → k = 0.25（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 148 s"/><text x="526" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.25</text><rect x="557" y="113" width="46" height="17" fill="var(--n2)" data-tip="IOD 芯片内IO Die/D2D · 20 万卡 · 仅改硬件（无机制）
+当前 0.280 pt，AGREE 预算 0.077 pt → k = 3.8（须改进）
+再分配后 k′ = 3.7：硬件任务，允许 FIT 54（当前 200）
+每次事件平均停顿 265 s，预算允许 70 s"/><rect x="558.5" y="114.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="114.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="125.5" text-anchor="middle" class="cellt" pointer-events="none">3.8</text><rect x="605" y="113" width="46" height="17" fill="var(--h4)" data-tip="IOD 芯片内IO Die/D2D · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.008 pt，AGREE 预算 0.077 pt → k = 0.10（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 70 s"/><text x="628" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.10</text><rect x="653" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.018 pt，AGREE 预算 0.079 pt → k = 0.22（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 16 s，预算允许 72 s"/><text x="676" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.22</text><rect x="701" y="113" width="46" height="17" fill="var(--h4)" data-tip="IOD 芯片内IO Die/D2D · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.008 pt，AGREE 预算 0.079 pt → k = 0.10（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 72 s"/><text x="724" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.10</text><rect x="755" y="113" width="46" height="17" fill="var(--n4)" data-tip="IOD 芯片内IO Die/D2D · 50 万卡 · 仅改硬件（无机制）
+当前 0.653 pt，AGREE 预算 0.070 pt → k = 10（须改进）
+再分配后 k′ = 10：硬件任务，允许 FIT 19（当前 200）
+每次事件平均停顿 265 s，预算允许 26 s"/><rect x="756.5" y="114.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="114.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">10</text><rect x="803" y="113" width="46" height="17" fill="var(--h2)" data-tip="IOD 芯片内IO Die/D2D · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.019 pt，AGREE 预算 0.069 pt → k = 0.27（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 25 s"/><text x="826" y="125.5" text-anchor="middle" class="cellt" pointer-events="none">0.27</text><rect x="851" y="113" width="46" height="17" fill="var(--h1)" data-tip="IOD 芯片内IO Die/D2D · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.043 pt，AGREE 预算 0.074 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 16 s，预算允许 27 s"/><text x="874" y="125.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><rect x="899" y="113" width="46" height="17" fill="var(--h3)" data-tip="IOD 芯片内IO Die/D2D · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.074 pt → k = 0.13（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 3 s，预算允许 27 s"/><text x="922" y="125.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.13</text><text x="14" y="144.5" class="t2" style="font-size:11px">MODULE</text><rect x="161" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 1 万卡 · 仅改硬件（无机制）
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1783 s"/><text x="184" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1783 s"/><text x="232" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1783 s"/><text x="280" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1783 s"/><text x="328" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="132" width="46" height="17" fill="var(--n1)" data-tip="MODULE HiAM模组/板级连接 · 10 万卡 · 仅改硬件（无机制）
+当前 0.122 pt，AGREE 预算 0.080 pt → k = 1.54（须改进）
+再分配后 k′ = 1.37：硬件任务，允许 FIT 124（当前 170）
+每次事件平均停顿 265 s，预算允许 172 s"/><rect x="360.5" y="133.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="133.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">1.54</text><rect x="407" y="132" width="46" height="17" fill="var(--h1)" data-tip="MODULE HiAM模组/板级连接 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.041 pt，AGREE 预算 0.080 pt → k = 0.51（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 88 s，预算允许 172 s"/><text x="430" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">0.51</text><rect x="455" y="132" width="46" height="17" fill="var(--h1)" data-tip="MODULE HiAM模组/板级连接 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.063 pt，AGREE 预算 0.081 pt → k = 0.77（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 174 s"/><text x="478" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">0.77</text><rect x="503" y="132" width="46" height="17" fill="var(--n1)" data-tip="MODULE HiAM模组/板级连接 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.093 pt，AGREE 预算 0.081 pt → k = 1.15（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 174 s"/><text x="526" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">1.15</text><rect x="557" y="132" width="46" height="17" fill="var(--n2)" data-tip="MODULE HiAM模组/板级连接 · 20 万卡 · 仅改硬件（无机制）
+当前 0.238 pt，AGREE 预算 0.077 pt → k = 3.2（须改进）
+再分配后 k′ = 3.2：硬件任务，允许 FIT 54（当前 170）
+每次事件平均停顿 265 s，预算允许 83 s"/><rect x="558.5" y="133.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="133.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">3.2</text><rect x="605" y="132" width="46" height="17" fill="var(--h4)" data-tip="MODULE HiAM模组/板级连接 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.077 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 83 s"/><text x="628" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="653" y="132" width="46" height="17" fill="var(--n1)" data-tip="MODULE HiAM模组/板级连接 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.124 pt，AGREE 预算 0.079 pt → k = 1.58（须改进）
+再分配后 k′ = 1.07：硬件任务，允许 FIT 159（当前 170）
+每次事件平均停顿 135 s，预算允许 85 s"/><rect x="654.5" y="133.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="133.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="144.5" text-anchor="middle" class="cellt" pointer-events="none">1.58</text><rect x="701" y="132" width="46" height="17" fill="var(--h4)" data-tip="MODULE HiAM模组/板级连接 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.079 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 85 s"/><text x="724" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="755" y="132" width="46" height="17" fill="var(--n4)" data-tip="MODULE HiAM模组/板级连接 · 50 万卡 · 仅改硬件（无机制）
+当前 0.555 pt，AGREE 预算 0.070 pt → k = 8.8（须改进）
+再分配后 k′ = 8.8：硬件任务，允许 FIT 19（当前 170）
+每次事件平均停顿 265 s，预算允许 30 s"/><rect x="756.5" y="133.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="133.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.8</text><rect x="803" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.069 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 30 s"/><text x="826" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="851" y="132" width="46" height="17" fill="var(--n3)" data-tip="MODULE HiAM模组/板级连接 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.301 pt，AGREE 预算 0.074 pt → k = 4.2（须改进）
+再分配后 k′ = 3.0：硬件任务，允许 FIT 56（当前 170）
+每次事件平均停顿 135 s，预算允许 32 s"/><rect x="852.5" y="133.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="133.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.2</text><rect x="899" y="132" width="46" height="17" fill="var(--h3)" data-tip="MODULE HiAM模组/板级连接 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.074 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 32 s"/><text x="922" y="144.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><text x="14" y="163.5" class="t2" style="font-size:11px">MEMT</text><rect x="161" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 1 万卡 · 仅改硬件（无机制）
+当前 0.029 pt，AGREE 预算 0.083 pt → k = 0.35（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 758 s"/><text x="184" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.35</text><rect x="209" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.029 pt，AGREE 预算 0.083 pt → k = 0.35（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 758 s"/><text x="232" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.35</text><rect x="257" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.029 pt，AGREE 预算 0.083 pt → k = 0.35（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 758 s"/><text x="280" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.35</text><rect x="305" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.029 pt，AGREE 预算 0.083 pt → k = 0.35（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 758 s"/><text x="328" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.35</text><rect x="359" y="151" width="46" height="17" fill="var(--n2)" data-tip="MEMT NPU内存可恢复瞬态 · 10 万卡 · 仅改硬件（无机制）
+当前 0.287 pt，AGREE 预算 0.080 pt → k = 3.6（须改进）
+再分配后 k′ = 3.2：硬件任务，允许 FIT 124（当前 400）
+每次事件平均停顿 265 s，预算允许 73 s"/><rect x="360.5" y="152.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="152.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">3.6</text><rect x="407" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.028 pt，AGREE 预算 0.080 pt → k = 0.35（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 26 s，预算允许 73 s"/><text x="430" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.35</text><rect x="455" y="151" width="46" height="17" fill="var(--n1)" data-tip="MEMT NPU内存可恢复瞬态 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.148 pt，AGREE 预算 0.081 pt → k = 1.82（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 74 s"/><text x="478" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">1.82</text><rect x="503" y="151" width="46" height="17" fill="var(--h2)" data-tip="MEMT NPU内存可恢复瞬态 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.040 pt，AGREE 预算 0.081 pt → k = 0.50（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 74 s"/><text x="526" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.50</text><rect x="557" y="151" width="46" height="17" fill="var(--n3)" data-tip="MEMT NPU内存可恢复瞬态 · 20 万卡 · 仅改硬件（无机制）
+当前 0.560 pt，AGREE 预算 0.077 pt → k = 7.5（须改进）
+再分配后 k′ = 7.4：硬件任务，允许 FIT 54（当前 400）
+每次事件平均停顿 265 s，预算允许 35 s"/><rect x="558.5" y="152.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="152.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="163.5" text-anchor="middle" class="cellt onDark" pointer-events="none">7.5</text><rect x="605" y="151" width="46" height="17" fill="var(--h3)" data-tip="MEMT NPU内存可恢复瞬态 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.077 pt → k = 0.20（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 35 s"/><text x="628" y="163.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.20</text><rect x="653" y="151" width="46" height="17" fill="var(--n2)" data-tip="MEMT NPU内存可恢复瞬态 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.293 pt，AGREE 预算 0.079 pt → k = 3.7（须改进）
+再分配后 k′ = 2.5：硬件任务，允许 FIT 159（当前 400）
+每次事件平均停顿 135 s，预算允许 36 s"/><rect x="654.5" y="152.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="152.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">3.7</text><rect x="701" y="151" width="46" height="17" fill="var(--h3)" data-tip="MEMT NPU内存可恢复瞬态 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.079 pt → k = 0.19（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 36 s"/><text x="724" y="163.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.19</text><rect x="755" y="151" width="46" height="17" fill="var(--n4)" data-tip="MEMT NPU内存可恢复瞬态 · 50 万卡 · 仅改硬件（无机制）
+当前 1.306 pt，AGREE 预算 0.070 pt → k = 21（须改进）
+再分配后 k′ = 21：硬件任务，允许 FIT 19（当前 400）
+每次事件平均停顿 265 s，预算允许 13 s"/><rect x="756.5" y="152.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="152.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="163.5" text-anchor="middle" class="cellt onDark" pointer-events="none">21</text><rect x="803" y="151" width="46" height="17" fill="var(--h1)" data-tip="MEMT NPU内存可恢复瞬态 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.037 pt，AGREE 预算 0.069 pt → k = 0.55（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 13 s"/><text x="826" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.55</text><rect x="851" y="151" width="46" height="17" fill="var(--n4)" data-tip="MEMT NPU内存可恢复瞬态 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.709 pt，AGREE 预算 0.074 pt → k = 9.9（须改进）
+再分配后 k′ = 7.1：硬件任务，允许 FIT 56（当前 400）
+每次事件平均停顿 135 s，预算允许 14 s"/><rect x="852.5" y="152.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="152.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="163.5" text-anchor="middle" class="cellt onDark" pointer-events="none">9.9</text><rect x="899" y="151" width="46" height="17" fill="var(--h1)" data-tip="MEMT NPU内存可恢复瞬态 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.038 pt，AGREE 预算 0.074 pt → k = 0.51（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 13 s"/><text x="922" y="163.5" text-anchor="middle" class="cellt" pointer-events="none">0.51</text><text x="14" y="182.5" class="t2" style="font-size:11px">MEMP</text><rect x="161" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 1 万卡 · 仅改硬件（无机制）
+当前 0.013 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1749 s"/><text x="184" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.013 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1749 s"/><text x="232" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.013 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1749 s"/><text x="280" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.013 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1749 s"/><text x="328" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="170" width="46" height="17" fill="var(--n1)" data-tip="MEMP NPU内存持续失效 · 10 万卡 · 仅改硬件（无机制）
+当前 0.124 pt，AGREE 预算 0.080 pt → k = 1.57（须改进）
+再分配后 k′ = 1.40：硬件任务，允许 FIT 124（当前 173）
+每次事件平均停顿 265 s，预算允许 168 s"/><rect x="360.5" y="171.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="171.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">1.57</text><rect x="407" y="170" width="46" height="17" fill="var(--h1)" data-tip="MEMP NPU内存持续失效 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.042 pt，AGREE 预算 0.080 pt → k = 0.52（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 88 s，预算允许 168 s"/><text x="430" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">0.52</text><rect x="455" y="170" width="46" height="17" fill="var(--h1)" data-tip="MEMP NPU内存持续失效 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.064 pt，AGREE 预算 0.081 pt → k = 0.79（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 171 s"/><text x="478" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">0.79</text><rect x="503" y="170" width="46" height="17" fill="var(--n1)" data-tip="MEMP NPU内存持续失效 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.095 pt，AGREE 预算 0.081 pt → k = 1.17（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 170 s"/><text x="526" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">1.17</text><rect x="557" y="170" width="46" height="17" fill="var(--n2)" data-tip="MEMP NPU内存持续失效 · 20 万卡 · 仅改硬件（无机制）
+当前 0.243 pt，AGREE 预算 0.077 pt → k = 3.3（须改进）
+再分配后 k′ = 3.2：硬件任务，允许 FIT 54（当前 173）
+每次事件平均停顿 265 s，预算允许 81 s"/><rect x="558.5" y="171.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="171.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">3.3</text><rect x="605" y="170" width="46" height="17" fill="var(--h4)" data-tip="MEMP NPU内存持续失效 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.077 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 81 s"/><text x="628" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="653" y="170" width="46" height="17" fill="var(--n1)" data-tip="MEMP NPU内存持续失效 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.127 pt，AGREE 预算 0.079 pt → k = 1.61（须改进）
+再分配后 k′ = 1.09：硬件任务，允许 FIT 159（当前 173）
+每次事件平均停顿 135 s，预算允许 84 s"/><rect x="654.5" y="171.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="171.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="182.5" text-anchor="middle" class="cellt" pointer-events="none">1.61</text><rect x="701" y="170" width="46" height="17" fill="var(--h4)" data-tip="MEMP NPU内存持续失效 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.079 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 83 s"/><text x="724" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="755" y="170" width="46" height="17" fill="var(--n4)" data-tip="MEMP NPU内存持续失效 · 50 万卡 · 仅改硬件（无机制）
+当前 0.566 pt，AGREE 预算 0.070 pt → k = 8.9（须改进）
+再分配后 k′ = 8.9：硬件任务，允许 FIT 19（当前 173）
+每次事件平均停顿 265 s，预算允许 30 s"/><rect x="756.5" y="171.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="171.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.9</text><rect x="803" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.069 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 29 s"/><text x="826" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="851" y="170" width="46" height="17" fill="var(--n3)" data-tip="MEMP NPU内存持续失效 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.307 pt，AGREE 预算 0.074 pt → k = 4.3（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 56（当前 173）
+每次事件平均停顿 135 s，预算允许 31 s"/><rect x="852.5" y="171.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="171.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.3</text><rect x="899" y="170" width="46" height="17" fill="var(--h3)" data-tip="MEMP NPU内存持续失效 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.074 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 31 s"/><text x="922" y="182.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><text x="14" y="201.5" class="t2" style="font-size:11px">NIC <tspan class="m" style="font-size:9.5px">网络</tspan></text><rect x="161" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 1 万卡 · 仅改硬件（无机制）
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="184" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="209" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="232" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="257" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="280" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="305" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="328" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="359" y="189" width="46" height="17" fill="var(--h1)" data-tip="NIC UB网卡/RoCE接口 · 10 万卡 · 仅改硬件（无机制）
+当前 0.072 pt，AGREE 预算 0.080 pt → k = 0.91（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 292 s"/><text x="382" y="201.5" text-anchor="middle" class="cellt" pointer-events="none">0.91</text><rect x="407" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.080 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 26 s，预算允许 292 s"/><text x="430" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="455" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.081 pt → k = 0.05（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 16 s，预算允许 296 s"/><text x="478" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.05</text><rect x="503" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.081 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 295 s"/><text x="526" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="557" y="189" width="46" height="17" fill="var(--n1)" data-tip="NIC UB网卡/RoCE接口 · 20 万卡 · 仅改硬件（无机制）
+当前 0.140 pt，AGREE 预算 0.077 pt → k = 1.88（须改进）
+再分配后 k′ = 1.86：硬件任务，允许 FIT 54（当前 100）
+每次事件平均停顿 265 s，预算允许 141 s"/><rect x="558.5" y="190.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="190.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="201.5" text-anchor="middle" class="cellt" pointer-events="none">1.88</text><rect x="605" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.077 pt → k = 0.05（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 140 s"/><text x="628" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.05</text><rect x="653" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.002 pt，AGREE 预算 0.079 pt → k = 0.03（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 4 s，预算允许 145 s"/><text x="676" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.03</text><rect x="701" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.079 pt → k = 0.05（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 144 s"/><text x="724" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.05</text><rect x="755" y="189" width="46" height="17" fill="var(--n3)" data-tip="NIC UB网卡/RoCE接口 · 50 万卡 · 仅改硬件（无机制）
+当前 0.327 pt，AGREE 预算 0.070 pt → k = 5.2（须改进）
+再分配后 k′ = 5.2：硬件任务，允许 FIT 19（当前 100）
+每次事件平均停顿 265 s，预算允许 51 s"/><rect x="756.5" y="190.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="190.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.2</text><rect x="803" y="189" width="46" height="17" fill="var(--h3)" data-tip="NIC UB网卡/RoCE接口 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.009 pt，AGREE 预算 0.069 pt → k = 0.14（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 7 s，预算允许 51 s"/><text x="826" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.14</text><rect x="851" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.006 pt，AGREE 预算 0.074 pt → k = 0.08（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 4 s，预算允许 54 s"/><text x="874" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.08</text><rect x="899" y="189" width="46" height="17" fill="var(--h4)" data-tip="NIC UB网卡/RoCE接口 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.074 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 3 s，预算允许 54 s"/><text x="922" y="201.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><text x="14" y="220.5" class="t2" style="font-size:11px">OPT</text><rect x="161" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 1 万卡 · 仅改硬件（无机制）
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="184" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="209" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="232" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="257" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="280" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="305" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="328" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="359" y="208" width="46" height="17" fill="var(--h1)" data-tip="OPT 光模块/光纤保护组 · 10 万卡 · 仅改硬件（无机制）
+当前 0.048 pt，AGREE 预算 0.080 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 438 s"/><text x="382" y="220.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><rect x="407" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.008 pt，AGREE 预算 0.080 pt → k = 0.10（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 43 s，预算允许 438 s"/><text x="430" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.10</text><rect x="455" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.081 pt → k = 0.05（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 21 s，预算允许 444 s"/><text x="478" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.05</text><rect x="503" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.081 pt → k = 0.08（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 37 s，预算允许 443 s"/><text x="526" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.08</text><rect x="557" y="208" width="46" height="17" fill="var(--n1)" data-tip="OPT 光模块/光纤保护组 · 20 万卡 · 仅改硬件（无机制）
+当前 0.093 pt，AGREE 预算 0.077 pt → k = 1.25（须改进）
+再分配后 k′ = 1.24：硬件任务，允许 FIT 54（当前 67）
+每次事件平均停顿 265 s，预算允许 211 s"/><rect x="558.5" y="209.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="209.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="220.5" text-anchor="middle" class="cellt" pointer-events="none">1.25</text><rect x="605" y="208" width="46" height="17" fill="var(--h3)" data-tip="OPT 光模块/光纤保护组 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.077 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 32 s，预算允许 211 s"/><text x="628" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="653" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.002 pt，AGREE 预算 0.079 pt → k = 0.02（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 217 s"/><text x="676" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.02</text><rect x="701" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.009 pt，AGREE 预算 0.079 pt → k = 0.11（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 23 s，预算允许 217 s"/><text x="724" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.11</text><rect x="755" y="208" width="46" height="17" fill="var(--n2)" data-tip="OPT 光模块/光纤保护组 · 50 万卡 · 仅改硬件（无机制）
+当前 0.218 pt，AGREE 预算 0.070 pt → k = 3.4（须改进）
+再分配后 k′ = 3.4：硬件任务，允许 FIT 19（当前 67）
+每次事件平均停顿 265 s，预算允许 77 s"/><rect x="756.5" y="209.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="209.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="220.5" text-anchor="middle" class="cellt" pointer-events="none">3.4</text><rect x="803" y="208" width="46" height="17" fill="var(--h2)" data-tip="OPT 光模块/光纤保护组 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.028 pt，AGREE 预算 0.069 pt → k = 0.42（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 32 s，预算允许 76 s"/><text x="826" y="220.5" text-anchor="middle" class="cellt" pointer-events="none">0.42</text><rect x="851" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.074 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 81 s"/><text x="874" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="899" y="208" width="46" height="17" fill="var(--h4)" data-tip="OPT 光模块/光纤保护组 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.074 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 3 s，预算允许 81 s"/><text x="922" y="220.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><text x="14" y="239.5" class="t2" style="font-size:11px">BOXIO</text><rect x="161" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 1 万卡 · 仅改硬件（无机制）
+当前 0.003 pt，AGREE 预算 0.083 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 6495 s"/><text x="184" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><rect x="209" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.083 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 6495 s"/><text x="232" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><rect x="257" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.083 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 6495 s"/><text x="280" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><rect x="305" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.083 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 6495 s"/><text x="328" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><rect x="359" y="227" width="46" height="17" fill="var(--h2)" data-tip="BOXIO 框内IO转换/交换板 · 10 万卡 · 仅改硬件（无机制）
+当前 0.033 pt，AGREE 预算 0.080 pt → k = 0.42（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 626 s"/><text x="382" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.42</text><rect x="407" y="227" width="46" height="17" fill="var(--h2)" data-tip="BOXIO 框内IO转换/交换板 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.034 pt，AGREE 预算 0.080 pt → k = 0.42（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 625 s"/><text x="430" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.42</text><rect x="455" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.081 pt → k = 0.03（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 21 s，预算允许 634 s"/><text x="478" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.03</text><rect x="503" y="227" width="46" height="17" fill="var(--h2)" data-tip="BOXIO 框内IO转换/交换板 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.026 pt，AGREE 预算 0.081 pt → k = 0.32（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 632 s"/><text x="526" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.32</text><rect x="557" y="227" width="46" height="17" fill="var(--h1)" data-tip="BOXIO 框内IO转换/交换板 · 20 万卡 · 仅改硬件（无机制）
+当前 0.065 pt，AGREE 预算 0.077 pt → k = 0.88（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 302 s"/><text x="580" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.88</text><rect x="605" y="227" width="46" height="17" fill="var(--h1)" data-tip="BOXIO 框内IO转换/交换板 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.065 pt，AGREE 预算 0.077 pt → k = 0.84（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 301 s"/><text x="628" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.84</text><rect x="653" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.001 pt，AGREE 预算 0.079 pt → k = 0.02（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 310 s"/><text x="676" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.02</text><rect x="701" y="227" width="46" height="17" fill="var(--h1)" data-tip="BOXIO 框内IO转换/交换板 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.043 pt，AGREE 预算 0.079 pt → k = 0.54（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 309 s"/><text x="724" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">0.54</text><rect x="755" y="227" width="46" height="17" fill="var(--n2)" data-tip="BOXIO 框内IO转换/交换板 · 50 万卡 · 仅改硬件（无机制）
+当前 0.152 pt，AGREE 预算 0.070 pt → k = 2.4（须改进）
+再分配后 k′ = 2.4：硬件任务，允许 FIT 19（当前 47）
+每次事件平均停顿 265 s，预算允许 110 s"/><rect x="756.5" y="228.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="228.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">2.4</text><rect x="803" y="227" width="46" height="17" fill="var(--n2)" data-tip="BOXIO 框内IO转换/交换板 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.157 pt，AGREE 预算 0.069 pt → k = 2.3（须改进）
+再分配后 k′ = 1.09：硬件任务，允许 FIT 43（当前 47）
+每次事件平均停顿 253 s，预算允许 108 s"/><rect x="804.5" y="228.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="228.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="239.5" text-anchor="middle" class="cellt" pointer-events="none">2.3</text><rect x="851" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.074 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 116 s"/><text x="874" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><rect x="899" y="227" width="46" height="17" fill="var(--h4)" data-tip="BOXIO 框内IO转换/交换板 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.003 pt，AGREE 预算 0.074 pt → k = 0.04（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 116 s"/><text x="922" y="239.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.04</text><text x="14" y="258.5" class="t2" style="font-size:11px">FABRIC</text><rect x="161" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 1 万卡 · 仅改硬件（无机制）
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="184" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="209" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="232" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="257" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="280" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="305" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.083 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 4547 s"/><text x="328" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="359" y="246" width="46" height="17" fill="var(--h1)" data-tip="FABRIC L1/L2互联设备 · 10 万卡 · 仅改硬件（无机制）
+当前 0.048 pt，AGREE 预算 0.080 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 438 s"/><text x="382" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><rect x="407" y="246" width="46" height="17" fill="var(--h1)" data-tip="FABRIC L1/L2互联设备 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.048 pt，AGREE 预算 0.080 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 438 s"/><text x="430" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><rect x="455" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.081 pt → k = 0.05（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 21 s，预算允许 444 s"/><text x="478" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.05</text><rect x="503" y="246" width="46" height="17" fill="var(--h2)" data-tip="FABRIC L1/L2互联设备 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.037 pt，AGREE 预算 0.081 pt → k = 0.45（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 443 s"/><text x="526" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">0.45</text><rect x="557" y="246" width="46" height="17" fill="var(--n1)" data-tip="FABRIC L1/L2互联设备 · 20 万卡 · 仅改硬件（无机制）
+当前 0.093 pt，AGREE 预算 0.077 pt → k = 1.25（须改进）
+再分配后 k′ = 1.24：硬件任务，允许 FIT 54（当前 67）
+每次事件平均停顿 265 s，预算允许 211 s"/><rect x="558.5" y="247.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="247.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">1.25</text><rect x="605" y="246" width="46" height="17" fill="var(--n1)" data-tip="FABRIC L1/L2互联设备 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.092 pt，AGREE 预算 0.077 pt → k = 1.20（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 211 s"/><text x="628" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">1.20</text><rect x="653" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.002 pt，AGREE 预算 0.079 pt → k = 0.02（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 217 s"/><text x="676" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.02</text><rect x="701" y="246" width="46" height="17" fill="var(--h1)" data-tip="FABRIC L1/L2互联设备 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.062 pt，AGREE 预算 0.079 pt → k = 0.78（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 217 s"/><text x="724" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">0.78</text><rect x="755" y="246" width="46" height="17" fill="var(--n2)" data-tip="FABRIC L1/L2互联设备 · 50 万卡 · 仅改硬件（无机制）
+当前 0.218 pt，AGREE 预算 0.070 pt → k = 3.4（须改进）
+再分配后 k′ = 3.4：硬件任务，允许 FIT 19（当前 67）
+每次事件平均停顿 265 s，预算允许 77 s"/><rect x="756.5" y="247.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="247.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">3.4</text><rect x="803" y="246" width="46" height="17" fill="var(--n2)" data-tip="FABRIC L1/L2互联设备 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.225 pt，AGREE 预算 0.069 pt → k = 3.3（须改进）
+再分配后 k′ = 1.56：硬件任务，允许 FIT 43（当前 67）
+每次事件平均停顿 253 s，预算允许 76 s"/><rect x="804.5" y="247.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="247.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="258.5" text-anchor="middle" class="cellt" pointer-events="none">3.3</text><rect x="851" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.074 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 81 s"/><text x="874" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="899" y="246" width="46" height="17" fill="var(--h4)" data-tip="FABRIC L1/L2互联设备 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.074 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 81 s"/><text x="922" y="258.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><text x="14" y="277.5" class="t2" style="font-size:11px">CPU <tspan class="m" style="font-size:9.5px">主机</tspan></text><rect x="161" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 1 万卡 · 仅改硬件（无机制）
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="184" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="232" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="280" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="328" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="265" width="46" height="17" fill="var(--n1)" data-tip="CPU CPU计算刀片 · 10 万卡 · 仅改硬件（无机制）
+当前 0.119 pt，AGREE 预算 0.080 pt → k = 1.51（须改进）
+再分配后 k′ = 1.35：硬件任务，允许 FIT 124（当前 167）
+每次事件平均停顿 265 s，预算允许 175 s"/><rect x="360.5" y="266.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="266.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">1.51</text><rect x="407" y="265" width="46" height="17" fill="var(--h1)" data-tip="CPU CPU计算刀片 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.040 pt，AGREE 预算 0.080 pt → k = 0.50（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 88 s，预算允许 175 s"/><text x="430" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">0.50</text><rect x="455" y="265" width="46" height="17" fill="var(--h1)" data-tip="CPU CPU计算刀片 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.062 pt，AGREE 预算 0.081 pt → k = 0.76（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 178 s"/><text x="478" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">0.76</text><rect x="503" y="265" width="46" height="17" fill="var(--n1)" data-tip="CPU CPU计算刀片 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.091 pt，AGREE 预算 0.081 pt → k = 1.13（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 177 s"/><text x="526" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">1.13</text><rect x="557" y="265" width="46" height="17" fill="var(--n2)" data-tip="CPU CPU计算刀片 · 20 万卡 · 仅改硬件（无机制）
+当前 0.233 pt，AGREE 预算 0.077 pt → k = 3.1（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 54（当前 167）
+每次事件平均停顿 265 s，预算允许 85 s"/><rect x="558.5" y="266.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="266.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">3.1</text><rect x="605" y="265" width="46" height="17" fill="var(--h4)" data-tip="CPU CPU计算刀片 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.077 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 84 s"/><text x="628" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="653" y="265" width="46" height="17" fill="var(--n1)" data-tip="CPU CPU计算刀片 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.122 pt，AGREE 预算 0.079 pt → k = 1.55（须改进）
+再分配后 k′ = 1.05：硬件任务，允许 FIT 159（当前 167）
+每次事件平均停顿 135 s，预算允许 87 s"/><rect x="654.5" y="266.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="266.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="277.5" text-anchor="middle" class="cellt" pointer-events="none">1.55</text><rect x="701" y="265" width="46" height="17" fill="var(--h4)" data-tip="CPU CPU计算刀片 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.079 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 87 s"/><text x="724" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="755" y="265" width="46" height="17" fill="var(--n4)" data-tip="CPU CPU计算刀片 · 50 万卡 · 仅改硬件（无机制）
+当前 0.544 pt，AGREE 预算 0.070 pt → k = 8.6（须改进）
+再分配后 k′ = 8.6：硬件任务，允许 FIT 19（当前 167）
+每次事件平均停顿 265 s，预算允许 31 s"/><rect x="756.5" y="266.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="266.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.6</text><rect x="803" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.069 pt → k = 0.16（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 30 s"/><text x="826" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.16</text><rect x="851" y="265" width="46" height="17" fill="var(--n3)" data-tip="CPU CPU计算刀片 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.295 pt，AGREE 预算 0.074 pt → k = 4.1（须改进）
+再分配后 k′ = 3.0：硬件任务，允许 FIT 56（当前 167）
+每次事件平均停顿 135 s，预算允许 33 s"/><rect x="852.5" y="266.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="266.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.1</text><rect x="899" y="265" width="46" height="17" fill="var(--h3)" data-tip="CPU CPU计算刀片 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.074 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 32 s"/><text x="922" y="277.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><text x="14" y="296.5" class="t2" style="font-size:11px">DDR</text><rect x="161" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 1 万卡 · 仅改硬件（无机制）
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="184" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="209" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="232" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="257" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="280" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="305" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.015 pt，AGREE 预算 0.083 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1516 s"/><text x="328" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="359" y="284" width="46" height="17" fill="var(--n1)" data-tip="DDR CPU DDR内存 · 10 万卡 · 仅改硬件（无机制）
+当前 0.143 pt，AGREE 预算 0.080 pt → k = 1.81（须改进）
+再分配后 k′ = 1.61：硬件任务，允许 FIT 124（当前 200）
+每次事件平均停顿 265 s，预算允许 146 s"/><rect x="360.5" y="285.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="285.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">1.81</text><rect x="407" y="284" width="46" height="17" fill="var(--h1)" data-tip="DDR CPU DDR内存 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.048 pt，AGREE 预算 0.080 pt → k = 0.60（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 88 s，预算允许 146 s"/><text x="430" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">0.60</text><rect x="455" y="284" width="46" height="17" fill="var(--mid)" data-tip="DDR CPU DDR内存 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.074 pt，AGREE 预算 0.081 pt → k = 0.91（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 148 s"/><text x="478" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">0.91</text><rect x="503" y="284" width="46" height="17" fill="var(--n1)" data-tip="DDR CPU DDR内存 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.110 pt，AGREE 预算 0.081 pt → k = 1.35（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 148 s"/><text x="526" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">1.35</text><rect x="557" y="284" width="46" height="17" fill="var(--n2)" data-tip="DDR CPU DDR内存 · 20 万卡 · 仅改硬件（无机制）
+当前 0.280 pt，AGREE 预算 0.077 pt → k = 3.8（须改进）
+再分配后 k′ = 3.7：硬件任务，允许 FIT 54（当前 200）
+每次事件平均停顿 265 s，预算允许 70 s"/><rect x="558.5" y="285.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="285.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">3.8</text><rect x="605" y="284" width="46" height="17" fill="var(--h4)" data-tip="DDR CPU DDR内存 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.077 pt → k = 0.07（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 70 s"/><text x="628" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.07</text><rect x="653" y="284" width="46" height="17" fill="var(--n1)" data-tip="DDR CPU DDR内存 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.146 pt，AGREE 预算 0.079 pt → k = 1.86（须改进）
+再分配后 k′ = 1.26：硬件任务，允许 FIT 159（当前 200）
+每次事件平均停顿 135 s，预算允许 72 s"/><rect x="654.5" y="285.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="285.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="296.5" text-anchor="middle" class="cellt" pointer-events="none">1.86</text><rect x="701" y="284" width="46" height="17" fill="var(--h4)" data-tip="DDR CPU DDR内存 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.005 pt，AGREE 预算 0.079 pt → k = 0.07（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 72 s"/><text x="724" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.07</text><rect x="755" y="284" width="46" height="17" fill="var(--n4)" data-tip="DDR CPU DDR内存 · 50 万卡 · 仅改硬件（无机制）
+当前 0.653 pt，AGREE 预算 0.070 pt → k = 10（须改进）
+再分配后 k′ = 10：硬件任务，允许 FIT 19（当前 200）
+每次事件平均停顿 265 s，预算允许 26 s"/><rect x="756.5" y="285.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="285.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">10</text><rect x="803" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.013 pt，AGREE 预算 0.069 pt → k = 0.19（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 25 s"/><text x="826" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.19</text><rect x="851" y="284" width="46" height="17" fill="var(--n3)" data-tip="DDR CPU DDR内存 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.354 pt，AGREE 预算 0.074 pt → k = 5.0（须改进）
+再分配后 k′ = 3.6：硬件任务，允许 FIT 56（当前 200）
+每次事件平均停顿 135 s，预算允许 27 s"/><rect x="852.5" y="285.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="285.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.0</text><rect x="899" y="284" width="46" height="17" fill="var(--h3)" data-tip="DDR CPU DDR内存 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.013 pt，AGREE 预算 0.074 pt → k = 0.18（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 27 s"/><text x="922" y="296.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.18</text><text x="14" y="315.5" class="t2" style="font-size:11px">SSD</text><rect x="161" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 1 万卡 · 仅改硬件（无机制）
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="184" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="232" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="280" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="328" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="303" width="46" height="17" fill="var(--n1)" data-tip="SSD 本地SSD/系统盘 · 10 万卡 · 仅改硬件（无机制）
+当前 0.119 pt，AGREE 预算 0.080 pt → k = 1.51（须改进）
+再分配后 k′ = 1.35：硬件任务，允许 FIT 124（当前 167）
+每次事件平均停顿 265 s，预算允许 175 s"/><rect x="360.5" y="304.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="304.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">1.51</text><rect x="407" y="303" width="46" height="17" fill="var(--h1)" data-tip="SSD 本地SSD/系统盘 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.040 pt，AGREE 预算 0.080 pt → k = 0.50（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 88 s，预算允许 175 s"/><text x="430" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">0.50</text><rect x="455" y="303" width="46" height="17" fill="var(--h1)" data-tip="SSD 本地SSD/系统盘 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.062 pt，AGREE 预算 0.081 pt → k = 0.76（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 178 s"/><text x="478" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">0.76</text><rect x="503" y="303" width="46" height="17" fill="var(--n1)" data-tip="SSD 本地SSD/系统盘 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.091 pt，AGREE 预算 0.081 pt → k = 1.13（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 177 s"/><text x="526" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">1.13</text><rect x="557" y="303" width="46" height="17" fill="var(--n2)" data-tip="SSD 本地SSD/系统盘 · 20 万卡 · 仅改硬件（无机制）
+当前 0.233 pt，AGREE 预算 0.077 pt → k = 3.1（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 54（当前 167）
+每次事件平均停顿 265 s，预算允许 85 s"/><rect x="558.5" y="304.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="304.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">3.1</text><rect x="605" y="303" width="46" height="17" fill="var(--h4)" data-tip="SSD 本地SSD/系统盘 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.077 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 84 s"/><text x="628" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="653" y="303" width="46" height="17" fill="var(--n1)" data-tip="SSD 本地SSD/系统盘 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.122 pt，AGREE 预算 0.079 pt → k = 1.55（须改进）
+再分配后 k′ = 1.05：硬件任务，允许 FIT 159（当前 167）
+每次事件平均停顿 135 s，预算允许 87 s"/><rect x="654.5" y="304.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="304.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="315.5" text-anchor="middle" class="cellt" pointer-events="none">1.55</text><rect x="701" y="303" width="46" height="17" fill="var(--h4)" data-tip="SSD 本地SSD/系统盘 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.004 pt，AGREE 预算 0.079 pt → k = 0.06（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 87 s"/><text x="724" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.06</text><rect x="755" y="303" width="46" height="17" fill="var(--n4)" data-tip="SSD 本地SSD/系统盘 · 50 万卡 · 仅改硬件（无机制）
+当前 0.544 pt，AGREE 预算 0.070 pt → k = 8.6（须改进）
+再分配后 k′ = 8.6：硬件任务，允许 FIT 19（当前 167）
+每次事件平均停顿 265 s，预算允许 31 s"/><rect x="756.5" y="304.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="304.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.6</text><rect x="803" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.069 pt → k = 0.16（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 30 s"/><text x="826" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.16</text><rect x="851" y="303" width="46" height="17" fill="var(--n3)" data-tip="SSD 本地SSD/系统盘 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.295 pt，AGREE 预算 0.074 pt → k = 4.1（须改进）
+再分配后 k′ = 3.0：硬件任务，允许 FIT 56（当前 167）
+每次事件平均停顿 135 s，预算允许 33 s"/><rect x="852.5" y="304.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="304.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.1</text><rect x="899" y="303" width="46" height="17" fill="var(--h3)" data-tip="SSD 本地SSD/系统盘 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.011 pt，AGREE 预算 0.074 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 5 s，预算允许 32 s"/><text x="922" y="315.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><text x="14" y="334.5" class="t2" style="font-size:11px">POWER <tspan class="m" style="font-size:9.5px">机房设施</tspan></text><rect x="161" y="322" width="46" height="17" fill="var(--h3)" data-tip="POWER 柜级供电残余故障 · 1 万卡 · 仅改硬件（无机制）
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="184" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="209" y="322" width="46" height="17" fill="var(--h3)" data-tip="POWER 柜级供电残余故障 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="232" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="257" y="322" width="46" height="17" fill="var(--h3)" data-tip="POWER 柜级供电残余故障 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="280" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="305" y="322" width="46" height="17" fill="var(--h3)" data-tip="POWER 柜级供电残余故障 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.012 pt，AGREE 预算 0.083 pt → k = 0.15（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 1819 s"/><text x="328" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.15</text><rect x="359" y="322" width="46" height="17" fill="var(--n1)" data-tip="POWER 柜级供电残余故障 · 10 万卡 · 仅改硬件（无机制）
+当前 0.119 pt，AGREE 预算 0.080 pt → k = 1.51（须改进）
+再分配后 k′ = 1.35：硬件任务，允许 FIT 124（当前 167）
+每次事件平均停顿 265 s，预算允许 175 s"/><rect x="360.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">1.51</text><rect x="407" y="322" width="46" height="17" fill="var(--n1)" data-tip="POWER 柜级供电残余故障 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.121 pt，AGREE 预算 0.080 pt → k = 1.51（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 175 s"/><text x="430" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">1.51</text><rect x="455" y="322" width="46" height="17" fill="var(--mid)" data-tip="POWER 柜级供电残余故障 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.082 pt，AGREE 预算 0.081 pt → k = 1.01（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 180 s，预算允许 178 s"/><text x="478" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">1.01</text><rect x="503" y="322" width="46" height="17" fill="var(--n1)" data-tip="POWER 柜级供电残余故障 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.091 pt，AGREE 预算 0.081 pt → k = 1.13（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 177 s"/><text x="526" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">1.13</text><rect x="557" y="322" width="46" height="17" fill="var(--n2)" data-tip="POWER 柜级供电残余故障 · 20 万卡 · 仅改硬件（无机制）
+当前 0.233 pt，AGREE 预算 0.077 pt → k = 3.1（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 54（当前 167）
+每次事件平均停顿 265 s，预算允许 85 s"/><rect x="558.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">3.1</text><rect x="605" y="322" width="46" height="17" fill="var(--n2)" data-tip="POWER 柜级供电残余故障 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.230 pt，AGREE 预算 0.077 pt → k = 3.0（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 84 s"/><text x="628" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">3.0</text><rect x="653" y="322" width="46" height="17" fill="var(--n2)" data-tip="POWER 柜级供电残余故障 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.163 pt，AGREE 预算 0.079 pt → k = 2.1（须改进）
+再分配后 k′ = 1.40：硬件任务，允许 FIT 119（当前 167）
+每次事件平均停顿 180 s，预算允许 87 s"/><rect x="654.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">2.1</text><rect x="701" y="322" width="46" height="17" fill="var(--n1)" data-tip="POWER 柜级供电残余故障 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.154 pt，AGREE 预算 0.079 pt → k = 1.94（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 87 s"/><text x="724" y="334.5" text-anchor="middle" class="cellt" pointer-events="none">1.94</text><rect x="755" y="322" width="46" height="17" fill="var(--n4)" data-tip="POWER 柜级供电残余故障 · 50 万卡 · 仅改硬件（无机制）
+当前 0.544 pt，AGREE 预算 0.070 pt → k = 8.6（须改进）
+再分配后 k′ = 8.6：硬件任务，允许 FIT 19（当前 167）
+每次事件平均停顿 265 s，预算允许 31 s"/><rect x="756.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.6</text><rect x="803" y="322" width="46" height="17" fill="var(--n4)" data-tip="POWER 柜级供电残余故障 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.562 pt，AGREE 预算 0.069 pt → k = 8.3（须改进）
+再分配后 k′ = 3.9：硬件任务，允许 FIT 43（当前 167）
+每次事件平均停顿 253 s，预算允许 30 s"/><rect x="804.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">8.3</text><rect x="851" y="322" width="46" height="17" fill="var(--n3)" data-tip="POWER 柜级供电残余故障 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.394 pt，AGREE 预算 0.074 pt → k = 5.5（须改进）
+再分配后 k′ = 4.0：硬件任务，允许 FIT 42（当前 167）
+每次事件平均停顿 180 s，预算允许 33 s"/><rect x="852.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.5</text><rect x="899" y="322" width="46" height="17" fill="var(--n3)" data-tip="POWER 柜级供电残余故障 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.382 pt，AGREE 预算 0.074 pt → k = 5.2（须改进）
+再分配后 k′ = 1.30：硬件任务，允许 FIT 128（当前 167）
+每次事件平均停顿 168 s，预算允许 32 s"/><rect x="900.5" y="323.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="900.5" y="323.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="922" y="334.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.2</text><text x="14" y="353.5" class="t2" style="font-size:11px">COOL</text><rect x="161" y="341" width="46" height="17" fill="var(--h4)" data-tip="COOL 液冷/风扇/热管理 · 1 万卡 · 仅改硬件（无机制）
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="184" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="209" y="341" width="46" height="17" fill="var(--h4)" data-tip="COOL 液冷/风扇/热管理 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="232" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="257" y="341" width="46" height="17" fill="var(--h4)" data-tip="COOL 液冷/风扇/热管理 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="280" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="305" y="341" width="46" height="17" fill="var(--h4)" data-tip="COOL 液冷/风扇/热管理 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.007 pt，AGREE 预算 0.083 pt → k = 0.09（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 3031 s"/><text x="328" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.09</text><rect x="359" y="341" width="46" height="17" fill="var(--h1)" data-tip="COOL 液冷/风扇/热管理 · 10 万卡 · 仅改硬件（无机制）
+当前 0.072 pt，AGREE 预算 0.080 pt → k = 0.91（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 292 s"/><text x="382" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">0.91</text><rect x="407" y="341" width="46" height="17" fill="var(--h1)" data-tip="COOL 液冷/风扇/热管理 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.073 pt，AGREE 预算 0.080 pt → k = 0.91（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 292 s"/><text x="430" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">0.91</text><rect x="455" y="341" width="46" height="17" fill="var(--h1)" data-tip="COOL 液冷/风扇/热管理 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.049 pt，AGREE 预算 0.081 pt → k = 0.61（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 180 s，预算允许 296 s"/><text x="478" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">0.61</text><rect x="503" y="341" width="46" height="17" fill="var(--h1)" data-tip="COOL 液冷/风扇/热管理 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.055 pt，AGREE 预算 0.081 pt → k = 0.68（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 295 s"/><text x="526" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">0.68</text><rect x="557" y="341" width="46" height="17" fill="var(--n1)" data-tip="COOL 液冷/风扇/热管理 · 20 万卡 · 仅改硬件（无机制）
+当前 0.140 pt，AGREE 预算 0.077 pt → k = 1.88（须改进）
+再分配后 k′ = 1.86：硬件任务，允许 FIT 54（当前 100）
+每次事件平均停顿 265 s，预算允许 141 s"/><rect x="558.5" y="342.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="342.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">1.88</text><rect x="605" y="341" width="46" height="17" fill="var(--n1)" data-tip="COOL 液冷/风扇/热管理 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.138 pt，AGREE 预算 0.077 pt → k = 1.80（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 140 s"/><text x="628" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">1.80</text><rect x="653" y="341" width="46" height="17" fill="var(--n1)" data-tip="COOL 液冷/风扇/热管理 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.098 pt，AGREE 预算 0.079 pt → k = 1.24（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 180 s，预算允许 145 s"/><text x="676" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">1.24</text><rect x="701" y="341" width="46" height="17" fill="var(--n1)" data-tip="COOL 液冷/风扇/热管理 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.093 pt，AGREE 预算 0.079 pt → k = 1.17（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 144 s"/><text x="724" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">1.17</text><rect x="755" y="341" width="46" height="17" fill="var(--n3)" data-tip="COOL 液冷/风扇/热管理 · 50 万卡 · 仅改硬件（无机制）
+当前 0.327 pt，AGREE 预算 0.070 pt → k = 5.2（须改进）
+再分配后 k′ = 5.2：硬件任务，允许 FIT 19（当前 100）
+每次事件平均停顿 265 s，预算允许 51 s"/><rect x="756.5" y="342.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="342.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.2</text><rect x="803" y="341" width="46" height="17" fill="var(--n3)" data-tip="COOL 液冷/风扇/热管理 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.337 pt，AGREE 预算 0.069 pt → k = 5.0（须改进）
+再分配后 k′ = 2.3：硬件任务，允许 FIT 43（当前 100）
+每次事件平均停顿 253 s，预算允许 51 s"/><rect x="804.5" y="342.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="342.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="353.5" text-anchor="middle" class="cellt onDark" pointer-events="none">5.0</text><rect x="851" y="341" width="46" height="17" fill="var(--n2)" data-tip="COOL 液冷/风扇/热管理 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.236 pt，AGREE 预算 0.074 pt → k = 3.3（须改进）
+再分配后 k′ = 2.4：硬件任务，允许 FIT 42（当前 100）
+每次事件平均停顿 180 s，预算允许 54 s"/><rect x="852.5" y="342.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="342.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">3.3</text><rect x="899" y="341" width="46" height="17" fill="var(--n2)" data-tip="COOL 液冷/风扇/热管理 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.229 pt，AGREE 预算 0.074 pt → k = 3.1（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 54 s"/><text x="922" y="353.5" text-anchor="middle" class="cellt" pointer-events="none">3.1</text><text x="14" y="372.5" class="t2" style="font-size:11px">MGMT</text><rect x="161" y="360" width="46" height="17" fill="var(--h4)" data-tip="MGMT 管理刀片/BMC/UBM · 1 万卡 · 仅改硬件（无机制）
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="184" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="209" y="360" width="46" height="17" fill="var(--h4)" data-tip="MGMT 管理刀片/BMC/UBM · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="232" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="257" y="360" width="46" height="17" fill="var(--h4)" data-tip="MGMT 管理刀片/BMC/UBM · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="280" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="305" y="360" width="46" height="17" fill="var(--h4)" data-tip="MGMT 管理刀片/BMC/UBM · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="328" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="359" y="360" width="46" height="17" fill="var(--n1)" data-tip="MGMT 管理刀片/BMC/UBM · 10 万卡 · 仅改硬件（无机制）
+当前 0.096 pt，AGREE 预算 0.080 pt → k = 1.21（须改进）
+再分配后 k′ = 1.08：硬件任务，允许 FIT 124（当前 133）
+每次事件平均停顿 265 s，预算允许 219 s"/><rect x="360.5" y="361.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="361.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">1.21</text><rect x="407" y="360" width="46" height="17" fill="var(--n1)" data-tip="MGMT 管理刀片/BMC/UBM · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.097 pt，AGREE 预算 0.080 pt → k = 1.21（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 219 s"/><text x="430" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">1.21</text><rect x="455" y="360" width="46" height="17" fill="var(--h1)" data-tip="MGMT 管理刀片/BMC/UBM · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.066 pt，AGREE 预算 0.081 pt → k = 0.81（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 180 s，预算允许 222 s"/><text x="478" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">0.81</text><rect x="503" y="360" width="46" height="17" fill="var(--h1)" data-tip="MGMT 管理刀片/BMC/UBM · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.073 pt，AGREE 预算 0.081 pt → k = 0.90（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 221 s"/><text x="526" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">0.90</text><rect x="557" y="360" width="46" height="17" fill="var(--n2)" data-tip="MGMT 管理刀片/BMC/UBM · 20 万卡 · 仅改硬件（无机制）
+当前 0.187 pt，AGREE 预算 0.077 pt → k = 2.5（须改进）
+再分配后 k′ = 2.5：硬件任务，允许 FIT 54（当前 133）
+每次事件平均停顿 265 s，预算允许 106 s"/><rect x="558.5" y="361.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="361.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">2.5</text><rect x="605" y="360" width="46" height="17" fill="var(--n2)" data-tip="MGMT 管理刀片/BMC/UBM · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.184 pt，AGREE 预算 0.077 pt → k = 2.4（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 105 s"/><text x="628" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">2.4</text><rect x="653" y="360" width="46" height="17" fill="var(--h3)" data-tip="MGMT 管理刀片/BMC/UBM · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.014 pt，AGREE 预算 0.079 pt → k = 0.18（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 20 s，预算允许 109 s"/><text x="676" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.18</text><rect x="701" y="360" width="46" height="17" fill="var(--h3)" data-tip="MGMT 管理刀片/BMC/UBM · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.014 pt，AGREE 预算 0.079 pt → k = 0.17（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 19 s，预算允许 108 s"/><text x="724" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.17</text><rect x="755" y="360" width="46" height="17" fill="var(--n3)" data-tip="MGMT 管理刀片/BMC/UBM · 50 万卡 · 仅改硬件（无机制）
+当前 0.435 pt，AGREE 预算 0.070 pt → k = 6.9（须改进）
+再分配后 k′ = 6.9：硬件任务，允许 FIT 19（当前 133）
+每次事件平均停顿 265 s，预算允许 38 s"/><rect x="756.5" y="361.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="361.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">6.9</text><rect x="803" y="360" width="46" height="17" fill="var(--n3)" data-tip="MGMT 管理刀片/BMC/UBM · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.450 pt，AGREE 预算 0.069 pt → k = 6.7（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 43（当前 133）
+每次事件平均停顿 253 s，预算允许 38 s"/><rect x="804.5" y="361.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="361.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="372.5" text-anchor="middle" class="cellt onDark" pointer-events="none">6.7</text><rect x="851" y="360" width="46" height="17" fill="var(--h2)" data-tip="MGMT 管理刀片/BMC/UBM · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.035 pt，AGREE 预算 0.074 pt → k = 0.49（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 20 s，预算允许 41 s"/><text x="874" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">0.49</text><rect x="899" y="360" width="46" height="17" fill="var(--h2)" data-tip="MGMT 管理刀片/BMC/UBM · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.034 pt，AGREE 预算 0.074 pt → k = 0.46（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 19 s，预算允许 40 s"/><text x="922" y="372.5" text-anchor="middle" class="cellt" pointer-events="none">0.46</text><text x="14" y="391.5" class="t2" style="font-size:11px">STORAGE <tspan class="m" style="font-size:9.5px">存储 / 软件 / 未归因</tspan></text><rect x="161" y="379" width="46" height="17" fill="var(--h4)" data-tip="STORAGE 共享检查点/存储服务 · 1 万卡 · 仅改硬件（无机制）
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="184" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="209" y="379" width="46" height="17" fill="var(--h4)" data-tip="STORAGE 共享检查点/存储服务 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="232" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="257" y="379" width="46" height="17" fill="var(--h4)" data-tip="STORAGE 共享检查点/存储服务 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="280" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="305" y="379" width="46" height="17" fill="var(--h4)" data-tip="STORAGE 共享检查点/存储服务 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.010 pt，AGREE 预算 0.083 pt → k = 0.12（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 2273 s"/><text x="328" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">0.12</text><rect x="359" y="379" width="46" height="17" fill="var(--n1)" data-tip="STORAGE 共享检查点/存储服务 · 10 万卡 · 仅改硬件（无机制）
+当前 0.096 pt，AGREE 预算 0.080 pt → k = 1.21（须改进）
+再分配后 k′ = 1.08：硬件任务，允许 FIT 124（当前 133）
+每次事件平均停顿 265 s，预算允许 219 s"/><rect x="360.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">1.21</text><rect x="407" y="379" width="46" height="17" fill="var(--n1)" data-tip="STORAGE 共享检查点/存储服务 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.097 pt，AGREE 预算 0.080 pt → k = 1.21（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 219 s"/><text x="430" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">1.21</text><rect x="455" y="379" width="46" height="17" fill="var(--h1)" data-tip="STORAGE 共享检查点/存储服务 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.066 pt，AGREE 预算 0.081 pt → k = 0.81（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 180 s，预算允许 222 s"/><text x="478" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">0.81</text><rect x="503" y="379" width="46" height="17" fill="var(--h1)" data-tip="STORAGE 共享检查点/存储服务 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.073 pt，AGREE 预算 0.081 pt → k = 0.90（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 221 s"/><text x="526" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">0.90</text><rect x="557" y="379" width="46" height="17" fill="var(--n2)" data-tip="STORAGE 共享检查点/存储服务 · 20 万卡 · 仅改硬件（无机制）
+当前 0.187 pt，AGREE 预算 0.077 pt → k = 2.5（须改进）
+再分配后 k′ = 2.5：硬件任务，允许 FIT 54（当前 133）
+每次事件平均停顿 265 s，预算允许 106 s"/><rect x="558.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">2.5</text><rect x="605" y="379" width="46" height="17" fill="var(--n2)" data-tip="STORAGE 共享检查点/存储服务 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.184 pt，AGREE 预算 0.077 pt → k = 2.4（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 253 s，预算允许 105 s"/><text x="628" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">2.4</text><rect x="653" y="379" width="46" height="17" fill="var(--n1)" data-tip="STORAGE 共享检查点/存储服务 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.130 pt，AGREE 预算 0.079 pt → k = 1.66（须改进）
+再分配后 k′ = 1.12：硬件任务，允许 FIT 119（当前 133）
+每次事件平均停顿 180 s，预算允许 109 s"/><rect x="654.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">1.66</text><rect x="701" y="379" width="46" height="17" fill="var(--n1)" data-tip="STORAGE 共享检查点/存储服务 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.124 pt，AGREE 预算 0.079 pt → k = 1.55（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 168 s，预算允许 108 s"/><text x="724" y="391.5" text-anchor="middle" class="cellt" pointer-events="none">1.55</text><rect x="755" y="379" width="46" height="17" fill="var(--n3)" data-tip="STORAGE 共享检查点/存储服务 · 50 万卡 · 仅改硬件（无机制）
+当前 0.435 pt，AGREE 预算 0.070 pt → k = 6.9（须改进）
+再分配后 k′ = 6.9：硬件任务，允许 FIT 19（当前 133）
+每次事件平均停顿 265 s，预算允许 38 s"/><rect x="756.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">6.9</text><rect x="803" y="379" width="46" height="17" fill="var(--n3)" data-tip="STORAGE 共享检查点/存储服务 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.450 pt，AGREE 预算 0.069 pt → k = 6.7（须改进）
+再分配后 k′ = 3.1：硬件任务，允许 FIT 43（当前 133）
+每次事件平均停顿 253 s，预算允许 38 s"/><rect x="804.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">6.7</text><rect x="851" y="379" width="46" height="17" fill="var(--n3)" data-tip="STORAGE 共享检查点/存储服务 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.315 pt，AGREE 预算 0.074 pt → k = 4.4（须改进）
+再分配后 k′ = 3.2：硬件任务，允许 FIT 42（当前 133）
+每次事件平均停顿 180 s，预算允许 41 s"/><rect x="852.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.4</text><rect x="899" y="379" width="46" height="17" fill="var(--n3)" data-tip="STORAGE 共享检查点/存储服务 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.305 pt，AGREE 预算 0.074 pt → k = 4.2（须改进）
+再分配后 k′ = 1.04：硬件任务，允许 FIT 128（当前 133）
+每次事件平均停顿 168 s，预算允许 40 s"/><rect x="900.5" y="380.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="900.5" y="380.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="922" y="391.5" text-anchor="middle" class="cellt onDark" pointer-events="none">4.2</text><text x="14" y="410.5" class="t2" style="font-size:11px">UNKNOWN</text><rect x="161" y="398" width="46" height="17" fill="var(--h2)" data-tip="UNKNOWN 未知/软件/未归因 · 1 万卡 · 仅改硬件（无机制）
+当前 0.030 pt，AGREE 预算 0.083 pt → k = 0.36（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 739 s"/><text x="184" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">0.36</text><rect x="209" y="398" width="46" height="17" fill="var(--h2)" data-tip="UNKNOWN 未知/软件/未归因 · 1 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.030 pt，AGREE 预算 0.083 pt → k = 0.36（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 739 s"/><text x="232" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">0.36</text><rect x="257" y="398" width="46" height="17" fill="var(--h2)" data-tip="UNKNOWN 未知/软件/未归因 · 1 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.030 pt，AGREE 预算 0.083 pt → k = 0.36（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 739 s"/><text x="280" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">0.36</text><rect x="305" y="398" width="46" height="17" fill="var(--h2)" data-tip="UNKNOWN 未知/软件/未归因 · 1 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.030 pt，AGREE 预算 0.083 pt → k = 0.36（有余量）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 739 s"/><text x="328" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">0.36</text><rect x="359" y="398" width="46" height="17" fill="var(--n2)" data-tip="UNKNOWN 未知/软件/未归因 · 10 万卡 · 仅改硬件（无机制）
+当前 0.294 pt，AGREE 预算 0.080 pt → k = 3.7（须改进）
+再分配后 k′ = 3.3：硬件任务，允许 FIT 124（当前 410）
+每次事件平均停顿 265 s，预算允许 71 s"/><rect x="360.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="360.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="382" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">3.7</text><rect x="407" y="398" width="46" height="17" fill="var(--n2)" data-tip="UNKNOWN 未知/软件/未归因 · 10 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.298 pt，AGREE 预算 0.080 pt → k = 3.7（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 265 s，预算允许 71 s"/><text x="430" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">3.7</text><rect x="455" y="398" width="46" height="17" fill="var(--n1)" data-tip="UNKNOWN 未知/软件/未归因 · 10 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.152 pt，AGREE 预算 0.081 pt → k = 1.87（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 135 s，预算允许 72 s"/><text x="478" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">1.87</text><rect x="503" y="398" width="46" height="17" fill="var(--n2)" data-tip="UNKNOWN 未知/软件/未归因 · 10 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.225 pt，AGREE 预算 0.081 pt → k = 2.8（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 200 s，预算允许 72 s"/><text x="526" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">2.8</text><rect x="557" y="398" width="46" height="17" fill="var(--n3)" data-tip="UNKNOWN 未知/软件/未归因 · 20 万卡 · 仅改硬件（无机制）
+当前 0.574 pt，AGREE 预算 0.077 pt → k = 7.7（须改进）
+再分配后 k′ = 7.6：硬件任务，允许 FIT 54（当前 410）
+每次事件平均停顿 265 s，预算允许 34 s"/><rect x="558.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="558.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="580" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">7.7</text><rect x="605" y="398" width="46" height="17" fill="var(--n3)" data-tip="UNKNOWN 未知/软件/未归因 · 20 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 0.567 pt，AGREE 预算 0.077 pt → k = 7.4（须改进）
+再分配后 k′ = 1.41：硬件任务，允许 FIT 291（当前 410）
+每次事件平均停顿 253 s，预算允许 34 s"/><rect x="606.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="606.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="628" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">7.4</text><rect x="653" y="398" width="46" height="17" fill="var(--n2)" data-tip="UNKNOWN 未知/软件/未归因 · 20 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.300 pt，AGREE 预算 0.079 pt → k = 3.8（须改进）
+再分配后 k′ = 2.6：硬件任务，允许 FIT 159（当前 410）
+每次事件平均停顿 135 s，预算允许 35 s"/><rect x="654.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="654.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="676" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">3.8</text><rect x="701" y="398" width="46" height="17" fill="var(--n2)" data-tip="UNKNOWN 未知/软件/未归因 · 20 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.278 pt，AGREE 预算 0.079 pt → k = 3.5（须改进）
+再分配后 k′ = 1.00：无硬件任务
+每次事件平均停顿 123 s，预算允许 35 s"/><text x="724" y="410.5" text-anchor="middle" class="cellt" pointer-events="none">3.5</text><rect x="755" y="398" width="46" height="17" fill="var(--n4)" data-tip="UNKNOWN 未知/软件/未归因 · 50 万卡 · 仅改硬件（无机制）
+当前 1.339 pt，AGREE 预算 0.070 pt → k = 21（须改进）
+再分配后 k′ = 21：硬件任务，允许 FIT 19（当前 410）
+每次事件平均停顿 265 s，预算允许 13 s"/><rect x="756.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="756.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="778" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">21</text><rect x="803" y="398" width="46" height="17" fill="var(--n4)" data-tip="UNKNOWN 未知/软件/未归因 · 50 万卡 · ReMAP 原有机制的 AGREE 机制集后
+当前 1.383 pt，AGREE 预算 0.069 pt → k = 21（须改进）
+再分配后 k′ = 9.6：硬件任务，允许 FIT 43（当前 410）
+每次事件平均停顿 253 s，预算允许 12 s"/><rect x="804.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="804.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="826" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">21</text><rect x="851" y="398" width="46" height="17" fill="var(--n4)" data-tip="UNKNOWN 未知/软件/未归因 · 50 万卡 · 新增 16 项机制（临时假设）的 AGREE 机制集后
+当前 0.726 pt，AGREE 预算 0.074 pt → k = 10（须改进）
+再分配后 k′ = 7.3：硬件任务，允许 FIT 56（当前 410）
+每次事件平均停顿 135 s，预算允许 13 s"/><rect x="852.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="852.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="874" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">10</text><rect x="899" y="398" width="46" height="17" fill="var(--n4)" data-tip="UNKNOWN 未知/软件/未归因 · 50 万卡 · 原有 + 新增（临时假设）的 AGREE 机制集后
+当前 0.688 pt，AGREE 预算 0.074 pt → k = 9.4（须改进）
+再分配后 k′ = 2.3：硬件任务，允许 FIT 175（当前 410）
+每次事件平均停顿 123 s，预算允许 13 s"/><rect x="900.5" y="399.5" width="43" height="14" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="900.5" y="399.5" width="43" height="14" fill="none" stroke="var(--ink)" stroke-width="1.4" pointer-events="none"/><text x="922" y="410.5" text-anchor="middle" class="cellt onDark" pointer-events="none">9.4</text><rect x="84" y="430" width="24" height="12" fill="var(--h4)"/><rect x="110" y="430" width="24" height="12" fill="var(--h3)"/><rect x="136" y="430" width="24" height="12" fill="var(--h2)"/><rect x="162" y="430" width="24" height="12" fill="var(--h1)"/><rect x="188" y="430" width="24" height="12" fill="var(--mid)"/><rect x="214" y="430" width="24" height="12" fill="var(--n1)"/><rect x="240" y="430" width="24" height="12" fill="var(--n2)"/><rect x="266" y="430" width="24" height="12" fill="var(--n3)"/><rect x="292" y="430" width="24" height="12" fill="var(--n4)"/><text x="78" y="440" text-anchor="end" class="m tick">k ≤ 0.06</text><text x="324" y="440" class="m tick">k ≥ 16（每格 ×2；k 为当前类中断率 ÷ AGREE 预算在该类停顿下允许的中断率）</text><text x="200" y="453" text-anchor="middle" class="m">1</text><text x="14" y="468" class="m">预算：每类 (1.5 pt − 非域暂停项) / 18（参考目录按每卡·小时计，n_i = N 对所有类相同，重要度 1、工时比 1 → AGREE 等分）；"仅硬件"列的再分配结果与 Albert 最小努力法一致。</text></svg>

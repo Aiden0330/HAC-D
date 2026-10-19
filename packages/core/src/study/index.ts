@@ -55,7 +55,8 @@ export const GROUP_LABELS: Record<string, { zh: string; en: string }> = {
 };
 /** non-domain lines of the decomposition (pause-only events and episode pauses that belong to no hardware class) */
 export const NON_DOMAIN_GROUPS = ['isolation', 'sdcPause', 'falseAlarm', 'sdcDetected'];
-const domainOf = (id: string) => id.replace(/-(hard|slow|sdc)$/, '');
+/** catalog domain of a component id (`CORE-hard`, v4 per-unit `FABRIC-hard@roce`) */
+export const domainOf = (id: string) => id.replace(/@.*$/, '').replace(/-(hard|slow|sdc)$/, '');
 export function groupOf(c: Scenario['components'][number]): string {
   const d = domainOf(c.id);
   for (const [g, ids] of Object.entries(CATALOG_GROUPS)) if (ids.includes(d)) return g;

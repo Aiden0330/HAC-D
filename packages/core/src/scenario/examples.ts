@@ -482,13 +482,38 @@ export function referenceCatalog(npus = 100000): Scenario {
   });
 }
 
-export const EXAMPLES: Record<string, () => Scenario> = {
-  'ref-baseline-100k': () => referenceBaseline(100000),
+/**
+ * v4.1 example registry of the NPU tool (UI, CLI, MCP): exactly the three topology templates, registered by the topology
+ * module (`TOPOLOGY_EXAMPLES`, 10,000 NPUs with the six default mechanisms). The scale is a parameter (built-in 10k / 100k /
+ * 200k / 500k NPUs or any N: the topology page's scale chips, `hacd example <id> --npus N`, MCP `get_example` with `npus`), so
+ * no per-size or per-template copies exist. Scenarios that a template at a scale covers left the registry in v4.1
+ * (`RETIRED_EXAMPLES`); the reference engine's baselines stay reachable by id as `REFERENCE_FIXTURES`. The GPU examples of
+ * v3.7 (survey worked examples on H100 data, the NVL72 design and the four-source baseline with Llama 3 shares) live in
+ * `GPU_EXAMPLES` for tests and for the GPU tool forked at tag v3.7-gpu.
+ */
+export const EXAMPLES: Record<string, () => Scenario> = {};
+
+/**
+ * Reference-engine fixtures (not listed as examples): the confirmed three-class baseline and the 54-event catalog per card at
+ * 100,000 cards, the inputs of the reference / ReMAP cross-checks (`scripts/remap-bridge.ts`, `scripts/remap-param-check.ts`,
+ * docs/REMAP_INTEGRATION.md) and of the reference-reproduction tests. `hacd example <id>` and MCP `get_example` resolve them.
+ */
+export const REFERENCE_FIXTURES: Record<string, () => Scenario> = {
   'ref-three-classes-100k': () => referenceThreeClasses(100000),
   'ref-catalog-100k': () => referenceCatalog(100000),
+};
+
+/** v4.1 ids that left the example registry because a topology template at a scale covers them (the web app drops saved copies that are still unchanged) */
+export const RETIRED_EXAMPLES: Record<string, () => Scenario> = {
+  ...REFERENCE_FIXTURES,
   'ascend-cm384': cloudMatrix384Training,
   'ascend-atlas950': atlas950Training,
   'ascend-supercluster-100k': () => ascendSupercluster(100000, 3),
+};
+
+/** v3.7 GPU examples, kept out of the NPU tool's registry (decision 4a, docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md §6) */
+export const GPU_EXAMPLES: Record<string, () => Scenario> = {
+  'ref-baseline-100k': () => referenceBaseline(100000),
   'survey-ex1': workedExample1,
   'survey-ex3': () => workedExample3(),
   'survey-ex4': () => workedExample4(),

@@ -1,0 +1,85 @@
+<svg class="viz" id="chart-shapley" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 332" width="100%" role="img"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; font-family:system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+@media (prefers-color-scheme: dark) { svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; } }
+:root[data-theme="light"] svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --mid:#f0efec; --h1:#b7d3f6; --h2:#6da7ec; --h3:#2a78d6; --h4:#184f95; --n1:#f7cfce; --n2:#f2a8a7; --n3:#ea7c7b; --n4:#e34948; }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --mid:#383835; --h1:#2b4a78; --h2:#2a5fa4; --h3:#3987e5; --h4:#86b6ef; --n1:#5a2a2a; --n2:#8c3434; --n3:#c24a4a; --n4:#e66767; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .ref { stroke: var(--ink2); stroke-width: 1; } svg.viz .hit { fill: transparent; pointer-events: all; } svg.viz .xh { pointer-events: none; } svg.viz .cellt { font-size: 12px; font-variant-numeric: tabular-nums; } svg.viz .onDark { fill: var(--surface); }
+</style><rect width="960" height="332" fill="var(--surface)" rx="8"/><text x="16" y="20" class="ttl">图 3 · ReMAP 各机制对 A_op 的 Shapley 贡献（百分点，8 项全组合精确值）；带框 = 该规模推荐集所含</text><text x="16" y="50" class="m">机制（按平均贡献排序）</text><text x="326" y="50" text-anchor="middle" class="t2">1 万卡</text><text x="454" y="50" text-anchor="middle" class="t2">10 万卡</text><text x="582" y="50" text-anchor="middle" class="t2">20 万卡</text><text x="710" y="50" text-anchor="middle" class="t2">50 万卡</text><text x="809" y="50" text-anchor="middle" class="t2">工作量</text><text x="16" y="76" class="t2">R-ELASTIC <tspan class="m">DP 域弹性恢复</tspan></text><rect x="263" y="59" width="126" height="26" fill="var(--h1)" data-tip="R-ELASTIC DP 域弹性恢复 · 1 万卡
+Shapley（A_op）+0.078 pt；单独启用 +0.157；末位加入 +0.020
+Shapley（正确交付）+0.11 pt"/><text x="326" y="76" text-anchor="middle" class="cellt" pointer-events="none">+0.08</text><rect x="391" y="59" width="126" height="26" fill="var(--h1)" data-tip="R-ELASTIC DP 域弹性恢复 · 10 万卡
+Shapley（A_op）+0.760 pt；单独启用 +1.518；末位加入 +0.198
+Shapley（正确交付）+0.74 pt
+在该规模的推荐集中"/><rect x="394" y="62" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="394" y="62" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="454" y="76" text-anchor="middle" class="cellt" pointer-events="none">+0.76</text><rect x="519" y="59" width="126" height="26" fill="var(--h2)" data-tip="R-ELASTIC DP 域弹性恢复 · 20 万卡
+Shapley（A_op）+1.477 pt；单独启用 +2.936；末位加入 +0.388
+Shapley（正确交付）+1.16 pt
+在该规模的推荐集中"/><rect x="522" y="62" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="62" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="76" text-anchor="middle" class="cellt" pointer-events="none">+1.48</text><rect x="647" y="59" width="126" height="26" fill="var(--h4)" data-tip="R-ELASTIC DP 域弹性恢复 · 50 万卡
+Shapley（A_op）+3.392 pt；单独启用 +6.670；末位加入 +0.918
+Shapley（正确交付）+1.77 pt
+在该规模的推荐集中"/><rect x="650" y="62" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="62" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="76" text-anchor="middle" class="cellt onDark" pointer-events="none">+3.39</text><text x="809" y="76" text-anchor="middle" class="t2 tick">5</text><text x="16" y="104" class="t2">R-PROCESS <tspan class="m">进程 / Pod 重调度</tspan></text><rect x="263" y="87" width="126" height="26" fill="var(--mid)" data-tip="R-PROCESS 进程 / Pod 重调度 · 1 万卡
+Shapley（A_op）+0.045 pt；单独启用 +0.108；末位加入 +0.001
+Shapley（正确交付）+0.04 pt"/><text x="326" y="104" text-anchor="middle" class="cellt" pointer-events="none">+0.04</text><rect x="391" y="87" width="126" height="26" fill="var(--h1)" data-tip="R-PROCESS 进程 / Pod 重调度 · 10 万卡
+Shapley（A_op）+0.434 pt；单独启用 +1.042；末位加入 +0.010
+Shapley（正确交付）+0.27 pt"/><text x="454" y="104" text-anchor="middle" class="cellt" pointer-events="none">+0.43</text><rect x="519" y="87" width="126" height="26" fill="var(--h1)" data-tip="R-PROCESS 进程 / Pod 重调度 · 20 万卡
+Shapley（A_op）+0.839 pt；单独启用 +2.005；末位加入 +0.019
+Shapley（正确交付）+0.42 pt
+在该规模的推荐集中"/><rect x="522" y="90" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="90" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="104" text-anchor="middle" class="cellt" pointer-events="none">+0.84</text><rect x="647" y="87" width="126" height="26" fill="var(--h3)" data-tip="R-PROCESS 进程 / Pod 重调度 · 50 万卡
+Shapley（A_op）+1.895 pt；单独启用 +4.494；末位加入 +0.046
+Shapley（正确交付）+0.54 pt
+在该规模的推荐集中"/><rect x="650" y="90" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="90" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="104" text-anchor="middle" class="cellt onDark" pointer-events="none">+1.90</text><text x="809" y="104" text-anchor="middle" class="t2 tick">3</text><text x="16" y="132" class="t2">R-REPLAY <tspan class="m">通信 / 算子重执行</tspan></text><rect x="263" y="115" width="126" height="26" fill="var(--mid)" data-tip="R-REPLAY 通信 / 算子重执行 · 1 万卡
+Shapley（A_op）+0.034 pt；单独启用 +0.086；末位加入 +0.003
+Shapley（正确交付）+0.05 pt"/><text x="326" y="132" text-anchor="middle" class="cellt" pointer-events="none">+0.03</text><rect x="391" y="115" width="126" height="26" fill="var(--h1)" data-tip="R-REPLAY 通信 / 算子重执行 · 10 万卡
+Shapley（A_op）+0.332 pt；单独启用 +0.826；末位加入 +0.033
+Shapley（正确交付）+0.33 pt"/><text x="454" y="132" text-anchor="middle" class="cellt" pointer-events="none">+0.33</text><rect x="519" y="115" width="126" height="26" fill="var(--h1)" data-tip="R-REPLAY 通信 / 算子重执行 · 20 万卡
+Shapley（A_op）+0.640 pt；单独启用 +1.587；末位加入 +0.065
+Shapley（正确交付）+0.51 pt
+在该规模的推荐集中"/><rect x="522" y="118" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="118" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="132" text-anchor="middle" class="cellt" pointer-events="none">+0.64</text><rect x="647" y="115" width="126" height="26" fill="var(--h2)" data-tip="R-REPLAY 通信 / 算子重执行 · 50 万卡
+Shapley（A_op）+1.439 pt；单独启用 +3.535；末位加入 +0.154
+Shapley（正确交付）+0.68 pt
+在该规模的推荐集中"/><rect x="650" y="118" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="118" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="132" text-anchor="middle" class="cellt" pointer-events="none">+1.44</text><text x="809" y="132" text-anchor="middle" class="t2 tick">2</text><text x="16" y="160" class="t2">D-HARD <tspan class="m">中断检测 / 超时兜底</tspan></text><rect x="263" y="143" width="126" height="26" fill="var(--mid)" data-tip="D-HARD 中断检测 / 超时兜底 · 1 万卡
+Shapley（A_op）+0.008 pt；单独启用 +0.011；末位加入 +0.007
+Shapley（正确交付）+0.01 pt"/><text x="326" y="160" text-anchor="middle" class="cellt" pointer-events="none">+0.01</text><rect x="391" y="143" width="126" height="26" fill="var(--h1)" data-tip="D-HARD 中断检测 / 超时兜底 · 10 万卡
+Shapley（A_op）+0.081 pt；单独启用 +0.101；末位加入 +0.073
+Shapley（正确交付）+0.06 pt"/><text x="454" y="160" text-anchor="middle" class="cellt" pointer-events="none">+0.08</text><rect x="519" y="143" width="126" height="26" fill="var(--h1)" data-tip="D-HARD 中断检测 / 超时兜底 · 20 万卡
+Shapley（A_op）+0.158 pt；单独启用 +0.193；末位加入 +0.144
+Shapley（正确交付）+0.10 pt
+在该规模的推荐集中"/><rect x="522" y="146" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="146" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="160" text-anchor="middle" class="cellt" pointer-events="none">+0.16</text><rect x="647" y="143" width="126" height="26" fill="var(--h1)" data-tip="D-HARD 中断检测 / 超时兜底 · 50 万卡
+Shapley（A_op）+0.363 pt；单独启用 +0.420；末位加入 +0.342
+Shapley（正确交付）+0.16 pt
+在该规模的推荐集中"/><rect x="650" y="146" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="146" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="160" text-anchor="middle" class="cellt" pointer-events="none">+0.36</text><text x="809" y="160" text-anchor="middle" class="t2 tick">2</text><text x="16" y="188" class="t2">R-SDC <tspan class="m">干净状态恢复与 step 重算</tspan></text><rect x="263" y="171" width="126" height="26" fill="var(--mid)" data-tip="R-SDC 干净状态恢复与 step 重算 · 1 万卡
+Shapley（A_op）+0.002 pt；单独启用 +0.000；末位加入 +0.003
+Shapley（正确交付）+0.00 pt"/><text x="326" y="188" text-anchor="middle" class="cellt" pointer-events="none">+0.00</text><rect x="391" y="171" width="126" height="26" fill="var(--mid)" data-tip="R-SDC 干净状态恢复与 step 重算 · 10 万卡
+Shapley（A_op）+0.016 pt；单独启用 +0.000；末位加入 +0.031
+Shapley（正确交付）+0.02 pt"/><text x="454" y="188" text-anchor="middle" class="cellt" pointer-events="none">+0.02</text><rect x="519" y="171" width="126" height="26" fill="var(--mid)" data-tip="R-SDC 干净状态恢复与 step 重算 · 20 万卡
+Shapley（A_op）+0.030 pt；单独启用 +0.000；末位加入 +0.062
+Shapley（正确交付）+0.04 pt
+在该规模的推荐集中"/><rect x="522" y="174" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="174" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="188" text-anchor="middle" class="cellt" pointer-events="none">+0.03</text><rect x="647" y="171" width="126" height="26" fill="var(--h1)" data-tip="R-SDC 干净状态恢复与 step 重算 · 50 万卡
+Shapley（A_op）+0.071 pt；单独启用 +0.000；末位加入 +0.147
+Shapley（正确交付）+0.08 pt
+在该规模的推荐集中"/><rect x="650" y="174" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="174" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="188" text-anchor="middle" class="cellt" pointer-events="none">+0.07</text><text x="809" y="188" text-anchor="middle" class="t2 tick">4</text><text x="16" y="216" class="t2">C-FAST <tspan class="m">缩短 CKPT 周期和保存阻塞</tspan></text><rect x="263" y="199" width="126" height="26" fill="var(--mid)" data-tip="C-FAST 缩短 CKPT 周期和保存阻塞 · 1 万卡
+Shapley（A_op）−0.000 pt；单独启用 −0.000；末位加入 −0.000
+Shapley（正确交付）−0.26 pt"/><text x="326" y="216" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="391" y="199" width="126" height="26" fill="var(--mid)" data-tip="C-FAST 缩短 CKPT 周期和保存阻塞 · 10 万卡
+Shapley（A_op）−0.000 pt；单独启用 −0.000；末位加入 −0.000
+Shapley（正确交付）+0.17 pt"/><text x="454" y="216" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="519" y="199" width="126" height="26" fill="var(--mid)" data-tip="C-FAST 缩短 CKPT 周期和保存阻塞 · 20 万卡
+Shapley（A_op）−0.000 pt；单独启用 −0.000；末位加入 −0.000
+Shapley（正确交付）+0.47 pt"/><text x="582" y="216" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="647" y="199" width="126" height="26" fill="var(--mid)" data-tip="C-FAST 缩短 CKPT 周期和保存阻塞 · 50 万卡
+Shapley（A_op）−0.000 pt；单独启用 −0.001；末位加入 −0.000
+Shapley（正确交付）+0.82 pt"/><text x="710" y="216" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><text x="809" y="216" text-anchor="middle" class="t2 tick">3</text><text x="16" y="244" class="t2">D-SLOW <tspan class="m">亚健康检测</tspan></text><rect x="263" y="227" width="126" height="26" fill="var(--mid)" data-tip="D-SLOW 亚健康检测 · 1 万卡
+Shapley（A_op）−0.000 pt；单独启用 −0.000；末位加入 −0.000
+Shapley（正确交付）+0.00 pt"/><text x="326" y="244" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="391" y="227" width="126" height="26" fill="var(--mid)" data-tip="D-SLOW 亚健康检测 · 10 万卡
+Shapley（A_op）−0.002 pt；单独启用 −0.002；末位加入 −0.002
+Shapley（正确交付）+0.03 pt"/><text x="454" y="244" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="519" y="227" width="126" height="26" fill="var(--mid)" data-tip="D-SLOW 亚健康检测 · 20 万卡
+Shapley（A_op）−0.004 pt；单独启用 −0.004；末位加入 −0.004
+Shapley（正确交付）+0.05 pt"/><text x="582" y="244" text-anchor="middle" class="cellt" pointer-events="none">−0.00</text><rect x="647" y="227" width="126" height="26" fill="var(--mid)" data-tip="D-SLOW 亚健康检测 · 50 万卡
+Shapley（A_op）−0.009 pt；单独启用 −0.008；末位加入 −0.010
+Shapley（正确交付）+0.09 pt"/><text x="710" y="244" text-anchor="middle" class="cellt" pointer-events="none">−0.01</text><text x="809" y="244" text-anchor="middle" class="t2 tick">3</text><text x="16" y="272" class="t2">D-SDC <tspan class="m">静默即时检测</tspan></text><rect x="263" y="255" width="126" height="26" fill="var(--mid)" data-tip="D-SDC 静默即时检测 · 1 万卡
+Shapley（A_op）+0.001 pt；单独启用 −0.001；末位加入 +0.002
+Shapley（正确交付）+4.69 pt"/><text x="326" y="272" text-anchor="middle" class="cellt" pointer-events="none">+0.00</text><rect x="391" y="255" width="126" height="26" fill="var(--mid)" data-tip="D-SDC 静默即时检测 · 10 万卡
+Shapley（A_op）+0.001 pt；单独启用 −0.014；末位加入 +0.016
+Shapley（正确交付）+30.67 pt"/><text x="454" y="272" text-anchor="middle" class="cellt" pointer-events="none">+0.00</text><rect x="519" y="255" width="126" height="26" fill="var(--mid)" data-tip="D-SDC 静默即时检测 · 20 万卡
+Shapley（A_op）−0.007 pt；单独启用 −0.036；末位加入 +0.023
+Shapley（正确交付）+43.27 pt
+在该规模的推荐集中"/><rect x="522" y="258" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="522" y="258" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="582" y="272" text-anchor="middle" class="cellt" pointer-events="none">−0.01</text><rect x="647" y="255" width="126" height="26" fill="var(--mid)" data-tip="D-SDC 静默即时检测 · 50 万卡
+Shapley（A_op）−0.040 pt；单独启用 −0.099；末位加入 +0.029
+Shapley（正确交付）+53.61 pt
+在该规模的推荐集中"/><rect x="650" y="258" width="120" height="20" fill="none" stroke="var(--surface)" stroke-width="3" pointer-events="none"/><rect x="650" y="258" width="120" height="20" fill="none" stroke="var(--ink)" stroke-width="1.5" pointer-events="none"/><text x="710" y="272" text-anchor="middle" class="cellt" pointer-events="none">−0.04</text><text x="809" y="272" text-anchor="middle" class="t2 tick">5</text><rect x="262" y="304" width="24" height="12" fill="var(--n4)"/><rect x="288" y="304" width="24" height="12" fill="var(--n3)"/><rect x="314" y="304" width="24" height="12" fill="var(--n2)"/><rect x="340" y="304" width="24" height="12" fill="var(--n1)"/><rect x="366" y="304" width="24" height="12" fill="var(--mid)"/><rect x="392" y="304" width="24" height="12" fill="var(--h1)"/><rect x="418" y="304" width="24" height="12" fill="var(--h2)"/><rect x="444" y="304" width="24" height="12" fill="var(--h3)"/><rect x="470" y="304" width="24" height="12" fill="var(--h4)"/><text x="256" y="314" text-anchor="end" class="m tick">−3.4 pt</text><text x="502" y="314" class="m tick">+3.4 pt</text><text x="378" y="328" text-anchor="middle" class="m">0</text><text x="576" y="314" class="m">静默错误检测（D-SDC、R-SDC）与 checkpoint（C-FAST）改善正确交付而非 A_op，故接近 0 或微负</text></svg>

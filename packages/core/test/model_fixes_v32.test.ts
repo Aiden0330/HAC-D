@@ -11,7 +11,7 @@ import { describe, it, expect } from 'vitest';
 import { chainOutcome, DEFAULT_CHAIN } from '../src/mechanisms/chain.js';
 import { agree } from '../src/allocation/index.js';
 import {
-  evaluateScenario, parseScenario, referenceThreeClasses, referenceBaseline, EXAMPLES, applyMechanisms, stripMechanisms, mechanismReport,
+  evaluateScenario, parseScenario, referenceThreeClasses, referenceBaseline, RETIRED_EXAMPLES, applyMechanisms, stripMechanisms, mechanismReport,
   activeMechanisms, isStrippable, ledgerSpecFromScenario, simulateLedgerReplications, type Scenario,
 } from '../src/index.js';
 
@@ -83,7 +83,7 @@ describe('fix 2: applied records make remove the exact inverse of apply', () => 
 
 describe('fix 3: prediction needs a declared applicability', () => {
   it('does nothing on a scenario without predict flags, and in the chain without the flag', () => {
-    const s = EXAMPLES['ascend-cm384']();
+    const s = RETIRED_EXAMPLES['ascend-cm384']();
     const base = evaluateScenario(s).training!;
     const pred = evaluateScenario(applyMechanisms(s, ['P-PREDICT'])).training!;
     expect(pred.operationalAvailability).toBeCloseTo(base.operationalAvailability, 12);

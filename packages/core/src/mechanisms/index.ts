@@ -441,6 +441,30 @@ export function stripMechanisms(s: Scenario, ids: string[]): Scenario {
   return c;
 }
 
+/**
+ * v4 edit the design under the applied mechanisms: every recorded mechanism is removed (exact inverse), `fn` changes the bare
+ * scenario, and the mechanisms are applied again in their recorded order with their recorded parameters. Settings a mechanism
+ * owns (e.g. C-FAST's checkpoint interval) are therefore set again by it; see `mechanismOwner`.
+ */
+export function editBase(s: Scenario, fn: (bare: Scenario) => Scenario): Scenario {
+  const records = Object.entries(s.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order);
+  if (!records.length) return fn(cloneScenario(s));
+  let c = fn(stripMechanisms(s, records.map(([id]) => id)));
+  for (const [id, rec] of records) {
+    const m = MECHANISM_LIBRARY.find((x) => x.id === id);
+    if (m?.apply) c = m.apply(c, rec.parameters);
+  }
+  return c;
+}
+
+/** v4 the applied mechanism that owns a setting (its applied record replaced `key`, e.g. 'workload.deltaS', 'recovery.detection', 'sdc.detection'), if any (the last one applied wins) */
+export function mechanismOwner(s: Scenario, key: string): string | undefined {
+  let owner: string | undefined;
+  let order = -1;
+  for (const [id, rec] of Object.entries(s.mechanisms.applied ?? {})) if (key in rec.previous && rec.order > order) { owner = id; order = rec.order; }
+  return owner;
+}
+
 export function mechanismById(id: string): MechanismDef {
   const m = MECHANISM_LIBRARY.find((x) => x.id === id);
   if (!m) throw new Error(`unknown mechanism '${id}'`);

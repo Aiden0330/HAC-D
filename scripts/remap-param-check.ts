@@ -7,14 +7,14 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { EXAMPLES, MECHANISM_LIBRARY, computeCounts, componentInstances } from '@hac-d/core';
+import { REFERENCE_FIXTURES, MECHANISM_LIBRARY, computeCounts, componentInstances } from '@hac-d/core';
 
 const i = process.argv.indexOf('--remap');
 const R = resolve(i >= 0 ? process.argv[i + 1] : process.env.REMAP_DIR ?? 'remap/remap-main', 'references/expert-review-2026-10-09');
 const inputs = JSON.parse(readFileSync(resolve(R, 'inputs.json'), 'utf8'));
 const policy = JSON.parse(readFileSync(resolve(R, 'mechanism-policy.json'), 'utf8')) as Record<string, Record<string, number>>;
 const config = JSON.parse(readFileSync(resolve(R, 'config.json'), 'utf8'));
-const s = EXAMPLES['ref-catalog-100k']();
+const s = REFERENCE_FIXTURES['ref-catalog-100k']();
 const counts = computeCounts(s);
 let fitDiff = 0;
 let flagDiff = 0;

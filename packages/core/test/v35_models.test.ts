@@ -3,7 +3,7 @@
  * rung order, Student-t / Wilson statistics, loss budget, planner checkpoint bounds, incident-rate estimation.
  */
 import { describe, it, expect } from 'vitest';
-import { EXAMPLES, evaluateScenario, sdcDelivery, simulateScenarioLedger, lossBudget, planToTarget, chainOutcome, checkpointBounds, rateFromCounts, unitRateFromCounts, summaryStat, proportionEstimate, proportionVerdict, cloneScenario, DEFAULT_CHAIN, parseScenario } from '../src/index.js';
+import { REFERENCE_FIXTURES, evaluateScenario, sdcDelivery, simulateScenarioLedger, lossBudget, planToTarget, chainOutcome, checkpointBounds, rateFromCounts, unitRateFromCounts, summaryStat, proportionEstimate, proportionVerdict, cloneScenario, DEFAULT_CHAIN, parseScenario } from '../src/index.js';
 import { Rng } from '../src/math/rng.js';
 
 /** brute force of the discard-all rule: Exp(ν) clean periods, deterministic episodes of length c; delivered = g·clean − U·N when the window ends clean, else 0 */
@@ -70,7 +70,7 @@ describe('v3.5 silent-corruption terminal rule', () => {
   });
 
   it('the scenario rule flows into the evaluation and the ledger simulation, which agree', () => {
-    const s = EXAMPLES['ref-three-classes-100k']();
+    const s = REFERENCE_FIXTURES['ref-three-classes-100k']();
     const base = evaluateScenario(s).training!;
     expect(base.sdc!.terminalRule).toBe('retain-last-clean');
     expect(base.deliveredGoodput).toBeCloseTo(0.6261, 2);
@@ -108,7 +108,7 @@ describe('v3.5 rung order', () => {
   });
 
   it('the ledger simulation follows the scenario order', () => {
-    const s = EXAMPLES['ref-three-classes-100k']();
+    const s = REFERENCE_FIXTURES['ref-three-classes-100k']();
     const on = parseScenario({ ...s, mechanisms: { ...s.mechanisms, replay: DEFAULT_CHAIN.replay, process: DEFAULT_CHAIN.process }, components: s.components.map((c) => ({ ...c, mechanisms: { ...(c.mechanisms ?? {}), replay: 1, process: 1 } })) });
     const a = simulateScenarioLedger(on, { trials: 20, seed: 2 }).summary.counts;
     const b = simulateScenarioLedger(parseScenario({ ...on, mechanisms: { ...on.mechanisms, order: ['process', 'replay'] } }), { trials: 20, seed: 2 }).summary.counts;
@@ -158,10 +158,10 @@ describe('v3.5 loss budget', () => {
   });
   it('is attached to the allocation on the delivered basis', async () => {
     const { allocateScenario } = await import('../src/scenario/analysis.js');
-    const a = allocateScenario(EXAMPLES['ref-three-classes-100k'](), { goodputTarget: 0.9, basis: 'delivered' });
+    const a = allocateScenario(REFERENCE_FIXTURES['ref-three-classes-100k'](), { goodputTarget: 0.9, basis: 'delivered' });
     expect(a.lossBudget).toBeDefined();
     expect(a.lossBudget!.totalCurrent).toBeGreaterThan(a.lossBudget!.totalAllowed);
-    const eff = allocateScenario(EXAMPLES['ref-three-classes-100k'](), { goodputTarget: 0.9, basis: 'effective' });
+    const eff = allocateScenario(REFERENCE_FIXTURES['ref-three-classes-100k'](), { goodputTarget: 0.9, basis: 'effective' });
     expect(eff.lossBudget).toBeUndefined();
   });
 });
@@ -175,7 +175,7 @@ describe('v3.5 planner checkpoint bounds', () => {
     expect(checkpointBounds(300, 4, 1 / 3600).finiteWindow).toBe(1);
   });
   it('a target above the no-fault bound is proven infeasible; a reachable target is not', () => {
-    const s = EXAMPLES['ref-three-classes-100k']();
+    const s = REFERENCE_FIXTURES['ref-three-classes-100k']();
     const slow = cloneScenario(s);
     slow.workload = { ...slow.workload, deltaS: 40, intervalS: 300 } as typeof slow.workload;
     const p = planToTarget(slow, { target: 0.9, players: ['D-SDC', 'R-SDC', 'R-REPLAY'], scan: false });

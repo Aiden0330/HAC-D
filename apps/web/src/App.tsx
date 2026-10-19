@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useStore, type Page, type Theme } from './state/store.js';
 import { setLanguage } from './i18n/index.js';
 import { useLang } from './hooks.js';
+import { TopologyPage } from './pages/TopologyPage.js';
 import { ScenarioPage } from './pages/ScenarioPage.js';
-import { TrainingPage } from './pages/TrainingPage.js';
 import { InferencePage } from './pages/InferencePage.js';
 import { SparesPage } from './pages/SparesPage.js';
 import { AllocationPage } from './pages/AllocationPage.js';
@@ -14,11 +14,10 @@ import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
 import { ImportPage } from './pages/ImportPage.js';
 import { MechanismsPage } from './pages/MechanismsPage.js';
-import { AuditPage } from './pages/AuditPage.js';
 
-const PAGES: Page[] = ['scenario', 'training', 'mechanisms', 'allocation', 'audit', 'inference', 'spares', 'compare', 'simulate', 'report', 'import', 'library'];
-/** v3.6 minimal mode (default): the training-availability core only; the other pages stay one click away ("All pages") and every function stays in the CLI / MCP */
-const MINIMAL_HIDDEN: Page[] = ['inference', 'spares', 'compare', 'simulate', 'report'];
+/** v4 main flow: topology & hardware → mechanisms → allocation → fault library; the rest is behind "All pages" (and in the CLI / MCP) */
+const PAGES: Page[] = ['topology', 'mechanisms', 'allocation', 'library', 'scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
+const MINIMAL_HIDDEN: Page[] = ['scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
 type UiMode = 'minimal' | 'full';
 const UI_MODE_KEY = 'hacd-ui-mode';
 function readUiMode(): UiMode {
@@ -50,7 +49,7 @@ export function App() {
   };
   const visiblePages = uiMode === 'minimal' ? PAGES.filter((p) => !MINIMAL_HIDDEN.includes(p)) : PAGES;
   useEffect(() => {
-    if (!visiblePages.includes(page)) setPage('scenario');
+    if (!visiblePages.includes(page)) setPage('topology');
   }, [uiMode, page, visiblePages, setPage]);
 
   return (
@@ -62,7 +61,7 @@ export function App() {
             <h1>{t('app.title')}</h1>
           </div>
           <div className="field scenario-select" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <label htmlFor="scenario-select" className="muted">{t('nav.scenario')}</label>
+            <label htmlFor="scenario-select" className="muted">{t('app.scenarioLabel')}</label>
             <select id="scenario-select" value={activeId} onChange={(e) => setActive(e.target.value)}>
               {scenarios.map((s) => (
                 <option key={s.meta.id} value={s.meta.id}>{scenarios.filter((x) => x.meta.name === s.meta.name).length > 1 ? `${s.meta.name} [${s.meta.id}]` : s.meta.name}</option>
@@ -91,10 +90,9 @@ export function App() {
         </nav>
       </div>
       <main>
+        {page === 'topology' && <TopologyPage />}
         {page === 'scenario' && <ScenarioPage />}
-        {page === 'training' && <TrainingPage />}
         {page === 'mechanisms' && <MechanismsPage />}
-        {page === 'audit' && <AuditPage />}
         {page === 'inference' && <InferencePage />}
         {page === 'spares' && <SparesPage />}
         {page === 'allocation' && <AllocationPage />}

@@ -3,7 +3,7 @@
  * recovery ladder, original vs compensated measures, Monte Carlo adapter with dual repair.
  */
 import { describe, it, expect } from 'vitest';
-import { parseScenario, evaluateScenario, resolveRecovery, compareScenarios, scaleRecovery, workedExample1, workedExample4, ascendSupercluster, EXAMPLES, type ScenarioInput } from '../src/index.js';
+import { parseScenario, evaluateScenario, resolveRecovery, compareScenarios, scaleRecovery, workedExample1, workedExample4, ascendSupercluster, EXAMPLES, RETIRED_EXAMPLES, GPU_EXAMPLES, type ScenarioInput } from '../src/index.js';
 import { mcSpecFromScenario } from '../src/mc/fromScenario.js';
 import { mean as distMean } from '../src/math/distributions.js';
 
@@ -125,7 +125,7 @@ describe('Monte Carlo adapter with v2 inputs', () => {
 
 describe('examples still evaluate', () => {
   it('every example evaluates with measures', () => {
-    for (const [, make] of Object.entries(EXAMPLES)) {
+    for (const [, make] of Object.entries({ ...EXAMPLES, ...RETIRED_EXAMPLES, ...GPU_EXAMPLES })) {
       const r = evaluateScenario(make());
       expect(r.system.measures.original.availability).toBeLessThanOrEqual(r.system.measures.compensated.availability + 1e-12);
     }

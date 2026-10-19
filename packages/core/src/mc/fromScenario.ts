@@ -69,7 +69,7 @@ export function mcSpecFromScenario(s: Scenario, intervalS: number, workHours?: n
         lifetime: lifetimeFromRate(ci.lambda, c.failure.weibullShape),
         repair,
         // superpod scopes (switch chips, links, planes) are cluster-wide independent units for the simulator
-        scope: c.countRule.per === 'gpu' || c.countRule.per === 'node' || c.countRule.per === 'rack' || c.countRule.per === 'zone' ? c.countRule.per : 'fixed',
+        scope: c.countRule.per === 'gpu' || c.countRule.per === 'node' || c.countRule.per === 'rack' || c.countRule.per === 'zone' ? c.countRule.per : c.countRule.per === 'cpu' ? 'node' : 'fixed',
       };
       if (c.redundancy && c.redundancy.scheme !== 'series') {
         const size = c.redundancy.n ?? ci.unitsPerInstance;

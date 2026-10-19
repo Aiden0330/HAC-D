@@ -11,7 +11,7 @@ import { Rng } from '../src/math/rng.js';
 import { simulateLedger, runLedgerOnce, type LedgerSpec } from '../src/mc/ledger.js';
 import { ledgerSpecFromScenario, simulateScenarioLedger } from '../src/mc/ledgerFromScenario.js';
 import { MECHANISM_LIBRARY, mechanismReport, applyMechanisms, DEFAULT_PLAYERS } from '../src/mechanisms/index.js';
-import { referenceThreeClasses, referenceBaseline, evaluateScenario, parseScenario, compareScenarios, EXAMPLES } from '../src/scenario/index.js';
+import { referenceThreeClasses, referenceBaseline, evaluateScenario, parseScenario, compareScenarios, REFERENCE_FIXTURES } from '../src/scenario/index.js';
 
 describe('mechanism chain', () => {
   it('probabilities sum to one and the trivial chain is the global recovery', () => {
@@ -241,7 +241,7 @@ describe('scenario-level v3 (reference three-class baseline)', () => {
     const r = evaluateScenario(s).training!;
     expect(r.sdc).toBeUndefined();
     expect(r.deliveredGoodput).toBe(r.effectiveGoodput);
-    expect(EXAMPLES['ref-three-classes-100k']).toBeDefined();
+    expect(REFERENCE_FIXTURES['ref-three-classes-100k']).toBeDefined();
     const cmp = compareScenarios([referenceBaseline(100000), referenceThreeClasses(100000)]);
     expect(cmp.rows[1].deliveredGoodput).toBeLessThan(cmp.rows[0].deliveredGoodput!);
     expect(cmp.best.deliveredGoodput).toBe(cmp.rows[0].id);

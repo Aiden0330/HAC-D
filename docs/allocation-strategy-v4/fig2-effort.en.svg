@@ -1,0 +1,83 @@
+<svg class="viz" id="fig-effort" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 366" width="100%" role="img" aria-label="Total effort of the three versions’ methods on the same case"><style>
+svg.viz { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --ghost:#e4e2dc; --acc:#2f4fb8; --box:#f2f1ec; font-family:system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ghost:#34342f; --acc:#9cb0ef; --box:#242421; } }
+:root[data-theme="dark"] svg.viz { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --ghost:#34342f; --acc:#9cb0ef; --box:#242421; }
+svg.viz text { fill: var(--ink); font-size: 12px; } svg.viz .t2 { fill: var(--ink2); font-size: 11.5px; } svg.viz .m { fill: var(--muted); font-size: 11px; } svg.viz .tick { font-variant-numeric: tabular-nums; } svg.viz .ttl { font-size: 13px; font-weight: 600; } svg.viz .lab { font-size: 11px; }
+svg.viz .grid { stroke: var(--grid); stroke-width: 1; } svg.viz .axis { stroke: var(--axis); stroke-width: 1; } svg.viz .ref { stroke: var(--ink2); stroke-width: 1.5; } svg.viz .hit { fill: transparent; pointer-events: all; }
+svg.viz .bx { fill: var(--box); stroke: var(--axis); } svg.viz .bxa { fill: var(--box); stroke: var(--acc); stroke-width: 1.5; } svg.viz .arr { stroke: var(--ink2); stroke-width: 1.4; fill: none; } svg.viz .arrh { fill: var(--ink2); }
+</style><rect width="960" height="366" fill="var(--surface)" rx="8"/><text x="14" y="20" class="ttl">Figure 2 · Total effort to close the same gap (A3 · CloudMatrix384, 500,000 NPUs, A_op ≥ 98.5 %): v4.0, v3.7, v3.0</text><rect x="14" y="38" width="12" height="12" rx="2" fill="var(--s1)"/><text x="32" y="48" class="t2">mechanisms</text><rect x="118" y="38" width="12" height="12" rx="2" fill="var(--s2)"/><text x="136" y="48" class="t2">recovery levers</text><rect x="254" y="38" width="12" height="12" rx="2" fill="var(--s3)"/><text x="272" y="48" class="t2">hardware Σ e·log₂(1/x)</text><text x="530" y="58" class="m">nominal / derated</text><text x="653" y="58" class="m">moves</text><line x1="200" x2="200" y1="64" y2="336" class="grid"/><text x="200" y="352" text-anchor="middle" class="m tick">0</text><line x1="228.9090909090909" x2="228.9090909090909" y1="64" y2="336" class="grid"/><text x="228.9090909090909" y="352" text-anchor="middle" class="m tick">20</text><line x1="257.8181818181818" x2="257.8181818181818" y1="64" y2="336" class="grid"/><text x="257.8181818181818" y="352" text-anchor="middle" class="m tick">40</text><line x1="286.72727272727275" x2="286.72727272727275" y1="64" y2="336" class="grid"/><text x="286.72727272727275" y="352" text-anchor="middle" class="m tick">60</text><line x1="315.6363636363636" x2="315.6363636363636" y1="64" y2="336" class="grid"/><text x="315.6363636363636" y="352" text-anchor="middle" class="m tick">80</text><line x1="344.5454545454545" x2="344.5454545454545" y1="64" y2="336" class="grid"/><text x="344.5454545454545" y="352" text-anchor="middle" class="m tick">100</text><line x1="373.45454545454544" x2="373.45454545454544" y1="64" y2="336" class="grid"/><text x="373.45454545454544" y="352" text-anchor="middle" class="m tick">120</text><line x1="402.3636363636364" x2="402.3636363636364" y1="64" y2="336" class="grid"/><text x="402.3636363636364" y="352" text-anchor="middle" class="m tick">140</text><line x1="431.27272727272725" x2="431.27272727272725" y1="64" y2="336" class="grid"/><text x="431.27272727272725" y="352" text-anchor="middle" class="m tick">160</text><line x1="460.1818181818182" x2="460.1818181818182" y1="64" y2="336" class="grid"/><text x="460.1818181818182" y="352" text-anchor="middle" class="m tick">180</text><line x1="489.09090909090907" x2="489.09090909090907" y1="64" y2="336" class="grid"/><text x="489.09090909090907" y="352" text-anchor="middle" class="m tick">200</text><line x1="518" x2="518" y1="64" y2="336" class="grid"/><text x="518" y="352" text-anchor="middle" class="m tick">220</text><text x="192" y="82" text-anchor="end" class="lab">v4.0 · Optimal</text><path d="M200 71H205.22727272727272V86H200Z" fill="var(--s1)" data-tip="v4.0 · Optimal
+mechanisms 5.0 + levers 5.0 + hardware 10.90 = 20.90
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + auto 60 s + manual 30 min"/><path d="M207.22727272727272 71H212.45454545454544V86H207.22727272727272Z" fill="var(--s2)" data-tip="v4.0 · Optimal
+mechanisms 5.0 + levers 5.0 + hardware 10.90 = 20.90
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + auto 60 s + manual 30 min"/><path d="M214.45454545454544 71H226.21450070414866Q230.21450070414866 71 230.21450070414866 75V82Q230.21450070414866 86 226.21450070414866 86H214.45454545454544Z" fill="var(--s3)" data-tip="v4.0 · Optimal
+mechanisms 5.0 + levers 5.0 + hardware 10.90 = 20.90
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + auto 60 s + manual 30 min"/><text x="236.21450070414866" y="82" class="t2 tick">20.9</text><rect x="200" y="66" width="750" height="25" class="hit" data-tip="v4.0 · Optimal
+mechanisms 5.0 + levers 5.0 + hardware 10.90 = 20.90
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + auto 60 s + manual 30 min"/><text x="530" y="82" class="t2">✓ / ✓</text><text x="653" y="82" class="t2">2 mechanisms + 2 levers + 5 hw classes</text><text x="192" y="107" text-anchor="end" class="lab">v4.0 · MTTR preferred</text><path d="M200 96H209.56363636363636V111H200Z" fill="var(--s1)" data-tip="v4.0 · MTTR preferred
+mechanisms 8.0 + levers 5.0 + hardware 10.88 = 23.88
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + D-SLOW + auto 60 s + manual 30 min"/><path d="M211.56363636363636 96H216.79090909090908V111H211.56363636363636Z" fill="var(--s2)" data-tip="v4.0 · MTTR preferred
+mechanisms 8.0 + levers 5.0 + hardware 10.88 = 23.88
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + D-SLOW + auto 60 s + manual 30 min"/><path d="M218.79090909090908 96H230.52448911133834Q234.52448911133834 96 234.52448911133834 100V107Q234.52448911133834 111 230.52448911133834 111H218.79090909090908Z" fill="var(--s3)" data-tip="v4.0 · MTTR preferred
+mechanisms 8.0 + levers 5.0 + hardware 10.88 = 23.88
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + D-SLOW + auto 60 s + manual 30 min"/><text x="240.52448911133834" y="107" class="t2 tick">23.9</text><rect x="200" y="91" width="750" height="25" class="hit" data-tip="v4.0 · MTTR preferred
+mechanisms 8.0 + levers 5.0 + hardware 10.88 = 23.88
+meets (nominal / derated) ✓ / ✓
+D-HARD + R-NETFAIL + D-SLOW + auto 60 s + manual 30 min"/><text x="530" y="107" class="t2">✓ / ✓</text><text x="653" y="107" class="t2">3 mechanisms + 2 levers + 5 hw classes</text><text x="192" y="132" text-anchor="end" class="lab">v4.0 · MTTF preferred</text><path d="M200 121H260.5667076495975Q264.5667076495975 121 264.5667076495975 125V132Q264.5667076495975 136 260.5667076495975 136H200Z" fill="var(--s3)" data-tip="v4.0 · MTTF preferred
+mechanisms 0.0 + levers 0.0 + hardware 44.67 = 44.67
+meets (nominal / derated) ✓ / ✓
+hardware only, minimum-effort split (closed on the derated design)"/><text x="270.5667076495975" y="132" class="t2 tick">44.7</text><rect x="200" y="116" width="750" height="25" class="hit" data-tip="v4.0 · MTTF preferred
+mechanisms 0.0 + levers 0.0 + hardware 44.67 = 44.67
+meets (nominal / derated) ✓ / ✓
+hardware only, minimum-effort split (closed on the derated design)"/><text x="530" y="132" class="t2">✓ / ✓</text><text x="653" y="132" class="t2">hardware only, 15 classes</text><text x="192" y="157" text-anchor="end" class="lab">v4.0 · hardware, AGREE</text><path d="M200 146H280.910931023934Q284.910931023934 146 284.910931023934 150V157Q284.910931023934 161 280.910931023934 161H200Z" fill="var(--s3)" data-tip="v4.0 · hardware, AGREE
+mechanisms 0.0 + levers 0.0 + hardware 58.74 = 58.74
+meets (nominal / derated) ✓ / ✓
+weight = units × importance; POWER, COOL, MGMT at the ×0.05 floor"/><text x="290.910931023934" y="157" class="t2 tick">58.7</text><rect x="200" y="141" width="750" height="25" class="hit" data-tip="v4.0 · hardware, AGREE
+mechanisms 0.0 + levers 0.0 + hardware 58.74 = 58.74
+meets (nominal / derated) ✓ / ✓
+weight = units × importance; POWER, COOL, MGMT at the ×0.05 floor"/><text x="530" y="157" class="t2">✓ / ✓</text><text x="653" y="157" class="t2">POWER, COOL, MGMT at the floor</text><text x="192" y="182" text-anchor="end" class="lab">v4.0 · hardware, ARINC</text><path d="M200 171H308.41258771073166Q312.41258771073166 171 312.41258771073166 175V182Q312.41258771073166 186 308.41258771073166 186H200Z" fill="var(--s3)" data-tip="v4.0 · hardware, ARINC
+mechanisms 0.0 + levers 0.0 + hardware 77.77 = 77.77
+meets (nominal / derated) ✓ / ✓
+one factor ×0.260 for every class (derated design)"/><text x="318.41258771073166" y="182" class="t2 tick">77.8</text><rect x="200" y="166" width="750" height="25" class="hit" data-tip="v4.0 · hardware, ARINC
+mechanisms 0.0 + levers 0.0 + hardware 77.77 = 77.77
+meets (nominal / derated) ✓ / ✓
+one factor ×0.260 for every class (derated design)"/><text x="530" y="182" class="t2">✓ / ✓</text><text x="653" y="182" class="t2">every class ×0.260</text><text x="192" y="217" text-anchor="end" class="lab">v3.7 · study</text><path d="M200 206H209.56363636363636V221H200Z" fill="var(--s1)" data-tip="v3.7 · study
+mechanisms 8.0 + levers 0.0 + hardware 50.17 = 58.17
+meets (nominal / derated) ✓ / ✕
+planner's best set D-HARD + R-NETFAIL + C-MEM (short: 97.16 / 96.76 %), then one factor ×0.419 on all 20 classes; meets its own check (added mechanisms derated only), derated 98.30 % on the common check"/><path d="M211.56363636363636 206H280.0842977550413Q284.0842977550413 206 284.0842977550413 210V217Q284.0842977550413 221 280.0842977550413 221H211.56363636363636Z" fill="var(--s3)" data-tip="v3.7 · study
+mechanisms 8.0 + levers 0.0 + hardware 50.17 = 58.17
+meets (nominal / derated) ✓ / ✕
+planner's best set D-HARD + R-NETFAIL + C-MEM (short: 97.16 / 96.76 %), then one factor ×0.419 on all 20 classes; meets its own check (added mechanisms derated only), derated 98.30 % on the common check"/><text x="290.0842977550413" y="217" class="t2 tick">58.2</text><rect x="200" y="201" width="750" height="25" class="hit" data-tip="v3.7 · study
+mechanisms 8.0 + levers 0.0 + hardware 50.17 = 58.17
+meets (nominal / derated) ✓ / ✕
+planner's best set D-HARD + R-NETFAIL + C-MEM (short: 97.16 / 96.76 %), then one factor ×0.419 on all 20 classes; meets its own check (added mechanisms derated only), derated 98.30 % on the common check"/><text x="530" y="217" class="t2">✓ / ✕</text><text x="653" y="217" class="t2">D-HARD + R-NETFAIL + C-MEM + all classes ×0.42</text><text x="192" y="252" text-anchor="end" class="lab">v3.0 · Albert</text><path d="M200 241H349.0216452028213Q353.0216452028213 241 353.0216452028213 245V252Q353.0216452028213 256 349.0216452028213 256H200Z" fill="var(--s3)" data-tip="v3.0 · Albert
+mechanisms 0.0 + levers 0.0 + hardware 105.86 = 105.86
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by Albert"/><text x="359.0216452028213" y="252" class="t2 tick">105.9</text><rect x="200" y="236" width="750" height="25" class="hit" data-tip="v3.0 · Albert
+mechanisms 0.0 + levers 0.0 + hardware 105.86 = 105.86
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by Albert"/><text x="530" y="252" class="t2">✓ / ✓</text><text x="653" y="252" class="t2">19 classes cut, gives 99.13 %</text><text x="192" y="277" text-anchor="end" class="lab">v3.0 · ARINC</text><path d="M200 266H372.39955810821266Q376.39955810821266 266 376.39955810821266 270V277Q376.39955810821266 281 372.39955810821266 281H200Z" fill="var(--s3)" data-tip="v3.0 · ARINC
+mechanisms 0.0 + levers 0.0 + hardware 122.04 = 122.04
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by ARINC"/><text x="382.39955810821266" y="277" class="t2 tick">122.0</text><rect x="200" y="261" width="750" height="25" class="hit" data-tip="v3.0 · ARINC
+mechanisms 0.0 + levers 0.0 + hardware 122.04 = 122.04
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by ARINC"/><text x="530" y="277" class="t2">✓ / ✓</text><text x="653" y="277" class="t2">20 classes cut, gives 99.24 %</text><text x="192" y="302" text-anchor="end" class="lab">v3.0 · AGREE</text><path d="M200 291H451.8325872739074Q455.8325872739074 291 455.8325872739074 295V302Q455.8325872739074 306 451.8325872739074 306H200Z" fill="var(--s3)" data-tip="v3.0 · AGREE
+mechanisms 0.0 + levers 0.0 + hardware 176.99 = 176.99
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by AGREE"/><text x="461.8325872739074" y="302" class="t2 tick">177.0</text><rect x="200" y="286" width="750" height="25" class="hit" data-tip="v3.0 · AGREE
+mechanisms 0.0 + levers 0.0 + hardware 176.99 = 176.99
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by AGREE"/><text x="530" y="302" class="t2">✓ / ✓</text><text x="653" y="302" class="t2">18 classes cut, gives 99.51 %</text><text x="192" y="327" text-anchor="end" class="lab">v3.0 · equal</text><path d="M200 316H350.6224779358198Q354.6224779358198 316 354.6224779358198 320V327Q354.6224779358198 331 350.6224779358198 331H200Z" fill="var(--s3)" data-tip="v3.0 · equal
+mechanisms 0.0 + levers 0.0 + hardware 106.97 = 106.97
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by equal"/><text x="360.6224779358198" y="327" class="t2 tick">107.0</text><rect x="200" y="311" width="750" height="25" class="hit" data-tip="v3.0 · equal
+mechanisms 0.0 + levers 0.0 + hardware 106.97 = 106.97
+meets (nominal / derated) ✓ / ✓
+first-order budget λ* = 0.204 /h (global recovery 264.5 s), split over the class rates by equal"/><text x="530" y="327" class="t2">✓ / ✓</text><text x="653" y="327" class="t2">19 classes cut, gives 99.14 %</text><line x1="14" x2="946" y1="196" y2="196" class="axis"/><line x1="14" x2="946" y1="231" y2="231" class="axis"/></svg>

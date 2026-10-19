@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { EXAMPLES, parseScenario, type Scenario } from '@hac-d/core';
+import { EXAMPLES, GPU_EXAMPLES, RETIRED_EXAMPLES, parseScenario, type Scenario } from '@hac-d/core';
 
-export type Page = 'scenario' | 'library' | 'training' | 'mechanisms' | 'audit' | 'inference' | 'spares' | 'allocation' | 'compare' | 'simulate' | 'report' | 'import';
+/** v4 pages: the topology page replaces Scenario + Training as the first page; the audit moved into Mechanisms and Allocation; `scenario` is the advanced editor */
+export type Page = 'topology' | 'mechanisms' | 'allocation' | 'library' | 'scenario' | 'inference' | 'spares' | 'compare' | 'simulate' | 'report' | 'import';
 export type Theme = 'auto' | 'light' | 'dark';
 
 const STORAGE_KEY = 'hacd-scenarios-v1';
@@ -14,6 +15,19 @@ function ensureId(s: Scenario, existing: Set<string>): Scenario {
   return { ...s, meta: { ...s.meta, id } };
 }
 
+/** v4 the GPU examples of v3.7 leave the NPU tool (the GPU tool is forked at tag v3.7-gpu): saved copies under their ids are dropped once */
+const GPU_IDS = new Set(Object.keys(GPU_EXAMPLES));
+/** v4.1 the built-in examples are the three topology templates (scale is a parameter): saved copies of the retired examples are dropped while unchanged, edited ones stay as user scenarios */
+function isUnchangedRetired(s: Scenario): boolean {
+  const make = s.meta.id ? RETIRED_EXAMPLES[s.meta.id] : undefined;
+  if (!make) return false;
+  try {
+    return JSON.stringify(parseScenario(make())) === JSON.stringify(s);
+  } catch {
+    return false;
+  }
+}
+
 function loadPersisted(): Scenario[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -22,7 +36,10 @@ function loadPersisted(): Scenario[] | null {
     const out: Scenario[] = [];
     for (const item of arr) {
       try {
-        out.push(parseScenario(item));
+        const s = parseScenario(item);
+        if (s.meta.id && GPU_IDS.has(s.meta.id)) continue;
+        if (isUnchangedRetired(s)) continue;
+        out.push(s);
       } catch {
         /* skip invalid */
       }
@@ -58,7 +75,9 @@ function initialScenarios(): Scenario[] {
   const have = new Set(persisted.map((s) => s.meta.id));
   const missing = builtIns.filter((s) => !have.has(s.meta.id));
   if (missing.length) {
-    const next = [...persisted, ...missing];
+    // v4 topology scenarios go first so that the first page opens on one of them
+    const topo = missing.filter((s) => s.topology.template);
+    const next = [...topo, ...persisted, ...missing.filter((s) => !s.topology.template)];
     persist(next);
     return next;
   }
@@ -102,7 +121,7 @@ export const useStore = create<AppState>((set, get) => {
     scenarios,
     activeId: scenarios[0]?.meta.id ?? '',
     compareIds: scenarios.slice(0, Math.min(3, scenarios.length)).map((s) => s.meta.id!),
-    page: 'scenario',
+    page: 'topology',
     theme: initialTheme(),
     setPage: (page) => set({ page }),
     setTheme: (theme) => {

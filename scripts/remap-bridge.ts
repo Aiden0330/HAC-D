@@ -14,7 +14,7 @@
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { EXAMPLES, parseScenario, evaluateScenario, computeCounts, componentInstances, simulateScenarioLedger, summaryStat, proportionEstimate, DEFAULT_CHAIN, rungOrder, REFERENCE_EVENTS, cloneScenario, type Scenario } from '@hac-d/core';
+import { EXAMPLES, REFERENCE_FIXTURES, parseScenario, evaluateScenario, computeCounts, componentInstances, simulateScenarioLedger, summaryStat, proportionEstimate, DEFAULT_CHAIN, rungOrder, REFERENCE_EVENTS, cloneScenario, type Scenario } from '@hac-d/core';
 
 const args = process.argv.slice(2);
 const files = args.filter((a) => !a.startsWith('--') && !args[args.indexOf(a) - 1]?.match(/^--(engine|trials|seed|export|remap)$/));
@@ -44,7 +44,9 @@ const createReviewEngine = require(resolve(vendor, 'review-engine.cjs')) as (eve
 type V4Engine = { version: string; defaults: Record<string, unknown>; validate: (p: Record<string, unknown>, n: number) => void; summary: (p: Record<string, unknown>, n: number) => Record<string, number>; estimate: (n: number, p: Record<string, unknown>, trials: number, seed: number, hours: number) => Record<string, unknown> };
 const createMonthlyTrainingEngine = require(resolve(vendor, 'monthly-engine.cjs')) as () => V4Engine;
 
-const s: Scenario = EXAMPLES[target] ? EXAMPLES[target]() : parseScenario(JSON.parse(readFileSync(target, 'utf8')));
+// an example id (topology template or reference fixture such as ref-catalog-100k) or a scenario file
+const make = EXAMPLES[target] ?? REFERENCE_FIXTURES[target];
+const s: Scenario = make ? make() : parseScenario(JSON.parse(readFileSync(target, 'utf8')));
 if (s.workload.type !== 'training') throw new Error('the bridge needs a training workload');
 const w = s.workload;
 const N = w.nGpus;

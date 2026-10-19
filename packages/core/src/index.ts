@@ -31,3 +31,5 @@ export * from './sdc/index.js';
 export * from './math/stats.js';
 export * from './fit/incidents.js';
 export * from './library/index.js';
+export * from './topology/index.js';
+export * from './strategy/index.js';

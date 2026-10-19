@@ -206,6 +206,55 @@
               "maximum": 9007199254740991
             }
           }
+        },
+        "template": {
+          "type": "string",
+          "enum": [
+            "a2-roce",
+            "a3-ub384",
+            "a950-ub2"
+          ]
+        },
+        "cpusPerNode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "fabricFill": {
+          "default": "full-pod",
+          "type": "string",
+          "enum": [
+            "full-pod",
+            "proportional"
+          ]
+        },
+        "scaleOut": {
+          "type": "object",
+          "properties": {
+            "portsPerNpu": {
+              "default": 1,
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "radix": {
+              "default": 64,
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 9007199254740991
+            },
+            "oversubscription": {
+              "default": 1,
+              "type": "number",
+              "minimum": 1
+            },
+            "transceiversPerLink": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
         }
       }
     },
@@ -440,6 +489,91 @@
                   "per": {
                     "type": "string",
                     "const": "transceiver"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "cpu"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "ub_switch"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "roce_port"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "roce_switch"
+                  },
+                  "factor": {
+                    "default": 1,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "per"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "per": {
+                    "type": "string",
+                    "const": "roce_link"
                   },
                   "factor": {
                     "default": 1,
@@ -980,6 +1114,10 @@
               },
               "fixed": {
                 "type": "boolean"
+              },
+              "effortPerHalving": {
+                "type": "number",
+                "minimum": 0
               }
             }
           },
@@ -2140,6 +2278,11 @@
       "type": "object",
       "properties": {
         "availability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "operational": {
           "type": "number",
           "minimum": 0,
           "maximum": 1

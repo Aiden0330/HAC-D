@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { EXAMPLES, evaluateScenario, mechanismReport, planToTarget } from '../src/index.js';
+import { EXAMPLES, REFERENCE_FIXTURES, RETIRED_EXAMPLES, GPU_EXAMPLES, evaluateScenario, mechanismReport, planToTarget } from '../src/index.js';
 
 describe('evaluateScenario without the block structure (value functions of the attribution and the planner)', () => {
-  for (const [id, make] of Object.entries(EXAMPLES)) {
+  for (const [id, make] of Object.entries({ ...EXAMPLES, ...RETIRED_EXAMPLES, ...GPU_EXAMPLES })) {
     it(`${id}: training / inference / spares / components / checklist equal the full evaluation`, () => {
       const s = make();
       const full = evaluateScenario(s);
@@ -18,7 +18,7 @@ describe('evaluateScenario without the block structure (value functions of the a
   }
 
   it('the hot-spare pool blocking probability survives without the full structure (survey example 3)', () => {
-    const s = EXAMPLES['survey-ex3']();
+    const s = GPU_EXAMPLES['survey-ex3']();
     const full = evaluateScenario(s);
     const lite = evaluateScenario(s, { structure: false });
     expect(full.training!.blockedProbability).toBeGreaterThan(0);
@@ -26,7 +26,7 @@ describe('evaluateScenario without the block structure (value functions of the a
   });
 
   it('the attribution reports its progress up to the coalition count', () => {
-    const s = EXAMPLES['ref-three-classes-100k']();
+    const s = REFERENCE_FIXTURES['ref-three-classes-100k']();
     const seen: Array<[number, number]> = [];
     const r = mechanismReport(s, ['D-SDC', 'R-SDC', 'R-REPLAY', 'C-FAST'], { onProgress: (d, t) => seen.push([d, t]) });
     expect(r.coalitions).toBe(16);
@@ -36,7 +36,7 @@ describe('evaluateScenario without the block structure (value functions of the a
   });
 
   it('the planner reports the coalition, scan and verification phases', () => {
-    const s = EXAMPLES['ref-three-classes-100k']();
+    const s = REFERENCE_FIXTURES['ref-three-classes-100k']();
     const phases = new Map<string, [number, number]>();
     const p = planToTarget(s, { target: 0.9, players: ['D-SDC', 'R-SDC', 'C-FAST'], scan: true, verify: { trials: 40 }, onProgress: (d, t, phase) => phases.set(phase, [d, t]) });
     expect(phases.get('coalitions')).toEqual([8, 8]);

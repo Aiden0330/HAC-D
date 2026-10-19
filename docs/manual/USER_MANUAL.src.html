@@ -99,22 +99,22 @@
 <body>
 <div class="layout">
 <nav class="toc" aria-label="Contents">
-  <div class="eyebrow">AI cluster availability modeling</div>
+  <div class="eyebrow">NPU cluster availability modeling</div>
   <div class="brand">HAC-D · User Manual</div>
-  <div style="color: var(--muted); margin: 4px 0 16px;">v3.1 · 2026-10-11 · <a href="USER_MANUAL.zh.html">中文版</a></div>
+  <div style="color: var(--muted); margin: 4px 0 16px;">v4.0 · 2026-10-18 · <a href="USER_MANUAL.zh.html">中文版</a></div>
   <ol>
     <li><a href="#s1"><span class="num">1</span>What HAC-D is</a></li>
     <li><a href="#s2"><span class="num">2</span>Quick start</a></li>
     <li><a href="#s3"><span class="num">3</span>Concepts and 口径</a></li>
-    <li><a href="#s4"><span class="num">4</span>Scenario page</a></li>
-    <li><a href="#s5"><span class="num">5</span>Training page</a></li>
+    <li><a href="#s4"><span class="num">4</span>Topology &amp; hardware page</a></li>
+    <li><a href="#s5"><span class="num">5</span>Reliability tab</a></li>
     <li><a href="#s6"><span class="num">6</span>Mechanisms page</a></li>
     <li><a href="#s7"><span class="num">7</span>Allocation page</a></li>
     <li><a href="#s8"><span class="num">8</span>Inference, spares and domains</a></li>
     <li><a href="#s9"><span class="num">9</span>Compare page</a></li>
     <li><a href="#s10"><span class="num">10</span>Simulate page</a></li>
     <li><a href="#s11"><span class="num">11</span>Report page</a></li>
-    <li><a href="#s12"><span class="num">12</span>Import and Library</a></li>
+    <li><a href="#s12"><span class="num">12</span>Fault library and Import</a></li>
     <li><a href="#s13"><span class="num">13</span>Methods reference</a></li>
     <li><a href="#s14"><span class="num">14</span>Validation and accuracy</a></li>
     <li><a href="#s15"><span class="num">15</span>Recommended workflow</a></li>
@@ -126,12 +126,12 @@
 <main>
 <header class="title">
   <h1>HAC-D User Manual</h1>
-  <div class="sub">Availability, MTBF, MTTR and goodput modeling for AI training and inference clusters: closed forms with validity flags, Monte Carlo where the closed forms do not hold, every number with its formula and its 口径 (event, denominator, level). Version 3.1, 2026-10-11.</div>
+  <div class="sub">Availability, MTBF, MTTR and goodput modeling for Ascend NPU training clusters: three topology templates turned into hardware counts with per-unit fault types, fault-management mechanisms, and allocation strategies over hardware FIT, mechanisms and recovery limits; closed forms with validity flags, Monte Carlo where the closed forms do not hold, every number with its formula and its 口径 (event, denominator, level). Version 4.0, 2026-10-18.</div>
 </header>
 
 <section id="s1">
 <h2>1. What HAC-D is</h2>
-<p>HAC-D turns a cluster description (topology, component classes with failure and repair parameters, workload, recovery policy, fault-management mechanisms) into availability, mean time between interruptions, recovery time, goodput and cost figures, and then helps allocate a target back to subsystems and mechanisms. It is grounded in the survey chapter <em>AI 集群可靠性建模</em> and cross-checked against an independent reference engine (an audited 30-day discrete-event simulator of one training job).</p>
+<p>HAC-D turns a cluster topology (one of three Ascend templates, or any custom description) into hardware counts with the fault types each unit carries, then into availability, mean time between interruptions, recovery time, goodput and cost figures, and helps allocate a target back to hardware FIT, fault-management mechanisms and recovery limits. It is grounded in the survey chapter <em>AI 集群可靠性建模</em> and cross-checked against an independent reference engine (an audited 30-day discrete-event simulator of one training job).</p>
 <h3>1.1 Principles</h3>
 <ul>
   <li><b>Every number carries its formula and its 口径.</b> A rate is an event class per denominator at a level (for example hard interruptions per card-hour at job level). Quantities of different event classes are never added.</li>
@@ -139,13 +139,14 @@
   <li><b>Monte Carlo when the assumptions break.</b> Non-exponential lifetimes, correlated failures, finite spare pools, finite windows and silent corruption route to simulation; the closed-form result stays visible with a delta badge.</li>
   <li><b>Provenance on every parameter.</b> Library records and scenario inputs carry source, year and confidence (measured, paper-reported, vendor, derived, assumed, scan-level).</li>
 </ul>
+<div class="callout"><b>v4 (2026-10-18): an NPU tool, topology first.</b> The first page turns a topology template and a scale into the hardware bill of materials and the reliability (§4); the six ReMAP mechanisms are on by default and edited on the Mechanisms page (§6); the Allocation page reaches a target with three strategies under hardware and mechanism constraints (§7). The Training page became the Reliability tab, the Audit page moved into Mechanisms and Allocation. The GPU examples and wording of v3.7 left the UI (they stay reachable by id in the CLI and MCP; the GPU tool can be forked from the git tag <code>v3.7-gpu</code>); GPU fleet measurements stay in the parameter library as tagged analogues, because no public Ascend failure data exists.</div>
 <h3>1.2 Architecture</h3>
 <div class="table-wrap"><table>
   <tr><th>Package</th><th>Role</th><th>Notes</th></tr>
-  <tr><td><code>packages/core</code></td><td>pure TypeScript numerics</td><td>units, math, RBD, CTMC, repair paths, recovery ladder, checkpoint and goodput models, SDC delivery (two terminal rules), mechanism chain (configurable rung order) and library, planner with checkpoint bounds, spares, MTTR, allocation with the loss budget, sensitivity, cost, Monte Carlo with Student-t and Wilson statistics, incident-rate estimation (Garwood), ReMAP catalog import, scenario schema and examples, parameter library (635 records)</td></tr>
-  <tr><td><code>apps/web</code></td><td>Vite + React static app</td><td>bilingual zh / en, light and dark, computation in a Web Worker, eleven pages (minimal mode shows six)</td></tr>
+  <tr><td><code>packages/core</code></td><td>pure TypeScript numerics</td><td>units, math, RBD, CTMC, repair paths, recovery ladder, checkpoint and goodput models, SDC delivery (two terminal rules), mechanism chain (configurable rung order) and library, planner with checkpoint bounds, spares, MTTR, allocation with the loss budget, sensitivity, cost, Monte Carlo with Student-t and Wilson statistics, incident-rate estimation (Garwood), ReMAP catalog import, scenario schema and examples, parameter library (635 records), v4 topology templates (A2 RoCE, A3 CloudMatrix384, Atlas 950) with per-unit fault types, allocation strategies (optimal / MTTR-preferred / MTTF-preferred)</td></tr>
+  <tr><td><code>apps/web</code></td><td>Vite + React static app</td><td>bilingual zh / en, light and dark, computation in a Web Worker; four main pages (Topology &amp; hardware, Mechanisms, Allocation, Fault library) and seven more behind All pages</td></tr>
   <tr><td><code>packages/cli</code></td><td>command line <code>hacd</code></td><td>same functions as the web app, JSON or table output</td></tr>
-  <tr><td><code>packages/mcp</code></td><td>MCP server</td><td>18 tools for agents (evaluate, compare, allocate with the loss budget, tornado, simulate, library, Excel, mechanisms, ledger, planner, incident-rate estimation)</td></tr>
+  <tr><td><code>packages/mcp</code></td><td>MCP server</td><td>22 tools for agents (evaluate, compare, allocate with the loss budget, tornado, simulate, library, Excel, mechanisms, ledger, planner, audit, study, incident-rate estimation, v4 topology bill of materials and allocation strategies)</td></tr>
   <tr><td><code>packages/importers</code></td><td>Excel import and export</td><td>method fingerprinting of formulas, topology extraction, reconciliation, workbook export with live formulas</td></tr>
 </table></div>
 </section>
@@ -154,29 +155,29 @@
 <h2>2. Quick start</h2>
 <pre>npm install                      # Node ≥ 20, npm workspaces
 npm run dev                      # web app on http://localhost:5173
-npm test                         # 517 core + 29 importer tests (golden vectors included)
+npm test                         # 672 core + 29 importer tests (golden vectors included)
 node --import tsx packages/cli/src/main.ts examples        # CLI
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP server</pre>
-<p>In the web app: Scenario → <b>Load example</b> (ten built-in scenarios, see §16.3) → the other pages recompute automatically after every edit; there is no "recalculate" step. The language (中文 / EN) and theme (Auto / Light / Dark) switches sit in the header. Scenarios are kept in the browser's local storage; <b>Export JSON</b> saves one, <b>Import JSON</b> loads one, <b>Restore built-in</b> resets an example.</p>
-<figure class="narrow"><img src="img/training-mobile.jpg" alt="Training page at 375 px width"><figcaption>Every page is laid out for 1280 px and 375 px; charts carry a table twin (the Table button) for reading exact values.</figcaption></figure>
+<p>In the web app the first page is <b>Topology &amp; hardware</b>: pick a template card (A2, A3 · CloudMatrix384, Atlas 950) and a scale (built-in 10k / 100k / 200k / 500k or any N); the hardware table, the fault types per unit, the KPIs and the Reliability tab recompute after every edit, there is no "recalculate" step. The top-bar list holds the scenarios (the three topology templates are built in, see §16.3; the scale is a parameter, not a separate example). The language (中文 / EN) and theme (Auto / Light / Dark) switches sit in the header. Scenarios are kept in the browser's local storage; <b>Export JSON</b> saves one, <b>Import JSON</b> loads one, <b>Restore built-in</b> resets an example.</p>
+<figure class="narrow"><img src="img/topology-mobile.jpg" alt="Topology &amp; hardware page at 375 px width"><figcaption>Every page is laid out for 1280 px and 375 px; the input groups stack above the KPI strip and the tabs, and charts carry a table twin (the Table button) for reading exact values.</figcaption></figure>
+<p><b>Minimal mode.</b> The app opens with the main flow only (Topology &amp; hardware → Mechanisms → Allocation → Fault library); the header toggle <b>All pages</b> adds the scenario editor, Compare, Simulate, Report, Inference, Spares &amp; domains and Import, and the choice is remembered. Every function also stays in the CLI and the MCP server. <b>ReMAP.</b> <code>scripts/remap-bridge.ts</code> runs the expert engines ReMAP vendors on a HAC-D scenario and compares them with the closed forms, and <code>hacd import-remap</code> turns a ReMAP or reference event catalog into a scenario (see <code>docs/REMAP_INTEGRATION.md</code>).</p>
 </section>
 
 <section id="s3">
-<p><b>Minimal mode.</b> The app opens with the training-availability core only (Scenario, Training, Mechanisms, Allocation, Import, Library); the header toggle <b>All pages</b> adds Inference, Spares &amp; domains, Compare, Simulate and Report, and the choice is remembered. The screenshots in this manual show all pages; every function also stays in the CLI and the MCP server. <b>ReMAP.</b> <code>scripts/remap-bridge.ts</code> runs the expert engines ReMAP vendors on a HAC-D scenario and compares them with the closed forms, and <code>hacd import-remap</code> turns a ReMAP or reference event catalog into a scenario (see <code>docs/REMAP_INTEGRATION.md</code>).</p>
 <h2>3. Concepts and 口径</h2>
 <h3>3.1 Metrics</h3>
 <div class="table-wrap"><table>
   <tr><th>Metric</th><th>Definition</th><th>Where</th></tr>
-  <tr><td>Availability A (compensated, 补偿后)</td><td>steady-state probability that the system structure is up, with redundancy, switchover success, automatic recovery and the sub-health policy as configured</td><td>Scenario, Report</td></tr>
+  <tr><td>Availability A (compensated, 补偿后)</td><td>steady-state probability that the system structure is up, with redundancy, switchover success, automatic recovery and the sub-health policy as configured</td><td>Report</td></tr>
   <tr><td>Original availability (原始)</td><td>same structure with every unit fault counted as an outage repaired manually and redundancy removed; the compensation waterfall adds the mechanisms one by one</td><td>Report</td></tr>
   <tr><td>Strict / tolerant / performance-weighted</td><td>sub-health counted as down / as up / weighted by its performance factor</td><td>Report</td></tr>
-  <tr><td>MTBF, equivalent MTTR</td><td>A / ν_sys and (1 − A) / ν_sys from the steady-state failure frequency</td><td>Scenario</td></tr>
-  <tr><td>MTBI</td><td>mean time between job interruptions, 1 / Σ nᵢλᵢ (plus isolations of detected sub-healthy units)</td><td>Training</td></tr>
-  <tr><td>Recovery R(N)</td><td>mean time from interruption to productive training, excluding recompute; pipeline, ladder or mixture</td><td>Training</td></tr>
-  <tr><td>Operational availability A_op</td><td>running-time share 1 / (1 + λ_rb R_rb + λ_p R_p) (saves and recompute count as running)</td><td>Training, Compare</td></tr>
-  <tr><td>Goodput (first order, exact renewal, product, Daly)</td><td>useful computation per wall time under periodic checkpointing, §13.5</td><td>Training</td></tr>
-  <tr><td>Effective goodput</td><td>headline goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local): spares, sub-health and elastic-domain loss applied</td><td>Training, Compare</td></tr>
-  <tr><td>Delivered goodput (正确有效产出)</td><td>correct progress retained at the end of the job window ÷ window length, after silent-corruption rollback and terminal discard</td><td>Training, Allocation, Mechanisms</td></tr>
+  <tr><td>MTBF, equivalent MTTR</td><td>A / ν_sys and (1 − A) / ν_sys from the steady-state failure frequency</td><td>Report, scenario editor</td></tr>
+  <tr><td>MTBI</td><td>mean time between job interruptions, 1 / Σ nᵢλᵢ (plus isolations of detected sub-healthy units)</td><td>KPI strip</td></tr>
+  <tr><td>Recovery R(N)</td><td>mean time from interruption to productive training, excluding recompute; pipeline, ladder or mixture</td><td>Reliability tab</td></tr>
+  <tr><td>Operational availability A_op</td><td>running-time share 1 / (1 + λ_rb R_rb + λ_p R_p) (saves and recompute count as running)</td><td>KPI strip, Allocation, Compare</td></tr>
+  <tr><td>Goodput (first order, exact renewal, product, Daly)</td><td>useful computation per wall time under periodic checkpointing, §13.5</td><td>Reliability tab</td></tr>
+  <tr><td>Effective goodput</td><td>headline goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local): spares, sub-health and elastic-domain loss applied</td><td>Reliability tab, Compare</td></tr>
+  <tr><td>Delivered goodput (正确有效产出)</td><td>correct progress retained at the end of the job window ÷ window length, after silent-corruption rollback and terminal discard</td><td>KPI strip, Allocation, Mechanisms</td></tr>
   <tr><td>Capacity availability (inference)</td><td>probability that at least the required replicas are up in an N+k pool</td><td>Inference</td></tr>
 </table></div>
 <h3>3.2 Fault classes</h3>
@@ -187,15 +188,65 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <li><b>Silent corruption (静默错误, SDC)</b>: the state is corrupted without an interruption; immediate detection catches a share, undetected corruption is discovered after a fallback delay and rolled back to the last clean checkpoint; still-dirty state at the end of the window is discarded.</li>
 </ul>
 <h3>3.3 Confidence and provenance</h3>
-<p>Each rate or time may carry <code>provenance</code> (source, organisation, year, URL, derivation) and a confidence tag. The library (§12.2) uses the same tags; the reference examples tag borrowed shares and targets as <i>assumed</i>. The planner (§6.3) derates assumed mechanism parameters; the Allocation page weights feasibility by confidence.</p>
+<p>Each rate or time may carry <code>provenance</code> (source, organisation, year, URL, derivation) and a confidence tag. The library (§12.3) uses the same tags; the reference examples tag borrowed shares and targets as <i>assumed</i>. The planner (§6.3) and the allocation strategies (§7.1) derate the mechanism parameters; the classic Allocation methods weight feasibility by confidence. The v4 per-unit fault types (§4.3) are the catalog priors converted to hardware units and stay tagged <i>assumed</i>.</p>
 </section>
 
 <section id="s4">
-<h2>4. Scenario page</h2>
-<figure><img src="img/scenario.jpg" alt="Scenario page"><figcaption>Scenario page with the three-class reference example: KPI tiles (compensated and original availability, MTBF, equivalent MTTR, goodput, A_op), the topology, measures, workload, silent-corruption policy and recovery editors, then the component table.</figcaption></figure>
-<h3>4.1 Topology and supernode presets</h3>
-<p>GPUs per node, nodes per rack, racks per zone, scale-up domain size and network planes define the count scopes (per gpu, node, rack, zone, fixed). A <b>Supernode preset</b> (CloudMatrix384 or a parametrised Atlas 950) adds the supernode geometry: NPUs per node, compute and communication racks, UB sub-planes, L2 chips per sub-plane and ports, L1 chips and links per node, transceivers per link. Component classes can then count per supernode, communication rack, L1 or L2 switch, sub-plane, optical link or transceiver. For CloudMatrix384 the derived counts are 48 nodes × 8 NPU, 7 sub-planes × 16 L2 chips, 5,376 optical links; fields the public sources do not give are marked <i>assumed</i>.</p>
-<h3>4.2 Component classes</h3>
+<h2>4. Topology &amp; hardware page</h2>
+<figure><img src="img/topology.jpg" alt="Topology &amp; hardware page"><figcaption>Topology &amp; hardware page, A3 · CloudMatrix384 at 500,000 NPUs: template cards, scale chips and the input groups on the left; the KPI strip and the Hardware tab (bill of materials at 10k / 100k / 200k / 500k with the current size highlighted, then the fault types per unit) on the right.</figcaption></figure>
+<p>The first page answers: for this topology at this scale, which hardware units are there, how many, which fault types do they carry, and what does that give with the default mechanisms. Inputs sit on the left in collapsible groups, outputs on the right under a KPI strip in four tabs (Picture, Hardware, Reliability, Allocation). Every edit recomputes in place.</p>
+<h3>4.1 The three topology templates</h3>
+<div class="table-wrap"><table>
+  <tr><th>Template</th><th>Scale-up domain</th><th>Geometry</th><th>Source and confidence</th></tr>
+  <tr><td>A2 · 8-NPU servers + RoCE</td><td class="num">8</td><td>Atlas 800T A2 servers: 8 × Ascend 910B (HCCS mesh), 4 × Kunpeng 920, 8 × 200GE RoCE ports straight from the NPUs; 8 servers = 64 NPUs per cabinet; RoCE folded Clos as the parameter plane</td><td>product pages (vendor); cabinet density derived from the Atlas 900 A2 PoD (32 Kunpeng 920 per cabinet); switch radix 64, non-blocking, two transceivers per link assumed</td></tr>
+  <tr><td>A3 · CloudMatrix384</td><td class="num">384</td><td>48 nodes × (8 NPUs + 4 CPUs + 7 L1 UB chips), 12 compute + 4 communication cabinets, 7 sub-planes × 16 L2 chips × 48 ports, 16 links per L1 chip (5,376 per pod); RDMA scale-out plane with 2 ports per NPU</td><td>arXiv 2506.12708 §3.3 (paper); two transceivers per link and the scale-out Clos assumed</td></tr>
+  <tr><td>Atlas 950 · UB 2.0 SuperPoD</td><td class="num">8,192</td><td>1,024 nodes in 128 compute + 32 communication cabinets, 64 NPUs per compute cabinet; L1 / L2 radix and sub-planes copied from CloudMatrix384 with 342 L2 chips per sub-plane to stay non-blocking</td><td>vendor totals (Huawei Connect 2025, MWC 2026); fabric geometry assumed</td></tr>
+</table></div>
+<p>Clicking a card switches template. With <b>carry job settings, mechanisms and FIT edits</b> ticked (default) the current design moves to the other topology: NPU count, workload, recovery, silent-corruption policy, targets, the applied mechanisms (re-applied in their order with their parameters) and the FIT edits of fault types both templates carry; the hardware comes from the new template. Each template keeps its own scenario in the top-bar list (<code>topology-a2-roce</code>, <code>topology-a3-ub384</code>, <code>topology-a950-ub2</code>); a scenario that was not built from a template (the reference catalog, the older Ascend examples) is shown with its own counts and a note.</p>
+<h3>4.2 Scale and hardware counts</h3>
+<p>The scale chips set the NPUs in the job (10k, 100k, 200k, 500k, or any N in the box; a generated scenario name follows the size). Counts follow the template geometry: nodes = ⌈N / NPUs per node⌉, CPUs = nodes × CPUs per node, compute cabinets = ⌈nodes / nodes per cabinet⌉; for the SuperPoD templates SuperPoDs = ⌈nodes / nodes per pod⌉, L1 chips = nodes × L1 per node, L1–L2 links = L1 chips × links per L1. The L2 chips and communication cabinets of a partly populated last pod follow its populated nodes (<b>proportional</b> fill: ⌈links per sub-plane ÷ L2 ports⌉ chips per sub-plane, parallel L1–L2 links allowed; <b>full pod</b> counts the whole SuperPoD fabric as bought). The scale-out network is a folded Clos over the NPU ports: with switch radix k and leaf oversubscription o a leaf has d = ⌊k·o/(1+o)⌋ down ports, t tiers carry d·k·(k/2)^(t−2) ports, tier 1 has ⌈P/d⌉ switches, the middle tiers ⌈H/(k/2)⌉ and the top ⌈H/k⌉ with H = ⌈P/o⌉; 10,000 ports at k = 64 need three tiers (313 + 313 + 157 switches, 30,000 links), 100,000 ports four (3,125 + 3,125 + 3,125 + 1,563 switches, 400,000 links).</p>
+<div class="table-wrap"><table>
+  <tr><th>NPUs</th><th>A2: servers · CPUs · cabinets · RoCE switches (tiers) · links</th><th>A3: pods · nodes · compute + comm. cabinets · L1 · L2 · UB links</th><th>Atlas 950: pods · compute + comm. cabinets · L2 · RDMA switches</th></tr>
+  <tr><td class="num">10,000</td><td>1,250 · 5,000 · 157 · 783 (3) · 30,000</td><td>27 · 1,250 · 313 + 105 · 8,750 · 2,919 · 140,000</td><td>2 · 157 + 40 · 2,926 · 1,563</td></tr>
+  <tr><td class="num">100,000</td><td>12,500 · 50,000 · 1,563 · 10,938 (4) · 400,000</td><td>261 · 12,500 · 3,125 + 1,042 · 87,500 · 29,169 · 1,400,000</td><td>13 · 1,563 + 391 · 29,225 · 21,875</td></tr>
+  <tr><td class="num">200,000</td><td>25,000 · 100,000 · 3,125 · 21,875 (4) · 800,000</td><td>521 · 25,000 · 6,250 + 2,084 · 175,000 · 58,338 · 2,800,000</td><td>25 · 3,125 + 782 · 58,450 · 43,750</td></tr>
+  <tr><td class="num">500,000</td><td>62,500 · 250,000 · 7,813 · 54,688 (4) · 2,000,000</td><td>1,303 · 62,500 · 15,625 + 5,209 · 437,500 · 145,838 · 7,000,000</td><td>62 · 7,813 + 1,954 · 146,118 · 109,375</td></tr>
+</table></div>
+<p>The counts are golden vectors computed independently in Python (<code>packages/core/test/golden/compute_golden_v4.py</code>).</p>
+<h3>4.3 Fault types per hardware unit</h3>
+<p>The 54 events of the audited reference catalog (18 domains × interruption / sub-health / silent) state a business-impact FIT per card-hour. v4 attaches every event to the hardware unit it belongs to and converts it under the CloudMatrix384 geometry, where the catalog and the paper's counts agree: <b>FIT per unit = FIT per card × 384 ÷ units in one 384-NPU pod</b>. The NPU carries CORE, SRAM, IOD, MODULE, MEMT, MEMP and NIC (1,676.7 interruption FIT per NPU); the job-level services STORAGE and UNKNOWN (543.3 per NPU); the CPU its domain (333.3 per CPU); the node DDR, SSD, BOXIO and MGMT (4,373.3 per node); the compute cabinet POWER and COOL (8,533.3 per cabinet); the UB switch chip FABRIC (57.1 per chip); the UB L1–L2 link OPT (4.76 per link). RoCE switches and links carry the UB chip and link values as analogues (assumed; an unprotected Ethernet leaf is likely worse — Alibaba HPN reports 0.051 % critical ToR errors per month, about 708 FIT). A CloudMatrix384 cluster without the scale-out network reproduces the per-card catalog exactly; A2 and Atlas 950 differ through their hardware mix:</p>
+<div class="table-wrap"><table>
+  <tr><th>Interruption FIT per NPU, 10,000 NPUs</th><th class="num">A2</th><th class="num">A3 · CM384</th><th class="num">Atlas 950</th></tr>
+  <tr><td>NPU · job-level · CPU · node</td><td class="num">1,676.7 · 543.3 · 166.7 · 546.7</td><td class="num">same</td><td class="num">same</td></tr>
+  <tr><td>compute cabinet (64 / 32 / 64 NPUs per cabinet)</td><td class="num">134.0</td><td class="num">267.1</td><td class="num">134.0</td></tr>
+  <tr><td>UB switch chips · UB links</td><td class="num">—</td><td class="num">66.7 · 66.7</td><td class="num">66.7 · 66.7</td></tr>
+  <tr><td>RoCE switches · RoCE links</td><td class="num">4.5 · 14.3</td><td class="num">8.9 · 28.6</td><td class="num">8.9 · 28.6</td></tr>
+  <tr><td><b>total</b></td><td class="num"><b>3,086.1</b></td><td class="num"><b>3,371.3</b></td><td class="num"><b>3,238.2</b></td></tr>
+</table></div>
+<p>The FIT of every fault type is editable per unit in the Hardware tab (interruption, sub-health and silent separately; ↺ restores the library value); edits stay in the scenario with the derivation “user value”. A cabinet's FIT does not grow with its density (assumed): denser cabinets halve the facility FIT per NPU but take out 64 NPUs at a time. The Fault library page lists the 60 per-unit fault types (§12.1).</p>
+<h3>4.4 Input groups</h3>
+<ul>
+  <li><b>Hardware parameters</b> (template-specific): servers or nodes per cabinet, cabinets per SuperPoD, CPUs and L1 chips per node, sub-planes, L2 chips and ports, links per L1 chip, transceivers per link, fabric fill; the scale-out network on / off with ports per NPU, switch radix and oversubscription. Fields the public sources do not give are marked <i>assumed</i>.</li>
+  <li><b>Fault library</b>: how many FIT values are edited, reset to the library, a link to the Fault library page.</li>
+  <li><b>Mechanisms</b>: the applied mechanisms as chips — by default the six ReMAP mechanisms D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST — and a link to the Mechanisms page, which owns their parameters, the chain order and the silent-corruption policy.</li>
+  <li><b>Workload, checkpoint &amp; targets</b>: window length, τ and δ unless a mechanism owns them (with C-FAST applied they read “set by C-FAST”), the A_op target and the delivered-goodput target.</li>
+  <li><b>Recovery</b> (MTTR mixture): detection coverage, automatic detection and timeout, automatic attempt and success, manual time, with R̄ = T_det + T_auto + (1 − p_s)·T_manual; a mechanism that owns detection (D-HARD) makes those fields read-only.</li>
+  <li><b>Scenario file</b>: export JSON, reset the template, open the scenario editor.</li>
+</ul>
+<p>Every edit made under the applied mechanisms goes to the bare design: the mechanisms are removed exactly, the change is made, and they are applied again in their order with their parameters. A FIT edit therefore never loses a mechanism, and a setting a mechanism owns stays with it.</p>
+<h3>4.5 KPI strip and tabs</h3>
+<p>The KPI strip shows A_op = A_run·(1 − φ_sdc) with A_run = 1/(1 + Σλp̄) against its target, the delivered goodput over the 30-day window against its target, MTBI = 1/λ_job with interruptions per day, the mean pause per event of the chain, and the interruption FIT per NPU of the hardware (Σ count × FIT_unit ÷ N, before the mechanisms). With the six default mechanisms:</p>
+<div class="table-wrap"><table>
+  <tr><th>10,000 NPUs</th><th class="num">A_op</th><th class="num">delivered</th><th class="num">MTBI</th><th class="num">mean pause</th><th class="num">FIT / NPU</th></tr>
+  <tr><td>A2 · RoCE</td><td class="num">99.925 %</td><td class="num">97.99 %</td><td class="num">31.8 h</td><td class="num">85 s</td><td class="num">3,086.1</td></tr>
+  <tr><td>A3 · CloudMatrix384</td><td class="num">99.908 %</td><td class="num">97.97 %</td><td class="num">29.1 h</td><td class="num">95 s</td><td class="num">3,371.3</td></tr>
+  <tr><td>Atlas 950</td><td class="num">99.918 %</td><td class="num">97.98 %</td><td class="num">30.3 h</td><td class="num">88 s</td><td class="num">3,238.2</td></tr>
+</table></div>
+<figure><img src="img/topology-picture.jpg" alt="Picture tab"><figcaption>Picture tab: the RDMA scale-out tiers, one SuperPoD with its compute and communication cabinets and the UB sub-planes (the others stacked behind it), one node enlarged; then the sources and the assumed fields of the template.</figcaption></figure>
+<p>Tabs: <b>Picture</b> (live schematic drawn from the counts), <b>Hardware</b> (the bill of materials — unit, per NPU, counts at 10k / 100k / 200k / 500k with the current N highlighted, interruption FIT per unit, share of the job's hardware interruption rate, what one failure takes out, confidence — then the fault types per unit with editable FIT and the per-NPU contribution), <b>Reliability</b> (§5) and <b>Allocation</b> (the three strategies at the A_op target with the default candidates, levers and floors; details on the Allocation page, §7.1).</p>
+<h3>4.6 Scenario editor (advanced)</h3>
+<p>Behind <b>All pages</b>, the scenario editor shows every field of the active scenario: name, structure template, topology and supernode geometry, measures, workload, spares, targets, costs, the recovery editor (presets, pipelines, ladders, the MTTR mixture), the component table with per-class details, the reliability block diagram and the JSON. Use it for scenarios that are not built from a template and for fields the first page does not show. The silent-corruption policy and the chain moved to the Mechanisms page (§6.4).</p>
+<p><b>Component classes</b>:</p>
 <div class="table-wrap"><table>
   <tr><th>Field</th><th>Meaning</th></tr>
   <tr><td>count rule</td><td>units per gpu / node / rack / zone / supernode scope, or a fixed count</td></tr>
@@ -204,30 +255,29 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>redundancy</td><td>series, parallel, k-of-n, standby; switchover success probability, outage per switchover, failed-switch recovery time</td></tr>
   <tr><td>common cause</td><td>β factor and the domain it brings down (node, rack, supernode, sub-plane …)</td></tr>
   <tr><td>sub-health</td><td>entry rate or steady-state probability, duration, performance φ, escalation multiplier, policy tolerate / isolate, detection probability and delay</td></tr>
-  <tr><td>silent corruption</td><td>silent events per unit-hour (job-level policy in §4.4)</td></tr>
+  <tr><td>silent corruption</td><td>silent events per unit-hour (job-level policy in §6.4)</td></tr>
   <tr><td>mechanism applicability</td><td>fraction of this class's interruptions that replay, process rescheduling and DP elasticity can act on (the reference catalog's per-event flags aggregated per source)</td></tr>
   <tr><td>infant mortality, lemons, Weibull shape</td><td>used by the Monte Carlo job simulation</td></tr>
 </table></div>
-<h3>4.3 Workload and recovery</h3>
-<p>Training: job GPUs / NPUs (or supernodes used), duration, exposed checkpoint save δ, interval model (Young, Daly three-term, Daly exact, Saxena) or a fixed interval, hot-spare nodes and replenishment, recovery path (checkpoint τ/2 or replica one step), measured lost computation W. Inference: replicas required, GPUs per replica (one supernode as the unit), spare replicas, capacity target, SLO window.</p>
+<p><b>Workload and recovery</b>:</p>
+<p>Training: job NPUs (or supernodes used), duration, exposed checkpoint save δ, interval model (Young, Daly three-term, Daly exact, Saxena) or a fixed interval, hot-spare nodes and replenishment, recovery path (checkpoint τ/2 or replica one step), measured lost computation W. Inference: replicas required, NPUs per replica (one supernode as the unit), spare replicas, capacity target, SLO window.</p>
 <p>Recovery: a <b>pipeline</b> of stages with scale laws (presets <code>baseline-timeout-manual</code>, <code>automated-probe-standby</code>, <code>trainmover-8192-restart</code>, <code>elastic-replica</code>), a <b>ladder</b> of rungs with success probabilities (<code>mindcluster-a3</code>, <code>generic-auto-restart</code>, or custom), or the <b>MTTR mixture</b> R = T_det + T_auto + (1 − p_s) T_manual with T_det = p_d t_auto + (1 − p_d) t_timeout.</p>
-<h3>4.4 Silent-corruption policy and mechanism chain</h3>
-<p>Job-level: immediate detection coverage q and time, fallback discovery delay D (120 h in the reference baseline), optional step recovery (redo at most t_step, recover in t_rec), and the <b>terminal rule</b> of the window: keep the last clean checkpoint (the audited review engine, default) or discard the whole window if it ends unresolved (the reference V4 and ReMAP legacy <i>delivery</i> rule; the two are different metrics and the Training page shows both values). The <b>recovery mechanism chain</b> enables replay (no rollback), DP-domain elasticity (no rollback; one of n domains out for t_el, global sync t_sync) and process rescheduling (rollback), each with success probability and success / failure times; the <b>rung order</b> control sets the order in which the detection-delayed rungs are tried (↑ moves a rung earlier; prediction and network failover always act first) before the global checkpoint recovery. Each component class also offers <b>Rate from incident counts</b>: de-duplicated events over units × hours give the rate, FIT, MTBF and the exact Garwood interval (zero events: the one-sided upper bound), and one click writes it into the class as a measured rate with its derivation.</p>
-<h3>4.5 Measures, targets, costs, JSON</h3>
-<p>Sub-health threshold φ_min (default 0.7: below it sub-health counts as down), communication share for fabric-plane loss, headline measure (compensated / original), goodput and availability targets, $ per GPU-hour. The scenario JSON editor at the bottom shows the full document (schema in <code>docs/scenario.schema.json</code>).</p>
+<p><b>Measures, targets, costs, JSON</b>:</p>
+<p>Sub-health threshold φ_min (default 0.7: below it sub-health counts as down), communication share for fabric-plane loss, headline measure (compensated / original), goodput and availability targets, $ per NPU-hour. The scenario JSON editor at the bottom shows the full document (schema in <code>docs/scenario.schema.json</code>).</p>
 </section>
 
 <section id="s5">
-<h2>5. Training page</h2>
-<figure><img src="img/training.jpg" alt="Training page"><figcaption>Training page: delivered and effective goodput, A_op, MTBI, recovery, stopping events, interval, cost; the regime line with the first-order flags; the models table; loss decomposition and recovery stages; the window ledger; the silent-corruption card.</figcaption></figure>
+<h2>5. Reliability tab (former Training page)</h2>
+<figure><img src="img/reliability.jpg" alt="Reliability tab"><figcaption>Reliability tab of the Topology &amp; hardware page: effective goodput, recovery, stopping events, interval, cost and wall-clock; the regime line with the first-order flags; the models table; loss decomposition and recovery stages; the window ledger; the silent-corruption card.</figcaption></figure>
+<p>The former Training page is the Reliability tab of the first page. The headline KPIs (A_op, delivered goodput, MTBI, mean pause, interruptions per day) are in the page's KPI strip and are not repeated in the tab; everything else is unchanged.</p>
 <h3>5.1 Reading the page</h3>
 <ul>
-  <li><b>Delivered goodput</b> is the hero tile when the scenario has silent corruption; the <b>effective goodput</b> (performance) and the delivery factor are shown beside it.</li>
+  <li><b>Tiles</b>: effective goodput (performance) with the delivery factor, recovery R(N), stopping events per hour with the rollback / pause-only split, the checkpoint interval, lost $ per day and the wall-clock; the delivered goodput itself is in the KPI strip.</li>
   <li><b>Regime line</b>: (τ + δ)/M and R/M with the validity badge; the headline model (first order while ok, otherwise exact renewal).</li>
   <li><b>Models table</b>: A_op, first order ★, product form, exact renewal (with the implied rollback W), Daly full model, with the assumption of each.</li>
   <li><b>Window ledger</b>: delivered + downtime + saves + rollback + slow-down + elastic domain loss + spares + SDC rollback + terminal discard = 1 (closed form, decomposed with the headline model).</li>
   <li><b>Mechanism chain per class</b>: applicable fractions, P(replay / elastic / process / global), P(rollback), mean pause, domain loss per event.</li>
-  <li><b>Scale extrapolation</b>: 1/N law with the chain, pause-only events and the SDC window applied per row; caution / invalid badges where the first-order flags fire; a supernodes column under a supernode preset.</li>
+  <li><b>Scale extrapolation</b>: 1/N law with the chain, pause-only events and the SDC window applied per row; caution / invalid badges where the first-order flags fire; a supernodes column under a supernode geometry; the component-share chart shows the 15 largest classes.</li>
 </ul>
 <h3>5.2 The window ledger</h3>
 <figure>
@@ -272,7 +322,8 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
 
 <section id="s6">
 <h2>6. Mechanisms page</h2>
-<figure><img src="img/mechanisms.jpg" alt="Mechanisms page"><figcaption>Mechanisms page: the players to attribute, the plan-to-target card (cheapest feasible set, necessary mechanisms, Pareto front, coverage × recovery scan, ledger verification), then the attribution report and the library table with editable parameters and effort scores.</figcaption></figure>
+<figure><img src="img/mechanisms.jpg" alt="Mechanisms page"><figcaption>Mechanisms page, Selection &amp; attribution tab: the scenario selector (default: the active scenario), the players, the attribution report (single, last-added and Shapley gains) and the library table with editable parameters and effort scores.</figcaption></figure>
+<p>v4: three tabs — <b>Selection &amp; attribution</b> (§6.1–6.2), <b>Silent corruption &amp; chain</b> (§6.4, the single owner of these settings) and <b>Single-point audit</b> (§6.9). The plan-to-target card moved to the Allocation page (Mechanism planner tab, §6.3), next to the strategies that add hardware FIT and recovery limits to the same search. On the topology scenarios the six ReMAP mechanisms are applied by default; editing a parameter of an applied mechanism in the library table re-applies it.</p>
 <h3>6.1 Mechanism library</h3>
 <p>The twelve mechanisms of the reference catalog plus seven entries added from the literature (v3.2), each with the change it makes, its prerequisite, its failure path, the confidence of its parameters, an effort score (1–5) used by the planner and, where a method costs throughput even without failures, a fault-free overhead that multiplies the goodput. Sixteen have a scenario transform; three are informational (already in the baseline or no double credit). Chain order per interruption: prediction → network failover → replay → hot-swap → elasticity → process rescheduling → global checkpoint recovery → manual.</p>
 <div class="table-wrap"><table>
@@ -297,31 +348,68 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>H-SWEEP</td><td>offline node sweeps</td><td>sub-health entry rate × 0.5, duration × 0.5</td><td class="num">2</td></tr>
 </table></div>
 <h3>6.2 Attribution</h3>
-<p>The page has its own scenario selector, preset to the 54-event reference catalog whose per-event mechanism flags reproduce combinations exactly (a warning appears for scenarios that declare per-class fractions); the other pages keep the active scenario. Select the players and the value function (delivered goodput, effective goodput or A_op), press <b>Attribute</b>: the selected mechanisms are stripped from the scenario (baseline), all 2ⁿ coalitions are evaluated with the closed forms, and the report gives single gains (each alone), last-added gains (added to all the others) and exact Shapley values, which sum to the combined gain. Substitutes (replay, elasticity, process rescheduling) show diminishing returns; complements (detection and step recovery) show up only together. The value function evaluates only the training block of each coalition (the block structure, importance measures and cut sets are skipped), so ten players on the 54-event catalog take about a second; the button counts the coalitions evaluated, the compute worker runs one job at a time (an attribution and a plan queue), and <b>Cancel</b> restarts the worker.</p>
-<h3>6.3 Plan to target</h3>
-<p>Set the target, press <b>Plan</b>: every coalition is evaluated nominally and with the library's assumed parameters derated (coverage −5 points, success −8 points, times ×1.5); a coalition is feasible when both reach the target. The card reports the cheapest feasible set by effort, the mechanisms present in every feasible set (necessary), the effort–value Pareto front, a scan of silent-corruption detection coverage × automatic recovery time on top of the plan, and, when enabled, a window-ledger simulation of the plan with P(window ≥ target) against a confidence level: the verdict is <i>supported</i> when the Wilson lower bound reaches the confidence, <i>below</i> when the upper bound misses it, <i>uncertain</i> otherwise. Every coalition carries its no-fault bound (the checkpoint saves alone cap the window at the duty cycle τ/(τ+δ) over a finite window); a target above the best bound is reported as proven infeasible by the checkpoint saves rather than "not found". Effort scores and target parameters are editable in the library table.</p>
+<p>The page has its own scenario selector, preset to the active scenario (v4; before it was the 54-event reference catalog — the topology scenarios carry the same per-event mechanism flags, so combinations are reproduced exactly; a warning appears for scenarios that declare per-class fractions). Select the players and the value function (delivered goodput, effective goodput or A_op), press <b>Attribute</b>: the selected mechanisms are stripped from the scenario (baseline), all 2ⁿ coalitions are evaluated with the closed forms, and the report gives single gains (each alone), last-added gains (added to all the others) and exact Shapley values, which sum to the combined gain. Substitutes (replay, elasticity, process rescheduling) show diminishing returns; complements (detection and step recovery) show up only together. The value function evaluates only the training block of each coalition (the block structure, importance measures and cut sets are skipped), so ten players on the 54-event catalog take about a second; the button counts the coalitions evaluated, the compute worker runs one job at a time (an attribution and a plan queue), and <b>Cancel</b> restarts the worker.</p>
+<h3>6.3 Mechanism planner (Allocation page)</h3>
+<p>Set the target, press <b>Plan</b>: every coalition is evaluated nominally and with the library's assumed parameters derated (coverage −5 points, success −8 points, times ×1.5); a coalition is feasible when both reach the target. The card reports the cheapest feasible set by effort, the mechanisms present in every feasible set (necessary), the effort–value Pareto front, a scan of silent-corruption detection coverage × automatic recovery time on top of the plan, and, when enabled, a window-ledger simulation of the plan with P(window ≥ target) against a confidence level: the verdict is <i>supported</i> when the Wilson lower bound reaches the confidence, <i>below</i> when the upper bound misses it, <i>uncertain</i> otherwise. Every coalition carries its no-fault bound (the checkpoint saves alone cap the window at the duty cycle τ/(τ+δ) over a finite window); a target above the best bound is reported as proven infeasible by the checkpoint saves rather than "not found". Effort scores and target parameters are editable in the library table. The planner lives on the Allocation page (Mechanism planner tab) since v4.</p>
+<h3>6.4 Silent corruption &amp; chain tab</h3>
+<p>Job-level: immediate detection coverage q and time, fallback discovery delay D (120 h in the reference baseline), optional step recovery (redo at most t_step, recover in t_rec), and the <b>terminal rule</b> of the window: keep the last clean checkpoint (the audited review engine, default) or discard the whole window if it ends unresolved (the reference V4 and ReMAP legacy <i>delivery</i> rule; the two are different metrics and the Reliability tab shows both values). The <b>recovery mechanism chain</b> enables replay (no rollback), DP-domain elasticity (no rollback; one of n domains out for t_el, global sync t_sync) and process rescheduling (rollback), each with success probability and success / failure times; the <b>rung order</b> control sets the order in which the detection-delayed rungs are tried (↑ moves a rung earlier; prediction and network failover always act first) before the global checkpoint recovery. v4 makes this tab the single owner of these settings: switching a rung or a detector on applies its library mechanism, every parameter edit re-applies it with the new parameters (the applied record and the scenario never disagree), switching it off removes it exactly; the fallback delay, the terminal rule and the rung order belong to no mechanism and are edited directly. In the scenario editor, each component class also offers <b>Rate from incident counts</b>: de-duplicated events over units × hours give the rate, FIT, MTBF and the exact Garwood interval (zero events: the one-sided upper bound), and one click writes it into the class as a measured rate with its derivation.</p>
 <div class="callout">Reference three-class baseline, target 90 % delivered: at 50,000 cards D-SDC alone is cheapest and necessary (95.4 % nominal, 94.2 % derated, 95 % of months ≥ 90 %); at 100,000 cards it passes on the mean (92.3 %) but only 85 % of months reach 90 %, so add replay or elasticity for margin; at 500,000 cards no library set suffices (83.4 %) and the scan shows coverage ≥ 99 % with recovery ≤ 120 s is needed, the reference tool's own conclusion.</div>
+<h3>6.9 Single-point audit tab and the allocation study (v3.7)</h3>
+<p>The library gained the 16 mechanisms of the mechanism audit of 2026-10-14 (link-transparent recovery, fabric re-route with degraded running, fault containment, control-plane continuity, warm standby process, runtime snapshot, asynchronous and compressed checkpoints, recovery-action classification, FP8 / FP4 / ABFT / network silent-corruption detection, online screening, HCCL elastic rebuild, CANN graph caches), each keeping the audit's principle, trigger, workflow, overlap rules and sources. The integration fields the audit leaves null (eligible share, conditional success, failure seconds, overhead; the risk share for FP8 / FP4) keep those mechanisms audit-only until you enter values or switch on "use provisional assumptions" on the Mechanisms page (Selection and Audit tabs) or in the allocation study (tagged assumed, derated by the planner). Mechanisms on the same recovery stage take the minimum, never the sum.</p>
+<p><b>Single-point benefit audit</b>: select mechanisms → Run audit → metric and 口径, baseline → target, single-point gain and cluster-level delta per mechanism; "Download HTML report" writes the standalone page in the structure of the audit deliverable (cards, conventions, flow, stage budget, summary table, sensitivity, one article per mechanism, embedded JSON). <b>Cross-scale allocation study</b> (Allocation → Cross-scale → detailed allocation study): sizes, target, metric (A_op / delivered / effective), candidate mechanisms (more than 10 → greedy planner, more than 12 → sampled Shapley), verification windows → Run study → per size the baseline, recommended set, nominal / derated values, residual hardware factor and verification, plus the embedded full report (budgets, levers, three charts, mechanism parameters, allowed FIT per domain, conclusions). <code>hacd audit</code>, <code>hacd study</code> and the MCP tools <code>audit_mechanisms</code>, <code>allocation_study</code> write the same reports.</p>
 </section>
 
 <section id="s7">
-<h3>6.9 Audit &amp; study page (v3.7)</h3>
-<p>The library gained the 16 mechanisms of the mechanism audit of 2026-10-14 (link-transparent recovery, fabric re-route with degraded running, fault containment, control-plane continuity, warm standby process, runtime snapshot, asynchronous and compressed checkpoints, recovery-action classification, FP8 / FP4 / ABFT / network silent-corruption detection, online screening, HCCL elastic rebuild, CANN graph caches), each keeping the audit's principle, trigger, workflow, overlap rules and sources. The integration fields the audit leaves null (eligible share, conditional success, failure seconds, overhead; the risk share for FP8 / FP4) keep those mechanisms audit-only until you enter values or switch on "use provisional assumptions" on the Mechanisms or Audit page (tagged assumed, derated by the planner). Mechanisms on the same recovery stage take the minimum, never the sum.</p>
-<p><b>Single-point benefit audit</b>: select mechanisms → Run audit → metric and 口径, baseline → target, single-point gain and cluster-level delta per mechanism; "Download HTML report" writes the standalone page in the structure of the audit deliverable (cards, conventions, flow, stage budget, summary table, sensitivity, one article per mechanism, embedded JSON). <b>Cross-scale allocation study</b>: sizes, target, metric (A_op / delivered / effective), candidate mechanisms (more than 10 → greedy planner, more than 12 → sampled Shapley), verification windows → Run study → per size the baseline, recommended set, nominal / derated values, residual hardware factor and verification, plus the embedded full report (budgets, levers, three charts, mechanism parameters, allowed FIT per domain, conclusions). <code>hacd audit</code>, <code>hacd study</code> and the MCP tools <code>audit_mechanisms</code>, <code>allocation_study</code> write the same reports.</p>
 <h2>7. Allocation page</h2>
-<figure><img src="img/allocation.jpg" alt="Allocation page"><figcaption>Allocation page on the delivered basis (54-event catalog, 100,000 cards, target 90 %): the silent-corruption card (feasibility by hardware alone, required detection coverage and fallback delay, implied effective target), the loss budget over the window ledger with its levers, the method-independent budget tiles, notes, the allowed failure rate per class, the allowed time per recovery stage, the class weights used by the methods and the availability split.</figcaption></figure>
-<p>The page turns a target into requirements: how much silent-corruption detection is needed, how the allowed loss splits over the ledger lines, which interruption rate each component class may have, how long each recovery stage may take and, for an availability target, what unavailability each class may contribute. Everything recomputes as you edit; the only controls are the inputs below.</p>
-<h3>7.1 Inputs</h3>
+<figure><img src="img/allocation.jpg" alt="Allocation page, Strategies tab"><figcaption>Allocation page, Strategies tab (A3 · CloudMatrix384, 500,000 NPUs, A_op ≥ 98.5 %, the default target): target and strategy, candidate mechanisms and recovery limits, hardware constraints, the three strategies compared and the detail of the selected plan (steps, allowed FIT per class, alternatives, notes).</figcaption></figure>
+<p>v4: four tabs. <b>Strategies</b> (§7.1) and <b>Cross-scale</b> (§7.2) reach a target with mechanisms, recovery limits and hardware FIT under constraints; <b>Classic methods</b> (§7.3–7.11) keeps the v3 budget methods; <b>Mechanism planner</b> is the mechanism-only search of §6.3.</p>
+<h3>7.1 Strategies tab</h3>
+<p>All three strategies solve the same problem: reach the target (A_op or delivered goodput over the job window) nominally <em>and</em> with every mechanism parameter and lever derated (coverage −5 pt, success −8 pt, times ×1.5), on top of the scenario's own mechanisms, with three kinds of moves:</p>
+<ul>
+  <li><b>mechanisms</b> from the library (candidates; effort = the library effort score);</li>
+  <li><b>recovery levers</b> moved to a limit: automatic attempt ≥ 60 s, automatic success ≤ 99.9 %, manual recovery ≥ 30 min (limits and efforts 3 / 3 / 2 are editable assumptions);</li>
+  <li><b>hardware</b>: the interruption FIT of each fault class × xᵢ ∈ [floorᵢ, 1]; effort eᵢ·log₂(1/xᵢ), eᵢ = effort of halving the class's FIT (default 2), floorᵢ = the lowest reachable fraction of today's FIT (default 0.05). Floors, efforts and fixed classes are stored in the scenario (<code>component.allocation</code>).</li>
+</ul>
+<div class="table-wrap"><table>
+  <tr><th>Strategy</th><th>Rule</th></tr>
+  <tr><td>Optimal</td><td>least total effort (mechanisms + levers + hardware) over the subsets of the candidate moves: exact enumeration up to 10 moves for A_op (the hardware level in closed form, the chosen plan confirmed on the engine) and 6 for delivered goodput, greedy descent on the total effort beyond; the cheapest plans are listed as alternatives</td></tr>
+  <tr><td>MTTR reduction preferred</td><td>recovery side first: the mechanism or lever with the largest gain per effort is added until the target holds or nothing gains; the remaining gap goes to hardware</td></tr>
+  <tr><td>MTTF reduction preferred</td><td>hardware first, down to the floors; only if the floors are not enough are mechanisms added (physical ones, then the recovery side, evaluated with the hardware at its floors), after which the hardware is relaxed again</td></tr>
+</table></div>
+<p><b>Hardware split.</b> For a level L found by bisection on the engine, xᵢ·cᵢ = clamp(wᵢ·L, floorᵢ·cᵢ, cᵢ), where cᵢ = λᵢ·p̄ᵢ is the class's pause contribution (rate × mean pause per event of its mechanism chain). <i>Minimum effort</i> (default) uses wᵢ = eᵢ and minimises Σ eᵢ log₂(1/xᵢ) for the A_op budget; <i>AGREE</i> uses wᵢ = units × importance and reallocates the slack of the classes under budget; <i>ARINC</i> uses wᵢ = cᵢ (one uniform factor). For A_op the running fraction is exactly 1/(1 + (Σ xᵢcᵢ + F)/3600) (F: isolation, false-alarm and detected-silent-corruption pauses), which gives the level in closed form. When the target already holds, the result reports the <b>hardware slack</b>: the uniform factor by which every interruption FIT could grow before the target is lost.</p>
+<p><b>Outputs</b>: the three strategies side by side (result nominal / derated, added moves, efforts, reached or not); for the selected one the steps, the allowed interruption FIT per class (current, allowed, factor, floor, allowed MTBF per unit, unavailability points before → after, effort), the alternatives (optimal), an optional window-ledger check (P(window ≥ target) with its Wilson interval) and <b>Save this design as a new scenario</b>.</p>
+<div class="table-wrap"><table>
+  <tr><th>A3 · CloudMatrix384, 500,000 NPUs, A_op ≥ 98.5 %</th><th>Optimal</th><th>MTTR preferred</th><th>MTTF preferred</th></tr>
+  <tr><td>result nominal / derated</td><td class="num">99.308 / 98.500 %</td><td class="num">99.304 / 98.500 %</td><td class="num">98.916 / 98.500 %</td></tr>
+  <tr><td>mechanisms and levers added</td><td>D-HARD, R-NETFAIL; automatic attempt 60 s, manual 30 min</td><td>D-HARD, R-NETFAIL, D-SLOW; the same levers</td><td>none</td></tr>
+  <tr><td>hardware</td><td>five classes: UNKNOWN ×0.19, POWER ×0.46 (5,333 → 2,476 FIT per cabinet), MGMT ×0.58, STORAGE ×0.58, COOL ×0.77</td><td>the same five classes (within 0.01)</td><td>fifteen classes, e.g. UNKNOWN ×0.05 (floor), POWER ×0.11 (5,333 → 599 FIT per cabinet), MGMT ×0.14</td></tr>
+  <tr><td>effort mechanisms + levers + hardware = total</td><td class="num">5 + 5 + 10.90 = <b>20.90</b></td><td class="num">8 + 5 + 10.88 = 23.88</td><td class="num">0 + 0 + 44.67 = 44.67</td></tr>
+</table></div>
+<p>Reading: at 500,000 NPUs the default design gives 95.59 % (95.10 % derated); detection in 1 s, network failover and two recovery limits lift the derated value to 97.60 %, and cutting the five classes no recovery rung covers (unattributed ×0.19 … cooling ×0.77) closes the rest. Hardware alone needs fifteen classes improved, the unattributed interruptions down to the 0.05 floor. <code>docs/ALLOCATION_STRATEGY_V4.en.html</code> walks through this case and compares it with the v3.0 and v3.7 methods on the twelve built-in cases (three templates × four scales).</p>
+<h3>7.2 Cross-scale tab</h3>
+<p>The same target, strategy and constraints at several sizes (default the built-in 10k / 100k / 200k / 500k; the template's hardware counts follow N): per size the baseline, the result, the moves added, the hardware effort, the total effort and the largest hardware tasks or the slack. Below it, the detailed v3.7 allocation study (hardware-only and recovery-only budgets, attribution, levers, curves, verification, HTML report; §6.9).</p>
+<div class="table-wrap"><table>
+  <tr><th>Optimal, A_op ≥ 98.5 %</th><th class="num">10,000</th><th class="num">100,000</th><th class="num">200,000</th><th class="num">500,000</th></tr>
+  <tr><td>A2 · RoCE</td><td class="num">slack ×18.7</td><td class="num">slack ×1.82</td><td class="num">hardware 1.11</td><td class="num">D-HARD + levers + hardware 8.27; total 15.27</td></tr>
+  <tr><td>A3 · CloudMatrix384</td><td class="num">slack ×15.5</td><td class="num">slack ×1.50</td><td class="num">automatic attempt 60 s; total 3.00</td><td class="num">D-HARD + R-NETFAIL + levers + hardware 10.90; total 20.90</td></tr>
+  <tr><td>Atlas 950</td><td class="num">slack ×17.3</td><td class="num">slack ×1.67</td><td class="num">hardware 2.37</td><td class="num">D-HARD + R-NETFAIL + levers + hardware 7.03; total 17.03</td></tr>
+</table></div>
+<p>Reading: the six default mechanisms carry every topology to 98.5 % up to 100,000 NPUs (slack ×1.5–1.8); at 200,000 one lever or a little hardware closes the gap, at 500,000 every topology needs mechanisms, recovery limits and hardware. The topology matters through its hardware mix — the UB fabric adds about 133 FIT per NPU in A3 and Atlas 950 and the 32-NPU cabinets of A3 double its facility FIT — so A3 needs the largest effort for the same target.</p>
+<h3>7.3 Classic methods tab</h3>
+<p>The v3 budget methods, unchanged:</p>
+<p>The classic tab turns a target into requirements: how much silent-corruption detection is needed, how the allowed loss splits over the ledger lines, which interruption rate each component class may have, how long each recovery stage may take and, for an availability target, what unavailability each class may contribute. Everything recomputes as you edit; the only controls are the inputs below.</p>
+<h3>7.4 Inputs</h3>
 <div class="table-wrap"><table>
   <tr><th>Control</th><th>Meaning</th><th>Typical value</th></tr>
   <tr><td>Goodput target G*</td><td>the delivered (or effective) goodput the job must reach over its window</td><td>0.90 at 100k–200k cards; ReMAP's target table says 0.99 / 0.95 / 0.90 / 0.80 at 10k / 100k / 200k / 500k</td></tr>
   <tr><td>Target basis</td><td><b>Delivered goodput</b> (正确有效产出; default when the scenario carries silent corruption) or <b>Effective goodput</b> (performance only)</td><td>delivered</td></tr>
-  <tr><td>Availability target A*</td><td>hardware-level availability to split over the classes (§7.2, item 6)</td><td>0.999</td></tr>
-  <tr><td>Method</td><td>how the interruption budget is split over the classes (§7.3)</td><td>ARINC</td></tr>
+  <tr><td>Availability target A*</td><td>hardware-level availability to split over the classes (§7.5, item 6)</td><td>0.999</td></tr>
+  <tr><td>Method</td><td>how the interruption budget is split over the classes (§7.6)</td><td>ARINC</td></tr>
   <tr><td>Restart share</td><td>share of the loss budget given to the recovery term in the balanced split</td><td>0.5</td></tr>
   <tr><td>Split (loss-budget card)</td><td>proportional to the current ledger, equal over the active lines, or custom weights (editable in the table)</td><td>proportional</td></tr>
   <tr><td>Class weights table</td><td>AGREE importance, feasibility weight, cost coefficients a and b, fixed classes; saved in the scenario</td><td>1 · 2 for assumed rates · 1, 1 · none</td></tr>
 </table></div>
-<h3>7.2 What the page computes, top to bottom</h3>
+<h3>7.5 What the classic tab computes, top to bottom</h3>
 <ol>
   <li><b>Silent corruption and the delivered target</b> (delivered basis). The delivered target G_d is divided by the delivery factor f = delivered ÷ effective and by the sub-health / spares / local factor φ to give the effective and the headline (interruption) targets. The card first asks whether the <em>hardware alone</em> can reach G_d (every failure rate → 0 under the current silent-corruption policy). If not, it reports the smallest immediate detection coverage q* that reaches the target with the hardware as is and the longest fallback discovery delay D* that reaches it at the current coverage, and computes the budgets below with the coverage raised to q*. If even q = 1 cannot reach the target, the budgets assume q = 1 and show what the interruption side must deliver on top (the note says so).</li>
   <li><b>Loss budget over the window ledger.</b> The allowed loss (1 − G*) × window, in per cent and hours, is split over the nine ledger lines (downtime, checkpoint saves, rollback, sub-health slow-down, elastic domain loss, spares exhausted, mechanism overhead, silent-corruption rollback, terminal discard) by the chosen weights; each line shows current, allowed, excess and the levers that move it. The split is an accounting target, not a proof that each line can be reached independently.</li>
@@ -330,7 +418,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <li><b>Allowed time per recovery stage</b>: the required recovery time split over the stages (detection, automatic attempt, manual share, or the pipeline's stages) in proportion to the current times above their floors.</li>
   <li><b>Availability target split</b> (when A* is set): ln Aᵢ = (wᵢ/Σw) ln A* per class, with the implied allowed rate and MTTR.</li>
 </ol>
-<h3>7.3 Methods</h3>
+<h3>7.6 Methods</h3>
 <div class="table-wrap"><table>
   <tr><th>Method</th><th>Rule</th><th>Use when</th></tr>
   <tr><td>Equal</td><td>λᵢ* = λ*/m</td><td>no information on the subsystems</td></tr>
@@ -341,14 +429,14 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>Cost-optimal</td><td>minimise Σ aᵢ (λᵢ⁰/λᵢ)^{bᵢ} s.t. Σ λᵢ = λ* (Lagrangian, floors at 5 % of the current rate)</td><td>cost curves per class</td></tr>
 </table></div>
 <p>The methods differ only in the per-class split; the tiles, the loss budget and the stage budgets are method-independent. Equal, AGREE and feasibility coincide when every class has the same unit count, importance and feasibility weight (the page says so); minimum-effort and cost-optimal keep the current rates when the budget is already met. Edit the class-weights table to make them differ: raise the importance of a class to give it more of the AGREE budget, give assumed rates a higher feasibility weight, set cost coefficients for cost-optimal, and mark classes that cannot be improved as fixed.</p>
-<h3>7.4 Reading the tables</h3>
+<h3>7.7 Reading the tables</h3>
 <ul>
   <li>An improvement factor ×1.6 on a class means its interruption rate must fall to 1/1.6 of today's; ×0.98 means it may grow by 2 %.</li>
   <li>"tighter-than-best-known" means the allocated rate is below the best rate the library knows for that class: move budget to other classes (weights, fixed) or use mechanisms instead.</li>
   <li>The loss-budget excess column says which line to attack first: on the catalog at 100,000 cards the silent-corruption rollback line alone is 21 points over its allowance, so detection (D-SDC) comes before any hardware change.</li>
   <li>Slack case (current loss ≤ budget): the rate table shows how far each class may degrade and the stage table the allowed times; both serve as acceptance limits.</li>
 </ul>
-<h3>7.5 Worked example A: 54-event catalog, 100,000 cards, 90 % delivered</h3>
+<h3>7.8 Worked example A: 54-event catalog, 100,000 cards, 90 % delivered</h3>
 <div class="table-wrap"><table>
   <tr><th>Quantity</th><th class="num">Value</th></tr>
   <tr><td>delivered goodput today (q = 0, D = 120 h)</td><td class="num">62.61 %</td></tr>
@@ -363,7 +451,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>stage table</td><td class="num">13 s / 3.0 min / 72 s → 13 s / 3.0 min / 73 s (×0.99)</td></tr>
 </table></div>
 <p>Reading: the requirement is detection, not hardware. Raise immediate silent-corruption detection to about 90 % (or discover corruption within 11 h); the interruption side already meets 90 % and the rate and stage tables are acceptance limits.</p>
-<h3>7.6 Worked example B: the same catalog, 95 % delivered (out of reach of detection alone)</h3>
+<h3>7.9 Worked example B: the same catalog, 95 % delivered (out of reach of detection alone)</h3>
 <div class="table-wrap"><table>
   <tr><th>Quantity</th><th class="num">Value</th></tr>
   <tr><td>reachable with q = 1</td><td class="num">94.69 % → "out of reach even with 100 % immediate detection"; budgets assume q = 1</td></tr>
@@ -372,8 +460,9 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>rate table (ARINC), every class</td><td class="num">×1.06 (CORE interruptions 0.0467 → 0.0441 /h)</td></tr>
   <tr><td>stage table</td><td class="num">13 s / 2.7 min / 64 s (×1.13)</td></tr>
 </table></div>
-<p>Reading: full detection plus a 6 % lower interruption rate, or a 13 % faster recovery, reaches 95 %. The Mechanisms page's planner says whether the library mechanisms (replay, elasticity, process rescheduling, faster or in-memory checkpoints, hot-swap) can supply that instead of hardware: ReMAP's six-mechanism set reaches 94.72 % at 100,000 cards and HAC-D's ten-player set 94.64 %, so 95 % needs a hardware or checkpoint-design change on top.</p>
-<h3>7.7 Worked example C: three-class baseline, 50,000 cards, 90 % delivered</h3>
+<p>Reading: full detection plus a 6 % lower interruption rate, or a 13 % faster recovery, reaches 95 %. The Mechanism planner (Allocation page) says whether the library mechanisms (replay, elasticity, process rescheduling, faster or in-memory checkpoints, hot-swap) can supply that instead of hardware: ReMAP's six-mechanism set reaches 94.72 % at 100,000 cards and HAC-D's ten-player set 94.64 %, so 95 % needs a hardware or checkpoint-design change on top.</p>
+<h3>7.10 Worked example C: three-class baseline, 50,000 cards, 90 % delivered</h3>
+<p>On the reference fixture <code>ref-three-classes-100k</code> (not in the app’s list since v4.1): <code>hacd example ref-three-classes-100k</code> writes it as JSON, <b>Import JSON</b> loads it, then set 50,000 cards.</p>
 <div class="table-wrap"><table>
   <tr><th>Quantity</th><th class="num">Value</th></tr>
   <tr><td>delivered goodput today / reachable by hardware alone</td><td class="num">76.67 % / 77.88 % → not feasible</td></tr>
@@ -383,18 +472,17 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
   <tr><td>then: budget vs current; MTBI ≥ ; R ≤ ; rates; stages</td><td class="num">8.81 % vs 3.19 %; 89 min (×0.25); 24 min; ×0.25; ×0.18</td></tr>
 </table></div>
 <p>Reading: with 95 % detection the interruption side has a four-fold margin at 50,000 cards; the tables give the limits within which the hardware and the recovery may degrade while 90 % still holds.</p>
-<h3>7.8 From budgets to requirements</h3>
+<h3>7.11 From budgets to requirements</h3>
 <ul>
   <li>Hand the per-class allowed rates (FIT per unit) to the hardware owners as acceptance criteria, the stage times to the platform team, q* / D* to the silent-corruption detection team and the loss-budget lines to whoever owns each lever.</li>
-  <li>Check the mechanism route on the Mechanisms page (Plan to target with derating; the no-fault bound proves when a target is impossible) and verify with the window-ledger simulation (Simulate page, or the planner's verification: P(window ≥ target) with its Wilson verdict).</li>
+  <li>Check the mechanism route with the Strategies tab or the Mechanism planner (derating; the no-fault bound proves when a target is impossible) and verify with the window-ledger simulation (Simulate page, or the planner's verification: P(window ≥ target) with its Wilson verdict).</li>
   <li>Re-run after every measurement; the page recomputes instantly. <code>hacd allocate &lt;s&gt; --goodput 0.9 --basis delivered --method arinc</code> and the MCP tool <code>allocate_scenario</code> (with <code>lossMethod</code> and <code>lossWeights</code>) print the same tables for scripts and agents; <code>docs/ALLOCATION_PRACTICE.md</code> holds the full procedure.</li>
 </ul>
 </section>
 
 <section id="s8">
-<p><b>Loss budget over the window ledger</b> (delivered basis): the allowed loss (1 − G*) × window is split over the nine ledger lines — proportionally to the current ledger, equally over the active lines, or by custom weights (ReMAP's 25 / 20 / 35 / 10 / 5 / 5 % for downtime / save / rollback / terminal / slowdown / local are one choice) — and each line shows current, allowed, excess and the levers that move it. The split is an accounting target, not a proof that each line can be reached independently.</p>
 <h2>8. Inference, spares and domains</h2>
-<p><b>Inference</b>: an N+k replica pool with one replica = a node, rack or supernode; replica rate λ_r = Σ classes at or below the replica scope, MTTR_r rate-weighted, u_r = λ_r MTTR_r / (1 + λ_r MTTR_r), service-up availability 1 − u_r^{n+k}, capacity availability Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}, the k required for the target, replica failures per day and idle spare GPU-hours. Under a supernode preset the page sizes 100k / 200k / 500k-NPU clusters in supernodes (for CloudMatrix384 analogue rates: 261 / 521 / 1,303 supernodes, k* = 9 / 14 / 27 spares for 99.9 % capacity availability).</p>
+<p><b>Inference</b>: an N+k replica pool with one replica = a node, rack or supernode; replica rate λ_r = Σ classes at or below the replica scope, MTTR_r rate-weighted, u_r = λ_r MTTR_r / (1 + λ_r MTTR_r), service-up availability 1 − u_r^{n+k}, capacity availability Σ_{j≤k} C(n+k, j) u_r^j (1 − u_r)^{n+k−j}, the k required for the target, replica failures per day and idle spare NPU-hours. Under a supernode preset the page sizes 100k / 200k / 500k-NPU clusters in supernodes (for CloudMatrix384 analogue rates: 261 / 521 / 1,303 supernodes, k* = 9 / 14 / 27 spares for 99.9 % capacity availability).</p>
 <p><b>Spares &amp; domains</b>: hot spares by binomial quantile (ByteRobust), by Poisson with replenishment time (Meta), units in the repair pipeline and replacements over the job, a required-spares map over node MTBF × MTTR, and spare granularity matched to the failure domain.</p>
 </section>
 
@@ -431,12 +519,15 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
 </section>
 
 <section id="s12">
-<h2>12. Import and Library</h2>
+<h2>12. Fault library and Import</h2>
+<figure><img src="img/library.jpg" alt="Fault library page"><figcaption>Fault library page: the fault types per hardware unit of the topology templates (catalog FIT per card, cards per unit, FIT per unit, mechanism flags, persistence), then the parameter library.</figcaption></figure>
+<h3>12.1 Fault types per hardware unit (v4)</h3>
+<p>The 54 catalog events attached to their hardware units plus the six RoCE analogues of the UB fabric (FABRIC and OPT on RoCE switches and links): per entry the unit, the domain and event, the catalog FIT per card, the cards per unit of the CloudMatrix384 geometry, the FIT per unit, the mechanism flags (R replay, P process rescheduling, E DP elasticity) and the persistence; hover a row for its derivation. Filter by unit and fault class. All values are the catalog priors (assumed). The values in use are edited per scenario on the first page (§4.3).</p>
 <figure><img src="img/import.jpg" alt="Import page"><figcaption>Import page: methods detected in a workbook (formula fingerprints with cell addresses), column roles, the extracted topology with evidence and confidence, and the reconciliation of the sheet's cached values against HAC-D.</figcaption></figure>
-<h3>12.1 Excel import</h3>
+<h3>12.2 Excel import</h3>
 <p>Formulas are fingerprinted into 18 method tags: availability from MTBF / MTTR or λ / MTTR, unavailability λ·MTTR, FIT → λ, AFR → MTBF, series product, rare-event sum, parallel complement, k-of-n explicit sum / COMBIN / BINOM.DIST, standby, switchover weighting, MTTR auto / manual mixture, Markov MMULT / MINVERSE, percent and complement conversions, power of count. The topology is extracted from level columns, indentation, outline levels and the formula dependency graph into a draft, converted into a scenario and reconciled with the sheet's own numbers. Nine synthetic fixture workbooks are the test set; real workbooks tune the header lexicon.</p>
-<h3>12.2 Parameter library</h3>
-<p>635 survey-sourced records (failure rates, MTTR stage times, SDC rates, spare ratios, checkpoint overheads, Ascend sources) with 口径, provenance and confidence. Filter by class, kind, confidence and stage, then <b>Use as rate</b> on a component of the active scenario.</p>
+<h3>12.3 Parameter library</h3>
+<p>635 survey-sourced records (failure rates, MTTR stage times, SDC rates, spare ratios, checkpoint overheads, Ascend sources) with 口径, provenance and confidence. Filter by class, kind, confidence, stage and hardware, then <b>Use as rate</b> on a component of the active scenario. The 357 records measured on GPU fleets are kept as analogues and tagged <i>GPU analogue</i> (the NPU rates are anchored on them; no public Ascend failure data exists); the hardware filter shows NPU / general records only, or the analogues only.</p>
 </section>
 
 <section id="s13">
@@ -498,12 +589,18 @@ statistics: mean ± t_{0.975, n−1}·sd/√n (Student-t), type-7 quantiles;  P(
 checkpoint bounds: goodput ≤ (⌊S/L⌋τ + min(S mod L, τ))/S over a window of S seconds, L = τ + δ;  ≤ τ/L in the long run;  target above the best coalition's bound ⇒ proven infeasible
 loss budget: allowed_i = (1 − G*) · w_i, Σ w_i = 1 (proportional / equal / custom);  excess_i = current_i − allowed_i;  hours = share × window
 incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_{1−α/2}(2k+2)/(2E)];  k = 0: upper bound χ²_c(2)/(2E) = −ln(1 − c)/E</div>
+<h3>13.11 v4 additions: topology counts, per-unit fault types, allocation strategies</h3>
+<div class="formula">counts: nodes = ⌈N/n_node⌉, CPUs = nodes·c, cabinets = ⌈nodes/n_cab⌉, pods = ⌈nodes/n_pod⌉, L1 = nodes·l1, links = L1·l_L1;  last pod (proportional): L2 per sub-plane = min(L2_pod, ⌈r·l1·l_L1/(planes·ports)⌉)
+Clos over P ports, radix k, oversubscription o: d = ⌊k·o/(1+o)⌋, t = min{t : P ≤ d·k·(k/2)^(t−2)}, tier 1 ⌈P/d⌉, middle ⌈H/(k/2)⌉, top ⌈H/k⌉, H = ⌈P/o⌉, links = P + (t−1)·H
+per-unit FIT: FIT_unit = FIT_card × 384 / units per CloudMatrix384 pod;  λ_job,hw = Σ_units count × FIT_unit × 10⁻⁹
+strategies: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i), c_i = λ_i·p̄_i;  w_i = e_i (minimum effort) | n_i·E_i (AGREE) | c_i (ARINC);  effort_hw = Σ e_i·log₂(1/x_i)
+A_op closed form for the level: Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F;  feasible ⇔ value ≥ A* nominally and derated;  slack = max uniform factor on every FIT with the target kept</div>
 </section>
 
 <section id="s14">
 <h2>14. Validation and accuracy</h2>
 <h3>14.1 Golden vectors and tests</h3>
-<p>282 golden vectors computed independently in Python (mpmath quadrature, exact CTMC solutions, renewal equations on a grid, SciPy distributions) from the model specification without reading the engine: 143 for v1, 26 for v2, 21 for v3 (chain with its rung order, mixed renewal, silent corruption under both terminal rules) and 92 for the v3.5 statistics (Student-t and chi-square quantiles, incomplete gamma and beta, Wilson and Garwood intervals). The suite has 517 core tests and 29 importer tests; exported workbooks are recalculated with an independent formula engine; every page is screenshot-checked at 1280 px and 375 px in light and dark.</p>
+<p>282 golden vectors computed independently in Python (mpmath quadrature, exact CTMC solutions, renewal equations on a grid, SciPy distributions) from the model specification without reading the engine: 143 for v1, 26 for v2, 21 for v3 (chain with its rung order, mixed renewal, silent corruption under both terminal rules) and 92 for the v3.5 statistics (Student-t and chi-square quantiles, incomplete gamma and beta, Wilson and Garwood intervals). The suite has 690 core tests and 29 importer tests (v4 adds 126 topology goldens in <code>golden_v4.json</code>: Clos counts, template counts from 384 NPUs to 500k including the built-in 10k / 100k / 200k / 500k, per-unit FIT, the CloudMatrix384 calibration); exported workbooks are recalculated with an independent formula engine; every page is screenshot-checked at 1280 px and 375 px in light and dark.</p>
 <h3>14.2 Cross-check with the reference engine</h3>
 <p>The audited reference engine (one training job, 30-day discrete-event simulation, 4000 trials per scenario) and HAC-D on the same baseline: 10,000-card hard MTBF 30 h with linear scaling, τ 300 s, δ 4 s, detection 95 % in 10 s else 60 s, recovery 180 s at 99 % else +2 h manual.</p>
 <div class="table-wrap"><table>
@@ -524,26 +621,26 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
 <svg viewBox="0 0 900 110" role="img" aria-label="Analysis workflow across the pages">
   <g font-size="12" fill="var(--ink)">
     <g>
-      <rect x="10" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="69" y="45" text-anchor="middle" font-weight="600">1 口径 + data</text><text x="69" y="61" text-anchor="middle" fill="var(--muted)">Library, Scenario</text>
-      <rect x="156" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="215" y="45" text-anchor="middle" font-weight="600">2 evaluate</text><text x="215" y="61" text-anchor="middle" fill="var(--muted)">Training, Inference</text>
-      <rect x="302" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="361" y="45" text-anchor="middle" font-weight="600">3 attribute</text><text x="361" y="61" text-anchor="middle" fill="var(--muted)">Mechanisms, Compare</text>
-      <rect x="448" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="507" y="45" text-anchor="middle" font-weight="600">4 allocate / plan</text><text x="507" y="61" text-anchor="middle" fill="var(--muted)">Allocation, Mechanisms</text>
-      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 verify</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">Simulate</text>
-      <rect x="740" y="26" width="150" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="815" y="45" text-anchor="middle" font-weight="600">6 review + report</text><text x="815" y="61" text-anchor="middle" fill="var(--muted)">Report, exports</text>
+      <rect x="10" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="69" y="45" text-anchor="middle" font-weight="600">1 topology + scale</text><text x="69" y="61" text-anchor="middle" fill="var(--muted)">first page</text>
+      <rect x="156" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="215" y="45" text-anchor="middle" font-weight="600">2 hardware + faults</text><text x="215" y="61" text-anchor="middle" fill="var(--muted)">Hardware tab, Library</text>
+      <rect x="302" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="361" y="45" text-anchor="middle" font-weight="600">3 mechanisms</text><text x="361" y="61" text-anchor="middle" fill="var(--muted)">Mechanisms</text>
+      <rect x="448" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="507" y="45" text-anchor="middle" font-weight="600">4 evaluate</text><text x="507" y="61" text-anchor="middle" fill="var(--muted)">KPI strip, Reliability</text>
+      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 allocate</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">Strategies, Cross-scale</text>
+      <rect x="740" y="26" width="150" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="815" y="45" text-anchor="middle" font-weight="600">6 verify + report</text><text x="815" y="61" text-anchor="middle" fill="var(--muted)">ledger, Simulate, Report</text>
     </g>
     <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M128 48 L156 48"/><path d="M274 48 L302 48"/><path d="M420 48 L448 48"/><path d="M566 48 L594 48"/><path d="M712 48 L740 48"/></g>
-    <text x="450" y="98" text-anchor="middle" fill="var(--muted)">then measure (stage times, detection coverage, incident logs) and loop back to step 1</text>
+    <text x="450" y="98" text-anchor="middle" fill="var(--muted)">then measure (FIT per unit, stage times, detection coverage, incident logs) and loop back to step 2</text>
   </g>
 </svg>
 <figcaption>The step-by-step procedure with its cross-field references is in <code>docs/WORKFLOW.md</code> and <code>docs/ALLOCATION_PRACTICE.md</code>.</figcaption>
 </figure>
 <ol>
-  <li><b>Fix the 口径 and gather data</b>: which metric (delivered goodput, effective goodput, A_op, capacity availability), which window; rates from your own logs where possible, library records with provenance otherwise.</li>
-  <li><b>Build and evaluate the scenario</b>: topology and classes, repair paths, sub-health and silent corruption, workload and recovery; read the Training (or Inference) page and the regime flags.</li>
-  <li><b>Attribute</b>: where does the loss go (ledger), which levers matter (Shapley, tornado).</li>
-  <li><b>Allocate and plan</b>: on the Allocation page set the target and basis, read the required silent-corruption detection (q*, D*), the loss budget per ledger line, the allowed rate per class and the allowed time per stage (§7); on the Mechanisms page pick the cheapest sufficient mechanism set with derating and check the no-fault bound.</li>
-  <li><b>Verify</b>: window-ledger simulation with P(window ≥ target) and its Wilson verdict; job simulation when lifetimes or correlations are non-exponential; the ReMAP bridge for an independent Monte Carlo of the same scenario.</li>
-  <li><b>Review and report</b>: the eleven-item checklist, original vs compensated measures, exports; then measure in production and loop.</li>
+  <li><b>Topology and scale</b>: pick the template that matches the design (A2, A3, Atlas 950), set the NPUs in the job and the hardware parameters; check the assumed fields.</li>
+  <li><b>Hardware and fault types</b>: read the bill of materials across 10k–500k; replace library FIT by measured values where you have them (per unit, with the incident-count estimator of the scenario editor for the interval).</li>
+  <li><b>Mechanisms</b>: keep or change the six defaults, set their parameters and the chain order, check the silent-corruption policy; attribute (Shapley) to see what each one contributes.</li>
+  <li><b>Evaluate</b>: KPI strip and Reliability tab — A_op, delivered goodput, MTBI, the regime flags, the window ledger.</li>
+  <li><b>Allocate</b>: set the target and the constraints (FIT floors, effort per halving, candidate mechanisms, recovery limits), compare the three strategies, then run them across sizes; hand the allowed FIT per unit to the hardware owners and the mechanism set and recovery limits to the platform team.</li>
+  <li><b>Verify and report</b>: the ledger check (P(window ≥ target) with its Wilson verdict), the Simulate page for non-exponential or correlated inputs, the Report page and its exports; then measure in production and loop.</li>
 </ol>
 </section>
 
@@ -552,7 +649,9 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
 <h3>16.1 CLI</h3>
 <div class="table-wrap"><table>
   <tr><th>Command</th><th>What it does</th></tr>
-  <tr><td><code>hacd examples</code>, <code>hacd example &lt;id&gt;</code></td><td>list / print a built-in scenario</td></tr>
+  <tr><td><code>hacd examples</code>, <code>hacd example &lt;id&gt;</code></td><td>list / print a built-in scenario (the v3.7 GPU examples stay printable by id)</td></tr>
+  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2&gt; --npus 10000 [--sizes 1000,10000,20000,50000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out s.json]</code></td><td>v4 bill of materials, hard FIT per NPU by unit at each size, the scenario file</td></tr>
+  <tr><td><code>hacd strategy &lt;s&gt; | --template a3-ub384 --npus 50000 [--strategy optimal|mttr-first|mttf-first] --target 0.998 [--metric aOp|delivered] [--split min-effort|agree|arinc] [--sizes …] [--trials 200]</code></td><td>v4 allocation strategies (all three when no strategy is given), across sizes with <code>--sizes</code></td></tr>
   <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>evaluate: availability, MTBF, goodput, spares, inference, checklist</td></tr>
   <tr><td><code>hacd compare a.json b.json …</code></td><td>side-by-side KPIs</td></tr>
   <tr><td><code>hacd allocate &lt;s&gt; --goodput 0.9 --basis delivered --method arinc</code></td><td>budgets per class and stage; silent-corruption levers</td></tr>
@@ -572,21 +671,19 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
 </table></div>
 <p>All commands accept <code>--json</code>.</p>
 <h3>16.2 MCP tools</h3>
-<p><code>list_examples</code>, <code>get_example</code>, <code>scenario_schema</code>, <code>evaluate_scenario</code>, <code>compare_scenarios</code>, <code>allocate_scenario</code>, <code>tornado_scenario</code>, <code>simulate_scenario</code>, <code>library_search</code>, <code>excel_method_report</code>, <code>import_excel_scenario</code>, <code>export_excel</code>, <code>mechanism_library</code>, <code>mechanism_report</code>, <code>apply_mechanisms</code>, <code>simulate_ledger</code>, <code>plan_mechanisms、audit_mechanisms、allocation_study</code>, <code>estimate_rate</code>.</p>
+<p><code>list_examples</code>, <code>get_example</code>, <code>scenario_schema</code>, <code>evaluate_scenario</code>, <code>compare_scenarios</code>, <code>allocate_scenario</code>, <code>tornado_scenario</code>, <code>simulate_scenario</code>, <code>library_search</code>, <code>excel_method_report</code>, <code>import_excel_scenario</code>, <code>export_excel</code>, <code>mechanism_library</code>, <code>mechanism_report</code>, <code>apply_mechanisms</code>, <code>simulate_ledger</code>, <code>plan_mechanisms</code>, <code>audit_mechanisms</code>, <code>allocation_study</code>, <code>estimate_rate</code>, v4 <code>topology_bom</code> and <code>allocation_strategy</code>.</p>
 <h3>16.3 Built-in examples</h3>
+<p>Since v4.1 the built-in examples are the three topology templates; the scale is a parameter (the page's scale chips 10k / 100k / 200k / 500k or any N, <code>hacd example &lt;id&gt; --npus N</code>, the MCP tool <code>get_example</code> with <code>npus</code>), so no separate per-size or per-design examples exist.</p>
 <div class="table-wrap"><table>
-  <tr><th>ID</th><th>Scenario</th></tr>
-  <tr><td><code>ref-baseline-100k</code></td><td>reference baseline, hard interruptions only: 100,000 cards, MTBF 30 h at 10k, τ 300 s, R 264.5 s, four sources (HBM / GPU / network / other)</td></tr>
-  <tr><td><code>ref-three-classes-100k</code></td><td>the same with sub-health 2 % and silent corruption 1.4 % of events (the reference's confirmed baseline)</td></tr>
-  <tr><td><code>ref-catalog-100k</code></td><td>the same baseline at catalog granularity: 54 classes (18 domains × three fault classes) with per-event replay / process / elastic flags, for mechanism combinations</td></tr>
-  <tr><td><code>ascend-cm384</code>, <code>ascend-atlas950</code></td><td>CloudMatrix384 and Atlas 950 training jobs with supernode geometry and analogue rates</td></tr>
-  <tr><td><code>ascend-supercluster-100k</code></td><td>inference pool of 384-NPU supernodes with spares</td></tr>
-  <tr><td><code>survey-ex1</code>, <code>survey-ex3</code>, <code>survey-ex4</code></td><td>the survey chapter's worked examples (10k-card job, NVL72 domain vs node, N+k inference)</td></tr>
-  <tr><td><code>nvl72-16k</code></td><td>a 16k-GPU NVL72 design</td></tr>
+  <tr><th>ID</th><th>Scenario (10,000 NPUs, per-unit fault types, the six default mechanisms)</th></tr>
+  <tr><td><code>topology-a3-ub384</code></td><td>A3 · CloudMatrix384 UB supernode (paper geometry)</td></tr>
+  <tr><td><code>topology-a2-roce</code></td><td>A2 · Atlas 800T A2 servers (8 NPUs) on a RoCE Clos</td></tr>
+  <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD (vendor totals, fabric assumed)</td></tr>
 </table></div>
+<p>Reference fixtures, not listed: <code>ref-catalog-100k</code> (the 54-event catalog per card, 100,000 cards, per-event replay / process / elastic flags) and <code>ref-three-classes-100k</code> (the reference's confirmed three-class baseline) stay reachable by id for the reference and ReMAP cross-checks (<code>hacd example</code>, <code>get_example</code>, <code>scripts/remap-bridge.ts</code>). The v2 Ascend examples <code>ascend-cm384</code>, <code>ascend-atlas950</code> and <code>ascend-supercluster-100k</code> were removed because the A3 and Atlas 950 templates at a scale cover them (for an inference pool, switch a template's workload to inference in the scenario editor); saved copies of removed examples leave the browser list while unchanged. The v3.7 GPU examples (<code>ref-baseline-100k</code>, <code>survey-ex1</code>, <code>survey-ex3</code>, <code>survey-ex4</code>, <code>nvl72-16k</code>) are not listed either; <code>hacd example &lt;id&gt;</code> and <code>get_example</code> still return them, and the GPU tool can be forked from the git tag <code>v3.7-gpu</code>.</p>
 <h3>16.4 Scenario JSON</h3>
 <pre>{ "version": "0.2", "meta": { "name": "…", "basis": [], "description": "…" },
-  "topology": { "gpusPerNode": 8, "nodesPerRack": 32, "racksPerZone": 64, "nvlinkDomainGpus": 8, "superpod": { … } },
+  "topology": { "template": "a3-ub384", "gpusPerNode": 8, "nodesPerRack": 4, "superpod": { … }, "fabricFill": "proportional", "scaleOut": { "portsPerNpu": 2, "radix": 64, "oversubscription": 1, "transceiversPerLink": 2 } },
   "components": [ { "id": "gpu", "subsystem": "compute", "countRule": { "per": "gpu" },
       "failure": { "value": 3.3e-6, "unit": "per_h", "koujing": { "event": "hard_interruption", "denominator": "card_h", "level": "job" }, "provenance": { … } },
       "repair": { "auto": { "coverage": 1, "successProbability": 0.99, "mttrHours": 0.053 }, "manual": { "mttrHours": 2 } },
@@ -596,7 +693,8 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
   "recovery": { "mode": "mixture", "detection": { "coverage": 0.95, "autoSeconds": 10, "timeoutSeconds": 60 }, "automatic": { "successProbability": 0.99, "seconds": 180 }, "manual": { "seconds": 7200 } },
   "sdc": { "detection": { "coverage": 0, "detectSeconds": 1 }, "fallbackDelayHours": 120, "terminalRule": "retain-last-clean" },
   "mechanisms": { "order": ["replay", "hotswap", "elastic", "process"], "replay": { … }, "elastic": { … }, "process": { … }, "overheads": { } },
-  "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9 } }</pre>
+  "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9, "operational": 0.985 } }</pre>
+<p>v4 fields: <code>topology.template</code>, <code>cpusPerNode</code>, <code>fabricFill</code>, <code>scaleOut</code>; count rules <code>cpu</code>, <code>ub_switch</code>, <code>roce_port</code>, <code>roce_switch</code>, <code>roce_link</code>; per-unit fault types are written <code>&lt;event&gt;@roce</code> for the RoCE analogues; <code>component.allocation.effortPerHalving</code>; <code>targets.operational</code> (A_op target). Internal names keep <code>nGpus</code>, <code>gpusPerNode</code> and the count rule <code>gpu</code> for compatibility.</p>
 <p>The full JSON Schema is in <code>docs/scenario.schema.json</code>; the tool specification in <code>docs/SPEC.md</code>.</p>
 </section>
 
@@ -608,7 +706,9 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
   <li>Silent corruption uses a fixed fallback delay and a single episode at a time, as the reference does; the terminal rule can be retain-last-clean or discard-all, but retention windows and locate / verify success rates are not separate parameters.</li>
   <li>Mechanism parameters of the library are targets and priors from the reference catalog and the literature (tagged); derating is a convention, not a measurement. Incident-rate intervals cover Poisson sampling only.</li>
   <li>Not modelled: the reference V4 engine's topology features (placement, repair slots, minimum active fraction); the ReMAP bridge notes which rungs and overheads the engines cannot represent.</li>
-  <li>Open items: a DP-elastic training template, Monte Carlo confidence intervals for Shapley values, image / diagram import.</li>
+  <li>v4 topology templates: the A2 Clos radix and oversubscription, the Atlas 950 fabric and every transceiver count are assumptions; the RoCE switches and links carry UB analogues; a cabinet's FIT does not scale with its density; the per-unit fault types are the catalog priors converted under the CloudMatrix384 geometry, not measurements.</li>
+  <li>The strategies move mechanism parameters only through the candidates' library values and the three recovery levers; continuous optimisation of every mechanism parameter is not done. Hardware effort uses a log-cost per halving, an assumption to be replaced by cost curves where they exist.</li>
+  <li>Open items: image recognition of an uploaded topology picture (the templates are parameterised drawings), a DP-elastic training template, Monte Carlo confidence intervals for Shapley values.</li>
 </ul>
 </section>
 
@@ -625,10 +725,13 @@ incident rates: λ = k/E, FIT = λ·10⁹;  Garwood [χ²_{α/2}(2k)/(2E), χ²_
   <dt>τ, δ, W, R</dt><dd>checkpoint interval, exposed save time, lost computation per rollback, recovery time</dd>
   <dt>Shapley value</dt><dd>fair share of a combined gain attributed to one mechanism over all orders of adding the mechanisms</dd>
   <dt>supernode (超节点)</dt><dd>a scale-up domain such as CloudMatrix384 (384 NPUs, 48 nodes, 12 compute + 4 communication racks)</dd>
+  <dt>topology template</dt><dd>a parameterised Ascend topology (A2 RoCE, A3 CloudMatrix384, Atlas 950) that gives the hardware counts at any N</dd>
+  <dt>FIT per unit</dt><dd>business-impact failures per 10⁹ unit-hours of a hardware unit (NPU, node, cabinet, switch chip, link) after the existing protection</dd>
+  <dt>MTTR / MTTF preferred</dt><dd>allocation strategies that close the gap on the recovery side first, or with hardware FIT first</dd>
 </dl>
 </section>
 
-<footer>HAC-D v3.1 · 2026-10-11 · Sources: survey chapter <em>AI 集群可靠性建模</em>; ai-cluster-reliability audited catalog (2026-10-09); docs/MODEL_REFERENCE.md, docs/ALLOCATION_PRACTICE.md, docs/REFERENCE_COMPARISON_100K_500K.md. Screenshots from the web app at 1280 px (light).</footer>
+<footer>HAC-D v4.0 · 2026-10-18 · Sources: survey chapter <em>AI 集群可靠性建模</em>; ai-cluster-reliability audited catalog (2026-10-09); docs/MODEL_REFERENCE.md, docs/ALLOCATION_PRACTICE.md, docs/REFERENCE_COMPARISON_100K_500K.md. Screenshots from the web app at 1280 px (light).</footer>
 </main>
 </div>
 </body>

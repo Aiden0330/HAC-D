@@ -1,14 +1,62 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allocateScenario, type AllocationMethod, type AllocationBasis, type LossBudgetMethod, type LedgerLossLine } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
 import { useStore } from '../state/store.js';
 import { Kpi, Card, DataTable, Field, NumberInput, Select, Badge } from '../components/ui.js';
+import { StrategyForm, StrategyPanel, CrossScalePanel, defaultSettings, type StrategySettings } from '../panels/StrategyPanel.js';
+import { StudyPanel } from '../panels/StudyPanel.js';
+import { PlannerPanel } from '../panels/PlannerPanel.js';
 import { fmtPct, fmtDuration, fmtNum, fmtRatePerMillion, fmtHours } from '../lib/format.js';
 
 const METHODS: AllocationMethod[] = ['arinc', 'agree', 'equal', 'feasibility', 'minimum-effort', 'cost-optimal'];
 
+type Tab = 'strategies' | 'cross' | 'classic' | 'planner';
+
+/**
+ * v4 allocation page: the three strategies (optimal / MTTR-preferred / MTTF-preferred) with hardware FIT floors, mechanism candidates
+ * and recovery limits; the same strategies across sizes (with the detailed allocation-study report); the classic budget methods
+ * (ARINC, AGREE, equal, feasibility, minimum effort, cost optimal, loss and stage budgets); the mechanism-only planner.
+ */
 export function AllocationPage() {
+  const { t } = useTranslation();
+  const active = useActive();
+  const [tab, setTab] = useState<Tab>('strategies');
+  const [st, setSt] = useState<StrategySettings | null>(null);
+  const sid = active?.scenario.meta.id;
+  useEffect(() => { if (active) setSt(defaultSettings(active.scenario)); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sid]);
+  if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
+  const settings = st ?? defaultSettings(active.scenario);
+  const set = (f: (x: StrategySettings) => StrategySettings) => setSt((x) => f(x ?? defaultSettings(active.scenario)));
+  return (
+    <div className="grid" style={{ gap: 14 }}>
+      <div className="page-title">
+        <h1>{t('allocation.title')}</h1>
+        <span className="sub">{t('allocation.subV4')}</span>
+      </div>
+      <div className="tabs" role="tablist">
+        {(['strategies', 'cross', 'classic', 'planner'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`allocation.tab_${k}`)}</button>)}
+      </div>
+      {(tab === 'strategies' || tab === 'cross') && <StrategyForm s={active.scenario} st={settings} set={set} />}
+      {tab === 'strategies' && <StrategyPanel s={active.scenario} st={settings} />}
+      {tab === 'cross' && (
+        <>
+          <CrossScalePanel s={active.scenario} st={settings} />
+          <details>
+            <summary className="muted" style={{ cursor: 'pointer', fontSize: 13 }}>{t('allocation.studyDetails')}</summary>
+            <div className="grid" style={{ gap: 12, marginTop: 8 }}><StudyPanel scenario={active.scenario} /></div>
+          </details>
+        </>
+      )}
+      {tab === 'classic' && <ClassicAllocation />}
+      {tab === 'planner' && <PlannerPanel scenario={active.scenario} />}
+    </div>
+  );
+}
+
+/** the v3 budget methods (unchanged) */
+function ClassicAllocation() {
   const { t } = useTranslation();
   const lang = useLang();
   const active = useActive();
@@ -35,10 +83,7 @@ export function AllocationPage() {
   const a = alloc && !('error' in alloc) ? alloc : undefined;
   return (
     <div className="grid" style={{ gap: 14 }}>
-      <div className="page-title">
-        <h1>{t('allocation.title')}</h1>
-        <span className="sub">{t('allocation.sub')}</span>
-      </div>
+      <div className="muted" style={{ fontSize: 12 }}>{t('allocation.sub')}</div>
       <Card>
         <div className="form-grid">
           {isTraining && (
@@ -126,7 +171,7 @@ export function AllocationPage() {
         <>
           <div className="kpi-row">
             <Kpi label={t('allocation.lossBudget')} value={fmtPct(a.goodput.lossBudget, 2)} note={`${t('allocation.current')} ${fmtPct(a.goodput.current.loss, 2)}`} tone={a.goodput.current.loss > a.goodput.lossBudget ? 'warn' : undefined} />
-            <Kpi label={`${t('allocation.fixR')}: ${t('allocation.requiredMtbi')}`} value={fmtDuration(a.goodput.fixRecovery.requiredMtbiS, lang)} note={`${t('allocation.requiredRate')} ${fmtRatePerMillion(a.goodput.fixRecovery.requiredLambdaPerGpuHour)} /1e6 GPU·h · ${t('allocation.improvement')}${fmtNum(a.goodput.fixRecovery.improvementFactor, 2)}`} />
+            <Kpi label={`${t('allocation.fixR')}: ${t('allocation.requiredMtbi')}`} value={fmtDuration(a.goodput.fixRecovery.requiredMtbiS, lang)} note={`${t('allocation.requiredRate')} ${fmtRatePerMillion(a.goodput.fixRecovery.requiredLambdaPerGpuHour)} /1e6 NPU·h · ${t('allocation.improvement')}${fmtNum(a.goodput.fixRecovery.improvementFactor, 2)}`} />
             <Kpi label={`${t('allocation.fixLambda')}: ${t('allocation.requiredR')}`} value={a.goodput.fixRate.requiredRecoveryS > 0 ? fmtDuration(a.goodput.fixRate.requiredRecoveryS, lang) : '—'} note={a.goodput.fixRate.requiredRecoveryS > 0 ? `${t('allocation.improvement')}${fmtNum(a.goodput.fixRate.improvementFactor, 2)}` : 'infeasible: checkpoint term alone exceeds the budget'} tone={a.goodput.fixRate.requiredRecoveryS > 0 ? undefined : 'bad'} />
             <Kpi label={t('allocation.balanced')} value={`${fmtDuration(a.goodput.balanced.mtbiS, lang)} · ${fmtDuration(a.goodput.balanced.recoveryS, lang)}`} note={`MTBI · R at restart share ${fmtPct(a.goodput.balanced.restartShare, 0)}`} />
           </div>

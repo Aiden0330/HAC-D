@@ -20,6 +20,8 @@ const catalog = (id: string): AuditCatalogMechanism => {
   if (!m) throw new Error(`audit catalog has no mechanism '${id}'`);
   return m;
 };
+/** v4 catalog event id of a component: per-unit classes of the topology templates are written `<event>@<unit>` (e.g. `FABRIC-hard@roce`) */
+export const eventIdOf = (componentId: string): string => componentId.replace(/@.*$/, '');
 const num = (p: P, k: string): number | undefined => (typeof p[k] === 'number' && Number.isFinite(p[k]) ? p[k] : undefined);
 const ready = (p: P, needs: string[]): boolean => needs.every((k) => num(p, k) !== undefined);
 const r3 = (x: number) => Math.round(x * 1000) / 1000;
@@ -32,7 +34,7 @@ function addCustomRung(s: Scenario, id: string, rung: NonNullable<Scenario['mech
   const previous: Previous = { 'mechanisms.custom': orNull(c.mechanisms.custom ? { ...c.mechanisms.custom } : undefined) };
   const compPrev: Record<string, Record<string, number> | null> = {};
   for (const comp of c.components) {
-    if (!candidates.includes(comp.id)) continue;
+    if (!candidates.includes(eventIdOf(comp.id))) continue;
     compPrev[comp.id] = orNull(comp.mechanisms?.custom ? { ...comp.mechanisms.custom } : undefined);
     comp.mechanisms = { ...(comp.mechanisms ?? {}), custom: { ...(comp.mechanisms?.custom ?? {}), [id]: Math.min(1, Math.max(0, share)) } };
   }
@@ -53,7 +55,7 @@ function lowerStage(s: Scenario, id: string, stage: 'startup' | 'read' | 'commun
   const def = automaticStages(c.recovery);
   const compPrev: Record<string, Scenario['components'][number]['recoveryStages'] | null> = {};
   for (const comp of c.components) {
-    if (!candidates.includes(comp.id)) continue;
+    if (!candidates.includes(eventIdOf(comp.id))) continue;
     const current = comp.recoveryStages?.[stage] ?? def[stage];
     const cand = candidateOf(def, current);
     if (!(cand < current)) continue;
@@ -73,7 +75,7 @@ function raiseSdcCoverage(s: Scenario, id: string, candidates: string[], gain: n
   const c = cloneScenario(s);
   const compPrev: Record<string, Scenario['components'][number]['sdc'] | null> = {};
   for (const comp of c.components) {
-    if (!candidates.includes(comp.id) || !comp.sdc) continue;
+    if (!candidates.includes(eventIdOf(comp.id)) || !comp.sdc) continue;
     compPrev[comp.id] = orNull(comp.sdc ? { ...comp.sdc } : undefined);
     comp.sdc = { ...comp.sdc, extraDetection: { ...(comp.sdc.extraDetection ?? {}), [id]: Math.min(1, Math.max(0, gain)) } };
   }
@@ -199,7 +201,8 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
       const c = cloneScenario(s);
       if (c.recovery.mode !== 'mixture') return c;
       const st = automaticStages(c.recovery);
-      const read = Math.min(st.read, st.read / Math.max(1e-9, p.compressionRatio) + p.decompressSeconds);
+      const shareL = Math.min(1, Math.max(0, num(p, 'share') ?? 1));
+      const read = st.read - shareL * Math.max(0, st.read - (st.read / Math.max(1e-9, p.compressionRatio) + p.decompressSeconds));
       const previous: Previous = { recovery: c.recovery };
       c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, stages: { startup: st.startup, graphWithinStartup: st.graphWithinStartup, read, communication: st.communication }, seconds: st.startup + read + st.communication } };
       return recordApplied(c, 'C-LOSSLESS', p, previous);
@@ -218,7 +221,10 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
       const c = cloneScenario(s);
       if (c.recovery.mode !== 'mixture') return c;
       const previous: Previous = { recovery: c.recovery };
-      c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, successProbability: Math.max(c.recovery.automatic.successProbability, 1 - p.manualProbabilityTarget) } };
+      // optional eligibleShare × success (ReMAP-latest scenario): the matched share reaches the target manual probability, the rest keeps the current one
+      const q = Math.min(1, Math.max(0, num(p, 'eligibleShare') ?? 1)) * Math.min(1, Math.max(0, num(p, 'success') ?? 1));
+      const cur = c.recovery.automatic.successProbability;
+      c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, successProbability: q * Math.max(cur, 1 - p.manualProbabilityTarget) + (1 - q) * cur } };
       return recordApplied(c, 'D-RECOVERY-CLASSIFY', p, previous);
     },
   },
@@ -279,7 +285,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
       const compPrev: Record<string, Scenario['components'][number]['sdc'] | null> = {};
       const f = 1 - Math.min(1, Math.max(0, p.occurrenceReduction)) * Math.min(1, Math.max(0, p.eligibleShare));
       for (const comp of c.components) {
-        if (!catalog('H-SDC-SCREEN').eventCandidates.includes(comp.id) || !comp.sdc) continue;
+        if (!catalog('H-SDC-SCREEN').eventCandidates.includes(eventIdOf(comp.id)) || !comp.sdc) continue;
         compPrev[comp.id] = { ...comp.sdc };
         comp.sdc = { ...comp.sdc, ratePerHour: comp.sdc.ratePerHour * f };
       }
@@ -298,7 +304,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
       if (!s.mechanisms.elastic) return s;
       const c = cloneScenario(s);
       const previous: Previous = { 'mechanisms.elastic': { ...c.mechanisms.elastic! } };
-      const saving = Math.max(0, p.communicationBeforeSeconds - p.communicationTargetSeconds);
+      const saving = Math.max(0, p.communicationBeforeSeconds - p.communicationTargetSeconds) * Math.min(1, Math.max(0, num(p, 'share') ?? 1));
       c.mechanisms = { ...c.mechanisms, elastic: { ...c.mechanisms.elastic!, recoverSeconds: Math.max(0, c.mechanisms.elastic!.recoverSeconds - saving) } };
       return recordApplied(c, 'R-HCCL-ELASTIC', p, previous);
     },
