@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, FAULT_UNIT_NAMES, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, STRATEGY_IDS, LEVER_SHORT,
+  TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, STRATEGY_IDS, LEVER_SHORT, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName,
   type Scenario, type TopologyTemplate, type FaultUnit, type BomRow, type StrategyResult, type StrategyId,
 } from '@hac-d/core';
 import { useStore } from '../state/store.js';
@@ -18,8 +18,9 @@ type Tab = 'picture' | 'hardware' | 'reliability' | 'allocation';
 const LIB = unitFaultLibrary();
 const L = (x: { zh: string; en: string }, lang: Lang) => (lang === 'zh' ? x.zh : x.en);
 const fmtCount = (n: number) => (n >= 1 ? fmtInt(n) : '—');
+const FABRICS = ['two-level', 'mesh-clos', 'mesh-4d', 'blade-clos'] as const;
 
-/** thumbnails of the three templates for the selector cards */
+/** thumbnails of the four templates for the selector cards */
 function Thumb({ t }: { t: TopologyTemplate }) {
   if (t === 'a2-roce') {
     return (
@@ -30,12 +31,15 @@ function Thumb({ t }: { t: TopologyTemplate }) {
       </svg>
     );
   }
-  const big = t === 'a950-ub2';
+  // compute cabinets (rows of `cols`) over the communication / UB interconnect cabinets of one SuperPoD
+  const g = ({ 'a3-ub384': { cab: 12, cols: 6, comm: 4 }, 'a950-ub2': { cab: 16, cols: 8, comm: 4 }, 'a960e-ub': { cab: 28, cols: 14, comm: 7 } } as const)[t];
+  const rows = Math.ceil(g.cab / g.cols);
+  const cw = 66 / g.cols, ch = 15 / rows, mw = 66 / g.comm;
   return (
     <svg viewBox="0 0 80 36" aria-hidden="true">
       <rect x={3} y={3} width={74} height={30} rx={3} className="tp-pod" />
-      {Array.from({ length: big ? 16 : 6 }, (_, i) => <rect key={i} x={7 + (i % (big ? 8 : 6)) * (big ? 8.5 : 11)} y={big ? 7 + Math.floor(i / 8) * 8 : 8} width={big ? 6.5 : 8} height={big ? 6 : 12} rx={1} className="tp-cab" />)}
-      {Array.from({ length: big ? 6 : 2 }, (_, i) => <rect key={`m${i}`} x={7 + i * (big ? 11 : 22)} y={24} width={big ? 9 : 18} height={6} rx={1} className="tp-comm" />)}
+      {Array.from({ length: g.cab }, (_, i) => <rect key={i} x={7 + (i % g.cols) * cw} y={6 + Math.floor(i / g.cols) * ch} width={cw - 1.5} height={ch - 1.5} rx={0.8} className="tp-cab" />)}
+      {Array.from({ length: g.comm }, (_, i) => <rect key={`m${i}`} x={7 + i * mw} y={24} width={mw - 2} height={6} rx={1} className="tp-comm" />)}
     </svg>
   );
 }
@@ -162,6 +166,9 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
   const assumed = (k: string) => info.assumed.includes(k);
   const sp = tp.superpod;
   const so = tp.scaleOut;
+  const twoLevel = !sp || sp.fabric === 'two-level';
+  const variants = tp.template ? SUPERPOD_VARIANTS[tp.template] : undefined;
+  const variant = superpodVariantOf(s);
   const setTop = (patch: Partial<Scenario['topology']>) => upd((x) => ({ ...x, topology: { ...x.topology, ...patch } }));
   const setSp = (patch: Partial<NonNullable<Scenario['topology']['superpod']>>) => upd((x) => (x.topology.superpod ? { ...x, topology: { ...x.topology, superpod: { ...x.topology.superpod, ...patch }, ...(patch.nodesPerRack ? { nodesPerRack: patch.nodesPerRack } : {}), ...(patch.npusPerNode ? { gpusPerNode: patch.npusPerNode } : {}) } } : x));
   const setSo = (patch: Partial<NonNullable<Scenario['topology']['scaleOut']>>) => upd((x) => (x.topology.scaleOut ? { ...x, topology: { ...x.topology, scaleOut: { ...x.topology.scaleOut, ...patch } } } : x));
@@ -183,26 +190,54 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
       )}
       {sp && (
         <>
+          {variants && (
+            <Row label={t('topology.podVariant')}>
+              <Select value={variant ?? 'custom'} onChange={(v) => { if (v !== 'custom') upd((x) => applySuperpodVariant(x, v)); }} options={[...variants.map((v) => ({ value: v.id, label: L(v.name, lang) })), ...(variant ? [] : [{ value: 'custom', label: t('topology.podVariantCustom') }])]} />
+            </Row>
+          )}
+          <Row label={t('topology.fabric')} hint={t('topology.fabricHint')}>
+            <Select value={sp.fabric} onChange={(v) => upd((x) => (x.topology.superpod ? { ...x, topology: { ...x.topology, superpod: withFabric(x.topology.superpod, v) } } : x))} options={FABRICS.map((f) => ({ value: f, label: t(`topology.fabric_${f}`) }))} />
+          </Row>
           <Row label={t('topology.nodesPerCabinet')} assumed={assumed('superpod.nodesPerRack')}><NumberInput value={sp.nodesPerRack} min={1} step={1} onChange={(v) => setSp({ nodesPerRack: Math.max(1, Math.round(v)) })} /></Row>
           <Row label={t('topology.computeCabinets')}><NumberInput value={sp.computeRacks} min={1} step={1} onChange={(v) => setSp({ computeRacks: Math.max(1, Math.round(v)) })} /></Row>
           <Row label={t('topology.commCabinets')}><NumberInput value={sp.commRacks} min={0} step={1} onChange={(v) => setSp({ commRacks: Math.max(0, Math.round(v)) })} /></Row>
           <Row label={t('topology.cpusPerNode')} assumed={assumed('superpod.cpusPerNode')}><NumberInput value={sp.cpusPerNode} min={0} step={1} onChange={(v) => setSp({ cpusPerNode: Math.max(0, Math.round(v)) })} /></Row>
-          <Row label={t('topology.l1PerNode')} assumed={assumed('superpod.l1PerNode')}><NumberInput value={sp.l1PerNode} min={0} step={1} onChange={(v) => setSp({ l1PerNode: Math.max(0, Math.round(v)) })} /></Row>
-          <Row label={t('topology.subPlanes')} assumed={assumed('superpod.subPlanes')}><NumberInput value={sp.subPlanes} min={1} step={1} onChange={(v) => setSp({ subPlanes: Math.max(1, Math.round(v)) })} /></Row>
-          <Row label={t('topology.l2PerSubPlane')} assumed={assumed('superpod.l2PerSubPlane')}><NumberInput value={sp.l2PerSubPlane} min={0} step={1} onChange={(v) => setSp({ l2PerSubPlane: Math.max(0, Math.round(v)) })} /></Row>
-          <Row label={t('topology.l2Ports')} assumed={assumed('superpod.l2Ports')}><NumberInput value={sp.l2Ports} min={1} step={1} onChange={(v) => setSp({ l2Ports: Math.max(1, Math.round(v)) })} /></Row>
-          <Row label={t('topology.linksPerL1')} assumed={assumed('superpod.linksPerL1')}><NumberInput value={sp.linksPerL1} min={0} step={1} onChange={(v) => setSp({ linksPerL1: Math.max(0, Math.round(v)) })} /></Row>
-          <Row label={t('topology.transceiversPerLink')} assumed={assumed('superpod.transceiversPerLink')}><NumberInput value={sp.transceiversPerLink} min={0} step={1} onChange={(v) => setSp({ transceiversPerLink: Math.max(0, Math.round(v)) })} /></Row>
+          {twoLevel ? (
+            <>
+              <Row label={t('topology.l1PerNode')} assumed={assumed('superpod.l1PerNode')}><NumberInput value={sp.l1PerNode} min={0} step={1} onChange={(v) => setSp({ l1PerNode: Math.max(0, Math.round(v)) })} /></Row>
+              <Row label={t('topology.subPlanes')} assumed={assumed('superpod.subPlanes')}><NumberInput value={sp.subPlanes} min={1} step={1} onChange={(v) => setSp({ subPlanes: Math.max(1, Math.round(v)) })} /></Row>
+              <Row label={t('topology.l2PerSubPlane')} assumed={assumed('superpod.l2PerSubPlane')}><NumberInput value={sp.l2PerSubPlane} min={0} step={1} onChange={(v) => setSp({ l2PerSubPlane: Math.max(0, Math.round(v)) })} /></Row>
+              <Row label={t('topology.l2Ports')} assumed={assumed('superpod.l2Ports')}><NumberInput value={sp.l2Ports} min={1} step={1} onChange={(v) => setSp({ l2Ports: Math.max(1, Math.round(v)) })} /></Row>
+              <Row label={t('topology.linksPerL1')} assumed={assumed('superpod.linksPerL1')}><NumberInput value={sp.linksPerL1} min={0} step={1} onChange={(v) => setSp({ linksPerL1: Math.max(0, Math.round(v)) })} /></Row>
+            </>
+          ) : (
+            <>
+              <Row label={t('topology.rackSwitches')} assumed={assumed('superpod.rackSwitches')}><NumberInput value={sp.rackSwitches} min={0} step={1} onChange={(v) => setSp({ rackSwitches: Math.max(0, Math.round(v)) })} /></Row>
+              <Row label={t('topology.podUplinksPerNpu')} assumed={assumed('superpod.podUplinksPerNpu')}><NumberInput value={sp.podUplinksPerNpu} min={0} step={0.5} onChange={(v) => setSp({ podUplinksPerNpu: Math.max(0, v) })} /></Row>
+              <Row label={t('topology.podSwitchRadix')} assumed={assumed('superpod.podSwitchRadix')}><NumberInput value={sp.podSwitchRadix} min={1} step={8} onChange={(v) => setSp({ podSwitchRadix: Math.max(1, Math.round(v)) })} /></Row>
+              {sp.fabric === 'mesh-4d' && <Row label={t('topology.meshRackGrid')} assumed={assumed('superpod.meshRackGrid')}><NumberInput value={sp.meshRackGrid} min={0} step={1} onChange={(v) => setSp({ meshRackGrid: Math.max(0, Math.round(v)) })} /></Row>}
+              {sp.fabric === 'blade-clos' && (
+                <>
+                  <Row label={t('topology.opticalLinksPerNpu')} assumed={assumed('superpod.opticalLinksPerNpu')}><NumberInput value={Number((sp.opticalLinksPerNpu ?? sp.podUplinksPerNpu).toPrecision(4))} min={0} step={0.5} onChange={(v) => setSp({ opticalLinksPerNpu: Math.max(0, v) })} /></Row>
+                  <Row label={t('topology.opticalEnginesPerNpu')} assumed={assumed('superpod.opticalEnginesPerNpu')}><NumberInput value={Number(sp.opticalEnginesPerNpu.toPrecision(4))} min={0} step={0.1} onChange={(v) => setSp({ opticalEnginesPerNpu: Math.max(0, v) })} /></Row>
+                </>
+              )}
+              <Row label={t('topology.backupNpusPerRack')} assumed={assumed('superpod.backupNpusPerRack')}><NumberInput value={sp.backupNpusPerRack} min={0} step={1} onChange={(v) => setSp({ backupNpusPerRack: Math.max(0, Math.round(v)) })} /></Row>
+            </>
+          )}
+          {sp.fabric !== 'blade-clos' && <Row label={t('topology.transceiversPerLink')} assumed={assumed('superpod.transceiversPerLink')}><NumberInput value={sp.transceiversPerLink} min={0} step={1} onChange={(v) => setSp({ transceiversPerLink: Math.max(0, Math.round(v)) })} /></Row>}
           <Row label={t('topology.fabricFill')} hint={t('topology.fabricFillHint')}>
             <Select value={tp.fabricFill} onChange={(v) => setTop({ fabricFill: v })} options={[{ value: 'proportional', label: t('topology.fillProportional') }, { value: 'full-pod', label: t('topology.fillFull') }]} />
           </Row>
+          {!twoLevel && <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{t('topology.fabricHint')}</div>}
         </>
       )}
       <div className="kv-sep" />
-      <label className="check"><input type="checkbox" checked={!!so} onChange={(e) => toggleScaleOut(e.target.checked)} />{sp ? t('topology.scaleOutUb') : t('topology.scaleOutA2')}</label>
+      <label className="check"><input type="checkbox" checked={!!so} onChange={(e) => toggleScaleOut(e.target.checked)} />{tp.template === 'a950-ub2' || tp.template === 'a960e-ub' ? t('topology.scaleOutUboe') : sp ? t('topology.scaleOutUb') : t('topology.scaleOutA2')}</label>
       {so && (
         <>
           <Row label={t('topology.portsPerNpu')}><NumberInput value={so.portsPerNpu} min={1} step={1} onChange={(v) => setSo({ portsPerNpu: Math.max(1, Math.round(v)) })} /></Row>
+          <Row label={t('topology.planes')} assumed={assumed('scaleOut.planes')}><NumberInput value={so.planes ?? 1} min={1} step={1} onChange={(v) => setSo({ planes: Math.max(1, Math.round(v)) })} /></Row>
           <Row label={t('topology.radix')} assumed><NumberInput value={so.radix} min={4} step={8} onChange={(v) => setSo({ radix: Math.max(4, Math.round(v)) })} /></Row>
           <Row label={t('topology.oversub')} assumed hint={t('topology.oversubHint')}><NumberInput value={so.oversubscription} min={1} step={0.5} onChange={(v) => setSo({ oversubscription: Math.max(1, v) })} /></Row>
           <Row label={t('topology.transceiversPerLink')} assumed><NumberInput value={so.transceiversPerLink} min={0} step={1} onChange={(v) => setSo({ transceiversPerLink: Math.max(0, Math.round(v)) })} /></Row>
@@ -343,7 +378,7 @@ function PictureTab({ s, lang }: { s: Scenario; lang: Lang }) {
       <div className="legend" style={{ marginTop: 8 }}>
         <span className="key"><span className="swatch" style={{ background: 'var(--series-3)' }} />{t('topology.legendNpu')}</span>
         <span className="key"><span className="swatch" style={{ background: 'var(--accent)' }} />UB</span>
-        <span className="key"><span className="swatch" style={{ background: 'var(--series-2)' }} />RoCE / RDMA</span>
+        <span className="key"><span className="swatch" style={{ background: 'var(--series-2)' }} />{s.topology.template === 'a950-ub2' || s.topology.template === 'a960e-ub' ? 'UBoE / RoCE' : 'RoCE / RDMA'}</span>
       </div>
       {info && (
         <>
@@ -444,7 +479,7 @@ function FaultTypesCard({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: 
             {units.map((u) => {
               const domains = [...new Set(lib.filter((f) => f.unit === u).map((f) => f.domainId))];
               return [
-                <tr key={`h-${u}`} className="unit-head"><td colSpan={6}><b>{L(FAULT_UNIT_NAMES[u], lang)}</b> <span className="muted">· {fmtInt(unitCount[u])} {t('topology.units')} · {fmtNum(bom.hardFitPerNpu[u] ?? 0, 1)} FIT / NPU</span></td></tr>,
+                <tr key={`h-${u}`} className="unit-head"><td colSpan={6}><b>{L(faultUnitName(u, s.topology.template), lang)}</b> <span className="muted">· {fmtInt(unitCount[u])} {t('topology.units')} · {fmtNum(bom.hardFitPerNpu[u] ?? 0, 1)} FIT / NPU</span></td></tr>,
                 ...domains.map((d) => {
                   const suffix = u === 'roce-switch' || u === 'roce-link' ? '@roce' : '';
                   const ids = { hard: `${d}-hard${suffix}`, slow: `${d}-slow${suffix}`, sdc: `${d}-sdc${suffix}` };

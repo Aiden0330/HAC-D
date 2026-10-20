@@ -126,7 +126,36 @@ export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor
  * 7 L2 sub-planes × 16 chips × 48 ports, 16 links per L1 chip.
  */
 export const SuperpodSchema = z.object({
-  preset: z.enum(['cloudmatrix384', 'atlas950', 'custom']).default('custom'),
+  preset: z.enum(['cloudmatrix384', 'atlas950', 'atlas950-1k', 'atlas950-8k', 'atlas960e', 'custom']).default('custom'),
+  /**
+   * v4.2 fabric of the UB scale-up domain:
+   *  - 'two-level' (CloudMatrix384): L1 UB chips on every node, L2 chips in sub-planes in the communication cabinets, an optical
+   *    link per L1–L2 pair (l1PerNode, subPlanes, l2PerSubPlane, l2Ports, linksPerL1);
+   *  - 'mesh-clos' (Atlas 950, Huawei's 8K reference design at Hot Chips 2025 and the 1,024-NPU system of the product page, shown at WAIC 2026): a 2D full mesh
+   *    of direct electrical links inside each compute cabinet (npusPerNode NPUs per tray × nodesPerRack trays) with rackSwitches
+   *    low-radix UB switches per cabinet, and podUplinksPerNpu optical links per NPU into one tier of pod switches of
+   *    podSwitchRadix ports in the communication cabinets;
+   *  - 'mesh-4d' (UB-Mesh paper, arXiv 2503.20377): the same cabinet mesh, cabinets in meshRackGrid × meshRackGrid full meshes of
+   *    electrical rack-to-rack bundles, and podUplinksPerNpu optical links per NPU into high-radix switches of podSwitchRadix ports;
+   *  - 'blade-clos' (Atlas 960E): rackSwitches switch chips of the in-cabinet LinkBlade, podUplinksPerNpu ports per NPU into
+   *    cross-cabinet LinkDevices of podSwitchRadix ports, optics as NPO engines (opticalEnginesPerNpu) carrying
+   *    opticalLinksPerNpu 800G-equivalent links.
+   */
+  fabric: z.enum(['two-level', 'mesh-clos', 'mesh-4d', 'blade-clos']).default('two-level'),
+  /** v4.2 UB switch chips inside one compute cabinet (mesh: low-radix switches; blade-clos: LinkBlade chips) */
+  rackSwitches: z.number().int().nonnegative().default(0),
+  /** v4.2 links per NPU from the cabinet into the pod switch tier (mesh-clos: 800G optical links; mesh-4d: 8-lane links; blade-clos: LinkDevice ports) */
+  podUplinksPerNpu: z.number().nonnegative().default(0),
+  /** v4.2 ports of one pod-tier switch (mesh-clos: 800G ports of a 100 Tb/s switch; mesh-4d: 8-lane ports of a x512 switch; blade-clos: LinkDevice ports) */
+  podSwitchRadix: z.number().int().positive().default(128),
+  /** v4.2 optical links per NPU when they differ from podUplinksPerNpu (blade-clos: 800G-equivalent links carried by the NPO engines) */
+  opticalLinksPerNpu: z.number().nonnegative().optional(),
+  /** v4.2 NPO optical engines per NPU (blade-clos) */
+  opticalEnginesPerNpu: z.number().nonnegative().default(0),
+  /** v4.2 mesh-4d: cabinets per row and per column of one cabinet full mesh (4 → 16 cabinets, 1,024 NPUs) */
+  meshRackGrid: z.number().int().nonnegative().default(0),
+  /** v4.2 backup NPUs per compute cabinet (UB-Mesh 64 + 1; counted, not used by the job) */
+  backupNpusPerRack: z.number().int().nonnegative().default(0),
   npusPerNode: z.number().int().positive().default(8),
   cpusPerNode: z.number().int().nonnegative().default(4),
   l1PerNode: z.number().int().nonnegative().default(7),
@@ -144,9 +173,13 @@ export const SuperpodSchema = z.object({
 export type Superpod = z.infer<typeof SuperpodSchema>;
 
 /** Public presets; every field not stated by a public source is marked in `assumed`. */
-export const SUPERPOD_PRESETS: Record<'cloudmatrix384' | 'atlas950', { values: Superpod; assumed: (keyof Superpod)[]; source: string }> = {
+const TWO_LEVEL_IDLE = { fabric: 'two-level' as const, rackSwitches: 0, podUplinksPerNpu: 0, podSwitchRadix: 128, opticalEnginesPerNpu: 0, meshRackGrid: 0, backupNpusPerRack: 0 };
+/** CloudMatrix384-style L1 / L2 fields of a mesh preset, used when its fabric is switched to 'two-level' (non-blocking L2 for the pod's nodes) */
+const twoLevelOf = (nodesPerPod: number) => ({ l1PerNode: 7, subPlanes: 7, l2PerSubPlane: Math.ceil((nodesPerPod * 16) / 48), l2Ports: 48, linksPerL1: 16 });
+type PresetKey = 'cloudmatrix384' | 'atlas950' | 'atlas950-1k' | 'atlas950-8k' | 'atlas960e';
+export const SUPERPOD_PRESETS: Record<PresetKey, { values: Superpod; assumed: (keyof Superpod)[]; source: string }> = {
   cloudmatrix384: {
-    values: { preset: 'cloudmatrix384', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 4, computeRacks: 12, commRacks: 4, subPlanes: 7, l2PerSubPlane: 16, l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1 },
+    values: { preset: 'cloudmatrix384', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 4, computeRacks: 12, commRacks: 4, subPlanes: 7, l2PerSubPlane: 16, l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, ...TWO_LEVEL_IDLE },
     // §3.3.2 also states that one CPU per node hosts the Qingtian card (vpcNicsPerNode = 1); only the two transceiver ends per L1–L2 link are an assumption
     assumed: ['transceiversPerLink'],
     source: 'Huawei, Serving Large Language Models on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3.1–3.3.3 (8 NPU + 4 CPU + 7 L1 UB chips per node; 48 nodes in 12 compute + 4 communication racks; 7 sub-planes × 16 L2 chips × 48 ports; 16 links per L1 chip; 7 UB transceivers and 1 RDMA interface per die, 2 dies and 8 HBM stacks per NPU); The Register 2025-07-29 (14 × 28 GB/s UB links per NPU)',
@@ -154,9 +187,32 @@ export const SUPERPOD_PRESETS: Record<'cloudmatrix384' | 'atlas950', { values: S
   atlas950: {
     // 8,192 NPUs in 160 cabinets (128 compute + 32 communication, secondary press): 1,024 nodes → 8 nodes per compute cabinet.
     // Fabric tiers are not public: the same 7-plane / 16-link L1 radix is assumed and the L2 count scaled to keep the fabric non-blocking.
-    values: { preset: 'atlas950', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 8, computeRacks: 128, commRacks: 32, subPlanes: 7, l2PerSubPlane: Math.ceil((1024 * 16) / 48), l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1 },
+    values: { preset: 'atlas950', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 8, computeRacks: 128, commRacks: 32, subPlanes: 7, l2PerSubPlane: Math.ceil((1024 * 16) / 48), l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, ...TWO_LEVEL_IDLE },
     assumed: ['npusPerNode', 'cpusPerNode', 'l1PerNode', 'nodesPerRack', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink', 'rdmaPortsPerNpu', 'vpcNicsPerNode'],
-    source: 'Huawei Connect 2025 press (8,192 NPUs; cabinet split from secondary coverage); fabric geometry assumed from CloudMatrix384',
+    source: 'v2 legacy preset (kept for the v2 scenarios): Huawei Connect 2025 press (8,192 NPUs); fabric geometry assumed from CloudMatrix384',
+  },
+  // v4.2 Atlas 950 SuperPoD to the product-page spec (Huawei product page, read 2026-10-19; LightCounting inspection of the WAIC 2026 machine):
+  // 16 compute + 4 UB interconnect cabinets, 64 NPUs (8 trays × 8) and 16 Kunpeng 950 per cabinet, in-cabinet 2D full mesh with
+  // 72 low-radix UB switches (UB-Mesh paper §3.3.1, Hot Chips 2025 slide 9), 2 × 800G optical links per NPU (128 OSFP modules per
+  // compute cabinet) into one tier of 100 Tb/s UB switches (128 × 800G ports; Hot Chips 2025: 128 switches for 8,192 NPUs)
+  'atlas950-1k': {
+    values: { preset: 'atlas950-1k', npusPerNode: 8, cpusPerNode: 2, nodesPerRack: 8, computeRacks: 16, commRacks: 4, ...twoLevelOf(128), transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, fabric: 'mesh-clos', rackSwitches: 72, podUplinksPerNpu: 2, podSwitchRadix: 128, opticalEnginesPerNpu: 0, meshRackGrid: 4, backupNpusPerRack: 0 },
+    assumed: ['cpusPerNode', 'podSwitchRadix', 'transceiversPerLink', 'vpcNicsPerNode', 'backupNpusPerRack'],
+    source: 'Huawei Atlas 950 SuperPoD product page (16 compute + 4 UB interconnect cabinets, ≤ 1,024 NPUs, 64 NPUs + 16 CPUs per cabinet, 2+2 optical protection); LightCounting 2026-07-21 (8 NPU trays + 8 CPU trays per cabinet, 128 × 800G OSFP per compute cabinet, 4,096 modules incl. switch side, global optical Clos); Hot Chips 2025 Liao slide 9 (64 + 1 NPUs, 16 CPUs per rack, 128 × 100T switches, one-tier Clos for 8,192); UB-Mesh arXiv 2503.20377 §3.3.1 (72 LRS per rack, 2D full mesh of 8 × 8)',
+  },
+  'atlas950-8k': {
+    values: { preset: 'atlas950-8k', npusPerNode: 8, cpusPerNode: 2, nodesPerRack: 8, computeRacks: 128, commRacks: 32, ...twoLevelOf(1024), transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, fabric: 'mesh-clos', rackSwitches: 72, podUplinksPerNpu: 2, podSwitchRadix: 128, opticalEnginesPerNpu: 0, meshRackGrid: 4, backupNpusPerRack: 0 },
+    assumed: ['cpusPerNode', 'podSwitchRadix', 'transceiversPerLink', 'vpcNicsPerNode', 'backupNpusPerRack'],
+    source: 'Huawei Connect 2025 keynote (8,192 NPUs, 128 compute + 32 communication cabinets, Q4 2026 roadmap; no build shown by 2026-10-19); Hot Chips 2025 Liao slide 9 (128 × 100T UB switches, one-tier Clos, LPO optics); cabinet as in atlas950-1k',
+  },
+  // v4.2 Atlas 960E (昇腾960超节点, HUAWEI CONNECT 2026-09-17): 4,096 NPUs (vendor headline); 56 compute + 14 interconnect cabinets
+  // with 72 NPUs (9 blades × 8) and 18 Kunpeng per cabinet from 智东西 2026-09-19 only (gives 4,032); LinkDevice 176 × 1.6 Tb/s
+  // (vendor); 5.5 LinkDevice ports per NPU from 2.2 TB/s per NPU (media); 5,500 Hi-ONE NPO engines for 4,096 NPUs replacing
+  // 48,000 × 800G modules (vendor) → 1.343 engines and 5.86 800G-equivalent links per NPU; LinkBlade chips per cabinet assumed
+  atlas960e: {
+    values: { preset: 'atlas960e', npusPerNode: 8, cpusPerNode: 2, nodesPerRack: 9, computeRacks: 56, commRacks: 14, ...twoLevelOf(504), transceiversPerLink: 0, rdmaPortsPerNpu: 4, vpcNicsPerNode: 1, fabric: 'blade-clos', rackSwitches: 5, podUplinksPerNpu: 5.5, podSwitchRadix: 176, opticalLinksPerNpu: 48000 / 2 / 4096, opticalEnginesPerNpu: 5500 / 4096, meshRackGrid: 0, backupNpusPerRack: 0 },
+    assumed: ['npusPerNode', 'cpusPerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'rackSwitches', 'podUplinksPerNpu', 'opticalLinksPerNpu', 'rdmaPortsPerNpu', 'vpcNicsPerNode'],
+    source: 'Huawei HUAWEI CONNECT 2026 Atlas 960E release and UnifiedBus release 2026-09-17 (4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines at 7.2 Tb/s replacing 48,000 × 800G modules, LinkDevice 176 × 1.6 Tb/s, two-tier four-plane Clos to 512,000 NPUs); 智东西 2026-09-19 (56 + 14 cabinets, 72 Ascend + 18 Kunpeng per cabinet, 8-NPU compute blades; single media source)',
   },
 };
 
@@ -244,6 +300,8 @@ export const ComponentSchema = z.object({
  */
 export const ScaleOutSchema = z.object({
   portsPerNpu: z.number().int().positive().default(1),
+  /** v4.2 independent Clos planes; each NPU's ports are split evenly over them (Atlas 960E: two-tier, four-plane Clos) */
+  planes: z.number().int().positive().default(1),
   radix: z.number().int().min(4).default(64),
   oversubscription: z.number().min(1).default(1),
   transceiversPerLink: z.number().int().nonnegative().default(2),
@@ -263,7 +321,7 @@ export const TopologySchema = z.object({
   /** v2: supernode geometry; when present it defines gpusPerNode / nodesPerRack and the superpod count scopes */
   superpod: SuperpodSchema.optional(),
   /** v4 topology template the scenario was generated from (topology page); informational */
-  template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2']).optional(),
+  template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub']).optional(),
   /** v4 host CPUs per node without a superpod geometry (count rule `cpu`) */
   cpusPerNode: z.number().int().nonnegative().optional(),
   /**

@@ -7,8 +7,15 @@
  *                 Atlas 900 A2 PoD cabinet, RoCE folded Clos (radix and oversubscription assumed).
  *  - `a3-ub384` · A3 / CloudMatrix384: 48 nodes × (8 NPU + 4 CPU + 7 L1 UB chips), 12 compute + 4 communication cabinets,
  *                 7 sub-planes × 16 L2 chips (arXiv 2506.12708 §3.3), RDMA scale-out plane (Clos assumed).
- *  - `a950-ub2` · Atlas 950 SuperPoD: 8,192 NPUs, 128 + 32 cabinets, 64 NPUs per compute cabinet (vendor); fabric radix copied
- *                 from CloudMatrix384 (assumed); scale-out as A3.
+ *  - `a950-ub2` · Atlas 950 SuperPoD to the product-page spec: 1,024 NPUs in 16 compute + 4 UB interconnect cabinets, 64 NPUs + 16 CPUs per
+ *                 compute cabinet (vendor); v4.2 fabric selectable: 'mesh-clos' (default: in-cabinet 2D full mesh with 72 low-radix UB
+ *                 switches, 2 × 800G optical links per NPU into one tier of 100 Tb/s UB switches — Hot Chips 2025 8K reference design
+ *                 and the analyst's inspection of the shipped machine), 'mesh-4d' (UB-Mesh paper) or 'two-level' (CloudMatrix384 copy);
+ *                 the roadmap 8,192-NPU pod (128 + 32 cabinets) via the atlas950-8k preset; SuperCluster scale-out over 2 × 400G
+ *                 UBoE per NPU as two planes of a three-tier Clos of 128-port switches (128³ / 4 = 524,288 per plane; assumed).
+ *  - `a960e-ub` · Atlas 960E SuperPoD (HUAWEI CONNECT 2026): 4,096 NPUs (vendor), 56 + 14 cabinets with 72 NPUs + 18 CPUs per cabinet
+ *                 (one media source; 4,032 NPUs per pod), in-cabinet LinkBlade and cross-cabinet LinkDevices (176 × 1.6 Tb/s),
+ *                 NPO optics; scale-out two-tier, four-plane Clos to 512,000 NPUs (vendor) with radix 1,024 (assumed).
  *
  * Fault types: the 54 events of the audited reference catalog state a business-impact FIT per card-hour. Each event is attached to
  * the hardware unit it belongs to and converted under the CloudMatrix384 geometry, where the catalog and the paper's unit counts
@@ -17,7 +24,7 @@
  * per-unit FIT of the UB switch chip and the UB link (analogue, assumed). Every value keeps its 口径 (business-impact events per
  * unit-hour) and its provenance.
  */
-import { parseScenario, SUPERPOD_PRESETS, type Scenario, type ScenarioInput, type Topology } from '../scenario/schema.js';
+import { parseScenario, SUPERPOD_PRESETS, type Scenario, type ScenarioInput, type Topology, type Superpod } from '../scenario/schema.js';
 import { REFERENCE_EVENTS, type ReferenceEvent } from '../scenario/referenceEvents.js';
 import { EXAMPLES } from '../scenario/examples.js';
 import { computeCounts, type Counts } from '../scenario/build.js';
@@ -25,8 +32,8 @@ import { applyMechanisms, stripMechanisms, mechanismById, DEFAULT_PLAYERS } from
 import { toPerHour } from '../units/index.js';
 import { withSize } from '../study/index.js';
 
-export type TopologyTemplate = 'a2-roce' | 'a3-ub384' | 'a950-ub2';
-export const TOPOLOGY_TEMPLATE_IDS: TopologyTemplate[] = ['a2-roce', 'a3-ub384', 'a950-ub2'];
+export type TopologyTemplate = 'a2-roce' | 'a3-ub384' | 'a950-ub2' | 'a960e-ub';
+export const TOPOLOGY_TEMPLATE_IDS: TopologyTemplate[] = ['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub'];
 /** v4.1 built-in scales (NPUs in the job) of the topology page, the bill-of-materials columns, the cross-scale tabs, the CLI and MCP; any N is allowed */
 export const TOPOLOGY_SCALES = [10000, 100000, 200000, 500000];
 /** compact label of a scale: 10k, 100k, 1.2M */
@@ -48,8 +55,8 @@ export const FAULT_UNIT_NAMES: Record<FaultUnit, L> = {
   cpu: { zh: '鲲鹏 CPU', en: 'Kunpeng CPU' },
   node: { zh: '服务器 / 计算节点（DDR、SSD、板级 IO、BMC）', en: 'Server / compute node (DDR, SSD, board IO, BMC)' },
   cabinet: { zh: '计算机柜（供电、液冷）', en: 'Compute cabinet (power, liquid cooling)' },
-  'ub-switch': { zh: 'UB 交换芯片（L1 + L2）', en: 'UB switch chip (L1 + L2)' },
-  'ub-link': { zh: 'UB 光链路（L1–L2，两端光模块）', en: 'UB optical link (L1–L2, two transceivers)' },
+  'ub-switch': { zh: 'UB 交换芯片（L1 + L2，或柜内 + 超节点层）', en: 'UB switch chip (L1 + L2, or in-cabinet + pod tier)' },
+  'ub-link': { zh: 'UB 光链路（L1–L2 或柜–交换；NPO 按 800G 等效）', en: 'UB optical link (L1–L2 or cabinet–switch; NPO as 800G equivalents)' },
   'roce-switch': { zh: 'RoCE 交换机（叶 / 脊 / 核心）', en: 'RoCE switch (leaf / spine / core)' },
   'roce-link': { zh: 'RoCE 光链路（两端光模块）', en: 'RoCE optical link (two transceivers)' },
 };
@@ -153,17 +160,37 @@ export const TOPOLOGY_TEMPLATES: Record<TopologyTemplate, TemplateInfo> = {
   },
   'a950-ub2': {
     id: 'a950-ub2',
-    name: { zh: 'Atlas 950 · UB 2.0 SuperPoD', en: 'Atlas 950 · UB 2.0 SuperPoD' },
+    name: { zh: 'Atlas 950 · 灵衢 UB 2.0 超节点', en: 'Atlas 950 · UB 2.0 SuperPoD' },
     chip: 'Ascend 950DT',
-    scaleUpNpus: 8192,
-    podNpus: 8192,
-    summary: { zh: '8,192 NPU、128 计算柜 + 32 通信柜、每计算柜 64 NPU（厂商）；柜间全光 UB 2.0；内部交换结构沿用 CloudMatrix384（假设）', en: '8,192 NPUs, 128 compute + 32 communication cabinets, 64 NPUs per compute cabinet (vendor); all-optical UB 2.0 between cabinets; internal fabric copied from CloudMatrix384 (assumed)' },
-    topology: { gpusPerNode: 8, nodesPerRack: 8, racksPerZone: 160, nvlinkDomainGpus: 8192, networkPlanes: 7, superpod: { ...SUPERPOD_PRESETS.atlas950.values }, template: 'a950-ub2', fabricFill: 'proportional', scaleOut: { portsPerNpu: SUPERPOD_PRESETS.atlas950.values.rdmaPortsPerNpu, ...SCALE_OUT_DEFAULT } },
-    assumed: [...SUPERPOD_PRESETS.atlas950.assumed.map((k) => `superpod.${k}`), 'scaleOut.radix', 'scaleOut.oversubscription', 'scaleOut.transceiversPerLink'],
+    scaleUpNpus: 1024,
+    podNpus: 1024,
+    summary: { zh: '产品页现行规格（真机 WAIC 2026 展示，交付数量未公布）：16 计算柜 + 4 灵衢互联柜、1,024 NPU；每计算柜 64 NPU（8 托盘 × 8）+ 16 颗鲲鹏 950；柜内 2D 全互联（72 片低阶 UB 交换），每 NPU 2 条 800G 光链路上联一层 100 Tb/s UB 交换（Clos）；8,192 NPU（128 + 32 柜）为路线图上限；超节点之间每 NPU 2 × 400G UBoE（两平面，假设）', en: 'Product-page spec (machine shown at WAIC 2026, delivery volume undisclosed): 16 compute + 4 UB interconnect cabinets, 1,024 NPUs; 64 NPUs (8 trays × 8) + 16 Kunpeng 950 per compute cabinet; in-cabinet 2D full mesh (72 low-radix UB switches), 2 × 800G optical links per NPU up to one tier of 100 Tb/s UB switches (Clos); 8,192 NPUs (128 + 32 cabinets) is the roadmap maximum; 2 × 400G UBoE per NPU between SuperPoDs (two planes, assumed)' },
+    topology: { gpusPerNode: 8, nodesPerRack: 8, racksPerZone: 20, nvlinkDomainGpus: 1024, networkPlanes: 1, superpod: { ...SUPERPOD_PRESETS['atlas950-1k'].values }, template: 'a950-ub2', fabricFill: 'proportional', scaleOut: { portsPerNpu: 2, planes: 2, radix: 128, oversubscription: 1, transceiversPerLink: 2 } },
+    assumed: [...SUPERPOD_PRESETS['atlas950-1k'].assumed.map((k) => `superpod.${k}`), 'scaleOut.planes', 'scaleOut.radix', 'scaleOut.oversubscription', 'scaleOut.transceiversPerLink'],
     sources: [
-      { label: 'Huawei Connect 2025 press release / keynote', url: 'https://www.huawei.com/en/news/2025/9/hc-lingqu-ai-superpod', confidence: 'vendor', note: { zh: '8,192 NPU、128 + 32 柜、柜间全光', en: '8,192 NPUs, 128 + 32 cabinets, all-optical between cabinets' } },
-      { label: 'Huawei MWC 2026', url: 'https://www.huawei.com/en/news/2026/3/mwc-superpod-ai', confidence: 'vendor', note: { zh: '每柜 64 NPU', en: '64 NPUs per cabinet' } },
-      { label: 'Fabric geometry', confidence: 'assumed', note: { zh: '节点组成、L1 / L2 端口数与子平面沿用 CloudMatrix384；L2 片数按端口数无阻塞推算', en: 'node composition, L1 / L2 radix and sub-planes copied from CloudMatrix384; L2 count scaled to stay non-blocking' } },
+      { label: 'Huawei Atlas 950 SuperPoD product page (zh / en, read 2026-10-19)', url: 'https://www.hiascend.com/hardware/cluster', confidence: 'vendor', note: { zh: '16 计算柜 + 4 灵衢互联柜；≤ 1,024 NPU、256 颗鲲鹏 950；每 NPU 1.68 TB/s UB；2+2 光路保护；计算柜约 100 kW', en: '16 compute + 4 UB interconnect cabinets; ≤ 1,024 NPUs, 256 Kunpeng 950; 1.68 TB/s UB per NPU; 2+2 optical path protection; about 100 kW per compute cabinet' } },
+      { label: 'LightCounting newsletter 2026-07-21 (WAIC 2026 machine)', url: 'https://www.lightcounting.com/newsletter/en/july-2026-atlas-950-superpod-achieve', confidence: 'derived', note: { zh: '每计算柜 8 个 NPU 托盘 + 8 个 CPU 托盘；每计算柜 128 个 800G OSFP；整机 4,096 个 800G LPO（含交换侧）；全局光 Clos（分析师观察）', en: '8 NPU trays + 8 CPU trays per compute cabinet; 128 × 800G OSFP per compute cabinet; 4,096 × 800G LPO incl. the switch side; global optical Clos (analyst observation)' } },
+      { label: 'Hot Chips 2025, H. Liao, UB-Mesh slides 9–11', url: 'https://hc2025.hotchips.org/assets/program/conference/day2/67_Huawei_Liao_final.pdf', confidence: 'vendor', note: { zh: '8K 参考设计：每柜 64 + 1 NPU、16 CPU；128 台 100T UB 交换的一层 Clos（LPO 光）', en: '8K reference design: 64 + 1 NPUs and 16 CPUs per rack; one-tier Clos of 128 × 100T UB switches (LPO optics)' } },
+      { label: 'UB-Mesh, arXiv 2503.20377 §3.3, §6.6', url: 'https://arxiv.org/abs/2503.20377', confidence: 'paper', note: { zh: '柜内 8 × 8 2D 全互联、每柜 72 片 LRS（4 平面 × 18）；4D 全互联与 HRS 变体；网络 MTBF 98.5 h（UB-Mesh）对 13.8 h（Clos）', en: 'in-rack 8 × 8 2D full mesh, 72 LRS per rack (4 planes × 18); 4D full mesh and HRS variant; network MTBF 98.5 h (UB-Mesh) vs 13.8 h (Clos)' } },
+      { label: 'HUAWEI CONNECT 2025 keynote (Eric Xu) and press release', url: 'https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech', confidence: 'vendor', note: { zh: '8,192 NPU、128 + 32 柜、柜间全光、2026Q4（路线图）；SuperCluster = 64 个超节点、UBoE 或 RoCE', en: '8,192 NPUs, 128 + 32 cabinets, all-optical between cabinets, Q4 2026 (roadmap); SuperCluster = 64 SuperPoDs over UBoE or RoCE' } },
+      { label: 'Ascend 950 NPU architecture white paper (2026)', url: 'https://public-download.obs.cn-east-2.myhuaweicloud.com/ascend/%E6%98%87%E8%85%BE950%20NPU%E6%9E%B6%E6%9E%84%E7%99%BD%E7%9A%AE%E4%B9%A6.pdf', confidence: 'vendor', note: { zh: '每芯片 18 个 x4 UB 口（112 Gb/s/lane）与 2 × 400G UBoE（与 UB 口静态复用）；Clos、Full-Mesh + Clos、nD-Mesh 可选', en: '18 x4 UB ports per chip (112 Gb/s per lane) and 2 × 400G UBoE (statically multiplexed with UB ports); Clos, Full-Mesh + Clos and nD-Mesh selectable' } },
+      { label: 'Scale-out between SuperPoDs', confidence: 'assumed', note: { zh: '两平面（每 NPU 每平面 1 × 400G）、128 口交换机的三层 Clos（128³/4 = 524,288 = 64 × 8,192）、无收敛：平面数、层数与交换机型号均未公开', en: 'two planes (1 × 400G per NPU per plane), three-tier Clos of 128-port switches (128³ / 4 = 524,288 = 64 × 8,192), non-blocking: planes, tiers and switch model not public' } },
+    ],
+  },
+  'a960e-ub': {
+    id: 'a960e-ub',
+    name: { zh: 'Atlas 960E · NPO 光互联超节点', en: 'Atlas 960E · NPO SuperPoD' },
+    chip: 'Ascend 960',
+    scaleUpNpus: 4032,
+    podNpus: 4032,
+    summary: { zh: '标称 4,096 NPU；按单一媒体口径 56 计算柜 + 14 灵衢互联柜，每柜 72 NPU（9 刀片 × 8）+ 18 颗鲲鹏（合 4,032；“一组柜内交换刀片互联 72 昇腾 + 18 鲲鹏”按一柜理解，为推断）；柜内 LinkBlade、跨柜 LinkDevice（176 × 1.6 Tb/s）；NPO 光引擎 Hi-ONE（5,500 个替代 48,000 个 800G 模块）；超节点之间两层四平面 Clos 至 51.2 万 NPU', en: 'Nominal 4,096 NPUs; from one media source 56 compute + 14 UB interconnect cabinets with 72 NPUs (9 blades × 8) + 18 Kunpeng per cabinet (4,032; the article says the in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng, read here as one cabinet, an inference); in-cabinet LinkBlade, cross-cabinet LinkDevices (176 × 1.6 Tb/s); NPO optics (5,500 Hi-ONE engines replacing 48,000 × 800G modules); two-tier, four-plane Clos between SuperPoDs to 512,000 NPUs' },
+    topology: { gpusPerNode: 8, nodesPerRack: 9, racksPerZone: 70, nvlinkDomainGpus: 4032, networkPlanes: 4, superpod: { ...SUPERPOD_PRESETS.atlas960e.values }, template: 'a960e-ub', fabricFill: 'proportional', scaleOut: { portsPerNpu: 4, planes: 4, radix: 1024, oversubscription: 1, transceiversPerLink: 2 } },
+    assumed: [...SUPERPOD_PRESETS.atlas960e.assumed.map((k) => `superpod.${k}`), 'scaleOut.portsPerNpu', 'scaleOut.radix', 'scaleOut.oversubscription', 'scaleOut.transceiversPerLink'],
+    sources: [
+      { label: 'Huawei, Atlas 960E SuperPoD release (HUAWEI CONNECT 2026-09-17)', url: 'https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode', confidence: 'vendor', note: { zh: '4,096 NPU、正交全液冷、5,500 个 Hi-ONE NPO 光引擎（7.2 Tb/s）替代 48,000 个 800G 模块；两层四平面 Clos 至 51.2 万；系统可用度 99.8 %（口径未定义）', en: '4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines (7.2 Tb/s) replacing 48,000 × 800G modules; two-tier four-plane Clos to 512,000; 99.8 % system availability (definition not given)' } },
+      { label: 'Huawei UnifiedBus release (HUAWEI CONNECT 2026-09-17)', confidence: 'vendor', note: { zh: '柜内 LinkBlade（无线缆）、跨柜 LinkDevice 176 口 × 1.6 Tb/s（RTT ≤ 2 µs）、UBG 交换机最大 1,024 口', en: 'in-cabinet LinkBlade (cableless), cross-cabinet LinkDevice 176 ports × 1.6 Tb/s (RTT ≤ 2 µs), UBG switch radix up to 1,024' } },
+      { label: '智东西 2026-09-19', confidence: 'scan-level', note: { zh: '56 计算柜 + 14 互联柜；柜内交换刀片互联 72 昇腾 + 18 鲲鹏（按每柜理解为推断）；计算刀片 8 NPU（单一媒体来源，56 × 72 = 4,032 ≠ 4,096；同文把每超节点省 196 km 铜缆误作每柜）', en: '56 compute + 14 interconnect cabinets; in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng (read per cabinet, an inference); 8-NPU compute blades (single media source; 56 × 72 = 4,032 ≠ 4,096; the same article puts the 196 km copper saving per cabinet instead of per SuperPoD)' } },
+      { label: 'Fabric counts', confidence: 'assumed', note: { zh: '每 NPU 5.5 个 LinkDevice 口（2.2 TB/s ÷ 2 ÷ 1.6 Tb/s）→ 每 4,032 NPU 126 台 LinkDevice（每互联柜 9 台）；每柜 5 片 LinkBlade 交换芯片；每 NPU 4 个 scale-out 口、每平面 1 个、1,024 口交换机', en: '5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches' } },
     ],
   },
 };
@@ -259,7 +286,7 @@ export interface TopologyScenarioOptions {
   name?: string;
 }
 
-/** the units of a template that carry fault types */
+/** the units of a template that carry fault types (every SuperPoD template has UB switches and UB optical links) */
 export function templateUnits(t: TopologyTemplate, scaleOut = true): FaultUnit[] {
   const ub = t !== 'a2-roce';
   return FAULT_UNITS.filter((u) => (u === 'ub-switch' || u === 'ub-link' ? ub : u === 'roce-switch' || u === 'roce-link' ? scaleOut : true));
@@ -281,7 +308,7 @@ export function topologyScenario(template: TopologyTemplate, npus: number, opts:
   const components: ScenarioInput['components'] = lib.map((f) => {
     const fit = opts.fit?.[f.id] ?? f.fitPerUnit;
     const rate = fit / 1e9;
-    const unitName = FAULT_UNIT_NAMES[f.unit];
+    const unitName = faultUnitName(f.unit, template);
     const base = {
       id: f.id,
       name: { zh: `${unitName.zh.replace(/（.*$/, '')} · ${f.domain.zh} · ${f.description.zh}`, en: `${unitName.en.replace(/ \(.*$/, '')} · ${f.domain.en} · ${f.description.en}` },
@@ -306,7 +333,7 @@ export function topologyScenario(template: TopologyTemplate, npus: number, opts:
       id: opts.id ?? `topology-${template}`,
       name: opts.name ?? `${info.name.en} — ${N.toLocaleString('en-US')} NPUs`,
       basis: [...info.sources.map((x) => x.label), 'ai-cluster-reliability audited catalog (54 events) attached per hardware unit', 'docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md §2'],
-      description: `${info.summary.en}. Fault types per hardware unit: the audited catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit)${scaleOut ? '; RoCE switches and links carry the UB analogues' : ''}.`,
+      description: `${info.summary.en}. Fault types per hardware unit: the audited catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit)${scaleOut ? `; ${template === 'a950-ub2' || template === 'a960e-ub' ? 'UBoE / RoCE' : 'RoCE'} switches and links carry the UB analogues` : ''}.`,
     },
     topology,
     components,
@@ -413,6 +440,9 @@ const unitOfComponent = (id: string, per: string): FaultUnit | undefined => {
   return RULE_UNIT[per];
 };
 
+/** direct NPU–NPU links of one compute cabinet's 2D full mesh (trays × NPUs per tray) */
+const meshLinksPerCabinet = (sp: NonNullable<Scenario['topology']['superpod']>) => sp.nodesPerRack * ((sp.npusPerNode * (sp.npusPerNode - 1)) / 2) + sp.npusPerNode * ((sp.nodesPerRack * (sp.nodesPerRack - 1)) / 2);
+
 /** Hardware bill of materials of a scenario (any scenario; the topology templates give the richest rows). */
 export function topologyBom(s: Scenario): TopologyBom {
   const counts = computeCounts(s);
@@ -438,35 +468,59 @@ export function topologyBom(s: Scenario): TopologyBom {
     const f = r.faultUnit ? fit[r.faultUnit] : undefined;
     rows.push({ ...r, perNpu: N > 0 ? r.count / N : 0, fit: f, hardPerHour: f ? (f.hard * 1e-9) * r.count : undefined });
   };
-  const nodeName: L = t.template === 'a2-roce' ? { zh: '服务器（Atlas 800T A2）', en: 'Server (Atlas 800T A2)' } : sp ? { zh: '计算节点', en: 'Compute node' } : { zh: '服务器 / 节点', en: 'Server / node' };
+  const nodeName: L = t.template === 'a2-roce' ? { zh: '服务器（Atlas 800T A2）', en: 'Server (Atlas 800T A2)' } : sp?.fabric === 'blade-clos' ? { zh: '计算刀片', en: 'Compute blade' } : sp && sp.fabric !== 'two-level' ? { zh: 'NPU 托盘（含 CPU 托盘份额）', en: 'NPU tray (with its CPU-tray share)' } : sp ? { zh: '计算节点', en: 'Compute node' } : { zh: '服务器 / 节点', en: 'Server / node' };
+  const vendorish = (x: TopologyTemplate | undefined) => (x === 'a950-ub2' || x === 'a960e-ub' ? 'assumed' : 'vendor');
   const chip = t.template ? TOPOLOGY_TEMPLATES[t.template].chip : undefined;
   row({ id: 'npu', name: chip ? { zh: `NPU（${chip}）`, en: `NPU (${chip})` } : { zh: 'NPU / 加速卡', en: 'NPU / accelerator card' }, level: 'npu', count: N, faultUnit: 'npu', impact: { zh: '1 张卡；同步作业中断', en: 'one card; the synchronous job stops' }, blastRadiusNpus: 1, confidence: 'paper' });
   row({ id: 'job', name: FAULT_UNIT_NAMES.job, level: 'cluster', count: N, faultUnit: 'job', impact: { zh: '整个作业：共享存储、软件、未归因（按 NPU·h 口径）', en: 'the whole job: shared storage, software, unattributed (per NPU-hour 口径)' }, blastRadiusNpus: N, confidence: 'assumed' });
-  row({ id: 'node', name: { zh: `${nodeName.zh} · ${counts.gpusPerNode} NPU`, en: `${nodeName.en} · ${counts.gpusPerNode} NPUs` }, level: 'node', count: counts.nodes, faultUnit: 'node', impact: { zh: `1 个节点（${counts.gpusPerNode} NPU）`, en: `one node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a950-ub2' ? 'assumed' : 'vendor' });
-  if (counts.cpus > 0) row({ id: 'cpu', name: FAULT_UNIT_NAMES.cpu, level: 'node', count: counts.cpus, faultUnit: 'cpu', impact: { zh: `所在节点（${counts.gpusPerNode} NPU）`, en: `its node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a950-ub2' ? 'assumed' : 'vendor' });
+  row({ id: 'node', name: { zh: `${nodeName.zh} · ${counts.gpusPerNode} NPU`, en: `${nodeName.en} · ${counts.gpusPerNode} NPUs` }, level: 'node', count: counts.nodes, faultUnit: 'node', impact: { zh: `1 个节点（${counts.gpusPerNode} NPU）`, en: `one node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: vendorish(t.template) });
+  if (counts.cpus > 0) row({ id: 'cpu', name: FAULT_UNIT_NAMES.cpu, level: 'node', count: counts.cpus, faultUnit: 'cpu', impact: { zh: `所在节点（${counts.gpusPerNode} NPU）`, en: `its node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a950-ub2' ? 'vendor' : vendorish(t.template) });
   if (sp) row({ id: 'qingtian', name: { zh: '擎天卡（VPC 面）', en: 'Qingtian card (VPC plane)' }, level: 'node', count: counts.nodes * sp.vpcNicsPerNode, impact: { zh: '存储 / 管理通路（故障在 MGMT、STORAGE 类中）', en: 'storage / management path (faults inside MGMT, STORAGE)' }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
   const perCab = counts.gpusPerNode * counts.nodesPerRack;
-  row({ id: 'cabinet', name: { zh: `计算机柜（${counts.nodesPerRack} 节点 · ${perCab} NPU）`, en: `Compute cabinet (${counts.nodesPerRack} nodes · ${perCab} NPUs)` }, level: 'cabinet', count: counts.racks, faultUnit: 'cabinet', impact: { zh: `1 个机柜（${perCab} NPU）`, en: `one cabinet (${perCab} NPUs)` }, blastRadiusNpus: perCab, confidence: t.template === 'a2-roce' ? 'derived' : t.template === 'a950-ub2' ? 'vendor' : 'paper' });
+  row({ id: 'cabinet', name: { zh: `计算机柜（${counts.nodesPerRack} 节点 · ${perCab} NPU）`, en: `Compute cabinet (${counts.nodesPerRack} nodes · ${perCab} NPUs)` }, level: 'cabinet', count: counts.racks, faultUnit: 'cabinet', impact: { zh: `1 个机柜（${perCab} NPU）`, en: `one cabinet (${perCab} NPUs)` }, blastRadiusNpus: perCab, confidence: t.template === 'a2-roce' ? 'derived' : t.template === 'a950-ub2' ? 'vendor' : t.template === 'a960e-ub' ? 'assumed' : 'paper' });
   if (sp) {
     const podNpus = sp.npusPerNode * sp.nodesPerRack * sp.computeRacks;
-    row({ id: 'pod', name: { zh: `超节点（${podNpus.toLocaleString('en-US')} NPU）`, en: `SuperPoD (${podNpus.toLocaleString('en-US')} NPUs)` }, level: 'pod', count: counts.supernodes, impact: { zh: '一个 UB scale-up 域', en: 'one UB scale-up domain' }, blastRadiusNpus: podNpus, confidence: t.template === 'a3-ub384' ? 'paper' : 'vendor' });
-    row({ id: 'commCabinet', name: { zh: '通信机柜（L2 交换）', en: 'Communication cabinet (L2 switching)' }, level: 'pod', count: counts.commRacks, impact: { zh: `约 ${Math.round((sp.subPlanes * sp.l2PerSubPlane) / Math.max(1, sp.commRacks))} 片 L2 的共因（故障在 FABRIC 类中）`, en: `common cause for ≈ ${Math.round((sp.subPlanes * sp.l2PerSubPlane) / Math.max(1, sp.commRacks))} L2 chips (faults inside FABRIC)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'vendor' });
-    const ubShare = counts.ubSwitches > 0 ? counts.l1Switches / counts.ubSwitches : 0;
-    row({ id: 'ubL1', name: { zh: `UB L1 交换芯片（每节点 ${sp.l1PerNode}）`, en: `UB L1 switch chip (${sp.l1PerNode} per node)` }, level: 'fabric', count: counts.l1Switches, faultUnit: 'ub-switch', unitShare: ubShare, impact: { zh: `1 个节点在 1 个子平面的上联（1/${sp.subPlanes}）`, en: `one node's uplinks in one sub-plane (1/${sp.subPlanes})` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
-    row({ id: 'ubL2', name: { zh: `UB L2 交换芯片（${sp.subPlanes} 子平面）`, en: `UB L2 switch chip (${sp.subPlanes} sub-planes)` }, level: 'fabric', count: counts.l2Switches, faultUnit: 'ub-switch', unitShare: 1 - ubShare, impact: { zh: `1 个子平面内每节点 1 条链路（${sp.l2Ports} 口）`, en: `one link per node in one sub-plane (${sp.l2Ports} ports)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
-    row({ id: 'ubLink', name: { zh: `UB 光链路 L1–L2（每 L1 ${sp.linksPerL1} 条）`, en: `UB optical link L1–L2 (${sp.linksPerL1} per L1 chip)` }, level: 'fabric', count: counts.opticalLinks, faultUnit: 'ub-link', impact: { zh: `1 条上联（每节点 ${sp.l1PerNode * sp.linksPerL1} 条之一）`, en: `one uplink (of ${sp.l1PerNode * sp.linksPerL1} per node)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
-    row({ id: 'ubTransceiver', name: { zh: 'UB 光模块（链路两端）', en: 'UB transceiver (both link ends)' }, level: 'fabric', count: counts.transceivers, impact: { zh: '计入所在链路（OPT 类）', en: 'counted with its link (OPT)' }, confidence: 'assumed' });
+    row({ id: 'pod', name: { zh: `超节点（${podNpus.toLocaleString('en-US')} NPU）`, en: `SuperPoD (${podNpus.toLocaleString('en-US')} NPUs)` }, level: 'pod', count: counts.supernodes, impact: { zh: '一个 UB scale-up 域', en: 'one UB scale-up domain' }, blastRadiusNpus: podNpus, confidence: t.template === 'a3-ub384' ? 'paper' : t.template === 'a960e-ub' ? 'assumed' : 'vendor' });
+    if (sp.fabric === 'two-level') {
+      row({ id: 'commCabinet', name: { zh: '通信机柜（L2 交换）', en: 'Communication cabinet (L2 switching)' }, level: 'pod', count: counts.commRacks, impact: { zh: `约 ${Math.round((sp.subPlanes * sp.l2PerSubPlane) / Math.max(1, sp.commRacks))} 片 L2 的共因（故障在 FABRIC 类中）`, en: `common cause for ≈ ${Math.round((sp.subPlanes * sp.l2PerSubPlane) / Math.max(1, sp.commRacks))} L2 chips (faults inside FABRIC)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'vendor' });
+      const ubShare = counts.ubSwitches > 0 ? counts.l1Switches / counts.ubSwitches : 0;
+      row({ id: 'ubL1', name: { zh: `UB L1 交换芯片（每节点 ${sp.l1PerNode}）`, en: `UB L1 switch chip (${sp.l1PerNode} per node)` }, level: 'fabric', count: counts.l1Switches, faultUnit: 'ub-switch', unitShare: ubShare, impact: { zh: `1 个节点在 1 个子平面的上联（1/${sp.subPlanes}）`, en: `one node's uplinks in one sub-plane (1/${sp.subPlanes})` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
+      row({ id: 'ubL2', name: { zh: `UB L2 交换芯片（${sp.subPlanes} 子平面）`, en: `UB L2 switch chip (${sp.subPlanes} sub-planes)` }, level: 'fabric', count: counts.l2Switches, faultUnit: 'ub-switch', unitShare: 1 - ubShare, impact: { zh: `1 个子平面内每节点 1 条链路（${sp.l2Ports} 口）`, en: `one link per node in one sub-plane (${sp.l2Ports} ports)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
+      row({ id: 'ubLink', name: { zh: `UB 光链路 L1–L2（每 L1 ${sp.linksPerL1} 条）`, en: `UB optical link L1–L2 (${sp.linksPerL1} per L1 chip)` }, level: 'fabric', count: counts.opticalLinks, faultUnit: 'ub-link', impact: { zh: `1 条上联（每节点 ${sp.l1PerNode * sp.linksPerL1} 条之一）`, en: `one uplink (of ${sp.l1PerNode * sp.linksPerL1} per node)` }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
+      row({ id: 'ubTransceiver', name: { zh: 'UB 光模块（链路两端）', en: 'UB transceiver (both link ends)' }, level: 'fabric', count: counts.transceivers, impact: { zh: '计入所在链路（OPT 类）', en: 'counted with its link (OPT)' }, confidence: 'assumed' });
+    } else {
+      // v4.2 mesh and blade fabrics: in-cabinet switches, pod-tier switches, the electrical mesh, the optical links (and NPO engines)
+      const perPod = Math.ceil((podNpus * sp.podUplinksPerNpu) / sp.podSwitchRadix);
+      const perComm = sp.commRacks > 0 ? Math.round(perPod / sp.commRacks) : perPod;
+      const share = (n: number) => (counts.ubSwitches > 0 ? n / counts.ubSwitches : 0);
+      const blade = sp.fabric === 'blade-clos';
+      const podSwitchName: L = blade ? { zh: `跨柜 LinkDevice（${sp.podSwitchRadix} 口 × 1.6 Tb/s）`, en: `Cross-cabinet LinkDevice (${sp.podSwitchRadix} × 1.6 Tb/s ports)` } : sp.fabric === 'mesh-4d' ? { zh: `高阶 UB 交换 HRS（${sp.podSwitchRadix} 个 8-lane 口）`, en: `High-radix UB switch HRS (${sp.podSwitchRadix} 8-lane ports)` } : { zh: `光互联 UB 交换（${sp.podSwitchRadix} × 800G，一层 Clos）`, en: `Optical UB switch (${sp.podSwitchRadix} × 800G, one-tier Clos)` };
+      row({ id: 'commCabinet', name: { zh: '灵衢互联柜（超节点交换层）', en: 'UB interconnect cabinet (pod switch tier)' }, level: 'pod', count: counts.commRacks, impact: { zh: `约 ${perComm} 台超节点层交换的共因（故障在 FABRIC 类中）`, en: `common cause for ≈ ${perComm} pod-tier switches (faults inside FABRIC)` }, confidence: blade ? 'assumed' : 'vendor' });
+      row({ id: 'ubRackSwitch', name: blade ? { zh: `柜内 LinkBlade 交换芯片（每柜 ${sp.rackSwitches}）`, en: `In-cabinet LinkBlade switch chip (${sp.rackSwitches} per cabinet)` } : { zh: `柜内低阶 UB 交换 LRS（每柜 ${sp.rackSwitches}）`, en: `In-cabinet low-radix UB switch LRS (${sp.rackSwitches} per cabinet)` }, level: 'fabric', count: counts.rackSwitches, faultUnit: 'ub-switch', unitShare: share(counts.rackSwitches), impact: blade ? { zh: `所在柜 1/${sp.rackSwitches} 的柜内交换`, en: `1/${sp.rackSwitches} of its cabinet's switching` } : { zh: '柜内 2D 全互联的一个转发 / 备份路径（4 平面之一）', en: 'one forwarding / backup path of the cabinet mesh (one of 4 planes)' }, confidence: blade ? 'assumed' : 'paper' });
+      row({ id: 'ubPodSwitch', name: podSwitchName, level: 'fabric', count: counts.podSwitches, faultUnit: 'ub-switch', unitShare: share(counts.podSwitches), impact: perPod > 0 ? { zh: `超节点跨柜带宽的 1/${perPod}`, en: `1/${perPod} of the pod's cross-cabinet bandwidth` } : { zh: '无超节点层交换（每 NPU 上联数为 0）', en: 'no pod-tier switches (0 uplinks per NPU)' }, confidence: sp.fabric === 'mesh-4d' ? 'paper' : 'derived' });
+      if (counts.meshLinks > 0) row({ id: 'ubMeshLink', name: { zh: `柜内全互联电链路（每柜 ${meshLinksPerCabinet(sp)} 条，x4）`, en: `In-cabinet full-mesh electrical link (${meshLinksPerCabinet(sp)} per cabinet, x4)` }, level: 'fabric', count: counts.meshLinks, impact: { zh: '一对 NPU 的直连；改经 LRS 转发（目录无此类，计数项）', en: 'one NPU pair; traffic re-routed through an LRS (no catalog class; counted only)' }, confidence: 'paper' });
+      if (counts.rackMeshLinks > 0) row({ id: 'ubRackMesh', name: { zh: `柜间全互联电缆束（${sp.meshRackGrid} × ${sp.meshRackGrid} 柜，UB x128）`, en: `Cabinet-to-cabinet mesh bundle (${sp.meshRackGrid} × ${sp.meshRackGrid} cabinets, UB x128)` }, level: 'fabric', count: counts.rackMeshLinks, impact: { zh: '两柜之间的一维直连（计数项）', en: 'one cabinet-pair link of the cabinet mesh (counted only)' }, confidence: 'paper' });
+      if (counts.opticalEngines > 0) row({ id: 'npoEngine', name: { zh: 'NPO 光引擎 Hi-ONE（7.2 Tb/s）', en: 'NPO optical engine Hi-ONE (7.2 Tb/s)' }, level: 'fabric', count: counts.opticalEngines, impact: { zh: '其承载的光链路（OPT 类按等效 800G 链路计）', en: 'the links it carries (OPT counted per 800G-equivalent link)' }, confidence: 'derived' });
+      row({ id: 'ubLink', name: blade ? { zh: '光链路（800G 等效，NPO 承载）', en: 'Optical link (800G-equivalent, carried by NPO)' } : sp.fabric === 'mesh-4d' ? { zh: '柜–HRS 光链路（8-lane）', en: 'Cabinet-to-HRS optical link (8 lanes)' } : { zh: `柜–交换 800G 光链路（每 NPU ${sp.podUplinksPerNpu} 条，2+2 保护）`, en: `Cabinet-to-switch 800G optical link (${sp.podUplinksPerNpu} per NPU, 2+2 protection)` }, level: 'fabric', count: counts.opticalLinks, faultUnit: 'ub-link', impact: blade ? { zh: '1 条 800G 等效光通道；光引擎失效是保护倒换还是降带宽，华为未披露（OPT 类按 CloudMatrix384 每链路 FIT 计）', en: 'one 800G-equivalent optical channel; whether an engine failure is masked by protection or degrades bandwidth is not disclosed (OPT at the CloudMatrix384 per-link FIT)' } : { zh: '1 条光上联；单模块故障由 2+2 交叉保护与降 lane 吸收的部分不计入', en: 'one optical uplink; single-module faults absorbed by 2+2 cross protection and lane degradation are not counted' }, confidence: 'derived' });
+      if (counts.transceivers > 0) row({ id: 'ubTransceiver', name: { zh: 'UB 光模块（链路两端）', en: 'UB transceiver (both link ends)' }, level: 'fabric', count: counts.transceivers, impact: { zh: '计入所在链路（OPT 类）', en: 'counted with its link (OPT)' }, confidence: 'derived' });
+      if (counts.backupNpus > 0) row({ id: 'backupNpu', name: { zh: `柜内备份 NPU（每柜 ${sp.backupNpusPerRack}）`, en: `Backup NPU in the cabinet (${sp.backupNpusPerRack} per cabinet)` }, level: 'cabinet', count: counts.backupNpus, impact: { zh: '不参与作业；替换故障 NPU（计数项）', en: 'not used by the job; replaces a failed NPU (counted only)' }, confidence: 'paper' });
+    }
   }
   if (so) {
     // tiers are named by index: the role of tier k (spine, aggregation, core) depends on the tier count, which changes with N, and the
     // bill of materials shows several sizes side by side (10k needs three tiers at radix 64, 100k and beyond four)
-    const tierName = (i: number): L => (i === 0 ? { zh: 'RoCE 叶交换机（第 1 层）', en: 'RoCE leaf switch (tier 1)' } : { zh: `RoCE 交换机（第 ${i + 1} 层）`, en: `RoCE switch (tier ${i + 1})` });
+    // Atlas 950 / 960E SuperClusters run UBoE or RoCE between SuperPoDs (HC2025); the fault class stays roce-switch / roce-link
+    const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub';
+    const net = ubFamily ? { zh: 'UBoE / RoCE ', en: 'UBoE / RoCE ' } : { zh: 'RoCE ', en: 'RoCE ' };
+    const planes = Math.max(1, so.planes ?? 1);
+    const planeNote = planes > 1 ? { zh: `，${planes} 平面`, en: `, ${planes} planes` } : { zh: '', en: '' };
+    const tierName = (i: number): L => (i === 0 ? { zh: `${net.zh}叶交换机（第 1 层${planeNote.zh}）`, en: `${net.en}leaf switch (tier 1${planeNote.en})` } : { zh: `${net.zh}交换机（第 ${i + 1} 层${planeNote.zh}）`, en: `${net.en}switch (tier ${i + 1}${planeNote.en})` });
     const label = sp ? { zh: 'RDMA 口（scale-out，每 NPU ' + so.portsPerNpu + ' 个）', en: `RDMA port (scale-out, ${so.portsPerNpu} per NPU)` } : { zh: `RoCE 口（200GE，每 NPU ${so.portsPerNpu} 个）`, en: `RoCE port (200GE, ${so.portsPerNpu} per NPU)` };
-    row({ id: 'rocePort', name: label, level: 'scale-out', count: counts.scaleOutPorts, impact: { zh: '故障计入 NPU 的 NIC 类', en: 'faults counted in the NPU NIC class' }, confidence: t.template === 'a950-ub2' ? 'assumed' : t.template === 'a3-ub384' ? 'paper' : 'vendor' });
+    row({ id: 'rocePort', name: label, level: 'scale-out', count: counts.scaleOutPorts, impact: { zh: '故障计入 NPU 的 NIC 类', en: 'faults counted in the NPU NIC class' }, confidence: t.template === 'a960e-ub' ? 'assumed' : t.template === 'a3-ub384' ? 'paper' : 'vendor' });
     const down = Math.max(1, Math.floor((so.radix * so.oversubscription) / (1 + so.oversubscription)));
-    counts.scaleOutPerTier.forEach((n, i) => row({ id: `roceTier${i + 1}`, name: { zh: `${tierName(i).zh.replace(/）$/, '')}，${so.radix} 口）`, en: `${tierName(i).en.replace(/\)$/, '')}, ${so.radix} ports)` }, level: 'scale-out', count: n, faultUnit: 'roce-switch', unitShare: counts.scaleOutSwitches > 0 ? n / counts.scaleOutSwitches : 0, impact: i === 0 ? { zh: `${down} 个 NPU 口`, en: `${down} NPU ports` } : { zh: `上联带宽的 1/${Math.round(so.radix / 2)}（ECMP）`, en: `1/${Math.round(so.radix / 2)} of the uplink bandwidth (ECMP)` }, blastRadiusNpus: i === 0 ? Math.ceil(down / so.portsPerNpu) : undefined, confidence: 'assumed' }));
-    row({ id: 'roceLink', name: { zh: 'RoCE 光链路（NPU–叶 + 层间）', en: 'RoCE optical link (NPU–leaf + inter-tier)' }, level: 'scale-out', count: counts.scaleOutLinks, faultUnit: 'roce-link', impact: { zh: '1 个 NPU 口或 1 条上联', en: 'one NPU port or one uplink' }, confidence: 'assumed' });
-    row({ id: 'roceTransceiver', name: { zh: 'RoCE 光模块（链路两端）', en: 'RoCE transceiver (both link ends)' }, level: 'scale-out', count: counts.scaleOutTransceivers, impact: { zh: '计入所在链路', en: 'counted with its link' }, confidence: 'assumed' });
+    counts.scaleOutPerTier.forEach((n, i) => row({ id: `roceTier${i + 1}`, name: { zh: `${tierName(i).zh.replace(/）$/, '')}，${so.radix} 口）`, en: `${tierName(i).en.replace(/\)$/, '')}, ${so.radix} ports)` }, level: 'scale-out', count: n, faultUnit: 'roce-switch', unitShare: counts.scaleOutSwitches > 0 ? n / counts.scaleOutSwitches : 0, impact: i === 0 ? { zh: `${down} 个 NPU 口`, en: `${down} NPU ports` } : { zh: `上联带宽的 1/${Math.round(so.radix / 2)}（ECMP）`, en: `1/${Math.round(so.radix / 2)} of the uplink bandwidth (ECMP)` }, blastRadiusNpus: i === 0 ? Math.ceil(down / Math.max(1, so.portsPerNpu / planes)) : undefined, confidence: 'assumed' }));
+    row({ id: 'roceLink', name: { zh: `${net.zh}光链路（NPU–叶 + 层间）`, en: `${net.en}optical link (NPU–leaf + inter-tier)` }, level: 'scale-out', count: counts.scaleOutLinks, faultUnit: 'roce-link', impact: { zh: '1 个 NPU 口或 1 条上联', en: 'one NPU port or one uplink' }, confidence: 'assumed' });
+    row({ id: 'roceTransceiver', name: { zh: `${net.zh}光模块（链路两端）`, en: `${net.en}transceiver (both link ends)` }, level: 'scale-out', count: counts.scaleOutTransceivers, impact: { zh: '计入所在链路', en: 'counted with its link' }, confidence: 'assumed' });
   }
   const hardFitPerNpu: Partial<Record<FaultUnit, number>> = {};
   let hardPerHour = 0;
@@ -478,9 +532,12 @@ export function topologyBom(s: Scenario): TopologyBom {
     hardFitPerNpu[u] = N > 0 ? (perHour / N) * 1e9 : 0;
   }
   const notes: string[] = [];
-  if (sp && t.fabricFill === 'proportional' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0) notes.push('the last SuperPoD is partly populated: its L2 chips and communication cabinets follow the populated nodes (port-count fill; parallel L1–L2 links allowed)');
-  if (sp && t.fabricFill === 'full-pod' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0) notes.push('full-pod fill: the last, partly populated SuperPoD counts its whole L2 tier and all communication cabinets');
-  if (so) notes.push(`scale-out Clos: ${counts.scaleOutTiers} tier(s) for ${counts.scaleOutPorts.toLocaleString('en-US')} ports at radix ${so.radix}${so.oversubscription > 1 ? `, ${so.oversubscription}:1 at the leaves` : ', non-blocking'} (assumed)`);
+  const tierWord = sp && sp.fabric !== 'two-level' ? 'pod-tier switches' : 'L2 chips';
+  if (sp && sp.fabric !== 'two-level') notes.push(`UB fabric ${sp.fabric}: ${counts.rackSwitches.toLocaleString('en-US')} in-cabinet switches, ${counts.podSwitches.toLocaleString('en-US')} pod-tier switches, ${counts.opticalLinks.toLocaleString('en-US')} optical links${counts.meshLinks ? `, ${counts.meshLinks.toLocaleString('en-US')} electrical mesh links` : ''}${counts.opticalEngines ? `, ${counts.opticalEngines.toLocaleString('en-US')} NPO engines` : ''}; every switch carries the FIT of one CloudMatrix384 UB chip and every optical link that of one CloudMatrix384 L1–L2 link (assumed per-unit equivalence)`);
+  if (sp && t.fabricFill === 'proportional' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0 && sp.fabric !== 'two-level') notes.push(`the last SuperPoD is partly populated: its ${tierWord} and interconnect cabinets follow the populated NPUs`);
+  if (sp && t.fabricFill === 'proportional' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0 && sp.fabric === 'two-level') notes.push('the last SuperPoD is partly populated: its L2 chips and communication cabinets follow the populated nodes (port-count fill; parallel L1–L2 links allowed)');
+  if (sp && t.fabricFill === 'full-pod' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0) notes.push(sp.fabric === 'two-level' ? 'full-pod fill: the last, partly populated SuperPoD counts its whole L2 tier and all communication cabinets' : `full-pod fill: the last, partly populated SuperPoD counts all its ${tierWord} and interconnect cabinets`);
+  if (so) notes.push(`scale-out Clos: ${(so.planes ?? 1) > 1 ? `${so.planes} planes × ` : ''}${counts.scaleOutTiers} tier(s) for ${counts.scaleOutPorts.toLocaleString('en-US')} ports at radix ${so.radix}${so.oversubscription > 1 ? `, ${so.oversubscription}:1 at the leaves` : ', non-blocking'} (assumed)`);
   return { template: t.template, npus: N, counts, rows, hardFitPerNpu, hardFitPerNpuTotal: N > 0 ? (hardPerHour / N) * 1e9 : 0, hardPerHour, notes };
 }
 
@@ -515,11 +572,74 @@ export function resizeTopology(s: Scenario, n: number): Scenario {
   return { ...c, meta: { ...c.meta, name: c.meta.name.replace(/ — [\d,]+ NPUs$/, ` — ${N.toLocaleString('en-US')} NPUs`) } };
 }
 
-/** v4 built-in examples: the three topology templates at the first built-in scale (10,000 NPUs) with the six default mechanisms — the whole example registry; the scale is a parameter (`resizeTopology`) */
+/**
+ * v4.2 SuperPoD variants of a template (the topology page's pod selector): the Atlas 950 to the product-page spec (1,024 NPUs, cabinet mesh +
+ * one-tier optical Clos), the 8,192-NPU roadmap pod, the UB-Mesh paper's 4D mesh (x4 lanes per NPU into x512 HRS) and the
+ * CloudMatrix384 two-level copy kept from v4.1 for comparison. The golden generator's VARIANTS use the same overrides.
+ */
+export interface SuperpodVariant { id: string; name: L; confidence: 'paper' | 'vendor' | 'derived' | 'assumed'; values: () => Superpod }
+export const SUPERPOD_VARIANTS: Partial<Record<TopologyTemplate, SuperpodVariant[]>> = {
+  'a950-ub2': [
+    { id: 'a950-1k', name: { zh: '1,024 NPU · 柜内全互联 + 光交换 Clos（现行规格）', en: '1,024 NPUs · cabinet mesh + optical Clos (current spec)' }, confidence: 'vendor', values: () => ({ ...SUPERPOD_PRESETS['atlas950-1k'].values }) },
+    { id: 'a950-8k', name: { zh: '8,192 NPU · 128 + 32 柜（路线图）', en: '8,192 NPUs · 128 + 32 cabinets (roadmap)' }, confidence: 'vendor', values: () => ({ ...SUPERPOD_PRESETS['atlas950-8k'].values }) },
+    { id: 'a950-4d', name: { zh: '8,192 NPU · UB-Mesh 4D（论文）', en: '8,192 NPUs · UB-Mesh 4D (paper)' }, confidence: 'paper', values: () => ({ ...SUPERPOD_PRESETS['atlas950-8k'].values, fabric: 'mesh-4d', podUplinksPerNpu: 0.5, podSwitchRadix: 64 }) },
+    { id: 'a950-2l', name: { zh: '1,024 NPU · CloudMatrix384 两级 L1/L2 拷贝（v4.1）', en: '1,024 NPUs · CloudMatrix384 two-level copy (v4.1)' }, confidence: 'assumed', values: () => ({ ...SUPERPOD_PRESETS['atlas950-1k'].values, fabric: 'two-level' }) },
+  ],
+};
+
+/**
+ * v4.2 the SuperPoD on another UB fabric: the fields only that fabric uses take its reference geometry (assumed) so a switch never
+ * leaves the pod without switches or links — mesh-clos the Atlas 950 cabinet mesh + optical Clos (72 LRS per 64 NPUs, 2 × 800G per
+ * NPU into 128-port switches), mesh-4d the UB-Mesh paper (x4 lanes per NPU into 64-port HRS, 4 × 4 cabinet grid), blade-clos the
+ * Atlas 960E (5 LinkBlade chips per 72 NPUs, 5.5 ports per NPU into 176-port LinkDevices, NPO), two-level the CloudMatrix384 radix
+ * sized to the pod; the cabinet structure (NPUs, nodes, cabinets, CPUs) stays.
+ */
+export function withFabric(sp: Superpod, fabric: Superpod['fabric']): Superpod {
+  if (sp.fabric === fabric) return sp;
+  const perCab = sp.npusPerNode * sp.nodesPerRack;
+  const e = SUPERPOD_PRESETS.atlas960e.values;
+  if (fabric === 'two-level') {
+    const nodesPerPod = sp.nodesPerRack * sp.computeRacks;
+    return { ...sp, fabric, ...(sp.l1PerNode > 0 ? {} : { l1PerNode: 7, subPlanes: 7, l2PerSubPlane: Math.ceil((nodesPerPod * 16) / 48), l2Ports: 48, linksPerL1: 16 }), transceiversPerLink: sp.transceiversPerLink || 2 };
+  }
+  if (fabric === 'blade-clos') return { ...sp, fabric, rackSwitches: Math.max(1, Math.round((5 * perCab) / 72)), podUplinksPerNpu: 5.5, podSwitchRadix: 176, opticalLinksPerNpu: e.opticalLinksPerNpu, opticalEnginesPerNpu: e.opticalEnginesPerNpu, meshRackGrid: 0 };
+  const lrs = Math.max(1, Math.round((72 * perCab) / 64));
+  return fabric === 'mesh-4d'
+    ? { ...sp, fabric, rackSwitches: lrs, podUplinksPerNpu: 0.5, podSwitchRadix: 64, meshRackGrid: 4, transceiversPerLink: sp.transceiversPerLink || 2 }
+    : { ...sp, fabric, rackSwitches: lrs, podUplinksPerNpu: 2, podSwitchRadix: 128, meshRackGrid: sp.meshRackGrid || 4, transceiversPerLink: sp.transceiversPerLink || 2 };
+}
+
+/** display name of a fault unit on a template: the scale-out units of the Atlas 950 / 960E run UBoE or RoCE (HC2025) */
+export function faultUnitName(u: FaultUnit, template?: TopologyTemplate): L {
+  const ub = template === 'a950-ub2' || template === 'a960e-ub';
+  if (ub && u === 'roce-switch') return { zh: 'UBoE / RoCE 交换机（叶 / 脊 / 核心）', en: 'UBoE / RoCE switch (leaf / spine / core)' };
+  if (ub && u === 'roce-link') return { zh: 'UBoE / RoCE 光链路（两端光模块）', en: 'UBoE / RoCE optical link (two transceivers)' };
+  return FAULT_UNIT_NAMES[u];
+}
+
+/** which variant of the template the scenario's SuperPoD matches (undefined when edited by hand) */
+export function superpodVariantOf(s: Scenario): string | undefined {
+  const sp = s.topology.superpod;
+  const list = s.topology.template ? SUPERPOD_VARIANTS[s.topology.template] : undefined;
+  if (!sp || !list) return undefined;
+  return list.find((v) => JSON.stringify({ ...v.values() }) === JSON.stringify({ ...v.values(), ...sp }))?.id;
+}
+
+/** the scenario on another SuperPoD variant: the superpod geometry and the topology fields mirrored from it */
+export function applySuperpodVariant(s: Scenario, id: string): Scenario {
+  const v = (s.topology.template ? SUPERPOD_VARIANTS[s.topology.template] : undefined)?.find((x) => x.id === id);
+  if (!v) return s;
+  const sp = v.values();
+  const pod = sp.npusPerNode * sp.nodesPerRack * sp.computeRacks;
+  return { ...s, topology: { ...s.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, racksPerZone: sp.computeRacks + sp.commRacks, nvlinkDomainGpus: pod } };
+}
+
+/** v4.2 built-in examples: the four topology templates at the first built-in scale (10,000 NPUs) with the six default mechanisms — the whole example registry; the scale is a parameter (`resizeTopology`) */
 export const TOPOLOGY_EXAMPLES: Record<string, () => Scenario> = {
   'topology-a3-ub384': () => topologyScenario('a3-ub384', TOPOLOGY_SCALES[0]),
   'topology-a2-roce': () => topologyScenario('a2-roce', TOPOLOGY_SCALES[0]),
   'topology-a950-ub2': () => topologyScenario('a950-ub2', TOPOLOGY_SCALES[0]),
+  'topology-a960e-ub': () => topologyScenario('a960e-ub', TOPOLOGY_SCALES[0]),
 };
 // the shared example registry is exactly the topology templates (registered here because the scenario module cannot import the topology module)
 Object.assign(EXAMPLES, TOPOLOGY_EXAMPLES);

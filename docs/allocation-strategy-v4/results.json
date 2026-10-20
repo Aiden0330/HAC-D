@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-19T02:30:36.031Z",
+ "generated": "2026-10-20T01:45:18.792Z",
  "scenario": {
   "template": "a3-ub384",
   "npus": 500000,
@@ -3726,7 +3726,7 @@
        "residualFactor": 59.73583814100786
       }
      ],
-     "ms": 1219
+     "ms": 1227.75
     },
     "v4": {
      "optimal": {
@@ -3745,7 +3745,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 2884
+      "ms": 2876
      },
      "mttr-first": {
       "feasible": true,
@@ -3763,7 +3763,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 71
+      "ms": 72
      },
      "mttf-first": {
       "feasible": true,
@@ -3781,7 +3781,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 70
+      "ms": 73
      }
     }
    },
@@ -3801,7 +3801,7 @@
      "recoveryS": 264.50000000000006,
      "firstOrderAOp": 0.9773792667140023,
      "uniformFactor": 0.6602791470045198,
-     "ms": 15,
+     "ms": 14,
      "splits": {
       "arinc": {
        "aOp": 0.994896033983645,
@@ -3923,7 +3923,7 @@
        "residualFactor": 5.922764416723252
       }
      ],
-     "ms": 1219
+     "ms": 1227.75
     },
     "v4": {
      "optimal": {
@@ -3942,7 +3942,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 2920
+      "ms": 2921
      },
      "mttr-first": {
       "feasible": true,
@@ -3978,7 +3978,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 66
+      "ms": 67
      }
     }
    },
@@ -3998,7 +3998,7 @@
      "recoveryS": 264.50000000000006,
      "firstOrderAOp": 0.9557598872210723,
      "uniformFactor": 0.3301441596744852,
-     "ms": 14,
+     "ms": 15,
      "splits": {
       "arinc": {
        "aOp": 0.9944775586058084,
@@ -4120,7 +4120,7 @@
        "residualFactor": 2.940607740178376
       }
      ],
-     "ms": 1219
+     "ms": 1227.75
     },
     "v4": {
      "optimal": {
@@ -4144,7 +4144,7 @@
         "factor": 0.6807764112947403
        }
       ],
-      "ms": 3321
+      "ms": 3329
      },
      "mttr-first": {
       "feasible": true,
@@ -4207,7 +4207,7 @@
      "recoveryS": 264.50000000000006,
      "firstOrderAOp": 0.8962821710350326,
      "uniformFactor": 0.13205729697193863,
-     "ms": 14,
+     "ms": 15,
      "splits": {
       "arinc": {
        "aOp": 0.9932272138328649,
@@ -4333,7 +4333,7 @@
        "residualFactor": 1.6475483018165638
       }
      ],
-     "ms": 1219
+     "ms": 1227.75
     },
     "v4": {
      "optimal": {
@@ -4370,7 +4370,7 @@
         "factor": 0.5751514990045498
        }
       ],
-      "ms": 3461
+      "ms": 3463
      },
      "mttr-first": {
       "feasible": true,
@@ -4583,7 +4583,7 @@
        "residualFactor": 50.327596038316535
       }
      ],
-     "ms": 1274
+     "ms": 1292.5
     },
     "v4": {
      "optimal": {
@@ -4602,7 +4602,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 3195
+      "ms": 3144
      },
      "mttr-first": {
       "feasible": true,
@@ -4620,7 +4620,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 75
+      "ms": 76
      },
      "mttf-first": {
       "feasible": true,
@@ -4638,7 +4638,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 76
+      "ms": 75
      }
     }
    },
@@ -4658,7 +4658,7 @@
      "recoveryS": 264.50000000000006,
      "firstOrderAOp": 0.9752733287663534,
      "uniformFactor": 0.603318614498598,
-     "ms": 15,
+     "ms": 16,
      "splits": {
       "arinc": {
        "aOp": 0.9942710474872904,
@@ -4780,7 +4780,7 @@
        "residualFactor": 4.975286254179474
       }
      ],
-     "ms": 1274
+     "ms": 1292.5
     },
     "v4": {
      "optimal": {
@@ -4799,7 +4799,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 3270
+      "ms": 3281
      },
      "mttr-first": {
       "feasible": true,
@@ -4817,7 +4817,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 68
+      "ms": 69
      },
      "mttf-first": {
       "feasible": true,
@@ -4835,7 +4835,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 68
+      "ms": 69
      }
     }
    },
@@ -4980,7 +4980,7 @@
        "residualFactor": 3.292712150278709
       }
      ],
-     "ms": 1274
+     "ms": 1292.5
     },
     "v4": {
      "optimal": {
@@ -5001,7 +5001,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 3813
+      "ms": 3826
      },
      "mttr-first": {
       "feasible": true,
@@ -5021,7 +5021,7 @@
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 106
+      "ms": 108
      },
      "mttf-first": {
       "feasible": true,
@@ -5052,7 +5052,7 @@
         "factor": 0.8927988234553865
        }
       ],
-      "ms": 42
+      "ms": 44
      }
     }
    },
@@ -5072,7 +5072,7 @@
      "recoveryS": 264.50000000000006,
      "firstOrderAOp": 0.8874942413274297,
      "uniformFactor": 0.12066375142602005,
-     "ms": 17,
+     "ms": 18,
      "splits": {
       "arinc": {
        "aOp": 0.9923612381965519,
@@ -5198,7 +5198,7 @@
        "residualFactor": 1.4367039361163272
       }
      ],
-     "ms": 1274
+     "ms": 1292.5
     },
     "v4": {
      "optimal": {
@@ -5236,7 +5236,7 @@
         "factor": 0.5804259922382652
        }
       ],
-      "ms": 3891
+      "ms": 3921
      },
      "mttr-first": {
       "feasible": true,
@@ -5274,7 +5274,7 @@
         "factor": 0.5811605717143576
        }
       ],
-      "ms": 235
+      "ms": 232
      },
      "mttf-first": {
       "feasible": true,
@@ -5305,7 +5305,7 @@
         "factor": 0.1404649858445426
        }
       ],
-      "ms": 42
+      "ms": 43
      }
     }
    }
@@ -5314,24 +5314,24 @@
    "10000": {
     "npus": 10000,
     "baseline": {
-     "aOp": 0.9991822270457666,
-     "aOpDerated": 0.9990747500905814,
+     "aOp": 0.9991966536575125,
+     "aOpDerated": 0.9990995790362558,
      "meets": true,
      "meetsNominal": true
     },
-    "hardFitPerNpu": 3238.1961904761906,
+    "hardFitPerNpu": 3092.051428571428,
     "v30": {
-     "lambdaJob": 0.03300045463178933,
-     "lambdaHw": 0.0323819619047619,
+     "lambdaJob": 0.031507068763644355,
+     "lambdaHw": 0.030920514285714278,
      "lambdaStar": 0.20415879017013247,
      "recoveryS": 264.50000000000006,
-     "firstOrderAOp": 0.9975812478108971,
-     "uniformFactor": 6.304707255557301,
-     "ms": 16,
+     "firstOrderAOp": 0.9976904520018566,
+     "uniformFactor": 6.602697105347202,
+     "ms": 17,
      "splits": {
       "arinc": {
-       "aOp": 0.9991822270457666,
-       "aOpDerated": 0.9990747500905814,
+       "aOp": 0.9991966536575125,
+       "aOpDerated": 0.9990995790362558,
        "meets": true,
        "meetsNominal": true,
        "effort": 0,
@@ -5340,18 +5340,18 @@
        "relaxed": 20
       },
       "agree": {
-       "aOp": 0.9993065274274541,
-       "aOpDerated": 0.9992153677143909,
+       "aOp": 0.9992715919162317,
+       "aOpDerated": 0.9991823679598684,
        "meets": true,
        "meetsNominal": true,
-       "effort": 16.74883280708411,
-       "improved": 5,
-       "minFactor": 0.12208390019190386,
-       "relaxed": 15
+       "effort": 9.546604340144397,
+       "improved": 4,
+       "minFactor": 0.20140782778624952,
+       "relaxed": 16
       },
       "minimum-effort": {
-       "aOp": 0.9991822270457666,
-       "aOpDerated": 0.9990747500905814,
+       "aOp": 0.9991966536575125,
+       "aOpDerated": 0.9990995790362558,
        "meets": true,
        "meetsNominal": true,
        "effort": 0,
@@ -5360,8 +5360,8 @@
        "relaxed": 0
       },
       "equal": {
-       "aOp": 0.9991822270457666,
-       "aOpDerated": 0.9990747500905814,
+       "aOp": 0.9991966536575125,
+       "aOpDerated": 0.9990995790362558,
        "meets": true,
        "meetsNominal": true,
        "effort": 0,
@@ -5372,23 +5372,23 @@
      }
     },
     "v37": {
-     "aOp": 0.9991822270457666,
-     "aOpDerated": 0.9990747500905814,
+     "aOp": 0.9991966536575125,
+     "aOpDerated": 0.9990995790362558,
      "meets": true,
      "meetsNominal": true,
      "plan": {
       "ids": [],
       "feasible": true,
-      "nominal": 0.9991822270457666,
-      "derated": 0.9991822270457666,
+      "nominal": 0.9991966536575125,
+      "derated": 0.9991966536575125,
       "effort": 0,
       "method": "exact"
      },
      "residual": {
-      "plan": 19.63303697193359,
-      "planDerated": 19.63303697193359,
-      "allOn": 14.967790937301686,
-      "allOnDerated": 11.143469048032584
+      "plan": 19.950980858125895,
+      "planDerated": 19.950980858125895,
+      "allOn": 15.687091802185511,
+      "allOnDerated": 11.75586402647011
      },
      "hardwareFactor": 1,
      "hardwareClasses": 0,
@@ -5398,64 +5398,64 @@
       "hardware": 0,
       "total": 0
      },
-     "hardwareOnlyFactor": 19.63303697193359,
+     "hardwareOnlyFactor": 19.950980858125895,
      "levers": [
       {
        "id": "plan",
-       "value": 0.9991822270457666,
-       "valueDerated": 0.9991822270457666,
-       "residualFactor": 19.63303697193359
+       "value": 0.9991966536575125,
+       "valueDerated": 0.9991966536575125,
+       "residualFactor": 19.950980858125895
       },
       {
        "id": "auto60",
-       "value": 0.99951757466982,
-       "valueDerated": 0.99951757466982,
-       "residualFactor": 33.13569626590766
+       "value": 0.9995271281056343,
+       "valueDerated": 0.9995271281056343,
+       "residualFactor": 33.7554652766464
       },
       {
        "id": "ps999",
-       "value": 0.9993632868051645,
-       "valueDerated": 0.9993632868051645,
-       "residualFactor": 25.17667921158847
+       "value": 0.999375082708752,
+       "valueDerated": 0.999375082708752,
+       "residualFactor": 25.61006724394685
       },
       {
        "id": "manual30",
-       "value": 0.999333105621137,
-       "valueDerated": 0.999333105621137,
-       "residualFactor": 24.045786164158066
+       "value": 0.9993453401075983,
+       "valueDerated": 0.9993453401075983,
+       "residualFactor": 24.454667112187064
       },
       {
        "id": "auto60+ps999",
-       "value": 0.9996987560153849,
-       "valueDerated": 0.9996987560153849,
-       "residualFactor": 52.64530604520326
+       "value": 0.9997056752336694,
+       "valueDerated": 0.9997056752336694,
+       "residualFactor": 53.82549655713913
       },
       {
        "id": "auto60+manual30",
-       "value": 0.9996685545624042,
-       "valueDerated": 0.9996685545624042,
-       "residualFactor": 47.943571647154464
+       "value": 0.9996759129486558,
+       "valueDerated": 0.9996759129486558,
+       "residualFactor": 48.97519180035019
       },
       {
        "id": "ps999+manual30",
-       "value": 0.999378378080932,
-       "valueDerated": 0.999378378080932,
-       "residualFactor": 25.782859058744812
+       "value": 0.999389954673349,
+       "valueDerated": 0.999389954673349,
+       "residualFactor": 26.229585444064178
       },
       {
        "id": "all3",
-       "value": 0.9997138574263171,
-       "valueDerated": 0.9997138574263171,
-       "residualFactor": 55.35928292894801
+       "value": 0.9997205570408558,
+       "valueDerated": 0.9997205570408558,
+       "residualFactor": 56.62915464487032
       }
      ],
-     "ms": 1279
+     "ms": 1269.5
     },
     "v4": {
      "optimal": {
       "feasible": true,
-      "aOp": 0.9991822270457666,
-      "aOpDerated": 0.9990747500905814,
+      "aOp": 0.9991966536575125,
+      "aOpDerated": 0.9990995790362558,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5464,16 +5464,16 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 17.262627419209064,
+      "slack": 17.721267919902207,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 3164
+      "ms": 3209
      },
      "mttr-first": {
       "feasible": true,
-      "aOp": 0.9991822270457666,
-      "aOpDerated": 0.9990747500905814,
+      "aOp": 0.9991966536575125,
+      "aOpDerated": 0.9990995790362558,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5482,16 +5482,16 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 17.262627419209064,
+      "slack": 17.721267919902207,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 76
+      "ms": 78
      },
      "mttf-first": {
       "feasible": true,
-      "aOp": 0.9991822270457666,
-      "aOpDerated": 0.9990747500905814,
+      "aOp": 0.9991966536575125,
+      "aOpDerated": 0.9990995790362558,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5500,92 +5500,92 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 17.262627419209064,
+      "slack": 17.721267919902207,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 76
+      "ms": 75
      }
     }
    },
    "100000": {
     "npus": 100000,
     "baseline": {
-     "aOp": 0.9918472566128582,
-     "aOpDerated": 0.9907840272734476,
+     "aOp": 0.9920313195430115,
+     "aOpDerated": 0.9910761925112477,
      "meets": true,
      "meetsNominal": true
     },
-    "hardFitPerNpu": 3250.6712380952376,
+    "hardFitPerNpu": 3091.136952380952,
     "v30": {
-     "lambdaJob": 0.331288330683713,
-     "lambdaHw": 0.32506712380952374,
+     "lambdaJob": 0.3149766270242477,
+     "lambdaHw": 0.3091136952380952,
      "lambdaStar": 0.20415879017013247,
      "recoveryS": 264.50000000000006,
-     "firstOrderAOp": 0.9762378915089566,
-     "uniformFactor": 0.628051178407575,
+     "firstOrderAOp": 0.9773814074731563,
+     "uniformFactor": 0.6604650434943652,
      "ms": 16,
      "splits": {
       "arinc": {
-       "aOp": 0.9946973158552844,
-       "aOpDerated": 0.9940200426615093,
+       "aOp": 0.9945789256785456,
+       "aOpDerated": 0.9939397267214977,
        "meets": true,
        "meetsNominal": true,
-       "effort": 26.841838766715597,
+       "effort": 23.9378355629178,
        "improved": 20,
-       "minFactor": 0.628051178407575,
+       "minFactor": 0.6604650434943651,
        "relaxed": 0
       },
       "agree": {
-       "aOp": 0.997650359416204,
-       "aOpDerated": 0.9973662012497183,
+       "aOp": 0.9969305228316031,
+       "aOpDerated": 0.9965605170779422,
        "meets": true,
        "meetsNominal": true,
-       "effort": 93.73986017491316,
-       "improved": 16,
-       "minFactor": 0.011455090320674032,
-       "relaxed": 4
+       "effort": 67.88116975698831,
+       "improved": 15,
+       "minFactor": 0.020146814282890637,
+       "relaxed": 5
       },
       "minimum-effort": {
-       "aOp": 0.9942579143964424,
-       "aOpDerated": 0.993517721762655,
+       "aOp": 0.994280433196292,
+       "aOpDerated": 0.9935671737542708,
        "meets": true,
        "meetsNominal": true,
-       "effort": 16.2437806021603,
-       "improved": 12,
-       "minFactor": 0.2817113089772774,
+       "effort": 12.957313701252215,
+       "improved": 9,
+       "minFactor": 0.31042482920326336,
        "relaxed": 0
       },
       "equal": {
-       "aOp": 0.9949751973452723,
-       "aOpDerated": 0.9943762727442303,
+       "aOp": 0.9951512871155036,
+       "aOpDerated": 0.9946101321613234,
        "meets": true,
        "meetsNominal": true,
-       "effort": 25.0035435235547,
-       "improved": 12,
+       "effort": 23.5889957050959,
+       "improved": 11,
        "minFactor": 0.21874156089657054,
-       "relaxed": 8
+       "relaxed": 9
       }
      }
     },
     "v37": {
-     "aOp": 0.9918472566128582,
-     "aOpDerated": 0.9907840272734476,
+     "aOp": 0.9920313195430115,
+     "aOpDerated": 0.9910761925112477,
      "meets": true,
      "meetsNominal": true,
      "plan": {
       "ids": [],
       "feasible": true,
-      "nominal": 0.9918472566128582,
-      "derated": 0.9918472566128582,
+      "nominal": 0.9920313195430115,
+      "derated": 0.9920313195430115,
       "effort": 0,
       "method": "exact"
      },
      "residual": {
-      "plan": 1.9024031872636036,
-      "planDerated": 1.9024031872636036,
-      "allOn": 1.4648873867980128,
-      "allOnDerated": 1.0891595316698002
+      "plan": 1.9462198745256283,
+      "planDerated": 1.9462198745256283,
+      "allOn": 1.5375380781468115,
+      "allOnDerated": 1.1510026215192495
      },
      "hardwareFactor": 1,
      "hardwareClasses": 0,
@@ -5595,64 +5595,64 @@
       "hardware": 0,
       "total": 0
      },
-     "hardwareOnlyFactor": 1.9024031872636036,
+     "hardwareOnlyFactor": 1.9462198745256283,
      "levers": [
       {
        "id": "plan",
-       "value": 0.9918472566128582,
-       "valueDerated": 0.9918472566128582,
-       "residualFactor": 1.9024031872636036
+       "value": 0.9920313195430115,
+       "valueDerated": 0.9920313195430115,
+       "residualFactor": 1.9462198745256283
       },
       {
        "id": "auto60",
-       "value": 0.9951755416855536,
-       "valueDerated": 0.9951755416855536,
-       "residualFactor": 3.2523926418509665
+       "value": 0.9952952235148347,
+       "valueDerated": 0.9952952235148347,
+       "residualFactor": 3.333118977748013
       },
       {
        "id": "ps999",
-       "value": 0.9936417606548082,
-       "valueDerated": 0.9936417606548082,
-       "residualFactor": 2.456686087823525
+       "value": 0.9937911643283682,
+       "valueDerated": 0.9937911643283682,
+       "residualFactor": 2.5147957703488992
       },
       {
        "id": "manual30",
-       "value": 0.9933422258660223,
-       "valueDerated": 0.9933422258660223,
-       "residualFactor": 2.3436170132077168
+       "value": 0.9934974234050659,
+       "valueDerated": 0.9934974234050659,
+       "residualFactor": 2.398713768468845
       },
       {
        "id": "auto60+ps999",
-       "value": 0.9969821199305415,
-       "valueDerated": 0.9969821199305415,
-       "residualFactor": 5.202484370002362
+       "value": 0.9970666775098355,
+       "valueDerated": 0.9970666775098355,
+       "residualFactor": 5.349163742150971
       },
       {
        "id": "auto60+manual30",
-       "value": 0.996680568216655,
-       "valueDerated": 0.996680568216655,
-       "residualFactor": 4.7325711913882555
+       "value": 0.9967709974214394,
+       "valueDerated": 0.9967709974214394,
+       "residualFactor": 4.8619847548692166
       },
       {
        "id": "ps999+manual30",
-       "value": 0.993791595799011,
-       "valueDerated": 0.993791595799011,
-       "residualFactor": 2.517292460680814
+       "value": 0.993938099933843,
+       "valueDerated": 0.993938099933843,
+       "residualFactor": 2.5770376564718975
       },
       {
        "id": "all3",
-       "value": 0.9971329642227742,
-       "valueDerated": 0.9971329642227742,
-       "residualFactor": 5.473717152384511
+       "value": 0.9972145833440347,
+       "valueDerated": 0.9972145833440347,
+       "residualFactor": 5.630760841017788
       }
      ],
-     "ms": 1279
+     "ms": 1269.5
     },
     "v4": {
      "optimal": {
       "feasible": true,
-      "aOp": 0.9918472566128582,
-      "aOpDerated": 0.9907840272734476,
+      "aOp": 0.9920313195430115,
+      "aOpDerated": 0.9910761925112477,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5661,16 +5661,16 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 1.6709062798319958,
+      "slack": 1.7270051148472036,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 3260
+      "ms": 3161
      },
      "mttr-first": {
       "feasible": true,
-      "aOp": 0.9918472566128582,
-      "aOpDerated": 0.9907840272734476,
+      "aOp": 0.9920313195430115,
+      "aOpDerated": 0.9910761925112477,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5679,16 +5679,16 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 1.6709062798319958,
+      "slack": 1.7270051148472036,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 70
+      "ms": 66
      },
      "mttf-first": {
       "feasible": true,
-      "aOp": 0.9918472566128582,
-      "aOpDerated": 0.9907840272734476,
+      "aOp": 0.9920313195430115,
+      "aOpDerated": 0.9910761925112477,
       "mechanisms": [],
       "levers": [],
       "effort": {
@@ -5697,168 +5697,168 @@
        "hardware": 0,
        "total": 0
       },
-      "slack": 1.6709062798319958,
+      "slack": 1.7270051148472036,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 70
+      "ms": 65
      }
     }
    },
    "200000": {
     "npus": 200000,
     "baseline": {
-     "aOp": 0.9838276663315625,
-     "aOpDerated": 0.9817394254232925,
+     "aOp": 0.9841902535295737,
+     "aOpDerated": 0.9823136198605235,
      "meets": false,
      "meetsNominal": false
     },
-    "hardFitPerNpu": 3250.6285714285705,
+    "hardFitPerNpu": 3091.071714285713,
     "v30": {
-     "lambdaJob": 0.6625678316509909,
-     "lambdaHw": 0.6501257142857142,
+     "lambdaJob": 0.6299398334218353,
+     "lambdaHw": 0.6182143428571427,
      "lambdaStar": 0.20415879017013247,
      "recoveryS": 264.50000000000006,
-     "firstOrderAOp": 0.953579437387186,
-     "uniformFactor": 0.3140297109989557,
+     "firstOrderAOp": 0.9557642856528745,
+     "uniformFactor": 0.33023949141424175,
      "ms": 16,
      "splits": {
       "arinc": {
-       "aOp": 0.9942500545867154,
-       "aOpDerated": 0.9935607007613549,
+       "aOp": 0.9941566708122713,
+       "aOpDerated": 0.9935053421874173,
        "meets": true,
        "meetsNominal": true,
-       "effort": 66.8410813183257,
+       "effort": 63.93661763344881,
        "improved": 20,
-       "minFactor": 0.31402971099895566,
+       "minFactor": 0.3302394914142417,
        "relaxed": 0
       },
       "agree": {
-       "aOp": 0.9970353174962439,
-       "aOpDerated": 0.9966707874342287,
+       "aOp": 0.996010143495553,
+       "aOpDerated": 0.9956018096342766,
        "meets": true,
        "meetsNominal": true,
-       "effort": 129.35403199116735,
+       "effort": 100.02867619297007,
        "improved": 18,
-       "minFactor": 0.005727546874279364,
+       "minFactor": 0.010073621864025023,
        "relaxed": 2
       },
       "minimum-effort": {
-       "aOp": 0.9929666873852605,
-       "aOpDerated": 0.9922693702296121,
+       "aOp": 0.9929337287074042,
+       "aOpDerated": 0.992264611374007,
        "meets": true,
        "meetsNominal": true,
-       "effort": 50.79212731190428,
-       "improved": 16,
-       "minFactor": 0.11699089902974436,
+       "effort": 44.95960238802297,
+       "improved": 15,
+       "minFactor": 0.12593821066574093,
        "relaxed": 0
       },
       "equal": {
-       "aOp": 0.9932546168047196,
-       "aOpDerated": 0.9925973510081888,
+       "aOp": 0.9935415907812397,
+       "aOpDerated": 0.9929497153252658,
        "meets": true,
        "meetsNominal": true,
-       "effort": 53.90153356399536,
-       "improved": 16,
+       "effort": 51.06426387591111,
+       "improved": 15,
        "minFactor": 0.10937078044828527,
-       "relaxed": 4
+       "relaxed": 5
       }
      }
     },
     "v37": {
-     "aOp": 0.9871019574981389,
-     "aOpDerated": 0.9839614433956605,
+     "aOp": 0.985536067709409,
+     "aOpDerated": 0.9832432166697702,
      "meets": false,
      "meetsNominal": true,
      "plan": {
       "ids": [
-       "C-MEM"
+       "D-HARD"
       ],
       "feasible": true,
-      "nominal": 0.9871019574981389,
-      "derated": 0.9860081084212099,
-      "effort": 3,
+      "nominal": 0.985536067709409,
+      "derated": 0.9851328551707459,
+      "effort": 2,
       "method": "exact"
      },
      "residual": {
-      "plan": 1.1746968197624499,
-      "planDerated": 1.0773029143278117,
-      "allOn": 0.714692910567315,
-      "allOnDerated": 0.5307125359754163
+      "plan": 1.0399551074198583,
+      "planDerated": 1.0096172522493938,
+      "allOn": 0.7511974639148887,
+      "allOnDerated": 0.5616804525461584
      },
      "hardwareFactor": 1,
      "hardwareClasses": 0,
      "effort": {
-      "mechanisms": 3,
+      "mechanisms": 2,
       "levers": 0,
       "hardware": 0,
-      "total": 3
+      "total": 2
      },
-     "hardwareOnlyFactor": 0.9221159199600771,
+     "hardwareOnlyFactor": 0.9450777729439236,
      "levers": [
       {
        "id": "plan",
-       "value": 0.9871019574981389,
-       "valueDerated": 0.9860081084212099,
-       "residualFactor": 1.1746968197624499
+       "value": 0.985536067709409,
+       "valueDerated": 0.9851328551707459,
+       "residualFactor": 1.0399551074198583
       },
       {
        "id": "auto60",
-       "value": 0.9903981143574082,
-       "valueDerated": 0.9903981144452968,
-       "residualFactor": 1.600350583863671
+       "value": 0.9919989029120965,
+       "valueDerated": 0.991590386095725,
+       "residualFactor": 1.9407394379166363
       },
       {
        "id": "ps999",
-       "value": 0.9906627580510718,
-       "valueDerated": 0.9895610080243857,
-       "residualFactor": 1.6473579086803984
+       "value": 0.9890155037780564,
+       "valueDerated": 0.9886094398476166,
+       "residualFactor": 1.393719409981573
       },
       {
        "id": "manual30",
-       "value": 0.990067508490735,
-       "valueDerated": 0.9889670812212705,
-       "residualFactor": 1.545095042447363
+       "value": 0.9884338927832927,
+       "valueDerated": 0.9880283061809546,
+       "residualFactor": 1.319825112158851
       },
       {
        "id": "auto60+ps999",
-       "value": 0.9939827763961596,
-       "valueDerated": 0.9939827764412119,
-       "residualFactor": 2.5800686441726954
+       "value": 0.995524200341927,
+       "valueDerated": 0.995112775587791,
+       "residualFactor": 3.518038993526046
       },
       {
        "id": "auto60+manual30",
-       "value": 0.9933835319656591,
-       "valueDerated": 0.993383532017892,
-       "residualFactor": 2.3439870627483477
+       "value": 0.9949349119565231,
+       "valueDerated": 0.9945239740104447,
+       "residualFactor": 3.102845728515318
       },
       {
        "id": "ps999+manual30",
-       "value": 0.9909606512966628,
-       "valueDerated": 0.9898582389968902,
-       "residualFactor": 1.7035117436420275
+       "value": 0.989306566001213,
+       "valueDerated": 0.9889002630906977,
+       "residualFactor": 1.433704811682736
       },
       {
        "id": "all3",
-       "value": 0.9942826697842753,
-       "valueDerated": 0.9942826698257311,
-       "residualFactor": 2.71633412777493
+       "value": 0.9958191063609455,
+       "valueDerated": 0.9954074378783593,
+       "residualFactor": 3.769310297711065
       }
      ],
-     "ms": 1279
+     "ms": 1269.5
     },
     "v4": {
      "optimal": {
       "feasible": true,
-      "aOp": 0.9871021469933952,
-      "aOpDerated": 0.9850000003006765,
+      "aOp": 0.9868869196086774,
+      "aOpDerated": 0.9850000003608705,
       "mechanisms": [],
       "levers": [],
       "effort": {
        "mechanisms": 0,
        "levers": 0,
-       "hardware": 2.3666264670663733,
-       "total": 2.3666264670663733
+       "hardware": 1.7823965324495923,
+       "total": 1.7823965324495923
       },
       "slack": null,
       "improved": 1,
@@ -5866,15 +5866,15 @@
       "top": [
        {
         "id": "UNKNOWN-hard",
-        "factor": 0.4403390716120376
+        "factor": 0.5391661144101584
        }
       ],
-      "ms": 3670
+      "ms": 3549
      },
      "mttr-first": {
       "feasible": true,
-      "aOp": 0.9903981145331847,
-      "aOpDerated": 0.9867531480793379,
+      "aOp": 0.9906353930411521,
+      "aOpDerated": 0.9872053919421564,
       "mechanisms": [],
       "levers": [
        "auto"
@@ -5885,23 +5885,23 @@
        "hardware": 0,
        "total": 3
       },
-      "slack": 1.1406862356850322,
+      "slack": 1.1830639526368603,
       "improved": 0,
       "atFloors": 0,
       "top": [],
-      "ms": 105
+      "ms": 103
      },
      "mttf-first": {
       "feasible": true,
-      "aOp": 0.9871021469933952,
-      "aOpDerated": 0.9850000003006765,
+      "aOp": 0.9868869196086774,
+      "aOpDerated": 0.9850000003608705,
       "mechanisms": [],
       "levers": [],
       "effort": {
        "mechanisms": 0,
        "levers": 0,
-       "hardware": 2.3666264670663733,
-       "total": 2.3666264670663733
+       "hardware": 1.7823965324495923,
+       "total": 1.7823965324495923
       },
       "slack": null,
       "improved": 1,
@@ -5909,76 +5909,76 @@
       "top": [
        {
         "id": "UNKNOWN-hard",
-        "factor": 0.4403390716120376
+        "factor": 0.5391661144101584
        }
       ],
-      "ms": 42
+      "ms": 41
      }
     }
    },
    "500000": {
     "npus": 500000,
     "baseline": {
-     "aOp": 0.9605306602784143,
-     "aOpDerated": 0.9555793873953063,
+     "aOp": 0.9613949772682727,
+     "aOpDerated": 0.9569403289168301,
      "meets": false,
      "meetsNominal": false
     },
-    "hardFitPerNpu": 3250.636304761904,
+    "hardFitPerNpu": 3091.0845333333327,
     "v30": {
-     "lambdaJob": 1.6564235871961808,
-     "lambdaHw": 1.625318152380952,
+     "lambdaJob": 1.574856177642343,
+     "lambdaHw": 1.5455422666666663,
      "lambdaStar": 0.20415879017013247,
      "recoveryS": 264.50000000000006,
-     "firstOrderAOp": 0.8915030755364975,
-     "uniformFactor": 0.12561158556622118,
-     "ms": 16,
+     "firstOrderAOp": 0.8962917142587562,
+     "uniformFactor": 0.13209524875075077,
+     "ms": 15,
      "splits": {
       "arinc": {
-       "aOp": 0.9929137815869916,
-       "aOpDerated": 0.992196642463987,
+       "aOp": 0.9928948845799297,
+       "aOpDerated": 0.9922156063784532,
        "meets": true,
        "meetsNominal": true,
-       "effort": 119.71834240207848,
+       "effort": 116.81398074966813,
        "improved": 20,
-       "minFactor": 0.12561158556622118,
+       "minFactor": 0.13209524875075077,
        "relaxed": 0
       },
       "agree": {
-       "aOp": 0.9953178272058655,
-       "aOpDerated": 0.9947216516580156,
+       "aOp": 0.9946079621136468,
+       "aOpDerated": 0.994097316740575,
        "meets": true,
        "meetsNominal": true,
-       "effort": 176.94342475673693,
+       "effort": 147.61829809005104,
        "improved": 18,
-       "minFactor": 0.0022910195724068316,
+       "minFactor": 0.0040294324158068094,
        "relaxed": 2
       },
       "minimum-effort": {
-       "aOp": 0.9914246657175904,
-       "aOpDerated": 0.9907105162086779,
+       "aOp": 0.991610542233688,
+       "aOpDerated": 0.9909020045057826,
        "meets": true,
        "meetsNominal": true,
-       "effort": 101.86578523437862,
-       "improved": 19,
-       "minFactor": 0.04464108048950357,
+       "effort": 93.00068275035052,
+       "improved": 18,
+       "minFactor": 0.04694393870263926,
        "relaxed": 0
       },
       "equal": {
-       "aOp": 0.9915412723604264,
-       "aOpDerated": 0.9908400997907548,
+       "aOp": 0.9920194084466343,
+       "aOpDerated": 0.9913525997233145,
        "meets": true,
        "meetsNominal": true,
-       "effort": 102.9732795779625,
-       "improved": 19,
+       "effort": 96.66229796818689,
+       "improved": 18,
        "minFactor": 0.04374831217931411,
-       "relaxed": 1
+       "relaxed": 2
       }
      }
     },
     "v37": {
-     "aOp": 0.986895688720449,
-     "aOpDerated": 0.9826623068886868,
+     "aOp": 0.9868756686011063,
+     "aOpDerated": 0.9827936045246337,
      "meets": false,
      "meetsNominal": true,
      "plan": {
@@ -5988,83 +5988,83 @@
        "C-MEM"
       ],
       "feasible": false,
-      "nominal": 0.9751083822904719,
-      "derated": 0.9714809344810791,
+      "nominal": 0.975300469020393,
+      "derated": 0.9717509010744103,
       "effort": 8,
       "method": "exact"
      },
      "residual": {
-      "plan": 0.5673094008580877,
-      "planDerated": 0.48537641711748236,
-      "allOn": 0.2646084000163521,
-      "allOnDerated": 0.19567507675871781
+      "plan": 0.5738922275535356,
+      "planDerated": 0.49245916041014215,
+      "allOn": 0.27942455711973896,
+      "allOnDerated": 0.2081173141263279
      },
-     "hardwareFactor": 0.48537641711748236,
+     "hardwareFactor": 0.49245916041014215,
      "hardwareClasses": 20,
      "effort": {
       "mechanisms": 8,
       "levers": 0,
-      "hardware": 41.7129632247152,
-      "total": 49.7129632247152
+      "hardware": 40.87696031663394,
+      "total": 48.87696031663394
      },
-     "hardwareOnlyFactor": 0.3339861336011094,
+     "hardwareOnlyFactor": 0.34440704169072783,
      "levers": [
       {
        "id": "plan",
-       "value": 0.9751083822904719,
-       "valueDerated": 0.9714809344810791,
-       "residualFactor": 0.5673094008580877
+       "value": 0.975300469020393,
+       "valueDerated": 0.9717509010744103,
+       "residualFactor": 0.5738922275535356
       },
       {
        "id": "auto60",
-       "value": 0.9821460651406476,
-       "valueDerated": 0.9809335703933015,
-       "residualFactor": 0.8263243719470957
+       "value": 0.9823049057966861,
+       "valueDerated": 0.9811470111263335,
+       "residualFactor": 0.8350571637602213
       },
       {
        "id": "ps999",
-       "value": 0.9827134698669142,
-       "valueDerated": 0.9791234437741521,
-       "residualFactor": 0.8563222524473394
+       "value": 0.9828696085868405,
+       "valueDerated": 0.9793477965833791,
+       "residualFactor": 0.8653499931257708
       },
       {
        "id": "manual30",
-       "value": 0.9814377297707192,
-       "valueDerated": 0.977841354622183,
-       "residualFactor": 0.7914306212061525
+       "value": 0.9815999389587645,
+       "valueDerated": 0.9780734111836211,
+       "residualFactor": 0.7998323414535731
       },
       {
        "id": "auto60+ps999",
-       "value": 0.989861735094205,
-       "valueDerated": 0.9887260914700613,
-       "residualFactor": 1.518025282589356
+       "value": 0.9899835594218964,
+       "valueDerated": 0.9888920818830184,
+       "residualFactor": 1.5359970980172644
       },
       {
        "id": "auto60+manual30",
-       "value": 0.9885673844255761,
-       "valueDerated": 0.9874187535017737,
-       "residualFactor": 1.3375845760091836
+       "value": 0.9886954598964534,
+       "valueDerated": 0.9875927583081301,
+       "residualFactor": 1.3526536132875038
       },
       {
        "id": "ps999+manual30",
-       "value": 0.9833525841671651,
-       "valueDerated": 0.9797657496516528,
-       "residualFactor": 0.8925402182069351
+       "value": 0.9835056756318715,
+       "valueDerated": 0.9799862351709971,
+       "residualFactor": 0.9019367979478267
       },
       {
        "id": "all3",
-       "value": 0.9905101820129827,
-       "valueDerated": 0.9893810592068222,
-       "residualFactor": 1.6266665678753096
+       "value": 0.9906288683486772,
+       "valueDerated": 0.9895430263161068,
+       "residualFactor": 1.6465545345730428
       }
      ],
-     "ms": 1279
+     "ms": 1269.5
     },
     "v4": {
      "optimal": {
       "feasible": true,
-      "aOp": 0.9930798168433482,
-      "aOpDerated": 0.9850000002393365,
+      "aOp": 0.9928667263642781,
+      "aOpDerated": 0.9850000001579534,
       "mechanisms": [
        "D-HARD",
        "R-NETFAIL"
@@ -6076,8 +6076,8 @@
       "effort": {
        "mechanisms": 5,
        "levers": 5,
-       "hardware": 7.034842346209435,
-       "total": 17.034842346209434
+       "hardware": 6.034451524812982,
+       "total": 16.034451524812983
       },
       "slack": null,
       "improved": 3,
@@ -6085,23 +6085,23 @@
       "top": [
        {
         "id": "UNKNOWN-hard",
-        "factor": 0.2098070897907288
+        "factor": 0.23551112871614785
        },
        {
         "id": "MGMT-hard",
-        "factor": 0.6451568011064912
+        "factor": 0.7241967208021548
        },
        {
         "id": "STORAGE-hard",
-        "factor": 0.6451568011064912
+        "factor": 0.7241967208021548
        }
       ],
-      "ms": 3836
+      "ms": 3800
      },
      "mttr-first": {
       "feasible": true,
-      "aOp": 0.9930447328060278,
-      "aOpDerated": 0.9850000002009901,
+      "aOp": 0.9928336773108742,
+      "aOpDerated": 0.9850000004126436,
       "mechanisms": [
        "D-HARD",
        "R-NETFAIL",
@@ -6114,8 +6114,8 @@
       "effort": {
        "mechanisms": 8,
        "levers": 5,
-       "hardware": 7.0195666189795,
-       "total": 20.0195666189795
+       "hardware": 6.021625513316762,
+       "total": 19.021625513316764
       },
       "slack": null,
       "improved": 3,
@@ -6123,49 +6123,906 @@
       "top": [
        {
         "id": "UNKNOWN-hard",
-        "factor": 0.21017766769928117
+        "factor": 0.2358603486777802
        },
        {
         "id": "MGMT-hard",
-        "factor": 0.6462963281752898
+        "factor": 0.7252705721841742
        },
        {
         "id": "STORAGE-hard",
-        "factor": 0.6462963281752898
+        "factor": 0.7252705721841742
        }
       ],
-      "ms": 232
+      "ms": 229
      },
      "mttf-first": {
       "feasible": true,
-      "aOp": 0.9892161397122112,
-      "aOpDerated": 0.9850000006497829,
+      "aOp": 0.9891591303987085,
+      "aOpDerated": 0.9850000006538886,
       "mechanisms": [],
       "levers": [],
       "effort": {
        "mechanisms": 0,
        "levers": 0,
-       "hardware": 39.9965780077965,
-       "total": 39.9965780077965
+       "hardware": 34.437506785000025,
+       "total": 34.437506785000025
       },
       "slack": null,
-      "improved": 15,
-      "atFloors": 1,
+      "improved": 11,
+      "atFloors": 0,
       "top": [
        {
         "id": "UNKNOWN-hard",
-        "factor": 0.05
+        "factor": 0.05371267986983083
        },
        {
         "id": "MGMT-hard",
-        "factor": 0.142828196188449
+        "factor": 0.16516649059972988
        },
        {
         "id": "STORAGE-hard",
-        "factor": 0.142828196188449
+        "factor": 0.16516649059972988
        }
       ],
-      "ms": 44
+      "ms": 41
+     }
+    }
+   }
+  },
+  "a960e-ub": {
+   "10000": {
+    "npus": 10000,
+    "baseline": {
+     "aOp": 0.9992516763557989,
+     "aOpDerated": 0.9991527924147688,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3041.05619047619,
+    "v30": {
+     "lambdaJob": 0.03099046884757328,
+     "lambdaHw": 0.030410561904761896,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9977282340576561,
+     "uniformFactor": 6.713417226866955,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9992516763557989,
+       "aOpDerated": 0.9991527924147688,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      },
+      "agree": {
+       "aOp": 0.9993423219875704,
+       "aOpDerated": 0.9992555866643017,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 12.741014711420155,
+       "improved": 5,
+       "minFactor": 0.16117799223947507,
+       "relaxed": 15
+      },
+      "minimum-effort": {
+       "aOp": 0.9992516763557989,
+       "aOpDerated": 0.9991527924147688,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9992516763557989,
+       "aOpDerated": 0.9991527924147688,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 0,
+       "improved": 0,
+       "minFactor": 1,
+       "relaxed": 20
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9992516763557989,
+     "aOpDerated": 0.9991527924147688,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9992516763557989,
+      "derated": 0.9992516763557989,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 21.49402054097531,
+      "planDerated": 21.49402054097531,
+      "allOn": 15.852446758338068,
+      "allOnDerated": 11.888100070684503
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 21.49402054097531,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9992516763557989,
+       "valueDerated": 0.9992516763557989,
+       "residualFactor": 21.49402054097531
+      },
+      {
+       "id": "auto60",
+       "value": 0.9995566098555103,
+       "valueDerated": 0.9995566098555103,
+       "residualFactor": 36.10012406048666
+      },
+      {
+       "id": "ps999",
+       "value": 0.9994163173298349,
+       "valueDerated": 0.9994163173298349,
+       "residualFactor": 27.507631994372126
+      },
+      {
+       "id": "manual30",
+       "value": 0.9993888733992464,
+       "valueDerated": 0.9993888733992464,
+       "residualFactor": 26.282788222689916
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.999721351356684,
+       "valueDerated": 0.999721351356684,
+       "residualFactor": 56.95918117926738
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9996938906681209,
+       "valueDerated": 0.9996938906681209,
+       "residualFactor": 51.95844420441981
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9994300398604675,
+       "valueDerated": 0.9994300398604675,
+       "residualFactor": 28.16376649428481
+      },
+      {
+       "id": "all3",
+       "value": 0.9997350822668222,
+       "valueDerated": 0.9997350822668222,
+       "residualFactor": 59.838233905821546
+      }
+     ],
+     "ms": 1238.5
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9992516763557989,
+      "aOpDerated": 0.9991527924147688,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.885582194262742,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3028
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9992516763557989,
+      "aOpDerated": 0.9991527924147688,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.885582194262742,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 72
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9992516763557989,
+      "aOpDerated": 0.9991527924147688,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 18.885582194262742,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 71
+     }
+    }
+   },
+   "100000": {
+    "npus": 100000,
+    "baseline": {
+     "aOp": 0.9925679218233685,
+     "aOpDerated": 0.9915940221343887,
+     "meets": true,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3040.9513333333325,
+    "v30": {
+     "lambdaJob": 0.3098938730773976,
+     "lambdaHw": 0.30409513333333327,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9777382765787948,
+     "uniformFactor": 0.6713648716842312,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.9948604587555987,
+       "aOpDerated": 0.9941986755825889,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 22.99324172264314,
+       "improved": 20,
+       "minFactor": 0.6713648716842312,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9977798391279514,
+       "aOpDerated": 0.997456166698271,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 77.9738116497132,
+       "improved": 16,
+       "minFactor": 0.01611805711287685,
+       "relaxed": 4
+      },
+      "minimum-effort": {
+       "aOp": 0.9947651901572381,
+       "aOpDerated": 0.9940108380454319,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 11.976485059050725,
+       "improved": 9,
+       "minFactor": 0.32237378611936307,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9956912709085008,
+       "aOpDerated": 0.9951316622474544,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 23.5889957050959,
+       "improved": 11,
+       "minFactor": 0.21874156089657054,
+       "relaxed": 9
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9925679218233685,
+     "aOpDerated": 0.9915940221343887,
+     "meets": true,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9925679218233685,
+      "derated": 0.9925679218233685,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 2.0957215952575634,
+      "planDerated": 2.0957215952575634,
+      "allOn": 1.5536421258717708,
+      "allOnDerated": 1.1639263120408594
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 2.0957215952575634,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9925679218233685,
+       "valueDerated": 0.9925679218233685,
+       "residualFactor": 2.0957215952575634
+      },
+      {
+       "id": "auto60",
+       "value": 0.9955843173395356,
+       "valueDerated": 0.9955843173395356,
+       "residualFactor": 3.5626209587249096
+      },
+      {
+       "id": "ps999",
+       "value": 0.9941945016308308,
+       "valueDerated": 0.9941945016308308,
+       "residualFactor": 2.6996753299898395
+      },
+      {
+       "id": "manual30",
+       "value": 0.9939230348912329,
+       "valueDerated": 0.9939230348912329,
+       "residualFactor": 2.5766632703364967
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9972208062783849,
+       "valueDerated": 0.9972208062783849,
+       "residualFactor": 5.657460984385316
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9969476846292784,
+       "valueDerated": 0.9969476846292784,
+       "residualFactor": 5.155250427803111
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9943302906149463,
+       "valueDerated": 0.9943302906149463,
+       "residualFactor": 2.7655713749089945
+      },
+      {
+       "id": "all3",
+       "value": 0.9973574232266011,
+       "valueDerated": 0.9973574232266011,
+       "residualFactor": 5.946595057550887
+      }
+     ],
+     "ms": 1238.5
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9925679218233685,
+      "aOpDerated": 0.9915940221343887,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8397526654518388,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 3051
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9925679218233685,
+      "aOpDerated": 0.9915940221343887,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8397526654518388,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 69
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9925679218233685,
+      "aOpDerated": 0.9915940221343887,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "slack": 1.8397526654518388,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 67
+     }
+    }
+   },
+   "200000": {
+    "npus": 200000,
+    "baseline": {
+     "aOp": 0.9852461660024058,
+     "aOpDerated": 0.9833305754600791,
+     "meets": false,
+     "meetsNominal": true
+    },
+    "hardFitPerNpu": 3040.950166666666,
+    "v30": {
+     "lambdaJob": 0.6197875087800847,
+     "lambdaHw": 0.6081900333333332,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.9564461531593895,
+     "uniformFactor": 0.33568256462735935,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.994442385376685,
+       "aOpDerated": 0.9937686268982289,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 62.9932195829329,
+       "improved": 20,
+       "minFactor": 0.33568256462735935,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9972568593339006,
+       "aOpDerated": 0.9968780871509796,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 111.61718827083648,
+       "improved": 18,
+       "minFactor": 0.008059037039770388,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9936231802572996,
+       "aOpDerated": 0.9928926645243177,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 42.6640104192563,
+       "improved": 14,
+       "minFactor": 0.13121282410979532,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9942777466976714,
+       "aOpDerated": 0.9936493244228266,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 50.01908879122906,
+       "improved": 14,
+       "minFactor": 0.10937078044828527,
+       "relaxed": 6
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9852461660024058,
+     "aOpDerated": 0.9833305754600791,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [],
+      "feasible": true,
+      "nominal": 0.9852461660024058,
+      "derated": 0.9852461660024058,
+      "effort": 0,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 1.017953031902728,
+      "planDerated": 1.017953031902728,
+      "allOn": 0.7592460097640238,
+      "allOnDerated": 0.5681318311206416
+     },
+     "hardwareFactor": 1,
+     "hardwareClasses": 0,
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 0,
+      "total": 0
+     },
+     "hardwareOnlyFactor": 1.017953031902728,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9852461660024058,
+       "valueDerated": 0.9852461660024058,
+       "residualFactor": 1.017953031902728
+      },
+      {
+       "id": "auto60",
+       "value": 0.9912078160207403,
+       "valueDerated": 0.9912078160207403,
+       "residualFactor": 1.7548217960560093
+      },
+      {
+       "id": "ps999",
+       "value": 0.9884565220285992,
+       "valueDerated": 0.9884565220285992,
+       "residualFactor": 1.3213376493680178
+      },
+      {
+       "id": "manual30",
+       "value": 0.9879200107313209,
+       "valueDerated": 0.9879200107313209,
+       "residualFactor": 1.259544896376343
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9944572013617297,
+       "valueDerated": 0.9944572013617297,
+       "residualFactor": 2.8071238949800295
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9939141586132835,
+       "valueDerated": 0.9939141586132835,
+       "residualFactor": 2.5548482677728748
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9887249962400483,
+       "valueDerated": 0.9887249962400483,
+       "residualFactor": 1.3544392649201502
+      },
+      {
+       "id": "all3",
+       "value": 0.9947289453023868,
+       "valueDerated": 0.9947289453023868,
+       "residualFactor": 2.9523647086968356
+      }
+     ],
+     "ms": 1238.5
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9869221055682624,
+      "aOpDerated": 0.9850000003542333,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0.9723497518879516,
+       "total": 0.9723497518879516
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.7139154475025391
+       }
+      ],
+      "ms": 3569
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9912078160207403,
+      "aOpDerated": 0.9878728330792096,
+      "mechanisms": [],
+      "levers": [
+       "auto"
+      ],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 3,
+       "hardware": 0,
+       "total": 3
+      },
+      "slack": 1.252103911338546,
+      "improved": 0,
+      "atFloors": 0,
+      "top": [],
+      "ms": 101
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9869221055682624,
+      "aOpDerated": 0.9850000003542333,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0.9723497518879516,
+       "total": 0.9723497518879516
+      },
+      "slack": null,
+      "improved": 1,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.7139154475025391
+       }
+      ],
+      "ms": 41
+     }
+    }
+   },
+   "500000": {
+    "npus": 500000,
+    "baseline": {
+     "aOp": 0.9639181734920134,
+     "aOpDerated": 0.9593568488948868,
+     "meets": false,
+     "meetsNominal": false
+    },
+    "hardFitPerNpu": 3040.9494857142854,
+    "v30": {
+     "lambdaJob": 1.5494684257352656,
+     "lambdaHw": 1.5204747428571426,
+     "lambdaStar": 0.20415879017013247,
+     "recoveryS": 264.50000000000006,
+     "firstOrderAOp": 0.8977926872118822,
+     "uniformFactor": 0.13427305591837402,
+     "ms": 15,
+     "splits": {
+      "arinc": {
+       "aOp": 0.99319372590777,
+       "aOpDerated": 0.9924922701548122,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 115.87033045606198,
+       "improved": 20,
+       "minFactor": 0.13427305591837402,
+       "relaxed": 0
+      },
+      "agree": {
+       "aOp": 0.9957654999492135,
+       "aOpDerated": 0.9952302465480247,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 159.2065756313242,
+       "improved": 18,
+       "minFactor": 0.0032236163089770296,
+       "relaxed": 2
+      },
+      "minimum-effort": {
+       "aOp": 0.9921788949125473,
+       "aOpDerated": 0.9914170724369337,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 89.71606176716283,
+       "improved": 18,
+       "minFactor": 0.04784441942826284,
+       "relaxed": 0
+      },
+      "equal": {
+       "aOp": 0.9926457406549298,
+       "aOpDerated": 0.9919436418837716,
+       "meets": true,
+       "meetsNominal": true,
+       "effort": 94.36450057175828,
+       "improved": 18,
+       "minFactor": 0.04374831217931411,
+       "relaxed": 2
+      }
+     }
+    },
+    "v37": {
+     "aOp": 0.9868178799793537,
+     "aOpDerated": 0.9827291671100151,
+     "meets": false,
+     "meetsNominal": true,
+     "plan": {
+      "ids": [
+       "D-HARD",
+       "R-NETFAIL",
+       "C-MEM"
+      ],
+      "feasible": false,
+      "nominal": 0.9757826337992715,
+      "derated": 0.9724302472176942,
+      "effort": 8,
+      "method": "exact"
+     },
+     "residual": {
+      "plan": 0.5867499975823018,
+      "planDerated": 0.5061588616081025,
+      "allOn": 0.28266374210582135,
+      "allOnDerated": 0.2107010296606736
+     },
+     "hardwareFactor": 0.5061588616081025,
+     "hardwareClasses": 20,
+     "effort": {
+      "mechanisms": 8,
+      "levers": 0,
+      "hardware": 39.293513546209354,
+      "total": 47.293513546209354
+     },
+     "hardwareOnlyFactor": 0.37138920851033,
+     "levers": [
+      {
+       "id": "plan",
+       "value": 0.9757826337992715,
+       "valueDerated": 0.9724302472176942,
+       "residualFactor": 0.5867499975823018
+      },
+      {
+       "id": "auto60",
+       "value": 0.9826451632579779,
+       "valueDerated": 0.9815897174063634,
+       "residualFactor": 0.8529698329499965
+      },
+      {
+       "id": "ps999",
+       "value": 0.9831983369657303,
+       "valueDerated": 0.9798361670725769,
+       "residualFactor": 0.8838319002566722
+      },
+      {
+       "id": "manual30",
+       "value": 0.9819545706491504,
+       "valueDerated": 0.9785940250461264,
+       "residualFactor": 0.8170786305829467
+      },
+      {
+       "id": "auto60+ps999",
+       "value": 0.9901659184572906,
+       "valueDerated": 0.9891363190910984,
+       "residualFactor": 1.5661732223190947
+      },
+      {
+       "id": "auto60+manual30",
+       "value": 0.9889044766946009,
+       "valueDerated": 0.9878705060118954,
+       "residualFactor": 1.3798051488761038
+      },
+      {
+       "id": "ps999+manual30",
+       "value": 0.9838214021465415,
+       "valueDerated": 0.9804584210759012,
+       "residualFactor": 0.9211014819877886
+      },
+      {
+       "id": "all3",
+       "value": 0.9907978466530942,
+       "valueDerated": 0.9897704426048314,
+       "residualFactor": 1.6784918974052134
+      }
+     ],
+     "ms": 1238.5
+    },
+    "v4": {
+     "optimal": {
+      "feasible": true,
+      "aOp": 0.9928583004439726,
+      "aOpDerated": 0.9850000002554371,
+      "mechanisms": [
+       "D-HARD"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 2,
+       "levers": 5,
+       "hardware": 7.434122430824203,
+       "total": 14.434122430824203
+      },
+      "slack": null,
+      "improved": 3,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.20034920005422568
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.6160737901667441
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.6160737901667441
+       }
+      ],
+      "ms": 3698
+     },
+     "mttr-first": {
+      "feasible": true,
+      "aOp": 0.9927849785351295,
+      "aOpDerated": 0.9850000003675238,
+      "mechanisms": [
+       "D-HARD",
+       "R-NETFAIL",
+       "D-SLOW"
+      ],
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "effort": {
+       "mechanisms": 8,
+       "levers": 5,
+       "hardware": 5.333674340300463,
+       "total": 18.333674340300462
+      },
+      "slack": null,
+      "improved": 3,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.2553704211259288
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.7852640449622313
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.7852640449622313
+       }
+      ],
+      "ms": 223
+     },
+     "mttf-first": {
+      "feasible": true,
+      "aOp": 0.9893357349194694,
+      "aOpDerated": 0.9850000005533045,
+      "mechanisms": [],
+      "levers": [],
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 28.891785606918607,
+       "total": 28.891785606918607
+      },
+      "slack": null,
+      "improved": 9,
+      "atFloors": 0,
+      "top": [
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.05734090179087334
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.1763232730069356
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.1763232730069356
+       }
+      ],
+      "ms": 41
      }
     }
    }

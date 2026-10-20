@@ -118,12 +118,12 @@
 <main>
 <header class="title">
   <h1>HAC-D 用户手册</h1>
-  <div class="sub">面向昇腾 NPU 训练集群的可用性、MTBF、MTTR 与 goodput 建模：三种拓扑模板转换为硬件数量与各单元的故障类型，配合故障管理机制，在硬件 FIT、机制与恢复上限之间按三种策略分配目标；解析式带有效性标记，解析式不成立时转蒙特卡洛，每个数字都带公式与口径（事件、分母、层级）。版本 4.0，2026-10-18。</div>
+  <div class="sub">面向昇腾 NPU 训练集群的可用性、MTBF、MTTR 与 goodput 建模：四种拓扑模板转换为硬件数量与各单元的故障类型，配合故障管理机制，在硬件 FIT、机制与恢复上限之间按三种策略分配目标；解析式带有效性标记，解析式不成立时转蒙特卡洛，每个数字都带公式与口径（事件、分母、层级）。版本 4.0，2026-10-18。</div>
 </header>
 
 <section id="s1">
 <h2>1. HAC-D 是什么</h2>
-<p>HAC-D 把集群拓扑（三种昇腾模板之一，或任意自定义描述）转换为硬件数量及各单元所带的故障类型，再转换为可用率、平均中断间隔、恢复时间、goodput 与成本，并把目标反向分配到硬件 FIT、故障管理机制与恢复上限。它以综述章节《AI 集群可靠性建模》为依据，并与一个独立的参考引擎（经审核的单训练作业 30 天离散事件仿真器）交叉校核。</p>
+<p>HAC-D 把集群拓扑（四种昇腾模板之一，或任意自定义描述）转换为硬件数量及各单元所带的故障类型，再转换为可用率、平均中断间隔、恢复时间、goodput 与成本，并把目标反向分配到硬件 FIT、故障管理机制与恢复上限。它以综述章节《AI 集群可靠性建模》为依据，并与一个独立的参考引擎（经审核的单训练作业 30 天离散事件仿真器）交叉校核。</p>
 <h3>1.1 原则</h3>
 <ul>
   <li><b>每个数字都带公式与口径。</b>故障率是「某事件类 / 某分母 / 某层级」（例如作业级的每卡·小时硬中断）。不同事件类的量永不相加。</li>
@@ -132,6 +132,7 @@
   <li><b>每个参数都有出处。</b>参数库记录与方案输入带来源、年份与置信（measured、paper-reported、vendor、derived、assumed、scan-level）。</li>
 </ul>
 <div class="callout"><b>v4（2026-10-18）：NPU 工具，拓扑优先。</b>首页把拓扑模板与规模转换为硬件清单与可靠性（§4）；ReMAP 六项机制默认启用，在机制页修改（§6）；分配页在硬件与机制约束下用三种策略达到目标（§7）。训练作业页并入为「可靠性」页签，审核页并入机制页与分配页。v3.7 的 GPU 示例与界面用语已从界面移除（命令行与 MCP 仍可按 ID 取用；GPU 工具可从 git 标签 <code>v3.7-gpu</code> 分出）；GPU 集群实测数据作为已标注的类比保留在参数库中，因为昇腾没有公开的故障数据。</div>
+<div class="callout"><b>v4.2（2026-10-19）：按现行规格重建 Atlas 950，新增 Atlas 960E。</b>Atlas 950 模板改为产品页现行规格的 1,024 卡超节点（柜内全互联 + 一层光交换 Clos），8,192 卡路线图形态、UB-Mesh 论文的 4D 网格与早期的两级拷贝作为可选形态；新增第四个模板 Atlas 960E（NPO 光互联、LinkBlade + LinkDevice、四平面 scale-out 至 50 万卡）（§4.1）。证据与对早期稿的复核见<a href="ASCEND_NEXTGEN_CLUSTER_SURVEY.zh.html">《昇腾下一代集群架构综述（复核与扩展版）》</a>。</div>
 <h3>1.2 架构</h3>
 <div class="table-wrap"><table>
   <tr><th>包</th><th>作用</th><th>说明</th></tr>
@@ -150,7 +151,7 @@ npm run dev                      # Web 应用 http://localhost:5173
 npm test                         # 672 个核心测试 + 29 个导入器测试（含黄金向量）
 node --import tsx packages/cli/src/main.ts examples        # 命令行
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务</pre>
-<p>Web 应用首页是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。页顶列表保存各方案（内置三种拓扑模板，见 §16.3；规模是参数，不另设示例）。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。方案保存在浏览器本地存储；<b>导出 JSON</b> 保存一个方案，<b>导入 JSON</b> 读入，<b>恢复内置</b> 重置示例。</p>
+<p>Web 应用首页是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950、Atlas 960E）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。页顶列表保存各方案（内置四种拓扑模板，见 §16.3；规模是参数，不另设示例）。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。方案保存在浏览器本地存储；<b>导出 JSON</b> 保存一个方案，<b>导入 JSON</b> 读入，<b>恢复内置</b> 重置示例。</p>
 <figure class="narrow"><img src="img-zh/topology-mobile.jpg" alt="375 px 宽度下的拓扑与硬件页"><figcaption>每个页面都按 1280 px 与 375 px 两种宽度排版；窄屏下输入分组堆叠在指标条与页签之上，图表都有「表格」按钮可读取精确数值。</figcaption></figure>
 <p><b>精简模式。</b>应用默认只显示主流程（拓扑与硬件 → 机制 → 分配 → 故障库）；页眉的<b>全部页面</b>开关可加回方案编辑器、对比、仿真、报告、推理、备件与故障域以及导入，选择会被记住。所有功能在命令行与 MCP 中保持可用。<b>ReMAP。</b><code>scripts/remap-bridge.ts</code> 在 HAC-D 方案上运行 ReMAP 内嵌的专家引擎并与解析式对比，<code>hacd import-remap</code> 把 ReMAP 或参考工具的事件库转为方案（见 <code>docs/REMAP_INTEGRATION.md</code>）。</p>
 </section>
@@ -187,38 +188,49 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 <h2>4. 拓扑与硬件页</h2>
 <figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，其后是各单元的故障类型）。</figcaption></figure>
 <p>首页回答：在这个拓扑、这个规模下，有哪些硬件单元、各有多少、各带哪些故障类型，以及在默认机制下得到什么结果。输入位于左侧可折叠分组，输出位于右侧指标条下的四个页签（拓扑图、硬件、可靠性、分配）。每次编辑即时重算。</p>
-<h3>4.1 三种拓扑模板</h3>
+<h3>4.1 四种拓扑模板</h3>
 <div class="table-wrap"><table>
   <tr><th>模板</th><th>scale-up 域</th><th>几何</th><th>来源与置信</th></tr>
   <tr><td>A2 · 8 卡服务器 + RoCE</td><td class="num">8</td><td>Atlas 800T A2 服务器：8 × 昇腾 910B（HCCS 全互连）、4 × 鲲鹏 920、8 × 200GE RoCE 口由 NPU 直出；每柜 8 台 = 64 NPU；RoCE 折叠 Clos 为参数面</td><td>产品页（厂商）；机柜密度由 Atlas 900 A2 PoD（每柜 32 颗鲲鹏 920）推得；交换机 64 口、无收敛、每链路两个光模块为假设</td></tr>
   <tr><td>A3 · CloudMatrix384</td><td class="num">384</td><td>48 节点 ×（8 NPU + 4 CPU + 7 片 L1 UB 芯片），12 计算柜 + 4 通信柜，7 子平面 × 16 片 L2 × 48 口，每片 L1 16 条链路（每超节点 5,376 条）；RDMA scale-out 面，每 NPU 2 口</td><td>arXiv 2506.12708 §3.3（论文）；每链路两个光模块与 scale-out Clos 为假设</td></tr>
-  <tr><td>Atlas 950 · UB 2.0 SuperPoD</td><td class="num">8,192</td><td>1,024 节点，128 计算柜 + 32 通信柜，每计算柜 64 NPU；L1 / L2 端口数与子平面沿用 CloudMatrix384，每子平面 342 片 L2 以保持无阻塞</td><td>厂商总数（华为全联接大会 2025、MWC 2026）；交换几何为假设</td></tr>
+  <tr><td>Atlas 950 · UB 2.0 SuperPoD</td><td class="num">1,024（可选 8,192）</td><td>v4.2，按产品页现行规格：16 计算柜 + 4 灵衢互联柜；每计算柜 64 NPU（8 托盘 × 8）与 16 颗鲲鹏 950；柜内 2D 全互联（每柜 448 条电链路、72 片低阶 UB 交换）；每 NPU 2 条 800G 光链路上联一层 128 口 UB 交换（Clos；每超节点 16 台、4,096 个光模块）；超节点之间每 NPU 2 × 400G UBoE，两平面三层 Clos（128³ / 4 = 524,288）。<b>超节点形态</b>可切换为 8,192 卡路线图形态（128 + 32 柜、128 台交换）、UB-Mesh 论文的 4D 网格（每 8K 64 台 HRS）或 v4.1 的 CloudMatrix384 两级拷贝</td><td>产品页、HC2025 主题演讲、昇腾 950 白皮书（厂商）；LightCounting 对 WAIC 2026 整机的拆解（分析师）；Hot Chips 2025 与 UB-Mesh（论文）；LRS 数量、交换端口数与 scale-out 平面为假设</td></tr>
+  <tr><td>Atlas 960E · NPO 超节点</td><td class="num">4,032（名义 4,096）</td><td>v4.2：56 计算柜 + 14 灵衢互联柜，每柜 9 刀片 × 8 NPU 与 18 颗 CPU；柜内 LinkBlade（每柜 5 片，假设）；每超节点 126 台跨柜 LinkDevice（176 × 1.6 Tb/s，由每 NPU 2.2 TB/s 推得）；NPO 光互联（每 4,096 卡 5,500 个 Hi-ONE 引擎替代 48,000 个 800G 模块，按 800G 等效链路计）；scale-out 四平面 × 两层 1,024 口交换，至 512,000 卡（125 个超节点）</td><td>HC2026 发布与主题演讲（厂商）；柜数拆分来自单一媒体报道（智东西，扫描级）；刀片芯片数与 scale-out 端口为假设</td></tr>
 </table></div>
-<p>点击卡片切换模板。勾选<b>切换时带上作业设置、机制与 FIT 修改</b>（默认）时，当前设计迁移到另一拓扑：NPU 数、负载、恢复、静默错误策略、目标、已应用机制（按原顺序与参数重新应用）以及两个模板都有的故障类型的 FIT 修改；硬件取新模板。每个模板在页顶列表中有自己的方案（<code>topology-a2-roce</code>、<code>topology-a3-ub384</code>、<code>topology-a950-ub2</code>）；非模板生成的方案（参考目录、早期昇腾示例）按其自身数量显示，并有提示。</p>
+<p>新单元沿用 CloudMatrix384 对应单元的 FIT（按单元等价，假设）：每片交换芯片（LRS、UB 交换、HRS、LinkBlade、LinkDevice）按一片 UB 芯片计（57.1 FIT），每条光链路按一条 L1–L2 链路计（4.76 FIT）；柜内电链路与 NPO 光引擎只计数。证据、对早期稿的复核以及计数与公开数字的核对见综述<a href="ASCEND_NEXTGEN_CLUSTER_SURVEY.zh.html">《昇腾下一代集群架构综述（复核与扩展版）》</a>。</p>
+<p>点击卡片切换模板。勾选<b>切换时带上作业设置、机制与 FIT 修改</b>（默认）时，当前设计迁移到另一拓扑：NPU 数、负载、恢复、静默错误策略、目标、已应用机制（按原顺序与参数重新应用）以及两个模板都有的故障类型的 FIT 修改；硬件取新模板。每个模板在页顶列表中有自己的方案（<code>topology-a2-roce</code>、<code>topology-a3-ub384</code>、<code>topology-a950-ub2</code>、<code>topology-a960e-ub</code>）；非模板生成的方案（参考目录、早期昇腾示例）按其自身数量显示，并有提示。</p>
 <h3>4.2 规模与硬件数量</h3>
 <p>规模按钮设定作业 NPU 数（10k、100k、200k、500k，或在输入框中填任意 N；自动生成的方案名随规模更新）。数量按模板几何推算：节点 = ⌈N ÷ 每节点 NPU⌉，CPU = 节点 × 每节点 CPU，计算柜 = ⌈节点 ÷ 每柜节点⌉；超节点模板中，超节点 = ⌈节点 ÷ 每超节点节点⌉，L1 = 节点 × 每节点 L1，L1–L2 链路 = L1 × 每 L1 链路。未满的最后一个超节点，其 L2 芯片与通信柜按已部署节点计算（<b>按需</b>：每子平面 ⌈子平面链路数 ÷ L2 端口数⌉ 片，允许 L1–L2 并行链路；<b>整个超节点</b>则按整柜采购计）。scale-out 网络是覆盖各 NPU 端口的折叠 Clos：交换机端口数 k、叶收敛比 o 时，叶交换机有 d = ⌊k·o/(1+o)⌋ 个下行口，t 层可承载 d·k·(k/2)^(t−2) 个端口；第一层 ⌈P/d⌉ 台，中间层 ⌈H/(k/2)⌉，顶层 ⌈H/k⌉，H = ⌈P/o⌉；k = 64 时 10,000 个端口需三层（313 + 313 + 157 台，30,000 条链路），100,000 个端口需四层（3,125 + 3,125 + 3,125 + 1,563 台，400,000 条链路）。</p>
 <div class="table-wrap"><table>
-  <tr><th>NPU 数</th><th>A2：服务器 · CPU · 机柜 · RoCE 交换机（层数）· 链路</th><th>A3：超节点 · 节点 · 计算柜 + 通信柜 · L1 · L2 · UB 链路</th><th>Atlas 950：超节点 · 计算柜 + 通信柜 · L2 · RDMA 交换机</th></tr>
-  <tr><td class="num">10,000</td><td>1,250 · 5,000 · 157 · 783 （3）· 30,000</td><td>27 · 1,250 · 313 + 105 · 8,750 · 2,919 · 140,000</td><td>2 · 157 + 40 · 2,926 · 1,563</td></tr>
-  <tr><td class="num">100,000</td><td>12,500 · 50,000 · 1,563 · 10,938 （4）· 400,000</td><td>261 · 12,500 · 3,125 + 1,042 · 87,500 · 29,169 · 1,400,000</td><td>13 · 1,563 + 391 · 29,225 · 21,875</td></tr>
-  <tr><td class="num">200,000</td><td>25,000 · 100,000 · 3,125 · 21,875 （4）· 800,000</td><td>521 · 25,000 · 6,250 + 2,084 · 175,000 · 58,338 · 2,800,000</td><td>25 · 3,125 + 782 · 58,450 · 43,750</td></tr>
-  <tr><td class="num">500,000</td><td>62,500 · 250,000 · 7,813 · 54,688 （4）· 2,000,000</td><td>1,303 · 62,500 · 15,625 + 5,209 · 437,500 · 145,838 · 7,000,000</td><td>62 · 7,813 + 1,954 · 146,118 · 109,375</td></tr>
+  <tr><th>NPU 数</th><th>A2：服务器 · CPU · 机柜 · RoCE 交换机（层数）· 链路</th><th>A3：超节点 · 节点 · 计算柜 + 通信柜 · L1 · L2 · UB 链路</th></tr>
+  <tr><td class="num">10,000</td><td>1,250 · 5,000 · 157 · 783 （3）· 30,000</td><td>27 · 1,250 · 313 + 105 · 8,750 · 2,919 · 140,000</td></tr>
+  <tr><td class="num">100,000</td><td>12,500 · 50,000 · 1,563 · 10,938 （4）· 400,000</td><td>261 · 12,500 · 3,125 + 1,042 · 87,500 · 29,169 · 1,400,000</td></tr>
+  <tr><td class="num">200,000</td><td>25,000 · 100,000 · 3,125 · 21,875 （4）· 800,000</td><td>521 · 25,000 · 6,250 + 2,084 · 175,000 · 58,338 · 2,800,000</td></tr>
+  <tr><td class="num">500,000</td><td>62,500 · 250,000 · 7,813 · 54,688 （4）· 2,000,000</td><td>1,303 · 62,500 · 15,625 + 5,209 · 437,500 · 145,838 · 7,000,000</td></tr>
 </table></div>
+<div class="table-wrap"><table>
+  <tr><th>NPU 数</th><th>Atlas 950（1,024 卡超节点）：超节点 · 计算柜 + 互联柜 · 柜内 + 超节点层交换 · 光链路 · scale-out 交换（层 × 平面）</th><th>Atlas 960E：超节点 · 计算柜 + 互联柜 · LinkBlade + LinkDevice · 800G 等效链路 · scale-out 交换（层 × 平面）</th></tr>
+  <tr><td class="num">10,000</td><td>10 · 157 + 40 · 11,304 + 157 · 20,000 · 786（3 × 2）</td><td>3 · 139 + 35 · 695 + 313 · 58,594 · 120（2 × 4）</td></tr>
+  <tr><td class="num">100,000</td><td>98 · 1,563 + 391 · 112,536 + 1,563 · 200,000 · 7,816（3 × 2）</td><td>25 · 1,389 + 348 · 6,945 + 3,125 · 585,938 · 1,176（2 × 4）</td></tr>
+  <tr><td class="num">200,000</td><td>196 · 3,125 + 782 · 225,000 + 3,125 · 400,000 · 15,626（3 × 2）</td><td>50 · 2,778 + 695 · 13,890 + 6,250 · 1,171,875 · 2,348（2 × 4）</td></tr>
+  <tr><td class="num">500,000</td><td>489 · 7,813 + 1,954 · 562,536 + 7,813 · 1,000,000 · 39,066（3 × 2）</td><td>125 · 6,945 + 1,737 · 34,725 + 15,625 · 2,929,688 · 5,864（2 × 4）</td></tr>
+</table></div>
+<p>全互联与刀片拓扑（v4.2）：每柜电链路 = t·C(p, 2) + p·C(t, 2)（8 托盘 × 8 NPU 为 448 条），超节点层交换 = ⌈超节点 NPU × 每 NPU 上联 ÷ 端口数⌉（最后一个超节点按实际 NPU），光链路 = NPU × 每 NPU 链路数，NPO 引擎 = NPU × 每 NPU 引擎数；多平面 scale-out 每平面是一个 Clos，端口数 ⌈N × 每 NPU 端口 ÷ 平面数⌉。</p>
 <p>这些数量是用 Python 独立计算的黄金向量（<code>packages/core/test/golden/compute_golden_v4.py</code>）。</p>
 <h3>4.3 各硬件单元的故障类型</h3>
-<p>审核参考目录的 54 个事件（18 个故障域 × 中断 / 亚健康 / 静默）给出每卡·小时的业务影响 FIT。v4 把每个事件挂到它所属的硬件单元上，并在 CloudMatrix384 几何下换算（这里目录与论文的数量一致）：<b>每单元 FIT = 每卡 FIT × 384 ÷ 一个 384 卡超节点中该单元的数量</b>。NPU 承载 CORE、SRAM、IOD、MODULE、MEMT、MEMP 与 NIC（每 NPU 1,676.7 中断 FIT）；作业级服务承载 STORAGE 与 UNKNOWN（每 NPU 543.3）；CPU 承载本域（每颗 333.3）；节点承载 DDR、SSD、BOXIO 与 MGMT（每节点 4,373.3）；计算柜承载 POWER 与 COOL（每柜 8,533.3）；UB 交换芯片承载 FABRIC（每片 57.1）；UB L1–L2 链路承载 OPT（每条 4.76）。RoCE 交换机与链路沿用 UB 芯片与链路的数值作为类比（假设；没有保护的以太网叶交换机可能更差——阿里 HPN 报告每月 0.051 % 的 ToR 严重错误，约 708 FIT）。不含 scale-out 网络的 CloudMatrix384 集群精确复现按卡计的目录；A2 与 Atlas 950 因硬件构成不同而不同：</p>
+<p>审核参考目录的 54 个事件（18 个故障域 × 中断 / 亚健康 / 静默）给出每卡·小时的业务影响 FIT。v4 把每个事件挂到它所属的硬件单元上，并在 CloudMatrix384 几何下换算（这里目录与论文的数量一致）：<b>每单元 FIT = 每卡 FIT × 384 ÷ 一个 384 卡超节点中该单元的数量</b>。NPU 承载 CORE、SRAM、IOD、MODULE、MEMT、MEMP 与 NIC（每 NPU 1,676.7 中断 FIT）；作业级服务承载 STORAGE 与 UNKNOWN（每 NPU 543.3）；CPU 承载本域（每颗 333.3）；节点承载 DDR、SSD、BOXIO 与 MGMT（每节点 4,373.3）；计算柜承载 POWER 与 COOL（每柜 8,533.3）；UB 交换芯片承载 FABRIC（每片 57.1）；UB L1–L2 链路承载 OPT（每条 4.76）。RoCE 交换机与链路沿用 UB 芯片与链路的数值作为类比（假设；没有保护的以太网叶交换机可能更差——阿里 HPN 报告每月 0.051 % 的 ToR 严重错误，约 708 FIT）。不含 scale-out 网络的 CloudMatrix384 集群精确复现按卡计的目录；A2、Atlas 950 与 Atlas 960E 因硬件构成不同而不同：</p>
 <div class="table-wrap"><table>
-  <tr><th>每 NPU 中断 FIT，10,000 NPU</th><th class="num">A2</th><th class="num">A3 · CM384</th><th class="num">Atlas 950</th></tr>
-  <tr><td>NPU · 作业级 · CPU · 节点</td><td class="num">1,676.7 · 543.3 · 166.7 · 546.7</td><td class="num">相同</td><td class="num">相同</td></tr>
-  <tr><td>计算柜（每柜 64 / 32 / 64 NPU）</td><td class="num">134.0</td><td class="num">267.1</td><td class="num">134.0</td></tr>
-  <tr><td>UB 交换芯片 · UB 链路</td><td class="num">—</td><td class="num">66.7 · 66.7</td><td class="num">66.7 · 66.7</td></tr>
-  <tr><td>RoCE 交换机 · RoCE 链路</td><td class="num">4.5 · 14.3</td><td class="num">8.9 · 28.6</td><td class="num">8.9 · 28.6</td></tr>
-  <tr><td><b>合计</b></td><td class="num"><b>3,086.1</b></td><td class="num"><b>3,371.3</b></td><td class="num"><b>3,238.2</b></td></tr>
+  <tr><th>每 NPU 中断 FIT，10,000 NPU</th><th class="num">A2</th><th class="num">A3 · CM384</th><th class="num">Atlas 950</th><th class="num">Atlas 960E</th></tr>
+  <tr><td>NPU · 作业级 · 节点</td><td class="num">1,676.7 · 543.3 · 546.7</td><td class="num">相同</td><td class="num">相同</td><td class="num">相同</td></tr>
+  <tr><td>CPU（每 8 NPU 4 / 4 / 2 / 2 颗）</td><td class="num">166.7</td><td class="num">166.7</td><td class="num">83.3</td><td class="num">83.3</td></tr>
+  <tr><td>计算柜（每柜 64 / 32 / 64 / 72 NPU）</td><td class="num">134.0</td><td class="num">267.1</td><td class="num">134.0</td><td class="num">118.6</td></tr>
+  <tr><td>UB 交换芯片 · UB 光链路</td><td class="num">—</td><td class="num">66.7 · 66.7</td><td class="num">65.5 · 9.5</td><td class="num">5.8 · 27.9</td></tr>
+  <tr><td>scale-out 交换机 · 链路</td><td class="num">4.5 · 14.3</td><td class="num">8.9 · 28.6</td><td class="num">4.5 · 28.6</td><td class="num">0.7 · 38.1</td></tr>
+  <tr><td><b>合计</b></td><td class="num"><b>3,086.1</b></td><td class="num"><b>3,371.3</b></td><td class="num"><b>3,092.1</b></td><td class="num"><b>3,041.1</b></td></tr>
 </table></div>
 <p>每个故障类型的 FIT 都可在「硬件」页签中按单元修改（中断、亚健康与静默分别修改；↺ 恢复库默认值）；修改保存在方案中，推导记为“用户值”。机柜的 FIT 不随密度增大（假设）：更密的机柜使每 NPU 的设施 FIT 减半，但一次故障影响 64 个 NPU。故障库页列出全部 60 个单元故障类型（§12.1）。</p>
 <h3>4.4 输入分组</h3>
 <ul>
-  <li><b>硬件参数</b>（随模板而变）：每柜服务器或节点数、每超节点机柜数、每节点 CPU 与 L1 芯片数、子平面数、L2 芯片数与端口数、每片 L1 链路数、每链路光模块数、交换填充方式；scale-out 网络的开关，以及每 NPU 端口数、交换机端口数与收敛比。公开资料未给出的字段标为 <i>assumed</i>。</li>
+  <li><b>硬件参数</b>（随模板而变）：每柜服务器或节点数、每超节点机柜数、每节点 CPU 数；超节点形态（Atlas 950）与 UB 互联拓扑（两级 L1 / L2、柜内全互联 + 光交换 Clos、UB-Mesh 4D、LinkBlade + LinkDevice 与 NPO）；两级拓扑为每节点 L1 芯片数、子平面数、L2 芯片数与端口数、每片 L1 链路数，其他拓扑为每柜交换芯片数、每 NPU 超节点层上联数、超节点层交换端口数、每 NPU 光链路与 NPO 引擎数、4D 柜间网格与每柜备份 NPU；每链路光模块数、交换填充方式；scale-out 网络的开关，以及每 NPU 端口数、平面数、交换机端口数与收敛比。公开资料未给出的字段标为 <i>assumed</i>。</li>
   <li><b>故障库</b>：已修改的 FIT 数量、恢复库默认值、跳转故障库页。</li>
   <li><b>机制</b>：已应用机制以标签显示——默认为 ReMAP 六项 D-SDC、R-SDC、R-REPLAY、R-PROCESS、R-ELASTIC、C-FAST——并可跳转机制页；参数、恢复链顺序与静默错误策略都归机制页所有。</li>
   <li><b>负载、检查点与目标</b>：窗口长度、τ 与 δ（被机制接管时只读，例如应用 C-FAST 后显示“由 C-FAST 设定”）、A_op 目标与正确有效产出目标。</li>
@@ -232,9 +244,10 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><th>10,000 NPU</th><th class="num">A_op</th><th class="num">正确有效产出</th><th class="num">MTBI</th><th class="num">平均暂停</th><th class="num">每 NPU FIT</th></tr>
   <tr><td>A2 · RoCE</td><td class="num">99.925 %</td><td class="num">97.99 %</td><td class="num">31.8 h</td><td class="num">85 s</td><td class="num">3,086.1</td></tr>
   <tr><td>A3 · CloudMatrix384</td><td class="num">99.908 %</td><td class="num">97.97 %</td><td class="num">29.1 h</td><td class="num">95 s</td><td class="num">3,371.3</td></tr>
-  <tr><td>Atlas 950</td><td class="num">99.918 %</td><td class="num">97.98 %</td><td class="num">30.3 h</td><td class="num">88 s</td><td class="num">3,238.2</td></tr>
+  <tr><td>Atlas 950</td><td class="num">99.920 %</td><td class="num">97.98 %</td><td class="num">31.7 h</td><td class="num">90 s</td><td class="num">3,092.1</td></tr>
+  <tr><td>Atlas 960E</td><td class="num">99.925 %</td><td class="num">97.99 %</td><td class="num">32.3 h</td><td class="num">86 s</td><td class="num">3,041.1</td></tr>
 </table></div>
-<figure><img src="img-zh/topology-picture.jpg" alt="拓扑图页签"><figcaption>拓扑图页签：RDMA scale-out 各层、一个超节点及其计算柜、通信柜与 UB 子平面（其余超节点叠在其后）、放大的一个节点；下方是模板的来源与假设字段。</figcaption></figure>
+<figure><img src="img-zh/topology-picture.jpg" alt="拓扑图页签"><figcaption>拓扑图页签：scale-out 各层、一个超节点及其计算柜、通信柜（或灵衢互联柜）与 UB 交换——两级拓扑画子平面，全互联与刀片拓扑画超节点层交换（其余超节点叠在其后）、放大的一个节点；下方是模板的来源与假设字段。</figcaption></figure>
 <p>页签：<b>拓扑图</b>（按数量实时绘制的示意图）、<b>硬件</b>（硬件清单——单元、每 NPU 数量、10k / 100k / 200k / 500k 数量且当前 N 高亮、每单元中断 FIT、占作业硬件中断率的比例、一次故障的影响、置信——其后是可编辑 FIT 的各单元故障类型及每 NPU 贡献）、<b>可靠性</b>（§5）与<b>分配</b>（在 A_op 目标下用默认候选、杠杆与下限运行三种策略；详情见分配页，§7.1）。</p>
 <h3>4.6 方案编辑器（高级）</h3>
 <p>位于<b>全部页面</b>中，显示当前方案的全部字段：名称、结构模板、拓扑与超节点几何、度量、负载、备件、目标、成本、恢复编辑器（预设、流水线、分级、MTTR 混合）、带逐类详情的部件表、可靠性框图与 JSON。用于非模板生成的方案以及首页未显示的字段。静默错误策略与恢复链已移到机制页（§6.4）。</p>
@@ -377,16 +390,17 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>硬件</td><td>五类：UNKNOWN ×0.19、POWER ×0.46（每柜 5,333 → 2,476 FIT）、MGMT ×0.58、STORAGE ×0.58、COOL ×0.77</td><td>相同五类（相差 0.01 以内）</td><td>十五类，例如 UNKNOWN ×0.05（下限）、POWER ×0.11（每柜 5,333 → 599 FIT）、MGMT ×0.14</td></tr>
   <tr><td>工作量 机制 + 杠杆 + 硬件 = 合计</td><td class="num">5 + 5 + 10.90 = <b>20.90</b></td><td class="num">8 + 5 + 10.88 = 23.88</td><td class="num">0 + 0 + 44.67 = 44.67</td></tr>
 </table></div>
-<p>解读：500,000 NPU 时默认设计为 95.59 %（降额 95.10 %）；1 s 检测、网络切换与两项恢复上限把降额值提到 97.60 %，再压低五个没有恢复梯级覆盖的类（未归因 ×0.19 … 冷却 ×0.77）即可补足。只靠硬件则需改进十五类，未归因中断降到下限 0.05。<code>docs/ALLOCATION_STRATEGY_V4.zh.html</code> 详细讲解这一算例，并在 12 个内置算例（三种模板 × 四个规模）上与 v3.0、v3.7 的方法对比。</p>
+<p>解读：500,000 NPU 时默认设计为 95.59 %（降额 95.10 %）；1 s 检测、网络切换与两项恢复上限把降额值提到 97.60 %，再压低五个没有恢复梯级覆盖的类（未归因 ×0.19 … 冷却 ×0.77）即可补足。只靠硬件则需改进十五类，未归因中断降到下限 0.05。<code>docs/ALLOCATION_STRATEGY_V4.zh.html</code> 详细讲解这一算例，并在 16 个内置算例（四种模板 × 四个规模）上与 v3.0、v3.7 的方法对比。</p>
 <h3>7.2 「跨规模」页签</h3>
 <p>在多个规模下使用相同的目标、策略与约束（默认为内置的 10k / 100k / 200k / 500k；模板的硬件数量随 N 变化）：每个规模给出基线、结果、新增手段、硬件工作量、总工作量以及最大的硬件任务或余量。下方是 v3.7 的详细分配研究（仅硬件 / 仅恢复预算、归因、杠杆、曲线、校核、HTML 报告；§6.9）。</p>
 <div class="table-wrap"><table>
   <tr><th>最优，A_op ≥ 98.5 %</th><th class="num">10,000</th><th class="num">100,000</th><th class="num">200,000</th><th class="num">500,000</th></tr>
   <tr><td>A2 · RoCE</td><td class="num">余量 ×18.7</td><td class="num">余量 ×1.82</td><td class="num">硬件 1.11</td><td class="num">D-HARD + 杠杆 + 硬件 8.27；合计 15.27</td></tr>
   <tr><td>A3 · CloudMatrix384</td><td class="num">余量 ×15.5</td><td class="num">余量 ×1.50</td><td class="num">自动尝试 60 s；合计 3.00</td><td class="num">D-HARD + R-NETFAIL + 杠杆 + 硬件 10.90；合计 20.90</td></tr>
-  <tr><td>Atlas 950</td><td class="num">余量 ×17.3</td><td class="num">余量 ×1.67</td><td class="num">硬件 2.37</td><td class="num">D-HARD + R-NETFAIL + 杠杆 + 硬件 7.03；合计 17.03</td></tr>
+  <tr><td>Atlas 950</td><td class="num">余量 ×17.7</td><td class="num">余量 ×1.73</td><td class="num">硬件 1.78</td><td class="num">D-HARD + R-NETFAIL + 杠杆 + 硬件 6.03；合计 16.03</td></tr>
+  <tr><td>Atlas 960E</td><td class="num">余量 ×18.9</td><td class="num">余量 ×1.84</td><td class="num">硬件 0.97</td><td class="num">D-HARD + 杠杆 + 硬件 7.43；合计 14.43</td></tr>
 </table></div>
-<p>解读：默认六项机制使各拓扑在 100,000 NPU 以内达到 98.5 %（余量 ×1.5–1.8）；200,000 NPU 时一项杠杆或少量硬件即可补足，500,000 NPU 时各拓扑都需要机制、恢复上限与硬件三类手段。拓扑通过硬件构成起作用——UB 交换使 A3 与 Atlas 950 每 NPU 多约 133 FIT，A3 的 32 卡机柜使其设施 FIT 加倍——因此相同目标下 A3 的工作量最大。</p>
+<p>解读：默认六项机制使各拓扑在 100,000 NPU 以内达到 98.5 %（余量 ×1.50–1.84）；200,000 NPU 时一项杠杆或少量硬件即可补足，500,000 NPU 时各拓扑都需要机制、恢复上限与硬件三类手段。拓扑通过硬件构成起作用——UB 交换使每 NPU 多约 133 FIT（A3）、75 FIT（Atlas 950：每 64 卡柜 72 片 LRS、每 NPU 2 条光链路）与 34 FIT（Atlas 960E：刀片芯片少，假设），A3 的 32 卡机柜使其设施 FIT 加倍——因此相同目标下 A3 的工作量最大，Atlas 960E 最小（以其假设的交换芯片数为前提）。</p>
 <h3>7.3 「经典方法」页签</h3>
 <p>v3 的预算方法，保持不变：</p>
 <p>经典方法页签把目标转换为需求：需要多高的静默错误检出率、允许损失如何按账本项拆分、每个部件类允许多大的中断率、每个恢复阶段允许多长时间，以及（设定可用率目标时）每类可贡献的不可用度。所有结果随编辑即时重算；页面上只有下表的输入控件。</p>
@@ -628,7 +642,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <figcaption>逐步流程及跨领域参考见 <code>docs/WORKFLOW.md</code> 与 <code>docs/ALLOCATION_PRACTICE.md</code>。</figcaption>
 </figure>
 <ol>
-  <li><b>拓扑与规模</b>：选择与设计相符的模板（A2、A3、Atlas 950），设定作业 NPU 数与硬件参数；检查假设字段。</li>
+  <li><b>拓扑与规模</b>：选择与设计相符的模板（A2、A3、Atlas 950、Atlas 960E），设定作业 NPU 数与硬件参数；检查假设字段。</li>
   <li><b>硬件与故障类型</b>：阅读 10k–500k 的硬件清单；有实测值时替换库中 FIT（按单元；区间可用方案编辑器中的事件计数估计）。</li>
   <li><b>机制</b>：保留或调整默认六项，设定参数与恢复链顺序，检查静默错误策略；用归因（Shapley）看各机制的贡献。</li>
   <li><b>评估</b>：指标条与「可靠性」页签——A_op、正确有效产出、MTBI、区间标记、窗口账本。</li>
@@ -643,7 +657,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <div class="table-wrap"><table>
   <tr><th>命令</th><th>作用</th></tr>
   <tr><td><code>hacd examples</code>、<code>hacd example &lt;id&gt;</code></td><td>列出 / 打印内置方案（v3.7 的 GPU 示例仍可按 ID 打印）</td></tr>
-  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2&gt; --npus 10000 [--sizes 1000,10000,20000,50000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件</td></tr>
+  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2|a960e-ub&gt; --npus 10000 [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件</td></tr>
   <tr><td><code>hacd strategy &lt;s&gt; | --template a3-ub384 --npus 50000 [--strategy optimal|mttr-first|mttf-first] --target 0.998 [--metric aOp|delivered] [--split min-effort|agree|arinc] [--sizes …] [--trials 200]</code></td><td>v4 分配策略（不指定策略时运行三种），<code>--sizes</code> 跨规模运行</td></tr>
   <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>评估：可用率、MTBF、goodput、备件、推理、清单</td></tr>
   <tr><td><code>hacd compare a.json b.json …</code></td><td>并排 KPI</td></tr>
@@ -666,12 +680,13 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <h3>16.2 MCP 工具</h3>
 <p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>、<code>audit_mechanisms</code>、<code>allocation_study</code>、<code>estimate_rate</code>，v4 新增 <code>topology_bom</code> 与 <code>allocation_strategy</code>。</p>
 <h3>16.3 内置示例</h3>
-<p>自 v4.1 起，内置示例就是三种拓扑模板；规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
+<p>自 v4.1 起，内置示例就是各拓扑模板（v4.2 起为四种）；规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>方案（10,000 NPU，各单元故障类型，默认六项机制）</th></tr>
   <tr><td><code>topology-a3-ub384</code></td><td>A3 · CloudMatrix384 UB 超节点（论文几何）</td></tr>
   <tr><td><code>topology-a2-roce</code></td><td>A2 · Atlas 800T A2 服务器（8 NPU）+ RoCE Clos</td></tr>
-  <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD（厂商总数，交换结构为假设）</td></tr>
+  <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD（产品页现行规格的 1,024 卡形态，柜内全互联 + 光交换 Clos；可选 8,192 / UB-Mesh 4D / 两级拷贝）</td></tr>
+  <tr><td><code>topology-a960e-ub</code></td><td>Atlas 960E · NPO 超节点（56 + 14 柜、每柜 72 NPU，LinkBlade + LinkDevice，四平面 scale-out）</td></tr>
 </table></div>
 <p>不列出的参考夹具：<code>ref-catalog-100k</code>（按卡计的 54 事件目录，100,000 卡，逐事件重执行 / 进程 / 弹性标志）与 <code>ref-three-classes-100k</code>（参考工具已确认的三类故障基线）仍可按 ID 取得，用于与参考工具及 ReMAP 的交叉核对（<code>hacd example</code>、<code>get_example</code>、<code>scripts/remap-bridge.ts</code>）。v2 的昇腾示例 <code>ascend-cm384</code>、<code>ascend-atlas950</code>、<code>ascend-supercluster-100k</code> 已移除——A3 与 Atlas 950 模板加规模即可覆盖（推理池可在方案编辑器中把模板的负载改为推理）；浏览器中这些示例未修改的副本会自动移出列表。v3.7 的 GPU 示例（<code>ref-baseline-100k</code>、<code>survey-ex1</code>、<code>survey-ex3</code>、<code>survey-ex4</code>、<code>nvl72-16k</code>）同样不列出；<code>hacd example &lt;id&gt;</code> 与 <code>get_example</code> 仍可返回它们，GPU 工具可从 git 标签 <code>v3.7-gpu</code> 分出。</p>
 <h3>16.4 方案 JSON</h3>
@@ -699,7 +714,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <li>静默错误与参考工具一样采用固定兜底时延且同一时刻只有一个事件；期末规则可选保留最后干净检查点或整窗口清零，但保留窗口与定位 / 验证成功率不是独立参数。</li>
   <li>机制库的参数是参考目录与文献的目标值与先验（已标注）；降额是一种约定，不是实测。事件计数的区间只覆盖 Poisson 抽样误差。</li>
   <li>未建模：参考工具 V4 引擎的拓扑特性（放置方式、维修并发数、最低可用容量）；ReMAP 桥接会注明引擎无法表示的梯级与开销。</li>
-  <li>v4 拓扑模板：A2 的 Clos 端口数与收敛比、Atlas 950 的交换结构以及所有光模块数量均为假设；RoCE 交换机与链路使用 UB 类比值；机柜 FIT 不随密度变化；各单元故障类型是在 CloudMatrix384 几何下换算的目录先验值，并非实测。</li>
+  <li>v4 拓扑模板：A2 的 Clos 端口数与收敛比，Atlas 950 的 LRS 数量、交换端口数与 scale-out 平面，Atlas 960E 的柜数拆分（单一媒体来源）、刀片芯片数与 scale-out 端口，以及所有光模块数量均为假设；新交换芯片与光链路沿用 CloudMatrix384 的单元 FIT；RoCE 交换机与链路使用 UB 类比值；机柜 FIT 不随密度变化；各单元故障类型是在 CloudMatrix384 几何下换算的目录先验值，并非实测。</li>
   <li>分配策略只通过候选机制的库参数与三项恢复杠杆改变机制参数，不对每个机制参数做连续优化。硬件工作量采用每减半的对数代价，是有成本曲线时应替换的假设。</li>
   <li>待办：上传拓扑图片的图像识别（目前模板是参数化示意图）、DP 弹性训练模板、Shapley 的蒙特卡洛置信区间。</li>
 </ul>
@@ -718,7 +733,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <dt>τ、δ、W、R</dt><dd>checkpoint 间隔、暴露保存时间、每次回滚丢失的计算量、恢复时间</dd>
   <dt>Shapley 贡献</dt><dd>按所有加入顺序平均后分配给某一机制的组合收益份额</dd>
   <dt>超节点</dt><dd>如 CloudMatrix384 的 scale-up 域（384 NPU、48 节点、12 个计算 + 4 个通信机柜）</dd>
-  <dt>拓扑模板</dt><dd>参数化的昇腾拓扑（A2 RoCE、A3 CloudMatrix384、Atlas 950），可给出任意 N 下的硬件数量</dd>
+  <dt>拓扑模板</dt><dd>参数化的昇腾拓扑（A2 RoCE、A3 CloudMatrix384、Atlas 950、Atlas 960E），可给出任意 N 下的硬件数量</dd>
   <dt>单元 FIT</dt><dd>某硬件单元（NPU、节点、机柜、交换芯片、链路）在既有保护之后每 10⁹ 单元·小时的业务影响故障数</dd>
   <dt>MTTR / MTTF 优先</dt><dd>先从恢复侧、或先从硬件 FIT 补足缺口的分配策略</dd>
 </dl>

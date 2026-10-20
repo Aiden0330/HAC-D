@@ -1,13 +1,13 @@
 /** v4 topology templates: calibration against the per-card catalog, default mechanisms, fill rules, per-unit classes and mechanism attachment. */
 import { describe, it, expect } from 'vitest';
-import { topologyScenario, calibrationScenario, topologyBom, bomAtSizes, unitFaultLibrary, templateUnits, fitOverrides, switchTopologyTemplate, resizeTopology, scaleLabel, bomRowsAcross, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES } from '../src/topology/index.js';
+import { topologyScenario, calibrationScenario, topologyBom, bomAtSizes, unitFaultLibrary, templateUnits, fitOverrides, switchTopologyTemplate, resizeTopology, scaleLabel, bomRowsAcross, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName } from '../src/topology/index.js';
 import { referenceCatalog, EXAMPLES, REFERENCE_FIXTURES, RETIRED_EXAMPLES } from '../src/scenario/examples.js';
 import { evaluateScenario } from '../src/scenario/evaluate.js';
-import { computeCounts, closCounts } from '../src/scenario/build.js';
+import { computeCounts, closCounts, scaleOutCounts } from '../src/scenario/build.js';
 import { activeMechanisms, stripMechanisms, applyMechanisms, DEFAULT_PLAYERS, mechanismValues, editBase, mechanismOwner } from '../src/mechanisms/index.js';
 import { provisionalParameters } from '../src/mechanisms/auditLibrary.js';
 import { withSize, groupOf, decompose } from '../src/study/index.js';
-import { parseScenario } from '../src/scenario/schema.js';
+import { parseScenario, SUPERPOD_PRESETS } from '../src/scenario/schema.js';
 
 const tr = (s: Parameters<typeof evaluateScenario>[0]) => evaluateScenario(s, { structure: false }).training!;
 
@@ -85,8 +85,8 @@ describe('v4 topology templates', () => {
     expect(at.map((z) => z.bom.rows.find((r) => r.id === 'roceTier4')?.count ?? null)).toEqual([null, 1563, 3125, 7813]);
   });
 
-  it('v4.1 example registry = the three topology templates at the first built-in scale; resizing keeps a generated name in step', () => {
-    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a950-ub2']);
+  it('v4.2 example registry = the four topology templates at the first built-in scale; resizing keeps a generated name in step', () => {
+    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a950-ub2', 'topology-a960e-ub']);
     for (const make of Object.values(EXAMPLES)) {
       const s = make();
       expect(s.topology.template).toBeDefined();
@@ -105,11 +105,12 @@ describe('v4 topology templates', () => {
   });
 
   it('port-count fill of a partly populated SuperPoD never exceeds the full-pod fill and equals it for whole pods', () => {
-    for (const t of ['a3-ub384', 'a950-ub2'] as const) {
+    for (const t of ['a3-ub384', 'a950-ub2', 'a960e-ub'] as const) {
       for (const N of [1000, 8192, 12345, 50000]) {
         const p = computeCounts(topologyScenario(t, N, { mechanisms: [] }));
         const f = computeCounts(topologyScenario(t, N, { mechanisms: [], topology: { fabricFill: 'full-pod' } }));
         expect(p.l2Switches).toBeLessThanOrEqual(f.l2Switches);
+        expect(p.podSwitches).toBeLessThanOrEqual(f.podSwitches); // v4.2 mesh / blade fabrics: the pod-tier switches follow the fill
         expect(p.commRacks).toBeLessThanOrEqual(f.commRacks);
         expect(p.opticalLinks).toBe(f.opticalLinks);
       }
@@ -117,8 +118,13 @@ describe('v4 topology templates', () => {
       const p = computeCounts(topologyScenario(t, whole, { mechanisms: [] }));
       const f = computeCounts(topologyScenario(t, whole, { mechanisms: [], topology: { fabricFill: 'full-pod' } }));
       expect(p.l2Switches).toBe(f.l2Switches);
+      expect(p.podSwitches).toBe(f.podSwitches);
       expect(p.commRacks).toBe(f.commRacks);
     }
+    // a partial Atlas 950 pod: 12,345 NPUs = 12 whole pods + 57 NPUs → ⌈57 × 2 / 128⌉ = 1 pod switch proportional, 16 full-pod
+    const pp = computeCounts(topologyScenario('a950-ub2', 12345, { mechanisms: [] }));
+    const pf = computeCounts(topologyScenario('a950-ub2', 12345, { mechanisms: [], topology: { fabricFill: 'full-pod' } }));
+    expect([pp.podSwitches, pf.podSwitches]).toEqual([12 * 16 + 1, 13 * 16]);
     // the v2 default stays full-pod
     expect(parseScenario({ meta: { name: 'x' }, components: [{ id: 'x', countRule: { per: 'gpu', factor: 1 }, failure: { value: 0, unit: 'per_h' }, repair: { mttrHours: 1 } }], workload: { type: 'training', nGpus: 8, deltaS: 1 } }).topology.fabricFill).toBe('full-pod');
   });
@@ -163,9 +169,113 @@ describe('v4 topology templates', () => {
   it('withSize rescales every count rule of a topology scenario', () => {
     const s = topologyScenario('a950-ub2', 1000);
     const big = computeCounts(withSize(s, 50000));
-    expect(big.cpus).toBe(25000);
+    // Atlas 950: 2 Kunpeng per 8-NPU tray (16 per 64-NPU cabinet)
+    expect(big.cpus).toBe(12500);
     expect(big.scaleOutPorts).toBe(100000);
-    expect(big.ubSwitches).toBe(big.l1Switches + big.l2Switches);
+    expect(big.ubSwitches).toBe(big.rackSwitches + big.podSwitches);
+    const a3 = computeCounts(withSize(topologyScenario('a3-ub384', 1000), 50000));
+    expect(a3.ubSwitches).toBe(a3.l1Switches + a3.l2Switches);
+  });
+
+  it('v4.2 Atlas 950 as shipped: 16 + 4 cabinets, cabinet mesh with 72 LRS, 2 × 800G per NPU into 16 pod switches, 4,096 modules', () => {
+    const k = computeCounts(topologyScenario('a950-ub2', 1024, { mechanisms: [] }));
+    expect([k.supernodes, k.racks, k.commRacks, k.cpus]).toEqual([1, 16, 4, 256]);
+    expect(k.fabric).toBe('mesh-clos');
+    expect(k.rackSwitches).toBe(16 * 72);
+    expect(k.meshLinks).toBe(16 * 448); // 8 trays × C(8,2) + 8 × C(8,2) per cabinet
+    expect(k.podSwitches).toBe(16); // 4 per interconnect cabinet
+    expect(k.opticalLinks).toBe(2048);
+    expect(k.transceivers).toBe(4096); // LightCounting: 4,096 × 800G incl. the switch side
+    expect([k.l1Switches, k.l2Switches]).toEqual([0, 0]);
+  });
+
+  it('v4.2 Atlas 950 roadmap pod and the UB-Mesh paper variant at 8,192 NPUs', () => {
+    const p8 = { ...SUPERPOD_PRESETS['atlas950-8k'].values };
+    const k = computeCounts(topologyScenario('a950-ub2', 8192, { mechanisms: [], topology: { superpod: p8 } }));
+    expect([k.racks, k.commRacks, k.rackSwitches, k.podSwitches, k.transceivers]).toEqual([128, 32, 9216, 128, 32768]); // Hot Chips 2025: 128 × 100T switches
+    const d = computeCounts(topologyScenario('a950-ub2', 8192, { mechanisms: [], topology: { superpod: { ...p8, fabric: 'mesh-4d', podUplinksPerNpu: 0.5, podSwitchRadix: 64 } } }));
+    expect(d.podSwitches).toBe(64); // x4 lanes per NPU into x512 HRS
+    expect(d.rackMeshLinks).toBe(8 * 48); // 8 pods of 4 × 4 cabinets, 6 links per cabinet
+    expect(d.opticalLinks).toBe(4096);
+    // the SuperCluster: 64 roadmap pods = 524,288 NPUs = 128³ / 4, three tiers per scale-out plane at radix 128
+    const sc = computeCounts(topologyScenario('a950-ub2', 524288, { mechanisms: [], topology: { superpod: p8 } }));
+    expect(sc.supernodes).toBe(64);
+    expect(sc.scaleOutTiers).toBe(3);
+    expect(sc.scaleOutSwitches).toBe(2 * (8192 + 8192 + 4096));
+  });
+
+  it('v4.2 Atlas 960E: 56 + 14 cabinets of 72 NPUs, 126 LinkDevices per pod, NPO engines, four-plane two-tier scale-out to 500k', () => {
+    const k = computeCounts(topologyScenario('a960e-ub', 4032, { mechanisms: [] }));
+    expect([k.supernodes, k.racks, k.commRacks, k.cpus]).toEqual([1, 56, 14, 1008]);
+    expect(k.podSwitches).toBe(126); // 4,032 × 5.5 / 176 → 9 per interconnect cabinet
+    expect(k.opticalEngines).toBe(Math.ceil((4032 * 5500) / 4096));
+    expect(k.meshLinks).toBe(0);
+    expect(k.transceivers).toBe(0); // NPO, no pluggable modules
+    const big = computeCounts(topologyScenario('a960e-ub', 500000, { mechanisms: [] }));
+    expect(big.supernodes).toBe(125);
+    expect(big.scaleOutTiers).toBe(2);
+    expect(big.scaleOutPerTier.length).toBe(2);
+    expect(big.scaleOutPorts).toBe(4 * 500000);
+  });
+
+  it('v4.2 SuperPoD variants: the selector round-trips and each variant gives its source counts', () => {
+    const s = topologyScenario('a950-ub2', 8192, { mechanisms: [] });
+    expect(superpodVariantOf(s)).toBe('a950-1k');
+    const want: Record<string, [number, number]> = { 'a950-1k': [16 * 72 * 8, 128], 'a950-8k': [9216, 128], 'a950-4d': [9216, 64], 'a950-2l': [0, 0] };
+    for (const v of SUPERPOD_VARIANTS['a950-ub2']!) {
+      const x = applySuperpodVariant(s, v.id);
+      expect(superpodVariantOf(x)).toBe(v.id);
+      const k = computeCounts(x);
+      expect([k.rackSwitches, k.podSwitches]).toEqual(want[v.id]);
+      expect(x.topology.nvlinkDomainGpus).toBe(x.topology.superpod!.npusPerNode * x.topology.superpod!.nodesPerRack * x.topology.superpod!.computeRacks);
+      // at a size that is not a whole pod the pod count, the interconnect cabinets and the optical links follow the variant's geometry
+      const k10 = computeCounts(applySuperpodVariant(topologyScenario('a950-ub2', 10000, { mechanisms: [] }), v.id));
+      const pod = x.topology.superpod!.npusPerNode * x.topology.superpod!.nodesPerRack * x.topology.superpod!.computeRacks;
+      expect(k10.supernodes).toBe(Math.ceil(10000 / pod));
+      expect(k10.opticalLinks).toBe(v.id === 'a950-2l' ? Math.ceil(10000 / 8) * 7 * 16 : 10000 * x.topology.superpod!.podUplinksPerNpu);
+    }
+    const two = computeCounts(applySuperpodVariant(s, 'a950-2l'));
+    expect(two.l1Switches).toBe(8 * 128 * 7);
+    expect(superpodVariantOf({ ...s, topology: { ...s.topology, superpod: { ...s.topology.superpod!, rackSwitches: 70 } } })).toBeUndefined();
+  });
+
+  it('v4.2 NPO fields belong to blade-clos: switching the fabric never inherits them', () => {
+    const e = topologyScenario('a960e-ub', 4032, { mechanisms: [] });
+    const asMesh = { ...e, topology: { ...e.topology, superpod: { ...e.topology.superpod!, fabric: 'mesh-clos' as const, podUplinksPerNpu: 2, transceiversPerLink: 2 } } };
+    const k = computeCounts(asMesh);
+    expect([k.opticalLinks, k.opticalEngines, k.transceivers]).toEqual([8064, 0, 16128]);
+    const a = topologyScenario('a950-ub2', 1024, { mechanisms: [] });
+    const asBlade = computeCounts({ ...a, topology: { ...a.topology, superpod: { ...a.topology.superpod!, fabric: 'blade-clos' as const } } });
+    expect(asBlade.transceivers).toBe(0); // NPO: no pluggable modules
+    const rows = topologyBom(e).rows;
+    expect(rows.find((r) => r.id === 'pod')!.confidence).toBe('assumed'); // 4,032 is the media split, the vendor figure is 4,096
+    expect(rows.find((r) => r.id === 'npoEngine')!.confidence).toBe('derived');
+    expect(rows.find((r) => r.id === 'rocePort')!.confidence).toBe('assumed');
+    expect(topologyBom(a).rows.find((r) => r.id === 'rocePort')!.confidence).toBe('vendor'); // 2 × 400G UBoE per chip (white paper)
+  });
+
+  it('v4.2 switching the UB fabric applies its reference geometry; scale-out units on the UB templates read UBoE / RoCE', () => {
+    const a3 = topologyScenario('a3-ub384', 10000, { mechanisms: [] });
+    for (const f of ['mesh-clos', 'mesh-4d', 'blade-clos'] as const) {
+      const k = computeCounts({ ...a3, topology: { ...a3.topology, superpod: withFabric(a3.topology.superpod!, f) } });
+      expect(k.rackSwitches).toBeGreaterThan(0);
+      expect(k.podSwitches).toBeGreaterThan(0);
+      expect(k.opticalLinks).toBeGreaterThan(0);
+    }
+    // 32-NPU CloudMatrix384 cabinets get 72 × 32 / 64 = 36 LRS; back to two-level keeps the paper geometry
+    expect(withFabric(a3.topology.superpod!, 'mesh-clos').rackSwitches).toBe(36);
+    expect(withFabric(withFabric(a3.topology.superpod!, 'mesh-clos'), 'two-level').l2PerSubPlane).toBe(16);
+    const a950 = topologyScenario('a950-ub2', 10000, { mechanisms: [] });
+    expect(JSON.stringify(a950.components.find((c) => c.id.endsWith('@roce'))!.name)).toMatch(/"en":"UBoE \/ RoCE/);
+    expect(faultUnitName('roce-switch', 'a2-roce').en).toMatch(/^RoCE/);
+  });
+
+  it('v4.2 multi-plane scale-out = planes × one plane', () => {
+    const one = closCounts(250000, 128, 1, 2);
+    const two = scaleOutCounts(250000, { portsPerNpu: 2, planes: 2, radix: 128, oversubscription: 1, transceiversPerLink: 2 });
+    expect(two.switches).toBe(2 * one.switches);
+    expect(two.links).toBe(2 * one.links);
+    expect(two.tiers).toBe(one.tiers);
   });
 
   it('editing the design under the mechanisms keeps them applied; owned settings stay with their mechanism', () => {

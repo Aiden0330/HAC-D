@@ -28,6 +28,19 @@ function isUnchangedRetired(s: Scenario): boolean {
   }
 }
 
+/**
+ * v4.2 the Atlas 950 template follows the 1,024-NPU SuperPoD of the product page: a saved v4.1 copy (the 8,192-NPU two-level CloudMatrix384
+ * estimate, preset 'atlas950') is kept as a user scenario under its own id and name, no longer bound to the template, and the new
+ * built-in is appended
+ */
+function migrateV41Atlas950(s: Scenario): Scenario {
+  const sp = s.topology.superpod;
+  if (s.topology.template !== 'a950-ub2' || sp?.preset !== 'atlas950' || sp.fabric !== 'two-level') return s;
+  const id = s.meta.id === 'topology-a950-ub2' ? 'topology-a950-ub2-v41' : s.meta.id;
+  const name = s.meta.name.replace(/( — [\d,]+ NPUs)?$/, ' (v4.1 two-level estimate)$1');
+  return { ...s, meta: { ...s.meta, id, name }, topology: { ...s.topology, template: undefined } };
+}
+
 function loadPersisted(): Scenario[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -39,7 +52,7 @@ function loadPersisted(): Scenario[] | null {
         const s = parseScenario(item);
         if (s.meta.id && GPU_IDS.has(s.meta.id)) continue;
         if (isUnchangedRetired(s)) continue;
-        out.push(s);
+        out.push(migrateV41Atlas950(s));
       } catch {
         /* skip invalid */
       }

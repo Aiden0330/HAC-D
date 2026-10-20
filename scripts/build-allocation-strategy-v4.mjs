@@ -3,8 +3,8 @@
  * Build docs/ALLOCATION_STRATEGY_V4.{en,zh}.html (four printed A4 pages; two inline SVG charts with tooltips and table views, one
  * flow diagram): how the v4 allocation strategies split a target between hardware FIT and fault-management mechanisms, which
  * mechanism parameters they use, a worked example at the largest built-in scale (A3 · CloudMatrix384, 500,000 NPUs, the default
- * A_op ≥ 98.5 %), the three versions' allocation methods (v3.0 classic, v3.7 study, v4.0 strategies) on the same twelve cases
- * (three templates × the built-in 10k / 100k / 200k / 500k), which one to use and the best practices.
+ * A_op ≥ 98.5 %), the three versions' allocation methods (v3.0 classic, v3.7 study, v4.0 strategies) on the same sixteen cases
+ * (four templates × the built-in 10k / 100k / 200k / 500k), which one to use and the best practices.
  * Input: docs/allocation-strategy-v4/results.json (scripts/allocation-strategy-v4-example.ts).
  * Usage: node scripts/build-allocation-strategy-v4.mjs
  */
@@ -22,7 +22,8 @@ const EX = V[TPL][NPUS];
 const R = D.results;
 const S = D.splits;
 const B = D.baseline;
-const TPLS = ['a3-ub384', 'a2-roce', 'a950-ub2'];
+const TPLS = ['a3-ub384', 'a2-roce', 'a950-ub2', 'a960e-ub'];
+const NCASES = TPLS.length * 4;
 const pct = (x, d = 3) => (x * 100).toFixed(d);
 const num = (x, d = 2) => Number(x).toFixed(d);
 const int = (x) => Math.round(x).toLocaleString('en-US');
@@ -48,7 +49,7 @@ function build(lang) {
   const leverVal = (id, v) => (id === 'success' ? `${(v * 100).toFixed(1)} %` : v >= 3600 ? `${(v / 3600).toFixed(v % 3600 ? 1 : 0)} h` : v >= 600 ? `${(v / 60).toFixed(0)} min` : `${v} s`);
   const stName = (id) => ({ optimal: T('最优', 'Optimal'), 'mttr-first': T('MTTR 降低优先', 'MTTR reduction preferred'), 'mttf-first': T('MTTF 提升优先', 'MTTF reduction preferred') })[id];
   const splitName = (k) => ({ 'minimum-effort': 'Albert', arinc: 'ARINC', agree: 'AGREE', equal: T('等分', 'equal') })[k];
-  const tplName = (t) => ({ 'a3-ub384': 'A3 · CloudMatrix384', 'a2-roce': 'A2 · RoCE', 'a950-ub2': 'Atlas 950' })[t];
+  const tplName = (t) => ({ 'a3-ub384': 'A3 · CloudMatrix384', 'a2-roce': 'A2 · RoCE', 'a950-ub2': 'Atlas 950', 'a960e-ub': 'Atlas 960E' })[t];
   const mechName = (m) => (zh ? m.name.zh : m.name.en);
   const groupName = (g) => ({ npu: 'NPU', network: T('网络', 'network'), host: T('主机', 'host'), facility: T('设施', 'facility'), storageSoftware: T('存储 / 软件', 'storage / software') })[g] ?? g;
   const fmtParams = (p) => Object.entries(p).map(([k, v]) => `${k} ${Number(v.toFixed ? v.toFixed(4) : v)}`).join(', ');
@@ -206,7 +207,7 @@ svg.viz .bx { fill: var(--box); stroke: var(--axis); } svg.viz .bxa { fill: var(
   };
   const crossRows = ['optimal', 'mttr-first', 'mttf-first'].map((st) => `<tr><td class="k">${esc(stName(st))}</td>${SIZES.map((n) => `<td>${v4cell(V[TPL][n].v4[st])}</td>`).join('')}</tr>`).join('');
   const base200 = V[TPL][200000], base500 = V[TPL][500000];
-  // versions table across the twelve cases
+  // versions table across the cases (templates × built-in scales)
   const vRows = TPLS.map((t) => {
     const cells = (f) => SIZES.map((n) => `<td class="num">${f(V[t][n])}</td>`).join('');
     const b = cells((r) => `${pct(r.baseline.aOp, 2)} / ${pct(r.baseline.aOpDerated, 2)}`);
@@ -368,10 +369,10 @@ svg.viz .bx { fill: var(--box); stroke: var(--axis); } svg.viz .bxa { fill: var(
 
 <section class="page" id="p4">
   <div class="eyebrow">HAC-D v4 · ${T('哪个版本更好与最佳实践', 'Which version is better, and best practices')} · ${gen} · ${T('第 4 / 4 页', 'page 4 / 4')}</div>
-  <h2 class="first">${T('7. v3.0、v3.7、v4.0 哪个更好？——12 个算例', '7. Which is better: v3.0, v3.7 or v4.0? — twelve cases')}</h2>
-  <p class="small">${T(`三种模板 × 四个内置规模，A_op ≥ ${pct(TARGET, 1)} %，默认六项机制与相同候选；每个设计都用同一把尺子在引擎上复核（名义，以及方案自身与新增机制全部降额），工作量统一为 机制库分数 + 杠杆 + Σ 2·log₂(1/x)。✓ = 统一检查达标；✕* = 只通过自身检查（v3.7 只降额新增机制）。`, `Three templates × four built-in scales, A_op ≥ ${pct(TARGET, 1)} %, the six default mechanisms and the same candidates; every design re-checked on the engine with one yardstick (nominal, and every mechanism — the scenario’s own and the added ones — derated), effort on one metric: library score + levers + Σ 2·log₂(1/x). ✓ = meets the common check; ✕* = passes only its own check (v3.7 derates the added mechanisms only).`)}</p>
+  <h2 class="first">${T(`7. v3.0、v3.7、v4.0 哪个更好？——${NCASES} 个算例`, `7. Which is better: v3.0, v3.7 or v4.0? — ${NCASES} cases`)}</h2>
+  <p class="small">${T(`${TPLS.length} 种模板 × 四个内置规模，A_op ≥ ${pct(TARGET, 1)} %，默认六项机制与相同候选；每个设计都用同一把尺子在引擎上复核（名义，以及方案自身与新增机制全部降额），工作量统一为 机制库分数 + 杠杆 + Σ 2·log₂(1/x)。✓ = 统一检查达标；✕* = 只通过自身检查（v3.7 只降额新增机制）。`, `${TPLS.length} templates × four built-in scales, A_op ≥ ${pct(TARGET, 1)} %, the six default mechanisms and the same candidates; every design re-checked on the engine with one yardstick (nominal, and every mechanism — the scenario’s own and the added ones — derated), effort on one metric: library score + levers + Σ 2·log₂(1/x). ✓ = meets the common check; ✕* = passes only its own check (v3.7 derates the added mechanisms only).`)}</p>
   <div class="table-wrap"><table class="dense"><tr><th>${T('模板', 'Template')}</th><th>${T('方法（总工作量）', 'Method (total effort)')}</th>${SIZES.map((n) => `<th class="num">${int(n)}</th>`).join('')}</tr>${vRows}</table></div>
-  <div class="verdict">${T(`<b>结论：分配决策用 v4.0。</b>它是唯一在全部 12 个算例上都通过统一检查${v4ok ? '' : '（有例外）'}、且工作量最低的方法：500k 时 v4.0 最优 ${range(e500.v4)}，v3.7 ${range(e500.v37, 0)}（并在 ${v37miss.length} 个算例上差统一检查 ${range(v37gap, 2)} pt），v3.0 ${num(Math.min(...e500.v30), 0)}–${num(Math.max(...e500.v30max), 0)}。v3.0 的一阶预算把每次中断按 264.5 s 全局恢复计（链上实际平均暂停 95 s），所以在已经达标的 100k 也要求硬件改进（工作量 ${num(Math.min(...e100.v30), 0)}–${num(Math.max(...e100.v30max), 0)}，实际需要 0）；v3.7 的机制选择合理，但不把恢复杠杆纳入方案、残余缺口用一个统一因子压全部 20 类，且只降额新增机制。计算时间：v4.0 每个算例 ${range(ms.v4.map((x) => x / 1000), 1)} s，v3.7 ${range(ms.v37.map((x) => x / 1000), 1)} s，v3.0 ${range(ms.v30, 0)} ms。`, `<b>Verdict: use v4.0 for the allocation decision.</b> It is the only method that passes the common check on all twelve cases${v4ok ? '' : ' (with exceptions)'} and it has the lowest effort: at 500k v4.0 optimal costs ${range(e500.v4)}, v3.7 ${range(e500.v37, 0)} (and misses the common check by ${range(v37gap, 2)} pt in ${v37miss.length} cases), v3.0 ${num(Math.min(...e500.v30), 0)}–${num(Math.max(...e500.v30max), 0)}. v3.0’s first-order budget charges every interruption the 264.5 s global recovery while the chain’s mean pause is 95 s, so it asks for hardware work even at 100k where the design already meets the target (effort ${num(Math.min(...e100.v30), 0)}–${num(Math.max(...e100.v30max), 0)} for zero needed); v3.7 picks sensible mechanisms but leaves the recovery levers out of the plan, closes the residual with one factor on all 20 classes and derates only the mechanisms it adds. Run time per case: v4.0 ${range(ms.v4.map((x) => x / 1000), 1)} s, v3.7 ${range(ms.v37.map((x) => x / 1000), 1)} s, v3.0 ${range(ms.v30, 0)} ms.`)}</div>
+  <div class="verdict">${T(`<b>结论：分配决策用 v4.0。</b>它是唯一在全部 ${NCASES} 个算例上都通过统一检查${v4ok ? '' : '（有例外）'}、且工作量最低的方法：500k 时 v4.0 最优 ${range(e500.v4)}，v3.7 ${range(e500.v37, 0)}（并在 ${v37miss.length} 个算例上差统一检查 ${range(v37gap, 2)} pt），v3.0 ${num(Math.min(...e500.v30), 0)}–${num(Math.max(...e500.v30max), 0)}。v3.0 的一阶预算把每次中断按 264.5 s 全局恢复计（链上实际平均暂停 95 s），所以在已经达标的 100k 也要求硬件改进（工作量 ${num(Math.min(...e100.v30), 0)}–${num(Math.max(...e100.v30max), 0)}，实际需要 0）；v3.7 的机制选择合理，但不把恢复杠杆纳入方案、残余缺口用一个统一因子压全部 20 类，且只降额新增机制。计算时间：v4.0 每个算例 ${range(ms.v4.map((x) => x / 1000), 1)} s，v3.7 ${range(ms.v37.map((x) => x / 1000), 1)} s，v3.0 ${range(ms.v30, 0)} ms。`, `<b>Verdict: use v4.0 for the allocation decision.</b> It is the only method that passes the common check on all ${NCASES} cases${v4ok ? '' : ' (with exceptions)'} and it has the lowest effort: at 500k v4.0 optimal costs ${range(e500.v4)}, v3.7 ${range(e500.v37, 0)} (and misses the common check by ${range(v37gap, 2)} pt in ${v37miss.length} cases), v3.0 ${num(Math.min(...e500.v30), 0)}–${num(Math.max(...e500.v30max), 0)}. v3.0’s first-order budget charges every interruption the 264.5 s global recovery while the chain’s mean pause is 95 s, so it asks for hardware work even at 100k where the design already meets the target (effort ${num(Math.min(...e100.v30), 0)}–${num(Math.max(...e100.v30max), 0)} for zero needed); v3.7 picks sensible mechanisms but leaves the recovery levers out of the plan, closes the residual with one factor on all 20 classes and derates only the mechanisms it adds. Run time per case: v4.0 ${range(ms.v4.map((x) => x / 1000), 1)} s, v3.7 ${range(ms.v37.map((x) => x / 1000), 1)} s, v3.0 ${range(ms.v30, 0)} ms.`)}</div>
   <div class="table-wrap"><table class="dense">
     <tr><th>${T('问题', 'Question')}</th><th>${T('用哪个', 'Use')}</th><th>${T('为什么', 'Why')}</th></tr>
     <tr><td>${T('目标怎样在机制、恢复参数与硬件之间分配？', 'How to split a target between mechanisms, recovery parameters and hardware?')}</td><td>${T('v4.0 策略 · 最优', 'v4.0 Strategies · Optimal')}</td><td>${T('最便宜的组合、按暂停贡献给出各类允许 FIT，名义与全部降额都验证', 'cheapest combination, allowed FIT per class weighted by pause, verified nominal and fully derated')}</td></tr>

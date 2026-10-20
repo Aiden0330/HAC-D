@@ -66,8 +66,22 @@ export interface Counts {
   nodesPerRack: number;
   /** v4 host CPUs (nodes × CPUs per node; 0 when neither the superpod geometry nor topology.cpusPerNode gives it) */
   cpus: number;
-  /** v4 UB switch chips (L1 + L2) */
+  /** v4 UB switch chips (two-level: L1 + L2; v4.2 mesh / blade fabrics: in-cabinet switches + pod-tier switches) */
   ubSwitches: number;
+  /** v4.2 UB fabric of the supernodes ('two-level' when there is no superpod) */
+  fabric: 'two-level' | 'mesh-clos' | 'mesh-4d' | 'blade-clos';
+  /** v4.2 UB switch chips inside the compute cabinets (mesh: low-radix switches; blade-clos: LinkBlade chips) */
+  rackSwitches: number;
+  /** v4.2 pod-tier UB switches (mesh-clos: optical Clos switches; mesh-4d: high-radix switches; blade-clos: LinkDevices) */
+  podSwitches: number;
+  /** v4.2 direct electrical NPU–NPU links of the in-cabinet 2D full mesh */
+  meshLinks: number;
+  /** v4.2 electrical cabinet-to-cabinet bundles of the mesh-4d cabinet full mesh */
+  rackMeshLinks: number;
+  /** v4.2 NPO optical engines (blade-clos) */
+  opticalEngines: number;
+  /** v4.2 backup NPUs in the compute cabinets (not used by the job) */
+  backupNpus: number;
   /** v4 scale-out (RoCE) Clos from topology.scaleOut (0 without it): NPU ports, tiers, switches per tier (leaf first), links, transceivers */
   scaleOutPorts: number;
   scaleOutTiers: number;
@@ -120,6 +134,83 @@ export function nodeGeometry(s: Scenario): { gpusPerNode: number; nodesPerRack: 
   return sp ? { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack } : { gpusPerNode: s.topology.gpusPerNode, nodesPerRack: s.topology.nodesPerRack };
 }
 
+/** v4.2 scale-out Clos over `planes` independent planes: each plane is a Clos over ⌈NPUs × portsPerNpu / planes⌉ ports; totals add up */
+export function scaleOutCounts(npus: number, so: { portsPerNpu: number; planes?: number; radix: number; oversubscription: number; transceiversPerLink: number }): ClosCounts {
+  const planes = Math.max(1, so.planes ?? 1);
+  const c = closCounts((npus * so.portsPerNpu) / planes, so.radix, so.oversubscription, so.transceiversPerLink);
+  return { ports: c.ports * planes, tiers: c.tiers, perTier: c.perTier.map((n) => n * planes), switches: c.switches * planes, links: c.links * planes, transceivers: c.transceivers * planes, capacity: c.capacity * planes };
+}
+
+/** links of a 2D full mesh of n trays × p NPUs (every NPU to the p − 1 others on its tray and to the n − 1 at its position on the other trays) */
+const meshLinksOf = (n: number, p: number) => n * ((p * (p - 1)) / 2) + p * ((n * (n - 1)) / 2);
+/** cabinet pairs in the same row or column when r cabinets fill a g × g grid row by row */
+function gridPairs(r: number, g: number): number {
+  if (g <= 1 || r <= 1) return 0;
+  const fullRows = Math.floor(r / g);
+  const last = r - fullRows * g;
+  let pairs = fullRows * ((g * (g - 1)) / 2) + (last * (last - 1)) / 2;
+  for (let j = 0; j < g; j++) {
+    const inCol = fullRows + (j < last ? 1 : 0);
+    pairs += (inCol * (inCol - 1)) / 2;
+  }
+  return pairs;
+}
+
+/**
+ * v4.2 counts of a mesh or blade fabric (see SuperpodSchema.fabric): in-cabinet switches per compute cabinet; the in-cabinet 2D full
+ * mesh of direct links (mesh fabrics); the mesh-4d cabinet full meshes; pod-tier switches ⌈pod NPUs × uplinks per NPU / radix⌉ per
+ * pod (with the proportional fill the last, partly populated pod gets ⌈its NPUs × uplinks / radix⌉ and the communication cabinets
+ * that hold them); optical links = NPUs × podUplinksPerNpu, for blade-clos NPUs × (opticalLinksPerNpu ?? podUplinksPerNpu) in
+ * 800G equivalents; NPO engines = NPUs × opticalEnginesPerNpu and no pluggable transceivers for blade-clos only (the NPO fields are
+ * ignored by the other fabrics, so a fabric switch never inherits them).
+ */
+function meshFabricCounts(sp: NonNullable<Scenario['topology']['superpod']>, nodes: number, racks: number, supernodes: number, fill: 'full-pod' | 'proportional') {
+  const p = sp.npusPerNode;
+  const npus = nodes * p;
+  const nodesPerPod = sp.nodesPerRack * sp.computeRacks;
+  const fullRacks = Math.floor(nodes / sp.nodesPerRack);
+  const lastRackNodes = nodes - fullRacks * sp.nodesPerRack;
+  const meshLinks = sp.fabric === 'blade-clos' ? 0 : fullRacks * meshLinksOf(sp.nodesPerRack, p) + (lastRackNodes > 0 ? meshLinksOf(lastRackNodes, p) : 0);
+  const g = sp.meshRackGrid;
+  let rackMeshLinks = 0;
+  if (sp.fabric === 'mesh-4d' && g > 1) {
+    const perGroup = g * g;
+    const fullGroups = Math.floor(racks / perGroup);
+    rackMeshLinks = fullGroups * gridPairs(perGroup, g) + gridPairs(racks - fullGroups * perGroup, g);
+  }
+  const switchesFor = (n: number) => Math.ceil((n * p * sp.podUplinksPerNpu) / sp.podSwitchRadix);
+  const perPod = switchesFor(nodesPerPod);
+  const fullPods = Math.floor(nodes / nodesPerPod);
+  const rem = nodes - fullPods * nodesPerPod;
+  let podSwitches = supernodes * perPod;
+  let commRacks = supernodes * sp.commRacks;
+  if (fill === 'proportional') {
+    const remSwitches = rem > 0 ? Math.min(perPod, switchesFor(rem)) : 0;
+    podSwitches = fullPods * perPod + remSwitches;
+    commRacks = fullPods * sp.commRacks + (rem > 0 && sp.commRacks > 0 && perPod > 0 ? Math.min(sp.commRacks, Math.ceil((remSwitches * sp.commRacks) / perPod)) : 0);
+  }
+  const rackSwitches = racks * sp.rackSwitches;
+  const blade = sp.fabric === 'blade-clos';
+  const opticalLinks = Math.ceil(npus * (blade ? sp.opticalLinksPerNpu ?? sp.podUplinksPerNpu : sp.podUplinksPerNpu));
+  return {
+    supernodes,
+    commRacks,
+    l1Switches: 0,
+    l2Switches: 0,
+    subPlanes: 0,
+    opticalLinks,
+    transceivers: blade ? 0 : opticalLinks * sp.transceiversPerLink,
+    ubSwitches: rackSwitches + podSwitches,
+    fabric: sp.fabric,
+    rackSwitches,
+    podSwitches,
+    meshLinks,
+    rackMeshLinks,
+    opticalEngines: blade ? Math.ceil(npus * sp.opticalEnginesPerNpu) : 0,
+    backupNpus: racks * sp.backupNpusPerRack,
+  };
+}
+
 export function computeCounts(s: Scenario): Counts {
   const t = s.topology;
   const { gpusPerNode, nodesPerRack } = nodeGeometry(s);
@@ -135,7 +226,7 @@ export function computeCounts(s: Scenario): Counts {
   const nodes = Math.ceil(gpus / gpusPerNode);
   const racks = Math.ceil(nodes / nodesPerRack);
   const zones = Math.ceil(racks / t.racksPerZone);
-  const so = t.scaleOut ? closCounts(gpus * t.scaleOut.portsPerNpu, t.scaleOut.radix, t.scaleOut.oversubscription, t.scaleOut.transceiversPerLink) : undefined;
+  const so = t.scaleOut ? scaleOutCounts(gpus, t.scaleOut) : undefined;
   const base: Counts = {
     gpus,
     nodes,
@@ -155,6 +246,13 @@ export function computeCounts(s: Scenario): Counts {
     nodesPerRack,
     cpus: nodes * (t.superpod?.cpusPerNode ?? t.cpusPerNode ?? 0),
     ubSwitches: 0,
+    fabric: t.superpod?.fabric ?? 'two-level',
+    rackSwitches: 0,
+    podSwitches: 0,
+    meshLinks: 0,
+    rackMeshLinks: 0,
+    opticalEngines: 0,
+    backupNpus: 0,
     scaleOutPorts: so?.ports ?? 0,
     scaleOutTiers: so?.tiers ?? 0,
     scaleOutPerTier: so?.perTier ?? [],
@@ -166,6 +264,7 @@ export function computeCounts(s: Scenario): Counts {
   if (!sp) return base;
   const nodesPerSupernode = sp.nodesPerRack * sp.computeRacks;
   const supernodes = Math.max(1, Math.ceil(nodes / nodesPerSupernode));
+  if (sp.fabric !== 'two-level') return { ...base, ...meshFabricCounts(sp, nodes, racks, supernodes, t.fabricFill) };
   const links = nodes * sp.l1PerNode * sp.linksPerL1;
   const l2FullPod = sp.subPlanes * sp.l2PerSubPlane;
   let l2Switches = supernodes * l2FullPod;

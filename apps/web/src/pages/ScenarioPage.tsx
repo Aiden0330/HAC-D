@@ -11,6 +11,9 @@ import { fmtHours } from '../lib/format.js';
 const RATE_UNITS = ['per_h', 'per_1e6_h', 'FIT', 'per_year', 'per_day', 'per_1000_node_day', 'per_month', 'per_week', 'mtbf_h', 'gpu_h_per_event', 'gpu_day_per_event'] as const;
 const DOMAINS = ['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack'] as const;
 const SUPERPOD_FIELDS: (keyof Superpod)[] = ['npusPerNode', 'cpusPerNode', 'l1PerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink'];
+/** v4.2 fields of the mesh / blade fabrics (Atlas 950 product-page spec, UB-Mesh 4D, Atlas 960E) */
+const MESH_FIELDS: (keyof Superpod)[] = ['npusPerNode', 'cpusPerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'rackSwitches', 'podUplinksPerNpu', 'podSwitchRadix', 'opticalLinksPerNpu', 'opticalEnginesPerNpu', 'meshRackGrid', 'backupNpusPerRack', 'transceiversPerLink'];
+const PRESET_LABELS: Record<Exclude<Superpod['preset'], 'custom'>, string> = { cloudmatrix384: 'CloudMatrix384 (Atlas 900 A3)', atlas950: 'Atlas 950 SuperPoD (v2 two-level estimate)', 'atlas950-1k': 'Atlas 950 SuperPoD · 1,024 NPUs (current spec)', 'atlas950-8k': 'Atlas 950 SuperPoD · 8,192 NPUs (roadmap)', atlas960e: 'Atlas 960E SuperPoD · 4,032 NPUs' };
 const SUBSYSTEMS = ['compute', 'memory', 'interconnect', 'network', 'host', 'storage', 'power', 'cooling', 'software', 'other'] as const;
 const STAGES = ['detect', 'localize', 'remediate', 'restart', 'load', 'warmup'] as const;
 
@@ -104,24 +107,24 @@ export function ScenarioPage() {
                     ...x,
                     topology: {
                       ...x.topology,
-                      superpod: v === 'generic' ? undefined : v === 'custom' ? { ...(x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values), preset: 'custom' } : { ...SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values },
-                      ...(v !== 'generic' ? (() => { const sp = v === 'custom' ? (x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values) : SUPERPOD_PRESETS[v as 'cloudmatrix384' | 'atlas950'].values; return { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks }; })() : {}),
+                      superpod: v === 'generic' ? undefined : v === 'custom' ? { ...(x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values), preset: 'custom' } : { ...SUPERPOD_PRESETS[v as keyof typeof PRESET_LABELS].values },
+                      ...(v !== 'generic' ? (() => { const sp = v === 'custom' ? (x.topology.superpod ?? SUPERPOD_PRESETS.cloudmatrix384.values) : SUPERPOD_PRESETS[v as keyof typeof PRESET_LABELS].values; return { gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks }; })() : {}),
                     },
                   }))
                 }
-                options={[{ value: 'generic', label: t('scenario.generic') }, { value: 'cloudmatrix384', label: 'CloudMatrix384 (Atlas 900 A3)' }, { value: 'atlas950', label: 'Atlas 950 SuperPoD' }, { value: 'custom', label: t('scenario.custom') }]}
+                options={[{ value: 'generic', label: t('scenario.generic') }, ...Object.entries(PRESET_LABELS).map(([value, label]) => ({ value, label })), { value: 'custom', label: t('scenario.custom') }]}
               />
             </Field>
-            {s.topology.superpod && SUPERPOD_FIELDS.map((f) => (
-              <Field key={f} label={t(`scenario.${f}`)}>
-                <NumberInput value={s.topology.superpod![f] as number} min={0} step={1} onChange={(v) => upd((x) => { const sp = { ...x.topology.superpod!, [f]: Math.round(v), preset: 'custom' as const }; return { ...x, topology: { ...x.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks } }; })} />
+            {s.topology.superpod && (s.topology.superpod.fabric === 'two-level' ? SUPERPOD_FIELDS : MESH_FIELDS).map((f) => (
+              <Field key={f} label={t(`scenario.${f}`, { defaultValue: t(`topology.${f}`) })}>
+                <NumberInput value={(s.topology.superpod![f] as number | undefined) ?? (f === 'opticalLinksPerNpu' ? s.topology.superpod!.podUplinksPerNpu : 0)} min={0} step={f === 'podUplinksPerNpu' || f === 'opticalLinksPerNpu' || f === 'opticalEnginesPerNpu' ? 0.1 : 1} onChange={(v) => upd((x) => { const sp = { ...x.topology.superpod!, [f]: f === 'podUplinksPerNpu' || f === 'opticalLinksPerNpu' || f === 'opticalEnginesPerNpu' ? v : Math.round(v), preset: 'custom' as const }; return { ...x, topology: { ...x.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, networkPlanes: sp.subPlanes, nvlinkDomainGpus: sp.npusPerNode * sp.nodesPerRack * sp.computeRacks } }; })} />
               </Field>
             ))}
           </div>
           {s.topology.superpod && (
             <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
               {s.topology.superpod.preset !== 'custom' && <span>{t('scenario.assumedFields')}: {SUPERPOD_PRESETS[s.topology.superpod.preset].assumed.join(', ')} · {SUPERPOD_PRESETS[s.topology.superpod.preset].source}. </span>}
-              {!active.error && result && (() => { const sp = s.topology.superpod!; const perNode = `${sp.npusPerNode} NPU (${sp.npusPerNode * 2} dies, ${sp.npusPerNode * 8} HBM stacks) · ${sp.cpusPerNode} CPU · ${sp.l1PerNode} L1 UB chips · ${sp.l1PerNode * sp.linksPerL1} UB uplinks (= ${sp.npusPerNode} × ${sp.l1PerNode * sp.linksPerL1 / sp.npusPerNode} per NPU) · ${sp.rdmaPortsPerNpu * sp.npusPerNode} RDMA ports · ${sp.vpcNicsPerNode} Qingtian card`; return <span>{t('scenario.perNode')}: {perNode}. {t('scenario.derivedCounts')}: {result.counts.nodes} nodes · {result.counts.supernodes} supernode(s) · {result.counts.nodes * sp.cpusPerNode} CPU · {result.counts.l1Switches} L1 · {result.counts.l2Switches} L2 · {result.counts.opticalLinks} links · {result.counts.transceivers} transceivers · {result.counts.subPlanes} sub-planes</span>; })()}
+              {!active.error && result && (() => { const sp = s.topology.superpod!; const k = result.counts; if (sp.fabric !== 'two-level') return <span>{t('scenario.perNode')}: {sp.npusPerNode} NPU · {sp.cpusPerNode} CPU · {sp.rdmaPortsPerNpu * sp.npusPerNode} RDMA ports · fabric {sp.fabric}: {sp.rackSwitches} switch chips per cabinet, {sp.podUplinksPerNpu} pod-tier uplinks per NPU (radix {sp.podSwitchRadix}). {t('scenario.derivedCounts')}: {k.nodes} nodes · {k.supernodes} supernode(s) · {k.cpus} CPU · {k.rackSwitches} in-cabinet + {k.podSwitches} pod switches · {k.meshLinks} mesh links · {k.opticalLinks} optical links · {k.transceivers} transceivers{k.opticalEngines ? ` · ${k.opticalEngines} NPO engines` : ''}</span>; const perNode = `${sp.npusPerNode} NPU (${sp.npusPerNode * 2} dies, ${sp.npusPerNode * 8} HBM stacks) · ${sp.cpusPerNode} CPU · ${sp.l1PerNode} L1 UB chips · ${sp.l1PerNode * sp.linksPerL1} UB uplinks (= ${sp.npusPerNode} × ${sp.l1PerNode * sp.linksPerL1 / sp.npusPerNode} per NPU) · ${sp.rdmaPortsPerNpu * sp.npusPerNode} RDMA ports · ${sp.vpcNicsPerNode} Qingtian card`; return <span>{t('scenario.perNode')}: {perNode}. {t('scenario.derivedCounts')}: {result.counts.nodes} nodes · {result.counts.supernodes} supernode(s) · {result.counts.nodes * sp.cpusPerNode} CPU · {result.counts.l1Switches} L1 · {result.counts.l2Switches} L2 · {result.counts.opticalLinks} links · {result.counts.transceivers} transceivers · {result.counts.subPlanes} sub-planes</span>; })()}
             </div>
           )}
           <h3 style={{ margin: '12px 0 6px' }}>{t('scenario.measures')}</h3>

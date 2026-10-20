@@ -1,0 +1,2530 @@
+{
+ "file:///Users/liqingchuan/Documents/projects/HAC-D/packages/core/src/scenario/schema.ts": {
+  "date": "2026-10-18",
+  "publisher": "HAC-D repository",
+  "title": "HAC-D SUPERPOD_PRESETS.atlas950"
+ },
+ "file:///Users/liqingchuan/Documents/projects/HAC-D/packages/core/src/topology/index.ts": {
+  "date": "2026-10-18",
+  "publisher": "HAC-D repository",
+  "title": "HAC-D packages/core/src/topology/index.ts (v4 topology templates)"
+ },
+ "http://www.telecomsci.com/rc-pub/front/front-article/download/120127747/lowqualitypdf/基于数据和知识驱动的超万卡智算集群稳定性保障实践.pdf": {
+  "date": "2025-07",
+  "ev": "customer-official",
+  "publisher": "电信科学",
+  "title": "Full-text PDF (journal download link)"
+ },
+ "http://www.telecomsci.com/rc-pub/front/front-article/download/79426420/lowqualitypdf/云化的智算中心万卡集群创新与实践.pdf": {
+  "date": "2024-12",
+  "ev": "customer-official",
+  "publisher": "电信科学",
+  "title": "S08 full-text PDF"
+ },
+ "http://www.telecomsci.com/zh/article/doi/10.11959/j.issn.1000-0801.2024262/": {
+  "date": "2024-12-20",
+  "ev": "paper",
+  "publisher": "电信科学 (China Mobile authors)",
+  "title": "云化的智算中心万卡集群创新与实践"
+ },
+ "http://www.telecomsci.com/zh/article/doi/10.11959/j.issn.1000-0801.2025151/": {
+  "date": "2025",
+  "ev": "customer-official",
+  "publisher": "电信科学 (Telecommunications Science) 41(7):145-163; 中移(苏州)软件 + 中国移动设计院",
+  "title": "基于数据和知识驱动的超万卡智算集群稳定性保障实践"
+ },
+ "https://aiho.net/news/2026/huawei-peerium-computing-architecture-2026.html": {
+  "date": "2026-09-19",
+  "ev": "media",
+  "publisher": "AI 之家",
+  "title": "华为 Peerium 计算架构发布：灵衢互联、昇腾 960 超节点与开源 openJiuwen"
+ },
+ "https://aiknow.org.cn/daily/ai-hardware/2026-09-19-ascend-960-supernode.html": {
+  "date": "2026-09-19",
+  "ev": "media",
+  "publisher": "AI Know",
+  "title": "昇腾 960 超节点：华为把瓶颈从芯片挪到了光互联"
+ },
+ "https://aiweekly.co/alerts/slai-t-rex-hits-3422-mfu-post-training-deepseek-v4-on-ascend": {
+  "date": "2026-07-23",
+  "ev": "analyst",
+  "publisher": "AI Weekly",
+  "title": "SLAI T-Rex hits 34.22% MFU post-training DeepSeek-V4 on Ascend"
+ },
+ "https://api-docs.deepseek.com/news/news260424": {
+  "date": "2026-04-24",
+  "ev": "media",
+  "publisher": "DeepSeek",
+  "title": "DeepSeek-V4 Preview Release"
+ },
+ "https://api-docs.deepseek.com/zh-cn/news/news260424": {
+  "date": "2026-04-24",
+  "ev": "media",
+  "publisher": "DeepSeek",
+  "title": "DeepSeek-V4 预览版发布"
+ },
+ "https://api.github.com/repos/volcengine/verl/commits?path=docs/ascend_tutorial": {
+  "date": "2026-10-18",
+  "ev": "customer-official",
+  "publisher": "GitHub API",
+  "title": "verl commit history for docs/ascend_tutorial"
+ },
+ "https://apsarastackdocument.oss-cn-hangzhou.aliyuncs.com/国际版文档/v3.20.0版本文档/云接入网关CGW/阿里云%20专有云%20V3.20.0%20云接入网关%20产品简介%2020260421.pdf": {
+  "date": "2026-04-21",
+  "ev": "vendor-official",
+  "publisher": "Alibaba Cloud",
+  "title": "阿里云 专有云 V3.20.0 云接入网关 产品简介 20260421"
+ },
+ "https://arxiv.org/abs/2503.05139": {
+  "date": "2025-03-07",
+  "ev": "paper",
+  "publisher": "arXiv (Ling Team, Ant Group)",
+  "title": "Every FLOP Counts: Scaling a 300B Mixture-of-Experts LING LLM without Premium GPUs"
+ },
+ "https://arxiv.org/abs/2503.20377": {
+  "date": "2025-05-17 (v3)",
+  "ev": "paper",
+  "publisher": "arXiv (Liao et al., Huawei)",
+  "title": "UB-Mesh: a Hierarchically Localized nD-FullMesh Datacenter Network Architecture"
+ },
+ "https://arxiv.org/abs/2504.07866": {
+  "date": "2025-04-10",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei)",
+  "title": "Pangu Ultra: Pushing the Limits of Dense Large Language Models on Ascend NPUs"
+ },
+ "https://arxiv.org/abs/2505.04519": {
+  "date": "2025-05-07",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei)",
+  "title": "Pangu Ultra MoE: How to Train Your Big MoE on Ascend NPUs"
+ },
+ "https://arxiv.org/abs/2505.21411": {
+  "date": "2025-05",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei)",
+  "title": "Pangu Pro MoE: Mixture of Grouped Experts for Efficient Sparsity"
+ },
+ "https://arxiv.org/abs/2506.12708": {
+  "date": "2025-06-19",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "Serving Large Language Models on Huawei CloudMatrix384（版本历史 v1 2025-06-15、v2 2025-06-18、v3 2025-06-19）"
+ },
+ "https://arxiv.org/abs/2506.12708v3": {
+  "date": "2025-06-19",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "arXiv abstract page, submission history"
+ },
+ "https://arxiv.org/abs/2507.19427": {
+  "date": "2025-07-25",
+  "ev": "paper",
+  "publisher": "arXiv (StepFun)",
+  "title": "Step-3 is Large yet Affordable: Model-system Co-design for Cost-effective Decoding"
+ },
+ "https://arxiv.org/abs/2507.20534": {
+  "date": "2026-02-03 (v2; v1 2025-07-28)",
+  "ev": "project-docs",
+  "publisher": "Kimi Team / Moonshot AI (arXiv)",
+  "title": "Kimi K2: Open Agentic Intelligence (v2)"
+ },
+ "https://arxiv.org/abs/2509.03047": {
+  "date": "2025-09-03",
+  "ev": "paper",
+  "publisher": "arXiv (iFLYTEK / USTC / Huawei)",
+  "title": "FlashRecovery: Fast and Low-Cost Recovery from Failures for Large-Scale Training of LLMs"
+ },
+ "https://arxiv.org/abs/2510.22115": {
+  "date": "2025-10-24",
+  "ev": "paper",
+  "publisher": "arXiv (Ling Team, Inclusion AI)",
+  "title": "Every Activation Boosted: Scaling General Reasoner to 1 Trillion Open Language Foundation"
+ },
+ "https://arxiv.org/abs/2602.15763": {
+  "date": "2026-02-17",
+  "ev": "customer-official",
+  "publisher": "arXiv (Z.ai / Zhipu authors)",
+  "title": "GLM-5: from Vibe Coding to Agentic Engineering"
+ },
+ "https://arxiv.org/abs/2603.25040": {
+  "date": "2026-03-26 (v1), 2026-04-02 (v2)",
+  "ev": "unverified",
+  "publisher": "Shanghai AI Laboratory (arXiv)",
+  "title": "Intern-S1-Pro: Scientific Multimodal Foundation Model at Trillion Scale"
+ },
+ "https://arxiv.org/abs/2607.20145": {
+  "date": "2026-07-22",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD"
+ },
+ "https://arxiv.org/abs/2609.16787": {
+  "date": "2026-09-15 v1; 2026-09-30 v2",
+  "ev": "paper",
+  "publisher": "arXiv (Heng Liao)",
+  "title": "Many Processors, Still One Computer: The Nested Parallel von Neumann Architecture and Nested BSP"
+ },
+ "https://arxiv.org/html/2503.05139": {
+  "date": "2025-03-10",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "Ling paper Sec. 2.3.1, Table 2, Sec. 3.4.4, Bitter Lessons"
+ },
+ "https://arxiv.org/html/2503.20377": {
+  "date": "2025-03",
+  "ev": "contradicted",
+  "publisher": "arXiv (Huawei authors)",
+  "title": "UB-Mesh: a Hierarchically Localized nD-FullMesh Datacenter Network Architecture"
+ },
+ "https://arxiv.org/html/2503.20377v1": {
+  "date": "2025-03",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei, Heng Liao et al.)",
+  "title": "UB-Mesh: a Hierarchically Localized nD-FullMesh Datacenter Network Architecture"
+ },
+ "https://arxiv.org/html/2503.20377v3": {
+  "date": "2025",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei authors)",
+  "title": "UB-Mesh: a Cost-Effective, Scalable Network Architecture for Hyperscale LLM Training, §3.3.4"
+ },
+ "https://arxiv.org/html/2504.07866v2": {
+  "date": "2025-04-11",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "Pangu Ultra (HTML v2), Sec. 4.1 Computing Setup"
+ },
+ "https://arxiv.org/html/2505.04519v1": {
+  "date": "2025-05-07",
+  "ev": "media",
+  "publisher": "arXiv",
+  "title": "Pangu Ultra MoE HTML, Sec. 2.3 / 4.1 (TP8, PP16, VPP2, EP4)"
+ },
+ "https://arxiv.org/html/2506.12708v3": {
+  "date": "2025-06-19（v3）",
+  "ev": "paper",
+  "publisher": "arXiv（Huawei；部分作者 SiliconFlow）",
+  "title": "Serving Large Language Models on Huawei CloudMatrix384 · §1、§4.2（LEP）"
+ },
+ "https://arxiv.org/html/2509.03047": {
+  "date": "2025-09-03",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "FlashRecovery Sec. IV-A Failure Types and Ratios, Fig. 9"
+ },
+ "https://arxiv.org/html/2607.20145v1": {
+  "date": "2026-07-22",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "SLAI T-Rex (HTML) — §1 and §2: 'Ascend CloudMatrix384 SuperPOD with Ascend 910C NPUs', Figure 1(a)"
+ },
+ "https://arxiv.org/html/2609.16787": {
+  "date": "2026-09-30 (v2)",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "Many Processors, Still One Computer (HTML full text)"
+ },
+ "https://arxiv.org/html/2609.16787v2": {
+  "date": "2026-09-30",
+  "ev": "paper",
+  "publisher": "arXiv (Heng Liao)",
+  "title": "Many Processors, Still One Computer (HTML v2)"
+ },
+ "https://arxiv.org/pdf/2503.20377v3": {
+  "date": "2025-05-17",
+  "ev": "paper",
+  "publisher": "Huawei / arXiv",
+  "title": "UB-Mesh (arXiv v3 PDF)"
+ },
+ "https://arxiv.org/pdf/2506.12708": {
+  "date": "2025-06",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei Cloud et al.)",
+  "title": "Serving Large Language Models on Huawei CloudMatrix384"
+ },
+ "https://arxiv.org/pdf/2506.12708v3": {
+  "date": "2025-06-19",
+  "ev": "paper",
+  "publisher": "arXiv (Huawei; SiliconFlow)",
+  "title": "Serving LLMs on Huawei CloudMatrix384 — §5.1 Experimental Setup and §4.1 (Fig. 9)"
+ },
+ "https://arxiv.org/pdf/2507.19427v1": {
+  "date": "2025-07-25",
+  "ev": "paper",
+  "publisher": "arXiv",
+  "title": "Step-3 paper PDF"
+ },
+ "https://arxiv.org/pdf/2609.16787": {
+  "date": "2026-09 (v2 2026-09-30)",
+  "ev": "vendor-official",
+  "publisher": "arXiv",
+  "title": "Many Processors, Still One Computer: The Nested Parallel von Neumann Architecture and Nested BSP (Heng Liao)"
+ },
+ "https://brandspurng.com/2026/09/17/huawei-unveils-the-industrys-first-npo-optical-engine-with-built-in-light-source-hi-one-leading-the-way-in-high-speed-optical-interconnect-technology-innovation/": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei via Media OutReach (BrandSpur reprint)",
+  "title": "Huawei Unveils the Industry's First NPO Optical Engine with Built-in Light Source, Hi-ONE"
+ },
+ "https://caifuhao.eastmoney.com/news/20260226152924915561010": {
+  "date": "2026-02-26",
+  "ev": "media",
+  "publisher": "Eastmoney Caifuhao (self-media, author '价值求真')",
+  "title": "华为昇腾950深度解读"
+ },
+ "https://caifuhao.eastmoney.com/news/20260724103201503929910": {
+  "date": "2026-07-24",
+  "ev": "media",
+  "publisher": "东方财富财富号 (ztquant)",
+  "title": "超节点热闹之后，国产算力链要看三张“收入凭证”"
+ },
+ "https://capacityglobal.com/news/huawei-ai-chips-bytedance-alibaba/": {
+  "date": "2026-03-27",
+  "ev": "media",
+  "publisher": "Capacity (Saf Malik)",
+  "title": "Huawei AI chip gains orders from ByteDance and Alibaba amid China's push for semiconductor self-sufficiency"
+ },
+ "https://cloud.tencent.com/solution/tce/compatibilityguide": {},
+ "https://cloud.tencent.com/solution/tce?Is=home": {
+  "date": "undated (retrieved 2026-10-19)",
+  "publisher": "Tencent Cloud",
+  "title": "全栈专有云_腾讯专有云企业版"
+ },
+ "https://cn.chinadaily.com.cn/a/202511/13/WS69155288a310942cc4991337.html": {
+  "date": "2025-11-13",
+  "ev": "customer-official",
+  "publisher": "中国日报网 China Daily",
+  "title": "百度世界大会发布昆仑芯M100、M300"
+ },
+ "https://cn.chinadaily.com.cn/a/202609/30/WS6abcb72ce4b09a165c78db2f.html": {
+  "date": "2026-09-30",
+  "ev": "media",
+  "publisher": "中国日报网（转鲁网）",
+  "title": "首套昇腾A5超节点商用局点在北京通州启动"
+ },
+ "https://convergedigest.com/huawei-atlas-960e-npo-superpod-hi-one-ascend-960/": {
+  "date": "2026-09-20",
+  "ev": "unverified",
+  "publisher": "Converge Digest",
+  "title": "Huawei Atlas 960E NPO SuperPoD (Hi-ONE, Ascend 960)"
+ },
+ "https://cs.com.cn/xwzx/hg/202407/t20240721_6425984.html": {
+  "date": "2024-07-21",
+  "ev": "media",
+  "publisher": "Xinhua via 中证网",
+  "title": "内蒙古呼和浩特市：“算”出人工智能发展新机"
+ },
+ "https://ctyun.cn/newsboard/1000026980": {
+  "date": "2024-03-23",
+  "ev": "customer-official",
+  "publisher": "天翼云 (China Telecom)",
+  "title": "全国首个国产单池万卡液冷算力集群正式启用"
+ },
+ "https://docs.bigmodel.cn/cn/guide/models/image-generation/glm-image": {
+  "date": "last modified 2026-10-16",
+  "ev": "customer-official",
+  "publisher": "Zhipu AI (BigModel open platform docs)",
+  "title": "GLM-Image - 智谱AI开放文档"
+ },
+ "https://docs.siliconflow.cn/cn/release-notes/overview": {
+  "date": "2026-04-15",
+  "ev": "customer-official",
+  "publisher": "SiliconFlow 硅基流动",
+  "title": "SiliconFlow release notes (2026.04.15 entry)"
+ },
+ "https://docs.vllm.ai/projects/ascend/en/latest/user_guide/support_matrix/supported_models.html": {
+  "date": "fetched 2026-10-19 (developer preview; stable v0.23.0)",
+  "ev": "project-docs",
+  "publisher": "vLLM project (vllm-ascend docs)",
+  "title": "Supported Models — vLLM Ascend"
+ },
+ "https://docs.vllm.ai/projects/ascend/en/main/tutorials/models/Hunyuan-A13B-Instruct.html": {
+  "date": "fetched 2026-10-19 (v0.23.0)",
+  "ev": "project-docs",
+  "publisher": "vLLM project (vllm-ascend docs)",
+  "title": "Hunyuan A13B Instruct — vLLM Ascend tutorial"
+ },
+ "https://docs.vllm.ai/projects/ascend/en/v0.23.0/tutorials/models/DeepSeek-R1.html": {
+  "date": "2026",
+  "ev": "project-docs",
+  "publisher": "vllm-project/vllm-ascend",
+  "title": "vLLM Ascend v0.23.0 — DeepSeek-R1 tutorial, model requirements"
+ },
+ "https://doi.org/10.1109/HCS66204.2025.11154421": {
+  "date": "2025-08-24",
+  "ev": "vendor-official",
+  "publisher": "IEEE Hot Chips 37 Symposium (Crossref metadata)",
+  "title": "UB-mesh: An New Interconnection Technology for Large AI SuperNode"
+ },
+ "https://doi.org/10.1109/MM.2025.3592688": {
+  "date": "2025-09",
+  "ev": "paper",
+  "publisher": "IEEE Micro (Crossref metadata)",
+  "title": "UB-Mesh: A Hierarchically Localized nD-FullMesh Data Center Network Architecture"
+ },
+ "https://doi.org/10.11959/j.issn.1000-0801.2024262": {
+  "publisher": "电信科学",
+  "title": "DOI resolver (302 to telecomsci.com)"
+ },
+ "https://dscache.tencent-cloud.cn/upload/uploader/data-6d545b2243f80346f8a29cab356651dbc4ff0a93.js": {
+  "date": "retrieved 2026-10-19",
+  "publisher": "Tencent Cloud",
+  "title": "TCE page content bundle (official Tencent CDN script loaded by the TCE page)"
+ },
+ "https://e.huawei.com/cn/documents/products/computing/f1e3b3faca8a40fab8a76663af9d5401": {
+  "ev": "vendor-official",
+  "publisher": "Huawei Enterprise",
+  "title": "Atlas 950 SuperPoD 超节点 安全技术白皮书 01"
+ },
+ "https://e.huawei.com/cn/news/2026/solutions/computing/atlas-950-superpod": {
+  "date": "2026-07-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei Enterprise",
+  "title": "昇腾950超节点真机亮相2026世界人工智能大会 (enterprise site copy)"
+ },
+ "https://e.huawei.com/cn/products/computing/ascend/atlas-800t-a2": {
+  "date": "undated (retrieved 2026-10-19)",
+  "ev": "vendor-official",
+  "publisher": "Huawei Enterprise",
+  "title": "Atlas 800T A2 训练服务器"
+ },
+ "https://e.huawei.com/cn/products/computing/ascend/atlas-950-superpod": {
+  "date": "2026-10-19",
+  "ev": "unverified",
+  "publisher": "Huawei Enterprise",
+  "title": "(page-not-found on fetch 2026-10-19)"
+ },
+ "https://e.huawei.com/en/news/2026/branding/hc-ascend960-supernode": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei Enterprise",
+  "title": "Huawei Launches the World's First NPO-based SuperPoD"
+ },
+ "https://e.huawei.com/en/products/computing/ascend/atlas-900-pod-9000": {
+  "publisher": "Huawei Enterprise",
+  "title": "Atlas 900 PoD (EN)"
+ },
+ "https://e.huawei.com/ma/products/computing/ascend/atlas-900-pod-9000": {
+  "publisher": "Huawei Enterprise",
+  "title": "Atlas 900 PoD"
+ },
+ "https://ennanzhai.github.io/pub/sigcomm24-hpn.pdf": {
+  "date": "2024-08",
+  "ev": "paper",
+  "publisher": "ACM SIGCOMM 2024 (Alibaba authors)",
+  "title": "Alibaba HPN: A Data Center Network for Large Language Model Training"
+ },
+ "https://equalocean.com/news/2026042421854-deepseek-v4-officially-released-open-sourced-full-compatibility-achieved": {
+  "date": "2026-04-24",
+  "ev": "media",
+  "publisher": "EqualOcean",
+  "title": "DeepSeek-V4 Officially Released and Open-Sourced; Full Compatibility Achieved with Ascend 950 and A3 Supernodes"
+ },
+ "https://eu.36kr.com/zh/p/3007559606199557": {
+  "date": "2024-10-25",
+  "ev": "media",
+  "publisher": "36Kr",
+  "title": "讯飞星火 4.0 Turbo / 飞星二号 launch report"
+ },
+ "https://finance.eastmoney.com/a/202609173877273688.html": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "东方财富网",
+  "title": "华为汪涛：昇腾960超节点正式发布！"
+ },
+ "https://finance.sina.com.cn/roll/2026-03-11/doc-inhqqyvn5587853.shtml": {
+  "date": "2026-03-11",
+  "ev": "media",
+  "publisher": "环球网 (张阳), via 新浪财经",
+  "title": "MWC26：华为Atlas 950 SuperPoD超节点海外首秀，全球算力版图迎来新变量"
+ },
+ "https://finance.sina.com.cn/stock/marketresearch/2025-09-22/doc-infrivcm4740054.shtml": {
+  "date": "2025-09-22",
+  "ev": "media",
+  "publisher": "Sina Finance (Huaxi Securities report)",
+  "title": "华西证券：详解华为超节点集群与其组网形式"
+ },
+ "https://finance.sina.com.cn/tech/roll/2026-03-23/doc-inhrxmcx5535251.shtml": {
+  "date": "2026-03-23",
+  "ev": "media",
+  "publisher": "Sina Finance / Mydrivers",
+  "title": "华为发布Atlas 350加速卡（转载快科技）"
+ },
+ "https://finance.sina.com.cn/wm/2026-10-06/doc-iniuhitk7045637.shtml": {
+  "date": "2026-10-06",
+  "ev": "media",
+  "publisher": "新浪财经",
+  "title": "华为开创AI时代计算架构：让百万处理器成为一台计算机——徐直军与媒体圆桌交流摘要"
+ },
+ "https://finance.yahoo.com/news/baidu-launches-ai-model-amid-021731378.html": {
+  "date": "2025-04-24",
+  "ev": "media",
+  "publisher": "Reuters (Che Pan, Brenda Goh) via Yahoo Finance",
+  "title": "China's Baidu says its Kunlun chip cluster can train DeepSeek-like models"
+ },
+ "https://finance.yahoo.com/sectors/technology/articles/deepseek-v4-model-run-huawei-134341751.html": {
+  "date": "2026-04-03",
+  "ev": "media",
+  "publisher": "Reuters (via Yahoo Finance), citing The Information",
+  "title": "DeepSeek's V4 model will run on Huawei chips, The Information reports"
+ },
+ "https://finance.yahoo.com/sectors/technology/articles/exclusive-big-chinese-tech-firms-063617328.html": {
+  "date": "2026-04-29",
+  "ev": "media",
+  "publisher": "Reuters (via Yahoo Finance)",
+  "title": "Exclusive: Big Chinese tech firms scramble to secure Huawei AI chips after DeepSeek V4 launch, sources say"
+ },
+ "https://finance.yahoo.com/sectors/technology/articles/exclusive-huaweis-ai-chip-favour-065327884.html": {
+  "date": "2026-03-27",
+  "ev": "media",
+  "publisher": "Reuters via Yahoo Finance",
+  "title": "Exclusive-Huawei's new AI chip finds favour with ByteDance, Alibaba"
+ },
+ "https://flopper.io/system/huawei-atlas-900-a3-superpod": {
+  "publisher": "flopper.io (aggregator)",
+  "title": "Huawei Atlas 900 A3 SuperPoD spec sheet"
+ },
+ "https://flopper.io/system/huawei-atlas-950-superpod": {
+  "ev": "vendor-official",
+  "publisher": "flopper.io",
+  "title": "Huawei Atlas 950 SuperPoD: 1024x Ascend 950DT, 1.00 EFLOPS FP8"
+ },
+ "https://gitcode.com/Ascend/MindSpeed-LLM": {
+  "date": "fetched 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitCode",
+  "title": "MindSpeed-LLM README (最新消息)"
+ },
+ "https://gitcode.com/Ascend/MindSpeed-LLM/blob/2.1.0/docs/pytorch/models/moe_model.md": {
+  "date": "2025 (branch 2.1.0 released 2025-07-25)",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitCode",
+  "title": "MindSpeed-LLM 预置MoE大模型 (moe_model.md, 2.1.0)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E4%B8%87%E5%8D%A1%E8%AE%AD%E7%BB%83%E9%9B%86%E7%BE%A4%E5%88%86%E9%92%9F%E7%BA%A7%E5%BF%AB%E6%81%A2%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend HA systems engineering group (GitCode)",
+  "title": "万卡训练集群分钟级快恢技术报告 (17 pp.)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E5%8D%83%E4%BA%BF%E7%A8%80%E7%96%8F%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83%E7%BA%BF%E6%80%A7%E5%BA%A6%E4%BC%98%E5%8C%96%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06 (no date printed)",
+  "ev": "vendor-official",
+  "publisher": "Huawei Technologies (华为技术有限公司)",
+  "title": "千亿稀疏模型训练线性度优化技术报告 (PDF)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E5%8D%83%E4%BA%BFMOE%E5%88%86%E5%B8%83%E5%BC%8F%E6%8E%A8%E7%90%86%E5%88%86%E9%92%9F%E7%BA%A7%E6%81%A2%E5%A4%8D%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06-09",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "千亿MOE分布式推理分钟级恢复技术报告 (V0.1, 17 pp.)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E5%9F%BA%E4%BA%8E%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B%E7%9A%84%E7%A1%AC%E4%BB%B6%E6%95%85%E9%9A%9C%E7%AE%A1%E7%90%86%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend HA systems engineering group",
+  "title": "基于系统工程的硬件故障管理 (PDF)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E5%A4%A7%E8%A7%84%E6%A8%A1%E9%9B%86%E7%BE%A4%E5%9C%A8%E7%BA%BF%E6%95%85%E9%9A%9C%E6%84%9F%E7%9F%A5%E4%B8%8E%E8%AF%8A%E6%96%AD%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "大规模集群在线故障感知与诊断技术报告 (13 pp.)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/%E6%9E%81%E8%87%B4%E5%8F%AF%E9%9D%A0%E6%80%A7%E7%9A%84CloudMatrix%E8%B6%85%E8%8A%82%E7%82%B9%E7%B3%BB%E7%BB%9F%E6%8A%80%E6%9C%AF%E6%8A%A5%E5%91%8A.pdf": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend HA systems engineering team (GitCode ascend-tribe/ascend-cluster-infra)",
+  "title": "极致可靠的CloudMatrix超节点系统 (vendor technical report PDF, 16 pp.)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-ha.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "昇腾AI算力集群基础设施高可用技术系列报告（综述）"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-hw-failure-mgmt.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "基于系统工程的硬件故障管理技术（Markdown）"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-infer-recovery.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "千亿MOE分布式推理分钟级恢复技术博客"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-linearity.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "千亿稀疏模型训练线性度优化（Markdown）"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-online-diag.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "大规模集群在线故障感知与诊断技术博客"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-reliability.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "CloudMatrix超节点系统技术博客 (Markdown summary)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-cluster-infra/blob/main/HighAvailability/ascend-cluster-infra-training-recovery.md": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "万卡训练集群分钟级快恢技术博客 (Markdown)"
+ },
+ "https://gitcode.com/ascend-tribe/ascend-training-system/blob/main/Overview/ascend-training-system-overview.md": {
+  "date": "2025-05-30",
+  "ev": "vendor-official",
+  "publisher": "Huawei ascend-tribe (GitCode)",
+  "title": "昇腾大规模高效训练系统 (overview)"
+ },
+ "https://gitcode.com/cann/cann-recipes-infer/blob/master/docs/models/deepseek_v3_2_exp/deepseek_v3.2_exp_inference_guide.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei CANN (gitcode cann/cann-recipes-infer)",
+  "title": "基于Atlas A3集群的DeepSeek-V3.2-Exp模型推理优化实践"
+ },
+ "https://gitcode.com/cann/cann-recipes-infer/blob/master/models/deepseek_v3_2_exp/README.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei CANN",
+  "title": "cann-recipes-infer: DeepSeek-V3.2-Exp sample (runs on Huawei Atlas A3 clusters)"
+ },
+ "https://gitcode.com/cann/cann-recipes-train/blob/master/llm_pretrain/deepseekv4/README.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "media",
+  "publisher": "Huawei CANN (gitcode cann/cann-recipes-train)",
+  "title": "cann-recipes-train: DeepSeek-V4 pretraining/CPT recipe (hardware and software requirements)"
+ },
+ "https://gitcode.com/cann/ops-transformer/tree/master/attention/lightning_indexer": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei CANN",
+  "title": "ops-transformer: lightning_indexer (also attention/sparse_flash_attention, quant_lightning_indexer, kv_quant_sparse_flash_attention)"
+ },
+ "https://github.com/ByteDance-Seed/VeOmni": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "ByteDance-Seed",
+  "title": "VeOmni README — hardware support line"
+ },
+ "https://github.com/InternLM/Intern-S1": {
+  "ev": "unverified",
+  "publisher": "InternLM (GitHub)",
+  "title": "Intern-S1 README"
+ },
+ "https://github.com/InternLM/xtuner": {
+  "date": "2025-09 (XTuner V1 news entry)",
+  "ev": "unverified",
+  "publisher": "InternLM / Shanghai AI Laboratory (GitHub)",
+  "title": "XTuner README"
+ },
+ "https://github.com/MoonshotAI/checkpoint-engine": {
+  "ev": "project-docs",
+  "publisher": "Moonshot AI (GitHub)",
+  "title": "checkpoint-engine README"
+ },
+ "https://github.com/PaddlePaddle/ERNIE": {
+  "date": "fetched 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "PaddlePaddle (Baidu) on GitHub",
+  "title": "PaddlePaddle/ERNIE README"
+ },
+ "https://github.com/PaddlePaddle/FastDeploy": {
+  "date": "fetched 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "PaddlePaddle (Baidu) on GitHub",
+  "title": "PaddlePaddle/FastDeploy README"
+ },
+ "https://github.com/PaddlePaddle/PaddleCustomDevice/blob/develop/backends/npu/README_cn.md": {
+  "date": "fetched 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "PaddlePaddle (Baidu) on GitHub",
+  "title": "飞桨自定义接入硬件后端(昇腾NPU) README_cn"
+ },
+ "https://github.com/QwenLM/Qwen3": {
+  "date": "fetched 2026-10-19",
+  "ev": "customer-official",
+  "publisher": "Alibaba Qwen team (GitHub)",
+  "title": "QwenLM/Qwen3 README — Deploy Qwen3 / MindIE"
+ },
+ "https://github.com/Tencent-Hunyuan/Hunyuan-A13B": {
+  "date": "2025-06-27 release; fetched 2026-10-19",
+  "ev": "customer-official",
+  "publisher": "Tencent (GitHub)",
+  "title": "Tencent-Hunyuan/Hunyuan-A13B README"
+ },
+ "https://github.com/deepseek-ai/DeepEP-Ascend": {
+  "date": "2026-10-19（访问）",
+  "ev": "project-docs",
+  "publisher": "GitHub / deepseek-ai",
+  "title": "DeepEP-Ascend README（main）"
+ },
+ "https://github.com/deepseek-ai/DeepEP-Ascend/commits/main": {
+  "date": "2026-10-19（访问）",
+  "ev": "project-docs",
+  "publisher": "GitHub / deepseek-ai",
+  "title": "DeepEP-Ascend 提交历史"
+ },
+ "https://github.com/deepseek-ai/DeepGEMM-Ascend": {
+  "date": "2026-09-30",
+  "ev": "customer-official",
+  "publisher": "deepseek-ai",
+  "title": "DeepGEMM Ascend README — News, Requirements, Performance"
+ },
+ "https://github.com/deepseek-ai/DeepJIT": {
+  "date": "2026-09-08",
+  "ev": "customer-official",
+  "publisher": "deepseek-ai",
+  "title": "DeepJIT — A lightweight library for xPU kernel JIT compilation"
+ },
+ "https://github.com/deepseek-ai/DeepSeek-V3.2-Exp": {
+  "date": "2025-09-29",
+  "ev": "customer-official",
+  "publisher": "deepseek-ai",
+  "title": "DeepSeek-V3.2-Exp README — SGLang installation with Docker (NPUs)"
+ },
+ "https://github.com/deepseek-ai/DeepSeek-V3.2-Exp/commit/5d7907b8": {
+  "date": "2025-09-29",
+  "ev": "customer-official",
+  "publisher": "GitHub",
+  "title": "docs: Update README with HuggingFace and SGLang instructions (PR #1)"
+ },
+ "https://github.com/deepseek-ai/DeepSeek-V3.2-Exp/pull/1": {
+  "date": "2025-09-29",
+  "ev": "customer-official",
+  "publisher": "GitHub (author zhyncs; merged by GeeeekExplorer)",
+  "title": "docs: Update README with HuggingFace and SGLang instructions"
+ },
+ "https://github.com/deepseek-ai/TileKernels": {
+  "date": "2026-09-30",
+  "ev": "customer-official",
+  "publisher": "deepseek-ai",
+  "title": "TileKernels README — News 2026-09-30, Requirements, Acknowledgement"
+ },
+ "https://github.com/deepseek-ai/clangd-ascend": {
+  "date": "2026-05-28",
+  "ev": "customer-official",
+  "publisher": "deepseek-ai",
+  "title": "clangd-ascend README"
+ },
+ "https://github.com/kvcache-ai/Mooncake": {
+  "date": "2026-10-19",
+  "ev": "project-docs",
+  "publisher": "kvcache-ai / Moonshot AI (GitHub)",
+  "title": "Mooncake README (news and ecosystem table)"
+ },
+ "https://github.com/kvcache-ai/Mooncake/blob/main/docs/source/design/transfer-engine/ascend_direct_transport.md": {},
+ "https://github.com/kvcache-ai/Mooncake/blob/main/docs/source/design/transfer-engine/transport/ascend_direct_transport.md": {
+  "date": "2026-10-19（访问）",
+  "ev": "project-docs",
+  "publisher": "kvcache-ai（GitHub，main）",
+  "title": "Mooncake · Ascend Direct Transport 设计文档"
+ },
+ "https://github.com/meituan-longcat/SGLang-FluentLLM/tree/npu": {
+  "date": "2026-10-19",
+  "ev": "customer-official",
+  "publisher": "meituan-longcat (GitHub)",
+  "title": "SGLang-FluentLLM npu branch, npu_test/ReadMe.md"
+ },
+ "https://github.com/modelscope/ms-swift": {
+  "date": "fetched 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "ModelScope community (GitHub)",
+  "title": "modelscope/ms-swift README"
+ },
+ "https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/model-deployment/best-practices/deepseek_v3_2.mdx": {
+  "date": "accessed 2026-10-19",
+  "ev": "customer-official",
+  "publisher": "SGLang project",
+  "title": "SGLang docs: DeepSeek-V3.2 best practice on Ascend NPU"
+ },
+ "https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/model-deployment/best-practices/deepseek_v4_flash.mdx": {
+  "date": "accessed 2026-10-19",
+  "ev": "media",
+  "publisher": "SGLang project",
+  "title": "SGLang docs: DeepSeek-V4-Flash best practice on Ascend NPU"
+ },
+ "https://github.com/tile-ai/tilelang-ascend": {
+  "date": "created 2025-09-25",
+  "ev": "vendor-official",
+  "publisher": "GitHub / Tile-AI",
+  "title": "tile-ai/tilelang-ascend — 'Ascend TileLang adapter'"
+ },
+ "https://github.com/verl-project/verl/commits/main/docs/ascend_tutorial/zh/feature_support/ascend_backend_features.md": {
+  "date": "2026-09-29（最新提交）",
+  "ev": "project-docs",
+  "publisher": "GitHub / verl-project",
+  "title": "verl 仓库该文档的提交历史"
+ },
+ "https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/tutorials/features/pd_disaggregation_mooncake_multi_node.md": {
+  "date": "2026-10-19（访问）；该节由 2026-10-12 提交 bdd5d57a（#18176）新增",
+  "ev": "project-docs",
+  "publisher": "vllm-project（GitHub，main 分支）",
+  "title": "vLLM-Ascend · Multi-node PD disaggregation with Mooncake ·“Atlas 850/850E/950 SuperPod Communication Configuration”"
+ },
+ "https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/tutorials/models/DeepSeek-R1.md": {
+  "date": "2026-10",
+  "ev": "project-docs",
+  "publisher": "vllm-project/vllm-ascend",
+  "title": "vLLM Ascend — DeepSeek-R1 discontinued notice"
+ },
+ "https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/tutorials/models/DeepSeek-V4-Flash.md": {
+  "date": "2026-10",
+  "ev": "project-docs",
+  "publisher": "vllm-project/vllm-ascend",
+  "title": "vLLM Ascend — DeepSeek-V4-Flash tutorial, hardware requirements"
+ },
+ "https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/tutorials/models/DeepSeek-V4-Pro.md": {
+  "date": "2026-10",
+  "ev": "project-docs",
+  "publisher": "vllm-project/vllm-ascend",
+  "title": "vLLM Ascend — DeepSeek-V4-Pro tutorial, hardware requirements"
+ },
+ "https://github.com/vllm-project/vllm-ascend/blob/main/docs/source/tutorials/models/DeepSeek-V4.1-Flash.md": {
+  "date": "2026-10-15",
+  "ev": "project-docs",
+  "publisher": "vllm-project/vllm-ascend",
+  "title": "vLLM Ascend — DeepSeek-V4.1-Flash tutorial, §2-3 configurations"
+ },
+ "https://github.com/vllm-project/vllm-ascend/commits/main/docs/source/tutorials/features/pd_disaggregation_mooncake_multi_node.md": {
+  "date": "2026-10-13",
+  "ev": "project-docs",
+  "publisher": "GitHub / vllm-project",
+  "title": "该文档提交历史（bdd5d57a 2026-10-12；5d11f04b 2026-10-13）"
+ },
+ "https://github.com/vllm-project/vllm-ascend/pull/3270": {
+  "date": "2025-09-29",
+  "ev": "unverified",
+  "publisher": "vllm-project (GitHub)",
+  "title": "Add DeepSeek V3.2 support"
+ },
+ "https://github.com/vllm-project/vllm-ascend/releases/tag/v0.11.0rc0": {
+  "date": "2025-09-29",
+  "ev": "unverified",
+  "publisher": "vllm-project (GitHub)",
+  "title": "vLLM Ascend v0.11.0rc0 release notes"
+ },
+ "https://github.com/volcengine/verl": {
+  "publisher": "GitHub / verl community",
+  "title": "verl README"
+ },
+ "https://github.com/volcengine/verl/blob/main/.github/CODEOWNERS": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — CODEOWNERS"
+ },
+ "https://github.com/volcengine/verl/blob/main/.github/workflows/e2e_ppo_trainer_veomni_vllm_ascend.yml": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — e2e_ppo_trainer_veomni_vllm_ascend workflow"
+ },
+ "https://github.com/volcengine/verl/blob/main/.github/workflows/nightly_ascend_multinode.yml": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — nightly_ascend_multinode.yml"
+ },
+ "https://github.com/volcengine/verl/blob/main/docker/ascend/Dockerfile.ascend_9.1.0_a5": {
+  "date": "2026-09",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — Dockerfile.ascend_9.1.0_a5"
+ },
+ "https://github.com/volcengine/verl/blob/main/docker/ascend/supported_tags.md": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — Ascend supported image tags"
+ },
+ "https://github.com/volcengine/verl/blob/main/docs/ascend_tutorial/zh/get_start/install_guidance.rst": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl 昇腾安装指南 — 硬件支持"
+ },
+ "https://github.com/volcengine/verl/blob/main/docs/ascend_tutorial/zh/get_start/install_guidance_950.rst": {
+  "date": "2026-09",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "昇腾安装指南(Ascend 950PR&950DT系列产品)"
+ },
+ "https://github.com/volcengine/verl/blob/main/docs/ascend_tutorial/zh/model_support/model_and_algorithm_support.md": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl 昇腾模型与算法支持矩阵"
+ },
+ "https://github.com/volcengine/verl/blob/main/docs/hardware/multi_chip_support.rst": {
+  "date": "2026-10-14",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — Multi-Chip Support"
+ },
+ "https://github.com/volcengine/verl/blob/main/tests/special_npu/nightly_ci_ascend/run_grpo_glm52_top16_megatron_npu_multinode.sh": {
+  "date": "2026-10",
+  "ev": "customer-official",
+  "publisher": "volcengine/verl (ByteDance)",
+  "title": "verl — run_grpo_glm52_top16_megatron_npu_multinode.sh (NNODES=2, n_gpus_per_node=16)"
+ },
+ "https://github.com/zai-org/GLM-5": {
+  "date": "2026-10-19",
+  "ev": "customer-official",
+  "publisher": "zai-org / GitHub",
+  "title": "GLM-5 GitHub README (Ascend deployment note)"
+ },
+ "https://github.com/zai-org/GLM-Image": {
+  "date": "2026",
+  "ev": "customer-official",
+  "publisher": "GitHub (Z.ai / Zhipu)",
+  "title": "zai-org/GLM-Image README"
+ },
+ "https://hc2025.hotchips.org/assets/program/conference/day2/67_Huawei_Liao_final.pdf": {
+  "date": "2025-08",
+  "ev": "paper",
+  "publisher": "Hot Chips / HiSilicon",
+  "title": "UB-mesh: An New Interconnection Technology for Large AI SuperNode (Heng Liao, HiSilicon), Hot Chips 2025"
+ },
+ "https://hub.baai.ac.cn/view/46086": {
+  "date": "2025-05-31",
+  "ev": "vendor-official",
+  "publisher": "BAAI Hub / QbitAI",
+  "title": "QbitAI via BAAI hub: Huawei discloses near-trillion MoE Ascend training system"
+ },
+ "https://hub.baai.ac.cn/view/46404": {
+  "date": "2025-06-11",
+  "ev": "vendor-official",
+  "publisher": "BAAI Community 智源社区",
+  "title": "(republication of the QbitAI article)"
+ },
+ "https://info.support.huawei.com/info-finder/encyclopedia/en/Optical+module+channel+loss+resistance.html": {
+  "date": "2024-12-20",
+  "ev": "vendor-official",
+  "publisher": "Huawei Info-Finder",
+  "title": "Optical module channel loss resistance"
+ },
+ "https://insidehpc.com/2025/08/report-deepseek-model-delay-forces-use-of-nvidia-gpus/": {
+  "date": "2025-08",
+  "ev": "media",
+  "publisher": "insideHPC (relaying the Financial Times)",
+  "title": "Report: DeepSeek Model Delay Forces Use of NVIDIA GPUs"
+ },
+ "https://k.sina.cn/article_5328858693_13d9fee4502002jes4.html": {
+  "date": "2026-10",
+  "ev": "vendor-official",
+  "publisher": "齐鲁晚报·齐鲁壹点 (via Sina)",
+  "title": "把8192张卡融成一台“电脑”！华为昇腾950超节点亮相2026人工智能产业大会"
+ },
+ "https://kuwaittimes.com/article/49537/business/chinas-ai-chipmakers-raise-prices-as-high-bandwidth-memory-shortage-bites/": {
+  "date": "2026-09-10",
+  "ev": "media",
+  "publisher": "Reuters (via Kuwait Times)",
+  "title": "China's AI chipmakers raise prices as high-bandwidth memory shortage bites"
+ },
+ "https://kyodonewsprwire.jp/release/202609216351": {
+  "date": "2026-09-21",
+  "ev": "vendor-official",
+  "publisher": "Huawei via Kyodo News PR Wire",
+  "title": "Huawei Unveils New UnifiedBus Computing Architecture for SuperPoDs and Clusters"
+ },
+ "https://letsdatascience.com/news/deepseek-prepares-major-huawei-accelerator-order-468a0e20": {
+  "date": "2026-09-04",
+  "ev": "media",
+  "publisher": "Let's Data Science",
+  "title": "DeepSeek Prepares Major Huawei Accelerator Order"
+ },
+ "https://lightcounting.com/newsletter/en/july-2026-atlas-950-superpod-achieves-all-optical-interconnection-with-superior-cost-and-power-efficiency-450": {
+  "date": "2026-07",
+  "ev": "media",
+  "publisher": "LightCounting",
+  "title": "July 2026: Atlas 950 SuperPoD achieves all-optical interconnection with superior cost and power efficiency"
+ },
+ "https://longcat.chat/blog/longcat-2.0/": {
+  "date": "2026-06-30",
+  "ev": "customer-official",
+  "publisher": "Meituan LongCat",
+  "title": "Introducing LongCat-2.0 (LongCat tech blog)"
+ },
+ "https://m.21jingji.com/article/20260717/herald/5ad90b573648444c183fea4752a207e8.html": {
+  "date": "2026-07-17",
+  "ev": "contradicted",
+  "publisher": "21世纪经济报道 (倪雨晴)",
+  "title": "WAIC上的算力重器：华为昇腾950超节点真机现身"
+ },
+ "https://m.bjnews.com.cn/detail/1771212070169047.html": {
+  "date": "2026-02-16",
+  "ev": "media",
+  "publisher": "新京报",
+  "title": "算力资源'全年紧张'仍坐稳主桌？解密科大讯飞大模型破局之道"
+ },
+ "https://m.c114.com.cn/w117-1317680.html": {
+  "date": "2026-09-16",
+  "ev": "media",
+  "publisher": "C114通信网",
+  "title": "中国电信临港信息园区2026-2027年可研编制服务招标（标题因编码损坏无法完整读取）"
+ },
+ "https://m.c114.com.cn/w118-1307117.html": {
+  "date": "2026-03-18",
+  "ev": "media",
+  "publisher": "C114",
+  "title": "中国移动6208卡AI超节点集采"
+ },
+ "https://m.c114.com.cn/w126-1314082.html": {
+  "date": "2026-07-17",
+  "ev": "vendor-official",
+  "publisher": "C114通信网",
+  "title": "昇腾950超节点真机亮相2026世界人工智能大会"
+ },
+ "https://m.c114.com.cn/w3542-1317813.html": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "C114",
+  "title": "华为：新一代NPO产品Hi-ONE即将规模量产 单引擎实现7.2T传输容量"
+ },
+ "https://m.c114.com.cn/w3542-1317819.html": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "C114",
+  "title": "C114: 汪涛主题演讲 / 昇腾960超节点正式发布"
+ },
+ "https://m.c114.com.cn/w89-1272179.html": {
+  "date": "2024-08-31",
+  "ev": "media",
+  "publisher": "C114通信网",
+  "title": "跻身'算力一线城市'，哈尔滨用了两个'100天'"
+ },
+ "https://m.gelonghui.com/live/2652932": {
+  "date": "2026-09-05",
+  "ev": "media",
+  "publisher": "Gelonghui (via Guancha)",
+  "title": "DeepSeek被曝将采购16万颗华为昇腾950DT"
+ },
+ "https://m.huxiu.com/article/4897125.html": {
+  "date": "2026-10-13",
+  "ev": "media",
+  "publisher": "虎嗅 (repost of 赛格大道)",
+  "title": "超节点算力集群，能托住国产模型吗？"
+ },
+ "https://m.jiemian.com/article/12253712.html": {
+  "date": "2025-01-15",
+  "ev": "media",
+  "publisher": "界面新闻",
+  "title": "讯飞星火发布深度推理模型X1，全国产算力平台训练有多大含金量？"
+ },
+ "https://m.jiemian.com/article/14789583.html": {
+  "date": "2026-07 (approx. 07-19)",
+  "ev": "media",
+  "publisher": "界面新闻",
+  "title": "从一张卡到一套系统：WAIC国产算力展现加速进化"
+ },
+ "https://m.tech.china.com/articles/20250926/202509261740087.html": {
+  "date": "2025-09-26",
+  "ev": "media",
+  "publisher": "中华网 (citing 看点时报)",
+  "title": "腾讯专有云TCE全新升级，公私同源+软硬开放+高可用性助力企业智算提速"
+ },
+ "https://mlq.ai/news/huawei-pulls-forward-ascend-960-roadmap-as-it-targets-million-processor-ai-systems/": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "MLQ News",
+  "title": "Huawei pulls forward Ascend 960 roadmap as it targets million-processor AI systems"
+ },
+ "https://news.10jqka.com.cn/20260901/c679484239.shtml": {
+  "date": "2026-09-01",
+  "ev": "media",
+  "publisher": "同花顺7x24 (人民财讯)",
+  "title": "宝德计算：斩获中国移动超节点等两大集采项目"
+ },
+ "https://news.10jqka.com.cn/20260921/c680098940.shtml": {
+  "date": "2026-09-21",
+  "ev": "vendor-official",
+  "publisher": "上海证券报·中国证券网 (via 同花顺)",
+  "title": "超节点+光互联 华为亮出算力新蓝图"
+ },
+ "https://news.bgov.com/artificial-intelligence/deepseek-plans-big-huawei-ai-chip-order-to-power-new-data-center": {
+  "date": "2026-09-04",
+  "ev": "media",
+  "publisher": "Bloomberg News (Hawkins, Fan)",
+  "title": "DeepSeek Plans Big Huawei AI Chip Order to Power New Data Center"
+ },
+ "https://news.metal.com/newscontent/104143081-smm-flash-huawei-ascend-950-ai-computing-cluster-officially-launched-for-commercial-use-on-september-30": {
+  "date": "2026-10-01",
+  "ev": "media",
+  "publisher": "Shanghai Metals Market",
+  "title": "SMM Flash: Huawei Ascend 950 AI computing cluster officially launched for commercial use on September 30"
+ },
+ "https://news.mydrivers.com/1/1004/1004627.htm": {
+  "date": "2024-09-22",
+  "ev": "media",
+  "publisher": "快科技 Mydrivers",
+  "title": "Huawei Connect 2024 report on Ascend and iFlytek"
+ },
+ "https://news.mydrivers.com/1/1050/1050900.htm": {
+  "date": "2025-05-30",
+  "ev": "vendor-official",
+  "publisher": "快科技 / QbitAI",
+  "title": "Mydrivers repost (41% MFU on Atlas 800T A2 10k cluster)"
+ },
+ "https://news.mydrivers.com/1/1111/1111069.htm": {
+  "date": "2026-03-23",
+  "ev": "media",
+  "publisher": "快科技 (MyDrivers)",
+  "title": "技术创新赋能千行万业 昇腾人工智能伙伴峰会2026圆满举办"
+ },
+ "https://news.mydrivers.com/1/1152/1152812.htm": {
+  "date": "2026-09-21",
+  "ev": "vendor-official",
+  "publisher": "快科技",
+  "title": "1024卡规模当前业界最大！华为发布昇腾950超节点一图看懂"
+ },
+ "https://news.pedaily.cn/202404/532674.shtml": {
+  "date": "2024-04-18",
+  "ev": "customer-official",
+  "publisher": "投资界 pedaily",
+  "title": "Create2024百度AI开发者大会报道（百舸/万源）"
+ },
+ "https://news.pedaily.cn/202501/545308.shtml": {
+  "date": "2025-01-10",
+  "ev": "media",
+  "publisher": "投资界 (from 半导体产业纵横)",
+  "title": "国产AI芯片迎高光时刻"
+ },
+ "https://news.qq.com/rain/a/20260511A06RWU00": {
+  "date": "2026-05-11",
+  "ev": "unverified",
+  "publisher": "腾讯新闻 (鲜枣课堂)",
+  "title": "聊聊华为的Atlas 950超节点"
+ },
+ "https://news.qq.com/rain/a/20260716A0ABC200": {
+  "date": "2026-07-16",
+  "ev": "media",
+  "publisher": "腾讯新闻 (芯硬件)",
+  "title": "全球规模最大 每秒100亿亿次！华为昇腾950 1024卡超节点真机首秀"
+ },
+ "https://news.qq.com/rain/a/20260917A0BTRC00": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "通信世界 (Tencent News)",
+  "title": "华为Hi-ONE即将规模量产"
+ },
+ "https://news.qq.com/rain/a/20260918A08J2500": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "Tencent News",
+  "title": "NPO开启算力互联新周期：从昇腾960超节点看国产AI算力架构迭代"
+ },
+ "https://news.qq.com/rain/a/20260919A067RE00": {
+  "date": "2026-09-19",
+  "ev": "media",
+  "publisher": "智东西 via 腾讯新闻 (李水青)",
+  "title": "通信墙不破，AI Agent算力不立！华为超节点“黑科技”详解"
+ },
+ "https://news.rthk.hk/rthk/en/component/k2/1849055-20260327.htm": {},
+ "https://newsletter.semianalysis.com/p/huawei-ai-cloudmatrix-384-chinas-answer-to-nvidia-gb200-nvl72": {
+  "date": "2025-04-16",
+  "ev": "paper",
+  "publisher": "SemiAnalysis",
+  "title": "Huawei AI CloudMatrix 384 – China's Answer to Nvidia GB200 NVL72"
+ },
+ "https://online91.thedailystar.net/news/tech-startup/news/deepseek-previews-new-v4-model-runs-huawei-chips-4159751": {
+  "date": "2026-04",
+  "ev": "media",
+  "publisher": "The Daily Star (carrying Reuters)",
+  "title": "DeepSeek previews new V4 model, runs on Huawei chips"
+ },
+ "https://pdf.dfcfw.com/pdf/H3_AP202609181829621372_1.pdf": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "金元证券 (via 东方财富)",
+  "title": "华为全联接大会：昇腾960芯片性能翻倍，NPO超节点首次规模商用 (行业点评)"
+ },
+ "https://post.smzdm.com/p/avgp262p/": {
+  "date": "2026-10-09",
+  "ev": "media",
+  "publisher": "什么值得买 (AI-compiled post)",
+  "title": "华三官号自己的1.6T视频只有254播放，华为新品8700人围观…"
+ },
+ "https://public-download.obs.cn-east-2.myhuaweicloud.com/ascend/%E6%98%87%E8%85%BE950%20NPU%E6%9E%B6%E6%9E%84%E7%99%BD%E7%9A%AE%E4%B9%A6.pdf": {
+  "date": "2026 (PDF created 2026-06-04)",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "昇腾950 NPU 架构白皮书"
+ },
+ "https://qcloudimg.tencent-cloud.cn/raw/8cb4d1262fb920dd73ef80b48296ee2f.pdf": {
+  "date": "undated",
+  "ev": "vendor-official",
+  "publisher": "Tencent Cloud",
+  "title": "腾讯专有云TCE解决方案 (brochure linked as 下载PDF from the TCE page)"
+ },
+ "https://raw.gitcode.com/ascend-tribe/ascend-cluster-infra/raw/main/HighAvailability/ascend-cluster-infra-ha.md": {
+  "date": "2025-06-10 (file creation date per GitCode)",
+  "ev": "vendor-official",
+  "publisher": "ascend-tribe / GitCode (Huawei team)",
+  "title": "昇腾AI算力集群基础设施高可用技术系列报告 (ascend-cluster-infra-ha.md)"
+ },
+ "https://raw.gitcode.com/ascend-tribe/ascend-cluster-infra/raw/main/HighAvailability/figures/1_1.png": {
+  "date": "2025-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei (GitCode)",
+  "title": "CloudMatrix reliability overview figure 1_1"
+ },
+ "https://raw.githubusercontent.com/Ascend/mind-cluster/master/component/clusterd/pkg/application/recover/hot_switch_controller.go": {
+  "date": "accessed 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitHub (Ascend/mind-cluster, master)",
+  "title": "hot_switch_controller.go (clusterd)"
+ },
+ "https://raw.githubusercontent.com/Ascend/mind-cluster/master/docs/zh/scheduling/04_usage/03_basic_scheduling/01_affinity_scheduling/02_affinity_scheduling_description.md": {
+  "date": "repo pushed 2026-10-19, accessed 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitHub (Ascend/mind-cluster, master)",
+  "title": "基于昇腾AI处理器的亲和性调度 — MindCluster 调度文档"
+ },
+ "https://raw.githubusercontent.com/Ascend/mind-cluster/master/docs/zh/scheduling/04_usage/04_fault_detection_and_diagnosis/02_fault_types/03_network_faults.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitHub (Ascend/mind-cluster, master)",
+  "title": "网络故障 — MindCluster 故障检测与诊断"
+ },
+ "https://raw.githubusercontent.com/Ascend/mind-cluster/master/docs/zh/scheduling/04_usage/05_fault_recovery/01_resumable_training/01_solutions_principles/01_fault_handling.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "Ascend / GitHub (Ascend/mind-cluster, master)",
+  "title": "故障处理方案原理 — MindCluster 断点续训"
+ },
+ "https://raw.githubusercontent.com/deepseek-ai/DeepEP-Ascend/main/README.md": {},
+ "https://raw.githubusercontent.com/meituan-longcat/SGLang-FluentLLM/npu/npu_test/ReadMe.md": {
+  "date": "2026",
+  "ev": "customer-official",
+  "publisher": "GitHub (Meituan LongCat)",
+  "title": "LongCat 2.0模型在NPU上推理优化实践样例 (npu_test/ReadMe.md)"
+ },
+ "https://raw.githubusercontent.com/vllm-project/vllm-ascend/main/docs/source/tutorials/features/pd_disaggregation_mooncake_multi_node.md": {
+  "date": "accessed 2026-10-19",
+  "ev": "project-docs",
+  "publisher": "vLLM-Ascend project (GitHub)",
+  "title": "vllm-ascend docs: multi-node PD disaggregation with Mooncake (main branch)"
+ },
+ "https://regional.chinadaily.com.cn/hohhot/2025-02/11/c_1069653.htm": {
+  "date": "2025-02-11",
+  "ev": "media",
+  "publisher": "China Daily",
+  "title": "Hohhot's three intelligent computing centers deploy DeepSeek"
+ },
+ "https://sspai.com/post/102724": {
+  "date": "2025-09-24",
+  "ev": "media",
+  "publisher": "少数派 (Alterl聊科技)",
+  "title": "昇腾掀起的“超节点”浪潮，正在改写算力产业的游戏规则"
+ },
+ "https://startupfortune.com/deepseek-bets-26-billion-on-huawei-chips-it-may-wait-a-year-to-get/": {
+  "date": "2026-09-08",
+  "ev": "media",
+  "publisher": "Startup Fortune",
+  "title": "DeepSeek Bets $2.6 Billion on Huawei Chips It May Wait a Year to Get"
+ },
+ "https://stock.10jqka.com.cn/20260629/c677805352.shtml": {
+  "date": "2026-06-29",
+  "ev": "media",
+  "publisher": "同花顺财经 (relaying 21世纪经济报道)",
+  "title": "百度昆仑芯传赴港上市，字节跳动否认合作意向"
+ },
+ "https://stock.10jqka.com.cn/20260831/c679451486.shtml": {
+  "date": "2026-08-31",
+  "ev": "media",
+  "publisher": "同花顺 (source: 烽火通信官微)",
+  "title": "长江计算中标中国移动人工智能超节点设备采购项目"
+ },
+ "https://stock.10jqka.com.cn/20260901/c679484239.shtml": {
+  "date": "2026-09-01",
+  "ev": "media",
+  "publisher": "同花顺7x24 (relay of 宝德计算官微 / 人民财讯)",
+  "title": "宝德计算：斩获中国移动超节点等两大集采项目 合计17亿元"
+ },
+ "https://subsites.chinadaily.com.cn/wic/2025-05/06/c_1090588.htm": {
+  "date": "2025-05-06",
+  "ev": "media",
+  "publisher": "China Daily",
+  "title": "Inner Mongolia leads way in green computing, data storage"
+ },
+ "https://support.huaweicloud.com/aics/llms.txt": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AICS documentation index"
+ },
+ "https://support.huaweicloud.com/api-aics/ShowHypernodeType.html": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "查询超节点规格详情-ShowHypernodeType — 灵衢智算集群 API 参考"
+ },
+ "https://support.huaweicloud.com/price-aics/aics_billing_2000.html": {
+  "date": "2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "计费模式_灵衢智算集群"
+ },
+ "https://support.huaweicloud.com/productdesc-aics/aics_01_0002.html": {
+  "date": "page updated 2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "产品优势 — 灵衢智算集群 产品介绍"
+ },
+ "https://support.huaweicloud.com/productdesc-aics/aics_01_0005.html": {
+  "date": "page updated 2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "规格 — 灵衢智算集群 产品介绍"
+ },
+ "https://support.huaweicloud.com/resmgmt-modelarts/usermanual-server-0037.html": {
+  "date": "2026-02-06",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "开启超节点HCCL通信算子级重执行机制"
+ },
+ "https://support.huaweicloud.com/usermanual-aics/aics_03_0100.html": {
+  "date": "2026-09-08 (page update time)",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "申请公测_灵衢智算集群"
+ },
+ "https://support.huaweicloud.com/usermanual-aics/aics_03_0602.html": {
+  "date": "page updated 2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "事件概述 — 灵衢智算集群 用户指南"
+ },
+ "https://support.huaweicloud.com/usermanual-aics/aics_03_0607.html": {
+  "date": "2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "响应重部署事件_灵衢智算集群"
+ },
+ "https://support.huaweicloud.com/usermanual-aics/aics_03_0616.html": {
+  "date": "page updated 2026-09-08",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AICS支持计划事件监控的事件说明"
+ },
+ "https://t.cj.sina.com.cn/articles/view/1726918143/66eeadff02001vvem": {
+  "date": "2026-09-19",
+  "ev": "media",
+  "publisher": "中国青年报客户端",
+  "title": "灵衢昇腾950智算集群服务将于9月30日启用"
+ },
+ "https://tech.ifeng.com/c/8rhFjgVrMWc": {
+  "date": "2026-03-22",
+  "ev": "media",
+  "publisher": "凤凰网科技 / 快科技",
+  "title": "Atlas 350 发布报道"
+ },
+ "https://tech.ifeng.com/c/8upefmdqe6m": {
+  "date": "2026-07-17",
+  "ev": "media",
+  "publisher": "凤凰网科技",
+  "title": "华为首次展示昇腾950超节点：1024卡集群瞄准万亿级大模型训练"
+ },
+ "https://tech.ifeng.com/c/8wCCuh45jgf": {
+  "date": "2026-09-06",
+  "ev": "media",
+  "publisher": "ifeng (Bianews)",
+  "title": "DeepSeek，将采购16万颗华为AI芯片"
+ },
+ "https://tech.ifeng.com/c/8wW3YKvp267": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "IT之家 via 凤凰网",
+  "title": "华为灵衢昇腾950智算集群云服务计划9月30日国内商用、11月30日全球商用"
+ },
+ "https://tech.ifeng.com/c/8wWFyWYkCK1": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "凤凰网科技",
+  "title": "华为云灵衢昇腾950智算集群即将全球上线"
+ },
+ "https://tech.ifeng.com/c/8x1sXQoSH3a": {
+  "date": "2026-10-07",
+  "ev": "vendor-official",
+  "publisher": "凤凰网科技 / 快科技",
+  "title": "华为徐直军：昇腾950超节点国内都不够用 没计划全面出海"
+ },
+ "https://tech.ifeng.com/c/8x9mWAwkfJr": {
+  "date": "2026-10-12",
+  "ev": "contradicted",
+  "publisher": "凤凰网科技 / IT之家",
+  "title": "全球运营商最大单体智算中心扩容工程竣工，总算力达20100P"
+ },
+ "https://tech.meituan.com/2026/06/30/LongCat2.0.html": {
+  "date": "2026-06-30",
+  "ev": "customer-official",
+  "publisher": "美团技术团队 Meituan Tech",
+  "title": "美团 LongCat-2.0 正式发布：在国产算力集群上完成全流程训练与推理的万亿参数模型"
+ },
+ "https://tech.yahoo.com/ai/articles/huawei-unveils-atlas-950-supercluster-095359156.html": {
+  "date": "2025-09-19",
+  "ev": "media",
+  "publisher": "Tom's Hardware / Yahoo Tech (Anton Shilov)",
+  "title": "Huawei unveils Atlas 950 SuperCluster — promises 1 ZettaFLOPS FP4 performance (Tom's Hardware, via Yahoo Tech)"
+ },
+ "https://tech.yahoo.com/ai/gemini/articles/huawei-details-ai-accelerator-roadmap-103000516.html": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "Tom's Hardware via Yahoo Tech",
+  "title": "Huawei details AI accelerator roadmap (Tom's Hardware, Anton Shilov)"
+ },
+ "https://tech.yahoo.com/computing/articles/huawei-open-source-ub-mesh-164233186.html": {
+  "date": "2025-08-27",
+  "ev": "vendor-official",
+  "publisher": "Tom's Hardware",
+  "title": "Huawei to open-source UB-Mesh (Tom's Hardware via Yahoo)"
+ },
+ "https://techcentral.co.za/?p=249599": {
+  "date": "2024-08-13",
+  "ev": "media",
+  "publisher": "TechCentral (Reuters copy, citing WSJ)",
+  "title": "Huawei readies new AI chip to challenge Nvidia (Reuters, Devika Nair)"
+ },
+ "https://technews.tw/2025/12/29/bytedance-huawei-2026-chips/": {
+  "date": "2025-12-29",
+  "ev": "media",
+  "publisher": "TechNews 科技新報",
+  "title": "傳字節跳動明年擬採購華為昇騰晶片逾 400 億人幣"
+ },
+ "https://technode.com/2023/11/08/baidu-orders-ai-chips-from-huawei-as-alternative-to-nvidia-report/": {
+  "date": "2023-11-08",
+  "ev": "media",
+  "publisher": "TechNode (citing Reuters)",
+  "title": "Baidu orders AI chips from Huawei as alternative to Nvidia: report"
+ },
+ "https://technode.com/2025/12/29/bytedance-reportedly-plans-to-purchase-5-6-billion-worth-of-huaweis-ascend-ai-chips/": {
+  "date": "2025-12-29",
+  "ev": "unverified",
+  "publisher": "TechNode",
+  "title": "ByteDance reportedly plans to purchase $5.6 billion worth of Huawei's Ascend AI chips"
+ },
+ "https://technode.com/2026/02/09/china-mobile-signs-155-million-yuan-deal-for-its-compute-platform-with-huawei-ascend/": {
+  "date": "2026-02-09",
+  "ev": "media",
+  "publisher": "TechNode (citing TechWeb)",
+  "title": "China Mobile signs 155 million yuan deal for its compute platform with Huawei Ascend"
+ },
+ "https://technode.com/2026/09/07/deepseek-huawei-ascend-950dt-chips-inner-mongolia/": {
+  "date": "2026-09-07",
+  "ev": "media",
+  "publisher": "TechNode",
+  "title": "DeepSeek reportedly plans 160,000-chip Huawei cluster in Inner Mongolia"
+ },
+ "https://technode.com/2026/09/18/huawei-sets-commercial-launch-dates-for-ascend-950-ai-cluster-cloud-service/": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "TechNode",
+  "title": "Huawei sets commercial launch dates for Ascend 950 AI cluster cloud service"
+ },
+ "https://the-decoder.com/?p=17675": {
+  "date": "2024-09-30",
+  "ev": "media",
+  "publisher": "The Decoder (update citing Reuters sources)",
+  "title": "Huawei 910C / ByteDance Ascend order update"
+ },
+ "https://the-decoder.com/huawei-steps-in-as-baidus-ai-chip-supplier-amid-nvidia-restrictions/": {
+  "date": "2023-11-07",
+  "ev": "media",
+  "publisher": "The Decoder (citing Reuters)",
+  "title": "Huawei steps in as Baidu's AI chip supplier amid Nvidia restrictions"
+ },
+ "https://theedgemalaysia.com/node/817600": {
+  "date": "2026-09-10",
+  "ev": "media",
+  "publisher": "The Edge Malaysia (Bloomberg syndication)",
+  "title": "Huawei lifted prices for its best AI chip by 60% this summer"
+ },
+ "https://thenextweb.com/news/huawei-connect-2026-ascend-960-superpod-unifiedbus": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "The Next Web",
+  "title": "Huawei's answer to Nvidia isn't a faster chip, it's a much bigger machine"
+ },
+ "https://theroboticsmedia.com/article/huawei-atlas-960-superpod-ascend-960dt-q1-2027-tau-scaling-law-huawei-connect-2026": {
+  "date": "2026-10-19",
+  "ev": "contradicted",
+  "publisher": "The Robotics Media (Kaan Tınmaz)",
+  "title": "Huawei Atlas 960 SuperPoD Launches At Huawei Connect 2026"
+ },
+ "https://tomshardware.com/tech-industry/artificial-intelligence/deepseek-and-huawei-release-open-source-ascend-ai-programming-tools-to-reduce-reliance-on-nvidia-ecosystem-tools-include-compute-and-communication-libraries-as-well-as-ascend-support-for-tilelang": {
+  "date": "2026（正文抓取被截断，仅标题/摘要可核）",
+  "ev": "project-docs",
+  "publisher": "Tom's Hardware",
+  "title": "DeepSeek and Huawei release open-source Ascend AI programming tools"
+ },
+ "https://verl.readthedocs.io/en/latest/ascend_tutorial/zh/feature_support/ascend_backend_features.html": {
+  "date": "2026-10-19（访问；页面自称 Last updated: 03/03/2026）",
+  "ev": "project-docs",
+  "publisher": "verl 项目文档",
+  "title": "verl 昇腾后端特性指南 ·“Checkpoint Engine 后端”"
+ },
+ "https://verl.readthedocs.io/en/latest/ascend_tutorial/zh/get_start/install_guidance_950.html": {
+  "date": "2026-09-22（页面自述）",
+  "ev": "project-docs",
+  "publisher": "verl 项目文档",
+  "title": "verl 昇腾安装指南(Ascend 950PR&950DT系列产品)"
+ },
+ "https://verl.readthedocs.io/en/latest/ascend_tutorial/zh/get_start/quick_start.html": {
+  "date": "2026-07-14",
+  "ev": "project-docs",
+  "publisher": "verl 项目文档（ByteDance Seed Foundation MLSys Team 版权署名）",
+  "title": "verl 昇腾快速上手说明（Last updated: 2026/07/14）"
+ },
+ "https://vietnamnews.vn/media-outreach/1800962/huawei-pioneers-a-new-computing-architecture-for-the-ai-era-making-one-million-processors-work-as-one-computer-summary-of-roundtable-meeting-between-eric-xu-and-international-media-outlets-on-september-17.html": {
+  "date": "2026-09-30",
+  "ev": "vendor-official",
+  "publisher": "Huawei via Media OutReach Newswire",
+  "title": "Summary of roundtable meeting between Eric Xu and international media outlets on September 17 (Media OutReach Newswire)"
+ },
+ "https://wallstreetcn.com/articles/3768071": {
+  "date": "2026-03-22",
+  "ev": "media",
+  "publisher": "上海证券报 via 华尔街见闻",
+  "title": "华为发布新一代算力芯片，单卡算力达H20的2.87倍"
+ },
+ "https://wallstreetcn.com/articles/3783066": {
+  "date": "2026-10-06",
+  "ev": "vendor-official",
+  "publisher": "界面新闻 via 华尔街见闻",
+  "title": "华为徐直军：昇腾中国市场份额已超英伟达…"
+ },
+ "https://winfuture.de/news,153678.html": {
+  "date": "2025-09-17",
+  "ev": "media",
+  "publisher": "WinFuture (citing Reuters / CCTV)",
+  "title": "China: Erstes großes Rechenzentrum ohne westliche Chips gebaut"
+ },
+ "https://winfuture.de/news,153735.html": {
+  "date": "2025-09-19",
+  "publisher": "WinFuture",
+  "title": "Schlag gegen Nvidia? Huawei baut 'den mächtigsten' Chip-Supercluster"
+ },
+ "https://www.163.com/dy/article/KPPPL3IQ05562QFT.html": {
+  "date": "2026-04-05",
+  "ev": "media",
+  "publisher": "Weijin Research (未尽研究) via 163.com",
+  "title": "未尽研究 article on DeepSeek-V4 and Ascend 950PR (NetEase republication)"
+ },
+ "https://www.163.com/dy/article/KSLQ6J8D0531N0ME.html": {
+  "date": "2026-05-11",
+  "ev": "media",
+  "publisher": "鲜枣课堂 (网易号)",
+  "title": "聊聊华为的Atlas 950超节点"
+ },
+ "https://www.163.com/dy/article/L5QB6C7805568W0A.html": {
+  "date": "2026-09-02",
+  "ev": "vendor-official",
+  "publisher": "网易号 (智能计算芯世界)",
+  "title": "华为Atlas 850E/950超节点要点分析"
+ },
+ "https://www.163.com/dy/article/L73O6K3V0514R9OJ.html": {
+  "date": "2026-09-18",
+  "ev": "unverified",
+  "publisher": "环球网 via 网易号",
+  "title": "以灵衢互联为核心，打造集群与超节点协同的新计算架构"
+ },
+ "https://www.21jingji.com/article/20261010/herald/a4870982fd2efd6431772181534ce375.html": {
+  "date": "2026-10-10",
+  "ev": "media",
+  "publisher": "21经济网",
+  "title": "AI超节点：一场中国式的“系统级突围”"
+ },
+ "https://www.aap.com.au/aapreleases/cision20260228ae98491": {
+  "date": "2026-02-28",
+  "ev": "vendor-official",
+  "publisher": "Cision via AAP",
+  "title": "Huawei's SuperPoD Portfolio Creates New Option for Global Computing at MWC Barcelona 2026"
+ },
+ "https://www.apmultimedianewsroom.com/multimedia-newsroom/huawei-pioneers-a-new-computing-architecture-for-the-ai-era-making-one-million-processors-work-as-one-computer-2": {
+  "date": "2026-09-29",
+  "ev": "vendor-official",
+  "publisher": "Huawei press release via AP Content Services",
+  "title": "Summary of Roundtable Meeting Between Eric Xu and International Media Outlets on September 17"
+ },
+ "https://www.beri.net/article/huawei-ai-chip-revenue-hits-12b-nvidia-china": {
+  "date": "2026",
+  "ev": "unverified",
+  "publisher": "Beri (blog)",
+  "title": "Huawei AI Chip Revenue Hits $12B as Chinese Enterprises Pivot from Nvidia"
+ },
+ "https://www.bloomberg.com/news/articles/2025-09-29/huawei-to-double-output-of-top-ai-chip-as-nvidia-wavers-in-china": {
+  "date": "2025-09-29",
+  "ev": "media",
+  "publisher": "Bloomberg",
+  "title": "Huawei to Double Output of AI Chip as Nvidia Wavers in China"
+ },
+ "https://www.bloomberg.com/news/articles/2026-09-10/huawei-lifted-prices-for-its-best-ai-chip-by-60-this-summer": {
+  "date": "2026-09-10",
+  "ev": "media",
+  "publisher": "Bloomberg News",
+  "title": "Huawei Lifted Prices for Its Best AI Chip By 60% This Summer"
+ },
+ "https://www.bloomberglinea.com/negocios/huawei-sube-60-el-precio-de-su-chip-de-ia-mas-avanzado-ante-la-demanda-de-alternativas-a-nvidia/": {
+  "date": "2026-09-10",
+  "ev": "media",
+  "publisher": "Bloomberg Línea (Bloomberg News, Gao Yuan)",
+  "title": "Huawei sube 60% el precio de su chip de IA más avanzado ante la demanda de alternativas a Nvidia"
+ },
+ "https://www.bnnbloomberg.ca/business/artificial-intelligence/2026/03/27/huaweis-new-ai-chip-finds-favour-with-bytedance-alibaba-which-plan-to-place-orders-reuters-sources-say/": {
+  "date": "2026-03-27",
+  "ev": "media",
+  "publisher": "Reuters via BNN Bloomberg",
+  "title": "Huawei's new AI chip finds favour with ByteDance, Alibaba (Reuters)"
+ },
+ "https://www.chinanews.com.cn/cj/2026/10-06/10708509.shtml": {
+  "date": "2026-10-06",
+  "ev": "media",
+  "publisher": "中国经济网 via 中国新闻网",
+  "title": "华为开创AI时代计算架构：让百万处理器成为一台计算机——徐直军与媒体圆桌交流摘要"
+ },
+ "https://www.chinastarmarket.cn/detail/2498194": {
+  "date": "2026-10",
+  "ev": "paper",
+  "publisher": "财联社",
+  "title": "华为徐直军：Peerium架构与灵衢总线，让百万颗处理器成为一台计算机"
+ },
+ "https://www.chnfund.com/article/ARb88f9554-bb53-f9ad-377a-3a23bfe4716e": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "中国基金报",
+  "title": "汪涛：华为发布昇腾960超节点，芯片研发进度超预期"
+ },
+ "https://www.cls.cn/detail/2486211": {
+  "date": "2026-09-17",
+  "publisher": "财联社",
+  "title": "科创板日报: 华为发布新AI计算架构"
+ },
+ "https://www.cls.cn/detail/2501869": {
+  "date": "2026-10-12",
+  "ev": "media",
+  "publisher": "财联社",
+  "title": "【电报解读】全球运营商最大单体智算中心扩容项目竣工…"
+ },
+ "https://www.crnasia.com/news/2025/cloud/huawei-s-cloud-unit-now-supports-deepseek-models": {
+  "date": "2025-02",
+  "ev": "media",
+  "publisher": "CRN Asia (relaying SCMP)",
+  "title": "Huawei's cloud unit now supports DeepSeek models"
+ },
+ "https://www.crnasia.com/news/2026/artificial-intelligence/huawei-outlines-ascend-960-roadmap-and-million-processor-ai": {
+  "date": "2026-09",
+  "ev": "vendor-official",
+  "publisher": "CRN Asia",
+  "title": "Huawei outlines Ascend 960 roadmap and million-processor AI systems"
+ },
+ "https://www.cs.com.cn/ssgs/gsxw/202310/t20231025_6372288.html": {
+  "date": "2023-10-25",
+  "ev": "media",
+  "publisher": "中国证券报·中证网",
+  "title": "科大讯飞星火大模型再升级"
+ },
+ "https://www.cs.com.cn/ssgs/gsxw/202410/t20241029_6449704.html": {
+  "date": "2024-10-29",
+  "ev": "media",
+  "publisher": "中国证券报 (CS.com.cn)",
+  "title": "实探中国电信临港万卡智算谷：推动AI产业生态集聚发展"
+ },
+ "https://www.ctyun.cn/newsboard/1000027710": {
+  "date": "2024-04-28",
+  "ev": "customer-official",
+  "publisher": "天翼云",
+  "title": "天翼云斩获算力基础设施高质量发展企业案例奖"
+ },
+ "https://www.ctyun.cn/newsboard/1000269711": {
+  "date": "2026-05-15",
+  "ev": "customer-official",
+  "publisher": "天翼云",
+  "title": "国产算力迎来“性能狂飙”时刻：天翼云E-HPC打通国产算力与开源生态“最后一公里”"
+ },
+ "https://www.df.cl/internacional/multinacionales/huawei-duplicara-la-produccion-de-su-principal-chip-de-ia-mientras-nvidia": {
+  "date": "2025-09-29",
+  "ev": "media",
+  "publisher": "Diario Financiero (Bloomberg republication)",
+  "title": "Huawei duplicará la producción de su principal chip de IA mientras Nvidia tambalea en China"
+ },
+ "https://www.donews.com/news/detail/1/3983599.html": {
+  "date": "2024-01-30",
+  "ev": "media",
+  "publisher": "DoNews",
+  "title": "讯飞星火 V3.5 发布 (mentions 飞星一号)"
+ },
+ "https://www.donews.com/news/detail/1/4549300.html": {
+  "date": "2024-09-25",
+  "ev": "customer-official",
+  "publisher": "DoNews",
+  "title": "百度智能云百舸4.0发布"
+ },
+ "https://www.eet-china.com/news/202509177867.html": {
+  "date": "2025-09-17",
+  "ev": "media",
+  "publisher": "EE Times China",
+  "title": "EE Times China report on the CCTV domestic-vs-NV card table (the source TrendForce cites)"
+ },
+ "https://www.eqs-news.com/news/corporate/huawei-pioneers-a-new-computing-architecture-for-the-ai-era-making-one-million-processors-work-as-one-computer-summary-of-roundtable-meeting-between-eric-xu-and-international-media-outlets/f50bf9f3-66ae-45a6-b652-530a27b647f8_en": {
+  "date": "2026-09-30",
+  "ev": "vendor-official",
+  "publisher": "Huawei (via EQS Newswire)",
+  "title": "Summary of Roundtable Meeting Between Eric Xu and International Media Outlets on September 17"
+ },
+ "https://www.equalocean.com/analysis/2026051121881": {
+  "date": "2026-05-11",
+  "ev": "media",
+  "publisher": "EqualOcean",
+  "title": "ByteDance Raises 2026 AI Infrastructure Budget to 200 Billion RMB, Accelerating Shift to Domestic Chips"
+ },
+ "https://www.fibermall.com/ja/blog/?p=17241": {
+  "date": "2025-05-09",
+  "publisher": "FiberMall (relay of SemiAnalysis)",
+  "title": "Huawei CloudMatrix と 910C のセミ分析"
+ },
+ "https://www.fredgao.com/p/deepseeks-liang-wenfeng-breaks-his": {
+  "date": "2026-07-23",
+  "ev": "unverified",
+  "publisher": "Fred Gao, Inside China (Substack)",
+  "title": "DeepSeek's Liang Wenfeng Breaks His Silence"
+ },
+ "https://www.gizmochina.com/2026/09/18/huawei-unveils-worlds-first-npo-based-ai-superpod-built-for-massive-ai-models/": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "Gizmochina",
+  "title": "Huawei Unveils World's First NPO-Based AI SuperPoD"
+ },
+ "https://www.hiascend.com/activities/dynamic-news/20260525-1": {
+  "date": "2026-05-25",
+  "ev": "vendor-official",
+  "publisher": "昇腾社区 (Huawei)",
+  "title": "KADC2026 | 聚焦超节点运维管理，保障业务长稳高效"
+ },
+ "https://www.hiascend.com/activities/dynamic-news/20260526-3": {
+  "date": "2026-05-26",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend community",
+  "title": "聚力昇腾算力底座，共探大模型训练生态新路径"
+ },
+ "https://www.hiascend.com/developer/techArticles/20251015-5": {
+  "date": "2025-10-15",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend community",
+  "title": "openPangu-Ultra-MoE-718B-V1.1今日正式开源，部署指南来啦"
+ },
+ "https://www.hiascend.com/document/detail/zh/mindcluster/730/deployer/deployerug/deployer_0025.html": {
+  "publisher": "Huawei Ascend",
+  "title": "MindCluster deployer guide"
+ },
+ "https://www.hiascend.com/en/hardware/ai-server?tag=850e": {
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend (product page)",
+  "title": "Atlas 650E AI server product features"
+ },
+ "https://www.hiascend.com/en/hardware/cluster": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend product page",
+  "title": "Atlas 950 SuperPoD (English product page)"
+ },
+ "https://www.hiascend.com/hardware/cluster": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Ascend product page",
+  "title": "Atlas 950 SuperPoD 液冷超节点 技术规格"
+ },
+ "https://www.huawei.com/cn/huaweitech/cases/china-mobile-intelligent-computing-center": {
+  "date": "2024 (page undated)",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "独家专访：内蒙移动与华为强强联手，勇夺2024 IDC未来企业大奖！"
+ },
+ "https://www.huawei.com/cn/huaweitech/publication/88/ascend-ai-ecosystem": {
+  "date": "2021-09-13",
+  "ev": "customer-official",
+  "publisher": "华为技术 (Huawei)",
+  "title": "“一平台双驱动”，共建昇腾产业新生态（许映童）"
+ },
+ "https://www.huawei.com/cn/news/2025/9/hc-huawei-cloud-ai-pioneer": {
+  "date": "2025-09-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "张平安 HUAWEI CONNECT 2025 主题演讲"
+ },
+ "https://www.huawei.com/cn/news/2025/9/hc-lingqu-ai-superpod": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "华为",
+  "title": "华为发布全球最强算力超节点和集群"
+ },
+ "https://www.huawei.com/cn/news/2025/9/hc-superpod-innovation": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "超节点架构创新，开源开放共筑全场景算力底座"
+ },
+ "https://www.huawei.com/cn/news/2025/9/hc-xu-keynote-speech": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "以开创的超节点互联技术，引领AI基础设施新范式"
+ },
+ "https://www.huawei.com/cn/news/2026/3/mwc-superpod-ai": {
+  "date": "2026-03-02",
+  "ev": "analyst",
+  "publisher": "Huawei",
+  "title": "MWC 2026: Atlas 950 SuperPoD overseas launch"
+ },
+ "https://www.huawei.com/cn/news/2026/3/mwc-superpod-computing": {
+  "date": "2026-02-28",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "坚持技术创新，开源开放，为世界提供算力新选择"
+ },
+ "https://www.huawei.com/cn/news/2026/6/mwcs-cmcc-token-economy": {
+  "date": "2026-06-24",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "华为与湖北移动 AI 推理加速现网测试（MWC上海 2026）"
+ },
+ "https://www.huawei.com/cn/news/2026/7/atlas-950-superpod": {
+  "date": "2026-07-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "昇腾950超节点真机亮相2026世界人工智能大会"
+ },
+ "https://www.huawei.com/cn/news/2026/9/aidc-data-center": {
+  "date": "2026-09-16",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "华为发布3D数据中心（芜湖）"
+ },
+ "https://www.huawei.com/cn/news/2026/9/chinaunicom-partner-ai-carrier": {
+  "date": "2026-09-10",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "2026中国联通合作伙伴大会 华为主题演讲（杨超斌）"
+ },
+ "https://www.huawei.com/cn/news/2026/9/hc-agentic-infra-industry-ai": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "周跃峰：共建Agentic Cloud，共赢行业智能体时代"
+ },
+ "https://www.huawei.com/cn/news/2026/9/hc-ai-infra-aiwan-campus": {
+  "date": "2026-09-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "华为星河AI网络全面升级，开启安全智联Agentic新篇章"
+ },
+ "https://www.huawei.com/cn/news/2026/9/hc-ascend960-supernode": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "华为发布全球首个采用NPO的超节点——昇腾960超节点"
+ },
+ "https://www.huawei.com/cn/news/2026/9/hc-lingqu-agent-ai": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "以灵衢互联为核心，打造集群与超节点协同的新计算架构"
+ },
+ "https://www.huawei.com/cn/news/2026/9/hc-wang-keynote": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "智启新未来，打造智能世界的硅基黑土地 (汪涛 keynote, HC2026)"
+ },
+ "https://www.huawei.com/cn/news/2026/9/new-computing-architecture-peerium": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "华为发布AI时代全新计算架构Peerium (Chinese release)"
+ },
+ "https://www.huawei.com/cn/publications/huaweitech/202503": {
+  "date": "2025",
+  "ev": "vendor-official",
+  "publisher": "华为",
+  "title": "华为技术 HuaweiTech 总第100期（2025年第3期）·“企业开发者同行：代码为舟，共赴极致性能彼岸”"
+ },
+ "https://www.huawei.com/en/news/2025/9/hc-huawei-cloud-ai-pioneer": {
+  "date": "2025-09",
+  "ev": "unverified",
+  "publisher": "Huawei",
+  "title": "Huawei Cloud: Fostering the Fertile Ground for Compute, Empowering AI Pioneers for Industries"
+ },
+ "https://www.huawei.com/en/news/2025/9/hc-lingqu-ai-superpod": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "HUAWEI CONNECT 2025 SuperPoD press release"
+ },
+ "https://www.huawei.com/en/news/2025/9/hc-superpod-innovation": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Launches Open-Access SuperPoD Architecture for All-Scenario Computing (Yang Chaobin)"
+ },
+ "https://www.huawei.com/en/news/2025/9/hc-xu-keynote-speech": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure (Eric Xu keynote, HC2025)"
+ },
+ "https://www.huawei.com/en/news/2026/3/mwc-superpod-ai": {
+  "date": "2026-03-02",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Unveiled the Latest SuperPoD, Making an AI Infrastructure New Option to the World"
+ },
+ "https://www.huawei.com/en/news/2026/3/mwc-superpod-computing": {
+  "date": "2026-02-28",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei's SuperPoD Portfolio Creates New Option for Global Computing at MWC Barcelona 2026"
+ },
+ "https://www.huawei.com/en/news/2026/9/hc-agentic-infra-industry-ai": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Cloud Rolls Out Enterprise AI Products Across the Board, Building an Open Agentic Cloud"
+ },
+ "https://www.huawei.com/en/news/2026/9/hc-ai-infra-aiwan-campus": {
+  "date": "2026-09-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Unveils Upgraded Stellar AI Network to Power the Agentic World with Secure, Intelligent Connectivity"
+ },
+ "https://www.huawei.com/en/news/2026/9/hc-ascend960-supernode": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Launches the World's First NPO-based SuperPoD – the Atlas 960E SuperPoD"
+ },
+ "https://www.huawei.com/en/news/2026/9/hc-lingqu-agent-ai": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Yang Chaobin keynote, HUAWEI CONNECT 2026 (UnifiedBus computing architecture)"
+ },
+ "https://www.huawei.com/en/news/2026/9/hc-wang-keynote": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Advancing the Agentic World, Building a Solid Silicon Foundation"
+ },
+ "https://www.huawei.com/en/news/2026/9/new-computing-architecture-peerium": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "Huawei",
+  "title": "Huawei Pioneers a New Computing Architecture for the AI Era"
+ },
+ "https://www.huaweicentral.com/huawei-hopes-60-hike-in-ai-chips-revenue-this-year-report/": {
+  "date": "2026",
+  "ev": "unverified",
+  "publisher": "HuaweiCentral (citing FT)",
+  "title": "Huawei hopes 60% hike in AI chips revenue this year: report"
+ },
+ "https://www.huaweicloud.com/declaration/aics.html": {
+  "date": "2026-10-08 (last updated)",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "灵衢智算集群（AICS）服务声明"
+ },
+ "https://www.huaweicloud.com/declaration/sla.html": {
+  "date": "footer shows 2026-07-22",
+  "ev": "unverified",
+  "publisher": "Huawei Cloud",
+  "title": "华为云服务等级协议 (SLA index)"
+ },
+ "https://www.huaweicloud.com/declaration/sla/modelarts-lite.html": {
+  "date": "last updated 2024-06-13",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AI开发平台轻量版-集群模式（ModelArts Lite）服务等级协议"
+ },
+ "https://www.huaweicloud.com/declaration/sla/modelarts-server.html": {
+  "date": "last updated 2024-06-13",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AI开发平台轻量版-节点模式（ModelArts DevServer）服务等级协议"
+ },
+ "https://www.huaweicloud.com/declaration/sla/modelarts.html": {
+  "date": "last updated 2024-06-13",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AI开发平台（ModelArts）服务等级协议"
+ },
+ "https://www.huaweicloud.com/lab/algorithm/news.html": {
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "Huawei Cloud Algorithm Innovation Lab news index"
+ },
+ "https://www.huaweicloud.com/lab/algorithm/news/Ascend_10k_cards_level_computing_power_cluster_breakthrough.html": {
+  "date": "undated (content matches June 2025)",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "昇腾万卡级算力集群突破（华为云算法创新Lab新闻）"
+ },
+ "https://www.huaweicloud.com/lab/reliability/research.html": {
+  "date": "undated (footer 2026)",
+  "ev": "unverified",
+  "publisher": "Huawei Cloud",
+  "title": "华为云可用性工程实验室"
+ },
+ "https://www.huaweicloud.com/news/2025/20250424094932570.html": {
+  "date": "2025-04-10",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "华为云发布CloudMatrix 384超节点 多项性能全面突破"
+ },
+ "https://www.huaweicloud.com/product/aics.html": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "AICS 灵衢智算集群-华为云"
+ },
+ "https://www.huaweicloud.com/product/modelarts/ascend-cloud.html": {
+  "date": "accessed 2026-10-19",
+  "ev": "vendor-official",
+  "publisher": "Huawei Cloud",
+  "title": "昇腾云-华为云"
+ },
+ "https://www.huxiu.com/article/4897125.html": {
+  "date": "2026-10-13",
+  "ev": "vendor-official",
+  "publisher": "虎嗅 (WeChat 赛格大道)",
+  "title": "超节点算力集群，能托住国产模型吗？"
+ },
+ "https://www.implicator.ai/deepseek-leaked-call-huawei-16000-chips/": {
+  "date": "2026-07",
+  "ev": "unverified",
+  "publisher": "implicator.ai",
+  "title": "DeepSeek Leaked Call Puts Huawei Chip Supply at 16,000 Cards"
+ },
+ "https://www.implicator.ai/deepseeks-huawei-chip-training-claim-finally-gets-its-benchmarks-and-its-doubters/": {
+  "date": "2026-07-23",
+  "ev": "analyst",
+  "publisher": "implicator.ai",
+  "title": "DeepSeek's Huawei chip training claim finally gets its benchmarks - and its doubters"
+ },
+ "https://www.infoq.cn/article/uG1Um83JFgz2BVxWRYC9": {
+  "date": "2026-09-23",
+  "ev": "vendor-official",
+  "publisher": "InfoQ (于曦)",
+  "title": "4096 张卡如何成为“一台计算机”？读懂华为的超节点布局"
+ },
+ "https://www.intelligentcio.com/apac/2025/09/24/huawei-launches-open-access-superpod-architecture-for-all-scenario-computing/": {
+  "date": "2025-09-24",
+  "ev": "media",
+  "publisher": "Intelligent CIO APAC",
+  "title": "Huawei launches open-access SuperPoD architecture for all-scenario computing"
+ },
+ "https://www.investing.com/news/stock-market-news/huawei-expects-ai-chip-revenue-to-jump-at-least-60-this-year-ft-reports-4651839": {
+  "date": "2026-04-30 (dateline May 1)",
+  "ev": "media",
+  "publisher": "Reuters (via Investing.com), citing Financial Times",
+  "title": "Huawei expects AI chip revenue to jump at least 60% this year, FT reports"
+ },
+ "https://www.iphoneplay.cn/2026/09/18/huawei-ascend-960-superpod-npo-hi-one/": {
+  "date": "2026-09-18",
+  "ev": "unverified",
+  "publisher": "iPhonePlay",
+  "title": "4096 卡摞成一个「机柜」：华为昇腾 960 超节点把光引擎塞进了封装旁边"
+ },
+ "https://www.ithome.com/0/779/022.htm": {
+  "date": "2024-07-02",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "腾讯发布星脉网络 2.0：大模型训练效率相比上代提升 20%"
+ },
+ "https://www.ithome.com/0/790/244.htm": {
+  "date": "2024-08-22",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "国内最大智算中心，中国移动智算中心（哈尔滨）节点超万卡智算集群月底投用"
+ },
+ "https://www.ithome.com/0/798/347.htm": {
+  "date": "2024-09-25",
+  "ev": "customer-official",
+  "publisher": "IT之家",
+  "title": "百度发布百舸4.0与千帆3.0"
+ },
+ "https://www.ithome.com/0/846/285.htm": {
+  "date": "2025-04-18",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "科大讯飞宣布联合华为在飞星一号上实现 MoE 大规模专家并行推理性能飞跃"
+ },
+ "https://www.ithome.com/0/862/439.htm": {
+  "date": "2025-06-20",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "华为开发者大会 2025：CloudMatrix384 超节点昇腾 AI 云服务全面上线"
+ },
+ "https://www.ithome.com/0/883/388.htm": {
+  "date": "2025-09-16",
+  "ev": "customer-official",
+  "publisher": "IT之家",
+  "title": "腾讯云：已全面适配主流国产芯片"
+ },
+ "https://www.ithome.com/0/886/722.htm": {
+  "date": "2025-09-29",
+  "ev": "vendor-official",
+  "publisher": "IT之家 (relaying Huawei's announcement)",
+  "title": "华为昇腾 0Day 支持 DeepSeek-V3.2-Exp，面向开发者开源所有推理代码和算子实现"
+ },
+ "https://www.ithome.com/0/931/355.htm": {
+  "date": "2026-03-21",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "华为 Atlas 350 加速卡上市，搭载全新昇腾 950PR 处理器"
+ },
+ "https://www.ithome.com/0/978/019.htm": {
+  "date": "2026-07-17",
+  "ev": "vendor-official",
+  "publisher": "IT之家",
+  "title": "华为昇腾 950 超节点真机首次公开亮相，昇腾 384 超节点已商用落地 750 多套"
+ },
+ "https://www.ithome.com/0/978/920.htm": {
+  "date": "2026-07-20",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "百度昆仑芯M100实物首次展出"
+ },
+ "https://www.ithome.com/1/003/910.htm": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "IT之家",
+  "title": "华为开创 Peerium 计算架构"
+ },
+ "https://www.ithome.com/1/003/981.htm": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "IT之家",
+  "title": "华为灵衢昇腾950智算集群云服务计划9月30日国内商用、11月30日全球商用"
+ },
+ "https://www.ithome.com/1/004/131.htm": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "IT之家",
+  "title": "华为发布全球首个采用 NPO 的超节点“昇腾 960 超节点”，2027 年 Q3 上市"
+ },
+ "https://www.jonpeddie.com/techwatch/alibabas-t-head-ppu/": {
+  "date": "2025-10-08",
+  "ev": "media",
+  "publisher": "Jon Peddie Research",
+  "title": "Alibaba's T-Head PPU"
+ },
+ "https://www.leiphone.com/category/chips/kgknicdWxIIoulL9.html": {
+  "date": "2026-09-30",
+  "ev": "vendor-official",
+  "publisher": "雷峰网 (陈悦琳)",
+  "title": "5500颗光引擎如何撑起4096卡超节点？华为NPO的故事还没讲完"
+ },
+ "https://www.lightcounting.com/newsletter/chinese/july-2026-atlas-950-superpod-achieves-all-optical-interconnection-with-superior-cost-and-power-efficiency-450": {
+  "date": "2026-07-21",
+  "ev": "analyst",
+  "publisher": "LightCounting",
+  "title": "Atlas 950 SuperPoD：卓越光互联技术，赋能高性能超节点"
+ },
+ "https://www.lightcounting.com/newsletter/en/july-2026-atlas-950-superpod-achieves-all-optical-interconnection-with-superior-cost-and-power-efficiency-450": {
+  "date": "2026-07-21",
+  "ev": "analyst",
+  "publisher": "LightCounting (Carol Cao)",
+  "title": "Atlas 950 SuperPoD: Achieves All-Optical Interconnection with Superior Cost and Power Efficiency"
+ },
+ "https://www.lightcounting.com/newsletter/en/september-2025-huawei-announced-large-supernodes-enhancing-scale-and-efficiency-through-connectivity-411": {
+  "date": "2025-09-25",
+  "ev": "vendor-official",
+  "publisher": "LightCounting",
+  "title": "Huawei announced large Supernodes, enhancing scale and efficiency through connectivity"
+ },
+ "https://www.lightcounting.com/newsletter/en/september-2026-august-conferences-bring-the-heat-453": {
+  "date": "2026-09-03",
+  "ev": "analyst",
+  "publisher": "LightCounting (Inniss, Kozlov, Wheeler)",
+  "title": "Evolution of Network Architectures is Accelerating"
+ },
+ "https://www.lightcounting.com/newsletter/en/september-2026-new-technologies-and-fresh-insights-for-scale-out-and-scale-up-optical-interconnection-454": {
+  "date": "2026-09-17",
+  "ev": "analyst",
+  "publisher": "LightCounting (Carol Cao)",
+  "title": "New Technologies and Fresh Insights for Scale-out and Scale-up Optical Interconnection"
+ },
+ "https://www.lightcounting.com/research-note/july-2026-atlas-950-superpod-achieves-all-optical-interconnection-with-superior-cost-and-power-efficiency-450": {
+  "date": "2026-07-21",
+  "ev": "analyst",
+  "publisher": "LightCounting (Carol Cao)",
+  "title": "Atlas 950 SuperPoD: Achieves All-Optical Interconnection with Superior Cost and Power Efficiency"
+ },
+ "https://www.mrjjxw.com/articles/2024-08-08/3496712.html": {
+  "date": "2024-08-08",
+  "ev": "media",
+  "publisher": "每日经济新闻",
+  "title": "中国电信上海、北京两个万卡集群已经投产"
+ },
+ "https://www.mrjjxw.com/articles/2026-09-17/4583975.html": {
+  "date": "2026-09-17",
+  "ev": "media",
+  "publisher": "每日经济新闻",
+  "title": "华为昇腾超节点已部署1000多套 下一代昇腾960提前亮相"
+ },
+ "https://www.newsgd.com/node_5c070fdd03/d32084c3c5.shtml": {
+  "date": "2025-05-06",
+  "ev": "media",
+  "publisher": "China Daily via GDToday",
+  "title": "Inner Mongolia leads way in green computing, data storage"
+ },
+ "https://www.newswire.ca/news-releases/huawei-unveils-upgraded-stellar-ai-network-to-power-the-agentic-world-with-secure-intelligent-connectivity-885842396.html": {
+  "date": "2026-09-18",
+  "ev": "vendor-official",
+  "publisher": "Huawei via CNW",
+  "title": "Huawei Unveils Upgraded Stellar AI Network (CNW)"
+ },
+ "https://www.notebookcheck.net/Huawei-Atlas-950-SuperCluster-unveiled-with-524-ExaFLOPS-AI-performance.1119000.0.html": {
+  "date": "2025-09",
+  "publisher": "Notebookcheck",
+  "title": "Huawei Atlas 950 SuperCluster unveiled with 524 ExaFLOPS AI performance"
+ },
+ "https://www.pcl.ac.cn/html/1030/2026-06-25/content-3876.html": {
+  "date": "2026-06-25",
+  "ev": "customer-official",
+  "publisher": "鹏城实验室",
+  "title": "鹏城云脑"
+ },
+ "https://www.pcl.ac.cn/html/1036/2026-10-16/content-4741.html": {
+  "date": "2026-10-16",
+  "ev": "customer-official",
+  "publisher": "鹏城实验室",
+  "title": "鹏城实验室2026年学术活动周之“2026世界算力网大会”在深圳举办"
+ },
+ "https://www.pcl.ac.cn/html/943/2026-07-08/content-4723.html": {
+  "date": "2026-07-08",
+  "ev": "customer-official",
+  "publisher": "鹏城实验室",
+  "title": "喜报！鹏城实验室获国家科学技术进步一等奖"
+ },
+ "https://www.prnewswire.com/apac/news-releases/huawei-connect-2026--huawei--stellar-ai-fabric--ai---302884781.html": {
+  "date": "2026-09-21",
+  "ev": "vendor-official",
+  "publisher": "Huawei via PR Newswire APAC",
+  "title": "HUAWEI CONNECT 2026 – Stellar AI Fabric (Thai-language release)"
+ },
+ "https://www.qbitai.com/2025/05/280609.html": {
+  "date": "2025-05-08",
+  "ev": "media",
+  "publisher": "QbitAI 量子位",
+  "title": "QbitAI report on Pangu Ultra MoE (6000+ Ascend NPUs)"
+ },
+ "https://www.qbitai.com/2025/06/292512.html": {
+  "date": "2025-06-10",
+  "ev": "vendor-official",
+  "publisher": "QbitAI 量子位",
+  "title": "华为创造AI算力新纪录：万卡集群训练98%可用度，秒级恢复、分钟诊断"
+ },
+ "https://www.qbitai.com/2025/09/333834.html": {
+  "date": "2025-09-19",
+  "ev": "vendor-official",
+  "publisher": "量子位",
+  "title": "华为发布AI超节点服务器Atlas 850，支持128台1024卡超节点集群"
+ },
+ "https://www.qbitai.com/2025/09/335890.html": {
+  "date": "2025-09-24",
+  "ev": "vendor-official",
+  "publisher": "量子位",
+  "title": "中国AI高速路，华为给出开源开放方案"
+ },
+ "https://www.reuters.com/business/media-telecom/china-spotlights-major-data-centre-project-using-domestic-chips-2025-09-17/": {
+  "date": "2025-09-17",
+  "ev": "media",
+  "publisher": "Reuters",
+  "title": "China spotlights major data centre project using domestic chips (title inferred from the URL slug)"
+ },
+ "https://www.sdxcentral.com/news/china-mobile-launches-data-center-in-beijing/": {
+  "date": "2024-07-05",
+  "ev": "media",
+  "publisher": "SDxCentral / DCD (citing C114)",
+  "title": "China Mobile launches data center in Beijing"
+ },
+ "https://www.servethehome.com/huawei-presents-ub-mesh-interconnect-for-large-ai-supernodes-at-hot-chips-2025/": {
+  "date": "2025-08-26",
+  "ev": "paper",
+  "publisher": "ServeTheHome",
+  "title": "Huawei Presents UB-Mesh Interconnect for Large AI SuperNodes at Hot Chips 2025"
+ },
+ "https://www.servethehome.com/wp-content/uploads/2025/08/67_Huawei_Liao_final-10.jpg": {
+  "date": "2025-08-26",
+  "ev": "vendor-official",
+  "publisher": "Huawei (via ServeTheHome)",
+  "title": "Hot Chips 2025 slide 10: Resilient Optical Links"
+ },
+ "https://www.servethehome.com/wp-content/uploads/2025/08/67_Huawei_Liao_final-11.jpg": {
+  "date": "2025-08-26",
+  "ev": "vendor-official",
+  "publisher": "Huawei (via ServeTheHome)",
+  "title": "Hot Chips 2025 slide 11: Hierarchical System Resiliency: 100x MTBF"
+ },
+ "https://www.servethehome.com/wp-content/uploads/2025/08/67_Huawei_Liao_final-5.jpg": {
+  "date": "2025-08-26",
+  "ev": "vendor-official",
+  "publisher": "Huawei (via ServeTheHome)",
+  "title": "Hot Chips 2025 slide 5: 100x Node Bandwidth without 100x Cost"
+ },
+ "https://www.servethehome.com/wp-content/uploads/2025/08/67_Huawei_Liao_final-8.jpg": {
+  "date": "2025-08-26",
+  "ev": "paper",
+  "publisher": "Huawei (via ServeTheHome)",
+  "title": "Hot Chips 2025 slide: System Cost Comparison Between Clos and UB-Mesh"
+ },
+ "https://www.servethehome.com/wp-content/uploads/2025/08/67_Huawei_Liao_final-9.jpg": {
+  "date": "2025-08-26",
+  "ev": "vendor-official",
+  "publisher": "Huawei (via ServeTheHome)",
+  "title": "Hot Chips 2025 slide 9: 8K Node Real Life Example - CLOS + 2D-Mesh"
+ },
+ "https://www.silicon.co.uk/e-innovation/artificial-intelligence/baidu-huawei-ai-537807": {
+  "date": "2023-11-07",
+  "ev": "media",
+  "publisher": "Silicon UK (Matthew Broersma), citing Reuters exclusive",
+  "title": "Baidu 'Turns To Huawei' For AI Chips"
+ },
+ "https://www.sina.cn/weibo/detail/5344874748445236.html": {
+  "date": "2026-09-19",
+  "ev": "media",
+  "publisher": "Sina (blogger 邓哥2026)",
+  "title": "华为 NPO 量产落地，光互联赛道迎来新变量"
+ },
+ "https://www.sina.cn/weibo/detail/5345338329925659.html": {
+  "date": "2026-09-20",
+  "ev": "media",
+  "publisher": "Sina (blogger)",
+  "title": "华为昇腾 960 超节点：用光信号把 4096 颗芯片连成一台"
+ },
+ "https://www.stcn.com/article/detail/1508161.html": {
+  "date": "2025-01-24",
+  "ev": "media",
+  "publisher": "证券日报 via 证券时报网 (李乔宇)",
+  "title": "实探哈尔滨智算中心：AI芯片国产化率已达100%"
+ },
+ "https://www.stdaily.com/web/gdxw/2026-04/25/content_507933.html": {
+  "date": "2026-04-25",
+  "ev": "media",
+  "publisher": "科技日报 (崔爽)",
+  "title": "DeepSeek V4正式发布 昇腾超节点系列产品全面支持"
+ },
+ "https://www.stdaily.com/web/gdxw/2026-09/17/content_582672.html": {
+  "date": "2026-09-17",
+  "publisher": "科技日报 (stdaily)",
+  "title": "华为汪涛发布全球首个采用NPO技术的昇腾960超节点"
+ },
+ "https://www.stdaily.com/web/gdxw/2026-10/04/content_591732.html": {
+  "date": "2026-10-04",
+  "ev": "media",
+  "publisher": "科技日报 / 中国科技网",
+  "title": "首个昇腾950测试基地在北京通州落成"
+ },
+ "https://www.storagenewsletter.com/2026/09/25/huawei-connect-2026-huawei-launches-the-worlds-first-npo-based-superpod-the-atlas-960e-superpod/": {
+  "date": "2026-09-25",
+  "ev": "vendor-official",
+  "publisher": "StorageNewsletter (Huawei press release)",
+  "title": "Huawei Launches the World's First NPO-based SuperPoD - the Atlas 960E SuperPoD"
+ },
+ "https://www.techradar.com/pro/huawei-debuts-its-atlas-950-ai-superpod-at-mwc-2026-taking-the-ai-data-center-fight-to-nvidia-and-amd": {
+  "date": "2026-03",
+  "publisher": "TechRadar",
+  "title": "Huawei debuts its Atlas 950 AI SuperPoD at MWC 2026"
+ },
+ "https://www.techradar.com/pro/huawei-throws-massive-1-million-npu-gauntlet-at-nvidia-and-amd-as-it-positions-itself-an-alternative-to-us-ai-giants": {
+  "date": "2025-09-18",
+  "publisher": "TechRadar (Desire Athow)",
+  "title": "Huawei throws massive 1-million NPU gauntlet at Nvidia and AMD"
+ },
+ "https://www.techradar.com/pro/tiktoks-parent-firm-could-shun-nvidia-amd-as-reports-claim-it-will-use-100-000-huawei-ai-chips-to-train-its-next-gen-llm": {
+  "date": "2024-10-13",
+  "ev": "media",
+  "publisher": "TechRadar Pro",
+  "title": "TikTok's parent firm could shun Nvidia, AMD as reports claim it will use 100,000 Huawei AI chips to train its next-gen LLM"
+ },
+ "https://www.techzine.eu/blogs/infrastructure/144385/huawei-atlas-960e-scales-up-to-a-supercluster-of-a-million-npus/": {
+  "date": "2026-09-18",
+  "ev": "media",
+  "publisher": "Techzine",
+  "title": "Huawei Atlas 960E scales up to a SuperCluster of a million NPUs"
+ },
+ "https://www.telecomsci.com/rc-pub/front/front-article/download/120127747/lowqualitypdf/基于数据和知识驱动的超万卡智算集群稳定性保障实践.pdf": {
+  "date": "2025-07",
+  "ev": "customer-official",
+  "publisher": "电信科学",
+  "title": "S09 full-text PDF"
+ },
+ "https://www.telecomsci.com/rc-pub/front/front-article/download/79426420/lowqualitypdf/云化的智算中心万卡集群创新与实践.pdf": {
+  "date": "2024-12-20",
+  "ev": "paper",
+  "publisher": "电信科学",
+  "title": "云化的智算中心万卡集群创新与实践 (PDF)"
+ },
+ "https://www.telecomsci.com/zh/article/doi/10.11959/j.issn.1000-0801.2024262/": {
+  "date": "2024-12-20",
+  "ev": "paper",
+  "publisher": "电信科学 / China Mobile authors",
+  "title": "云化的智算中心万卡集群创新与实践 (电信科学 40(12):125-135)"
+ },
+ "https://www.tftc.io/deepseek-huawei-ascend-160000-chips-inner-mongolia-nvidia-sanctions": {
+  "date": "2026-09-04",
+  "ev": "media",
+  "publisher": "TFTC",
+  "title": "DeepSeek Orders 160,000 Huawei Ascend Chips for 1 GW Data Center"
+ },
+ "https://www.thedailystar.net/news/tech-startup/news/deepseek-previews-new-v4-model-runs-huawei-chips-4159751": {
+  "date": "2026-04-24 (updated 2026-04-25)",
+  "ev": "media",
+  "publisher": "The Daily Star (Tech & Startup Desk), citing Reuters",
+  "title": "DeepSeek previews new V4 model, runs on Huawei chips"
+ },
+ "https://www.thepaper.cn/newsDetail_forward_31617840": {
+  "date": "2025-09-16",
+  "ev": "customer-official",
+  "publisher": "澎湃新闻 The Paper",
+  "title": "2025腾讯全球数字生态大会报道"
+ },
+ "https://www.theregister.com/2025/07/29/huawei_rackscale_boogeyman/": {
+  "date": "2025-07-29",
+  "publisher": "The Register (Tobias Mann)",
+  "title": "Stacking up Huawei's rack-scale boogeyman against Nvidia's best"
+ },
+ "https://www.theregister.com/2025/08/14/dodgy_huawei_deepseek/": {
+  "date": "2025-08-14",
+  "ev": "media",
+  "publisher": "The Register (Tobias Mann)",
+  "title": "Dodgy Huawei chips nearly sunk DeepSeek's next-gen R2 model"
+ },
+ "https://www.theregister.com/2026/04/24/deepseek_v4/": {
+  "date": "2026-04-24",
+  "ev": "media",
+  "publisher": "The Register",
+  "title": "DeepSeek's new models offer big inference cost savings"
+ },
+ "https://www.theregister.com/networks/2026/09/14/huawei-pitches-near-packaged-optics-as-co-packaged-costs-bite/5296164": {
+  "date": "2026-09-14",
+  "ev": "media",
+  "publisher": "The Register",
+  "title": "Huawei pitches near-packaged optics as co-packaged costs bite"
+ },
+ "https://www.theregister.com/systems/2026/09/17/huaweis-next-gen-ascend-npus-could-become-chinas-best-option/5297320": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "The Register",
+  "title": "Huawei's next-gen Ascend NPUs could become China's best option"
+ },
+ "https://www.tradingview.com/news/eqs:2a00a0caa094b:0-huawei-unveils-the-industry-s-first-npo-optical-engine-with-built-in-light-source-hi-one-leading-the-way-in-high-speed-optical-interconnect-technology-innovation/": {
+  "ev": "unverified",
+  "publisher": "TradingView (EQS News)",
+  "title": "Huawei Unveils the Industry's First NPO Optical Engine with Built-in Light Source, Hi-ONE"
+ },
+ "https://www.trendforce.com/news/2025/08/14/news-deepseek-r2-model-launch-reportedly-delayed-amid-huawei-ascend-chip-hurdles/": {
+  "date": "2025-08-14",
+  "ev": "media",
+  "publisher": "TrendForce (relaying the Financial Times)",
+  "title": "DeepSeek R2 Model Launch Reportedly Delayed Amid Huawei Ascend Chip Hurdles"
+ },
+ "https://www.trendforce.com/news/2025/09/17/news-alibaba-t-head-ppu-lands-china-unicom-deal-reportedly-matches-nvidia-h20-performance/": {
+  "date": "2025-09-17",
+  "ev": "media",
+  "publisher": "TrendForce (citing EE Times China, CCTV, Reuters/The Information)",
+  "title": "Alibaba T-Head PPU lands China Unicom deal, reportedly matches Nvidia H20 performance"
+ },
+ "https://www.trendforce.com/news/2026/03/23/news-huawei-debuts-atlas-350-on-ascend-950pr-with-in-house-hbm-touting-2-8x-h20-performance/": {
+  "date": "2026-03-23",
+  "ev": "media",
+  "publisher": "TrendForce News (citing SCMP, IT Home, Mydrivers, 163.com)",
+  "title": "[News] Huawei Debuts Atlas 350 on Ascend 950PR with In-House HBM, Touting 2.8x H20 Performance"
+ },
+ "https://www.trendforce.com/news/2026/04/07/news-decoding-deepseek-v4-how-huaweis-ascend-950-pr-is-powering-chinas-push-to-break-cuda-dependence/": {
+  "date": "2026-04-07",
+  "ev": "media",
+  "publisher": "TrendForce",
+  "title": "Decoding DeepSeek V4: How Huawei's Ascend 950PR is powering China's push to break CUDA dependence"
+ },
+ "https://www.trendforce.com/news/2026/09/17/news-huawei-speeds-up-ai-chip-roadmap-reportedly-pulls-ascend-960dt-forward-three-quarters-to-1q27/": {
+  "date": "2026-09-17",
+  "ev": "vendor-official",
+  "publisher": "TrendForce",
+  "title": "Huawei Speeds Up AI Chip Roadmap, Reportedly Pulls Ascend 960DT Forward Three Quarters to 1Q27"
+ },
+ "https://www.trendforce.com/news/?p=64966": {
+  "date": "2026-10",
+  "ev": "paper",
+  "publisher": "TrendForce",
+  "title": "Huawei Says Ascend Market Share Tops NVIDIA in China, Backs NPO Over CPO"
+ },
+ "https://www.unifiedbus.com/api-server/web/v1/white-paper/zh/file/UB-SuperPoD-Architecture-White-Paper-zh.pdf/4.0.0": {
+  "date": "2025-09 (PDF creation 2025-09-26)",
+  "ev": "vendor-official",
+  "publisher": "Huawei / UnifiedBus",
+  "title": "基于灵衢的超节点参考架构白皮书"
+ },
+ "https://www.unifiedbus.com/en/news/hc-xu-keynote-speech": {
+  "date": "2025-09-18",
+  "ev": "vendor-official",
+  "publisher": "UnifiedBus (Huawei)",
+  "title": "Groundbreaking SuperPoD Interconnect: Leading a New Paradigm for AI Infrastructure"
+ },
+ "https://www.unifiedbus.com/zh/white-papers/UB-SuperPoD-Architecture-White-Paper-zh": {
+  "date": "accessed 2026-10-19 (file version 6.0.0)",
+  "ev": "vendor-official",
+  "publisher": "Huawei / UnifiedBus community (unifiedbus.com), CC BY 4.0, (c)2025",
+  "title": "基于灵衢的超节点参考架构白皮书 / UnifiedBus (UB) SuperPoD Reference Architecture White Paper"
+ },
+ "https://www.uzdaily.uz/en/huawei-pioneers-a-new-computing-architecture-for-the-ai-era-making-one-million-processors-work-as-one-computer-summary-of-roundtable-meeting-between-eric-xu-and-international-media-outlets-on-september-17/": {
+  "date": "2026-09-30",
+  "publisher": "Huawei via Media OutReach",
+  "title": "Roundtable summary (syndicated Media OutReach release)"
+ },
+ "https://www.yicai.com/news/102826299.html": {
+  "date": "2025-09-16",
+  "ev": "media",
+  "publisher": "第一财经",
+  "title": "Yicai report on Tencent Digital Ecosystem Summit 2025"
+ },
+ "https://www.yicai.com/news/102910111.html": {
+  "date": "2025-11-13",
+  "ev": "customer-official",
+  "publisher": "第一财经 Yicai",
+  "title": "百度世界大会披露昆仑芯进展"
+ },
+ "https://www.yicai.com/news/103279562.html": {
+  "date": "2026-07-17",
+  "ev": "vendor-official",
+  "publisher": "第一财经",
+  "title": "华为首次公开展出昇腾950超节点真机"
+ },
+ "https://yicaiglobal.com/news/china-mobile-opens-worlds-biggest-super-computing-hub-run-by-global-carrier": {
+  "date": "2024-04-29",
+  "ev": "media",
+  "publisher": "Yicai Global",
+  "title": "China Mobile Opens World's Biggest Super Computing Hub Run by Global Carrier"
+ },
+ "https://z.ai/blog/glm-5": {
+  "date": "2026-02-12",
+  "ev": "customer-official",
+  "publisher": "Z.ai (Zhipu)",
+  "title": "GLM-5: From Vibe Coding to Agentic Engineering"
+ },
+ "https://z.ai/blog/glm-image": {
+  "date": "2026-01-14",
+  "ev": "customer-official",
+  "publisher": "Z.ai (Zhipu)",
+  "title": "GLM-Image: Auto-regressive for Dense-knowledge and High-fidelity Image Generation"
+ }
+}

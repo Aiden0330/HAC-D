@@ -1,5 +1,5 @@
 /**
- * Top-down availability in MTBF / MTTR terms (docs/MTBF_MTTR_TOPDOWN.{en,zh}.html): for the three topology templates at the
+ * Top-down availability in MTBF / MTTR terms (docs/MTBF_MTTR_TOPDOWN.{en,zh}.html): for the topology templates at the
  * built-in 10k / 100k / 200k / 500k NPUs (six default mechanisms, A_op target = the scenario default 98.5 %):
  *  - the job-level formula A_op = (1 − φ_SDC) / (1 + MTTR_hw/MTBF_hw + Σ_k MTTR_k/MTBF_k) with every event class kept apart
  *    (hardware interruptions through the mechanism chain; isolation of detected sub-healthy units; detected silent corruption;

@@ -155,7 +155,7 @@ footer.site { color: var(--ink-3); font-size: 12px; padding: 24px 16px; text-ali
 .pane-in, .pane-out { display: grid; gap: 10px; min-width: 0; }
 @media (min-width: 1001px) { .pane-in { position: sticky; top: 104px; max-height: calc(100vh - 116px); overflow-y: auto; padding-right: 2px; } }
 @media (max-width: 1000px) { .workbench { grid-template-columns: minmax(0, 1fr); } }
-.tpl-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.tpl-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .tpl-card { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-3); padding: 6px 4px; cursor: pointer; font-size: 11.5px; line-height: 1.25; color: var(--ink-2); text-align: center; min-width: 0; }
 .tpl-card:hover { border-color: var(--rule-strong); }
 .tpl-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }

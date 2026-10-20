@@ -1,9 +1,9 @@
 #!/usr/bin/env -S node --import tsx
 /**
  * hacd — command-line access to the HAC-D core.
- *   hacd examples                                   list the example scenarios (the three topology templates; scale with --npus)
+ *   hacd examples                                   list the example scenarios (the four topology templates; scale with --npus)
  *   hacd example <id> [--npus N]                    print an example scenario as JSON at N NPUs (built-in 10k / 100k / 200k / 500k, any N)
- *   hacd topology <a2-roce|a3-ub384|a950-ub2> [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
+ *   hacd topology <a2-roce|a3-ub384|a950-ub2|a960e-ub> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
  *   hacd strategy <scenario.json | --template a3-ub384 [--npus 10000]> [--strategy optimal|mttr-first|mttf-first] [--target 0.985] [--metric aOp|delivered] [--split min-effort|agree|arinc] [--candidates D-HARD,…] [--no-levers] [--no-derate] [--sizes 1000,10000] [--trials 0] [--json]   allocation strategy (v4)
  *   hacd eval <scenario.json> [--json]              evaluate a scenario (table or JSON)
  *   hacd compare <a.json> <b.json> ... [--json]     side-by-side KPIs
@@ -30,7 +30,7 @@ import {
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
   rateFromCounts, unitRateFromCounts,
   importRemapCatalog,
-  GPU_EXAMPLES, REFERENCE_FIXTURES, resizeTopology, scaleLabel, topologyScenario, topologyBom, bomAtSizes, bomRowsAcross, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, allocateStrategy, strategyAcrossSizes, STRATEGY_IDS,
+  GPU_EXAMPLES, REFERENCE_FIXTURES, resizeTopology, scaleLabel, topologyScenario, topologyBom, bomAtSizes, bomRowsAcross, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, applySuperpodVariant, allocateStrategy, strategyAcrossSizes, STRATEGY_IDS,
   type TopologyTemplate, type StrategyId, type StrategyMetric, type HardwareSplit,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
@@ -60,7 +60,7 @@ switch (cmd) {
     console.error(`scale with: hacd example <id> --npus N (built-in ${TOPOLOGY_SCALES.map(scaleLabel).join(' / ')}, any N)`);
     break;
   case 'example': {
-    // v4.1 the registry is the three topology templates (scale with --npus); the reference fixtures (ref-catalog-100k,
+    // v4.2 the registry is the four topology templates (scale with --npus); the reference fixtures (ref-catalog-100k,
     // ref-three-classes-100k) and the v3.7 GPU examples stay reachable by id, not listed (the GPU tool is forked at tag v3.7-gpu)
     const f = EXAMPLES[rest[0]] ?? REFERENCE_FIXTURES[rest[0]] ?? GPU_EXAMPLES[rest[0]];
     if (!f) {
@@ -77,14 +77,17 @@ switch (cmd) {
   case 'topology': {
     const t = rest[0] as TopologyTemplate;
     if (!TOPOLOGY_TEMPLATES[t]) {
-      console.error(`usage: hacd topology <${Object.keys(TOPOLOGY_TEMPLATES).join('|')}> [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]`);
+      console.error(`usage: hacd topology <${Object.keys(TOPOLOGY_TEMPLATES).join('|')}> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]`);
       process.exit(1);
     }
     const npus = Number(flag('npus') ?? 10000);
     const radix = flag('radix');
     const fill = flag('fill') as 'proportional' | 'full-pod' | undefined;
     const base = TOPOLOGY_TEMPLATES[t].topology;
-    const s = topologyScenario(t, npus, { scaleOut: !rest.includes('--no-scale-out'), topology: { ...(fill ? { fabricFill: fill } : {}), ...(radix && base.scaleOut ? { scaleOut: { ...base.scaleOut, radix: Number(radix) } as never } : {}) } });
+    const variant = flag('variant');
+    if (variant && !SUPERPOD_VARIANTS[t]?.some((v) => v.id === variant)) { console.error(`variant ${variant} does not belong to ${t} (${(SUPERPOD_VARIANTS[t] ?? []).map((v) => v.id).join(', ') || 'none'})`); process.exit(1); }
+    const s0 = topologyScenario(t, npus, { scaleOut: !rest.includes('--no-scale-out'), topology: { ...(fill ? { fabricFill: fill } : {}), ...(radix && base.scaleOut ? { scaleOut: { ...base.scaleOut, radix: Number(radix) } as never } : {}) } });
+    const s = variant ? applySuperpodVariant(s0, variant) : s0;
     const sizes = (flag('sizes') ?? TOPOLOGY_SCALES.join(',')).split(',').map(Number).filter((x) => x > 0);
     const at = bomAtSizes(s, sizes);
     const bom = topologyBom(s);

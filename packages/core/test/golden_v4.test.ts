@@ -9,7 +9,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { closCounts } from '../src/scenario/build.js';
-import { topologyScenario, topologyBom, unitFaultLibrary, type TopologyTemplate } from '../src/topology/index.js';
+import { topologyScenario, topologyBom, unitFaultLibrary, SUPERPOD_VARIANTS, applySuperpodVariant, type TopologyTemplate } from '../src/topology/index.js';
+import { SUPERPOD_PRESETS } from '../src/scenario/schema.js';
 
 interface GoldenCase {
   id: string;
@@ -30,11 +31,20 @@ function compute(c: GoldenCase): Record<string, number> {
       return { tiers: r.tiers, switches: r.switches, links: r.links, transceivers: r.transceivers, ...Object.fromEntries(r.perTier.map((n, k) => [`tier${k + 1}`, n])) };
     }
     case 'template': {
-      const s = topologyScenario(i.template as TopologyTemplate, i.npus as number, { topology: { fabricFill: i.fabricFill as 'proportional' | 'full-pod' }, mechanisms: [] });
+      // v4.2 superpod variants: a preset with field overrides replaces the template's superpod geometry
+      const over = (c.inputs as { superpod?: Record<string, unknown> }).superpod;
+      const sp = over ? { ...SUPERPOD_PRESETS[over.preset as keyof typeof SUPERPOD_PRESETS].values, ...over } : undefined;
+      const base = topologyScenario(i.template as TopologyTemplate, i.npus as number, { topology: { fabricFill: i.fabricFill as 'proportional' | 'full-pod' }, mechanisms: [] });
+      // a variant case (id '<variant>-<N>-<fill>') is built through the topology page's selector, which must carry the Python variant's geometry
+      const vid = SUPERPOD_VARIANTS[i.template as TopologyTemplate]?.find((v) => c.id.startsWith(`${v.id}-`))?.id;
+      const s = vid ? applySuperpodVariant(base, vid) : sp ? { ...base, topology: { ...base.topology, superpod: sp as never } } : base;
+      if (vid && JSON.stringify(s.topology.superpod) !== JSON.stringify({ ...s.topology.superpod, ...sp })) throw new Error(`${c.id}: SUPERPOD_VARIANTS['${vid}'] differs from the golden inputs`);
+      if (sp && !vid) throw new Error(`${c.id}: superpod override without a matching SUPERPOD_VARIANTS id`);
       const b = topologyBom(s);
       const k = b.counts;
       const out: Record<string, number> = { npus: k.gpus, nodes: k.nodes, cpus: k.cpus, cabinets: k.racks, hardFitPerNpuTotal: b.hardFitPerNpuTotal, hardPerHour: b.hardPerHour };
       if (s.topology.superpod) Object.assign(out, { pods: k.supernodes, commCabinets: k.commRacks, l1: k.l1Switches, l2: k.l2Switches, ubLinks: k.opticalLinks, ubTransceivers: k.transceivers });
+      if (s.topology.superpod && k.fabric !== 'two-level') Object.assign(out, { rackSwitches: k.rackSwitches, podSwitches: k.podSwitches, meshLinks: k.meshLinks, rackMeshLinks: k.rackMeshLinks, opticalEngines: k.opticalEngines });
       if (s.topology.scaleOut) Object.assign(out, { roPorts: k.scaleOutPorts, roTiers: k.scaleOutTiers, roSwitches: k.scaleOutSwitches, roLinks: k.scaleOutLinks, ...Object.fromEntries(k.scaleOutPerTier.map((n, j) => [`roTier${j + 1}`, n])) });
       for (const [u, v] of Object.entries(b.hardFitPerNpu)) out[`hardFitPerNpu.${u}`] = v!;
       return out;
