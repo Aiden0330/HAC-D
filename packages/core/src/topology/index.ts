@@ -27,7 +27,7 @@
 import { parseScenario, SUPERPOD_PRESETS, type Scenario, type ScenarioInput, type Topology, type Superpod } from '../scenario/schema.js';
 import { REFERENCE_EVENTS, type ReferenceEvent } from '../scenario/referenceEvents.js';
 import { EXAMPLES } from '../scenario/examples.js';
-import { computeCounts, type Counts } from '../scenario/build.js';
+import { computeCounts, geometryCounts, resolveCountOverrides, componentInstances, withoutSuperpodOverrides, COUNT_OVERRIDE_ROWS, type Counts } from '../scenario/build.js';
 import { applyMechanisms, stripMechanisms, mechanismById, DEFAULT_PLAYERS } from '../mechanisms/index.js';
 import { toPerHour } from '../units/index.js';
 import { withSize } from '../study/index.js';
@@ -415,7 +415,14 @@ export interface BomRow {
   /** what one unit failure takes out */
   impact: L;
   blastRadiusNpus?: number;
-  confidence: 'paper' | 'vendor' | 'derived' | 'assumed';
+  /** 'user' when the count is a user override (topology.countOverrides) */
+  confidence: 'paper' | 'vendor' | 'derived' | 'assumed' | 'user';
+  /** v4.3 the geometry count when a user override replaces it */
+  geometryCount?: number;
+  /** v4.3 the user may override this row's count (COUNT_OVERRIDE_ROWS or a scale-out tier) */
+  overridable?: boolean;
+  /** v4.3 a rate-only row (classes counted on different kinds of units): no unit count to show */
+  noCount?: boolean;
 }
 
 export interface TopologyBom {
@@ -426,8 +433,12 @@ export interface TopologyBom {
   /** hard (interruption) FIT per NPU from each fault unit, and the total */
   hardFitPerNpu: Partial<Record<FaultUnit, number>>;
   hardFitPerNpuTotal: number;
+  /** v4.3 FIT per NPU of the classes counted outside the template units (the 'Other components' row); part of the total */
+  hardFitPerNpuOther: number;
   /** job hard-interruption rate (per hour) and MTBI (hours) from the hardware alone */
   hardPerHour: number;
+  /** v4.3 user counts in effect and those that do not apply here */
+  countOverrides: { applied: { id: string; geometry: number; count: number; tier?: number }[]; ignored: { id: string; reason: string }[] };
   notes: string[];
 }
 
@@ -474,8 +485,9 @@ export function topologyBom(s: Scenario): TopologyBom {
   row({ id: 'npu', name: chip ? { zh: `NPU（${chip}）`, en: `NPU (${chip})` } : { zh: 'NPU / 加速卡', en: 'NPU / accelerator card' }, level: 'npu', count: N, faultUnit: 'npu', impact: { zh: '1 张卡；同步作业中断', en: 'one card; the synchronous job stops' }, blastRadiusNpus: 1, confidence: 'paper' });
   row({ id: 'job', name: FAULT_UNIT_NAMES.job, level: 'cluster', count: N, faultUnit: 'job', impact: { zh: '整个作业：共享存储、软件、未归因（按 NPU·h 口径）', en: 'the whole job: shared storage, software, unattributed (per NPU-hour 口径)' }, blastRadiusNpus: N, confidence: 'assumed' });
   row({ id: 'node', name: { zh: `${nodeName.zh} · ${counts.gpusPerNode} NPU`, en: `${nodeName.en} · ${counts.gpusPerNode} NPUs` }, level: 'node', count: counts.nodes, faultUnit: 'node', impact: { zh: `1 个节点（${counts.gpusPerNode} NPU）`, en: `one node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: vendorish(t.template) });
-  if (counts.cpus > 0) row({ id: 'cpu', name: FAULT_UNIT_NAMES.cpu, level: 'node', count: counts.cpus, faultUnit: 'cpu', impact: { zh: `所在节点（${counts.gpusPerNode} NPU）`, en: `its node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a950-ub2' ? 'vendor' : vendorish(t.template) });
-  if (sp) row({ id: 'qingtian', name: { zh: '擎天卡（VPC 面）', en: 'Qingtian card (VPC plane)' }, level: 'node', count: counts.nodes * sp.vpcNicsPerNode, impact: { zh: '存储 / 管理通路（故障在 MGMT、STORAGE 类中）', en: 'storage / management path (faults inside MGMT, STORAGE)' }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
+  const userRow = (id: string) => t.countOverrides?.[id] !== undefined;
+  if (counts.cpus > 0 || userRow('cpu')) row({ id: 'cpu', name: FAULT_UNIT_NAMES.cpu, level: 'node', count: counts.cpus, faultUnit: 'cpu', impact: { zh: `所在节点（${counts.gpusPerNode} NPU）`, en: `its node (${counts.gpusPerNode} NPUs)` }, blastRadiusNpus: counts.gpusPerNode, confidence: t.template === 'a950-ub2' ? 'vendor' : vendorish(t.template) });
+  if (sp) row({ id: 'qingtian', name: { zh: '擎天卡（VPC 面）', en: 'Qingtian card (VPC plane)' }, level: 'node', count: (t.countOverrides ? geometryCounts(s).nodes : counts.nodes) * sp.vpcNicsPerNode, impact: { zh: '存储 / 管理通路（故障在 MGMT、STORAGE 类中）', en: 'storage / management path (faults inside MGMT, STORAGE)' }, confidence: t.template === 'a3-ub384' ? 'paper' : 'assumed' });
   const perCab = counts.gpusPerNode * counts.nodesPerRack;
   row({ id: 'cabinet', name: { zh: `计算机柜（${counts.nodesPerRack} 节点 · ${perCab} NPU）`, en: `Compute cabinet (${counts.nodesPerRack} nodes · ${perCab} NPUs)` }, level: 'cabinet', count: counts.racks, faultUnit: 'cabinet', impact: { zh: `1 个机柜（${perCab} NPU）`, en: `one cabinet (${perCab} NPUs)` }, blastRadiusNpus: perCab, confidence: t.template === 'a2-roce' ? 'derived' : t.template === 'a950-ub2' ? 'vendor' : t.template === 'a960e-ub' ? 'assumed' : 'paper' });
   if (sp) {
@@ -498,12 +510,12 @@ export function topologyBom(s: Scenario): TopologyBom {
       row({ id: 'commCabinet', name: { zh: '灵衢互联柜（超节点交换层）', en: 'UB interconnect cabinet (pod switch tier)' }, level: 'pod', count: counts.commRacks, impact: { zh: `约 ${perComm} 台超节点层交换的共因（故障在 FABRIC 类中）`, en: `common cause for ≈ ${perComm} pod-tier switches (faults inside FABRIC)` }, confidence: blade ? 'assumed' : 'vendor' });
       row({ id: 'ubRackSwitch', name: blade ? { zh: `柜内 LinkBlade 交换芯片（每柜 ${sp.rackSwitches}）`, en: `In-cabinet LinkBlade switch chip (${sp.rackSwitches} per cabinet)` } : { zh: `柜内低阶 UB 交换 LRS（每柜 ${sp.rackSwitches}）`, en: `In-cabinet low-radix UB switch LRS (${sp.rackSwitches} per cabinet)` }, level: 'fabric', count: counts.rackSwitches, faultUnit: 'ub-switch', unitShare: share(counts.rackSwitches), impact: blade ? { zh: `所在柜 1/${sp.rackSwitches} 的柜内交换`, en: `1/${sp.rackSwitches} of its cabinet's switching` } : { zh: '柜内 2D 全互联的一个转发 / 备份路径（4 平面之一）', en: 'one forwarding / backup path of the cabinet mesh (one of 4 planes)' }, confidence: blade ? 'assumed' : 'paper' });
       row({ id: 'ubPodSwitch', name: podSwitchName, level: 'fabric', count: counts.podSwitches, faultUnit: 'ub-switch', unitShare: share(counts.podSwitches), impact: perPod > 0 ? { zh: `超节点跨柜带宽的 1/${perPod}`, en: `1/${perPod} of the pod's cross-cabinet bandwidth` } : { zh: '无超节点层交换（每 NPU 上联数为 0）', en: 'no pod-tier switches (0 uplinks per NPU)' }, confidence: sp.fabric === 'mesh-4d' ? 'paper' : 'derived' });
-      if (counts.meshLinks > 0) row({ id: 'ubMeshLink', name: { zh: `柜内全互联电链路（每柜 ${meshLinksPerCabinet(sp)} 条，x4）`, en: `In-cabinet full-mesh electrical link (${meshLinksPerCabinet(sp)} per cabinet, x4)` }, level: 'fabric', count: counts.meshLinks, impact: { zh: '一对 NPU 的直连；改经 LRS 转发（目录无此类，计数项）', en: 'one NPU pair; traffic re-routed through an LRS (no catalog class; counted only)' }, confidence: 'paper' });
-      if (counts.rackMeshLinks > 0) row({ id: 'ubRackMesh', name: { zh: `柜间全互联电缆束（${sp.meshRackGrid} × ${sp.meshRackGrid} 柜，UB x128）`, en: `Cabinet-to-cabinet mesh bundle (${sp.meshRackGrid} × ${sp.meshRackGrid} cabinets, UB x128)` }, level: 'fabric', count: counts.rackMeshLinks, impact: { zh: '两柜之间的一维直连（计数项）', en: 'one cabinet-pair link of the cabinet mesh (counted only)' }, confidence: 'paper' });
-      if (counts.opticalEngines > 0) row({ id: 'npoEngine', name: { zh: 'NPO 光引擎 Hi-ONE（7.2 Tb/s）', en: 'NPO optical engine Hi-ONE (7.2 Tb/s)' }, level: 'fabric', count: counts.opticalEngines, impact: { zh: '其承载的光链路（OPT 类按等效 800G 链路计）', en: 'the links it carries (OPT counted per 800G-equivalent link)' }, confidence: 'derived' });
+      if (counts.meshLinks > 0 || userRow('ubMeshLink')) row({ id: 'ubMeshLink', name: { zh: `柜内全互联电链路（每柜 ${meshLinksPerCabinet(sp)} 条，x4）`, en: `In-cabinet full-mesh electrical link (${meshLinksPerCabinet(sp)} per cabinet, x4)` }, level: 'fabric', count: counts.meshLinks, impact: { zh: '一对 NPU 的直连；改经 LRS 转发（目录无此类，计数项）', en: 'one NPU pair; traffic re-routed through an LRS (no catalog class; counted only)' }, confidence: 'paper' });
+      if (counts.rackMeshLinks > 0 || userRow('ubRackMesh')) row({ id: 'ubRackMesh', name: { zh: `柜间全互联电缆束（${sp.meshRackGrid} × ${sp.meshRackGrid} 柜，UB x128）`, en: `Cabinet-to-cabinet mesh bundle (${sp.meshRackGrid} × ${sp.meshRackGrid} cabinets, UB x128)` }, level: 'fabric', count: counts.rackMeshLinks, impact: { zh: '两柜之间的一维直连（计数项）', en: 'one cabinet-pair link of the cabinet mesh (counted only)' }, confidence: 'paper' });
+      if (counts.opticalEngines > 0 || userRow('npoEngine')) row({ id: 'npoEngine', name: { zh: 'NPO 光引擎 Hi-ONE（7.2 Tb/s）', en: 'NPO optical engine Hi-ONE (7.2 Tb/s)' }, level: 'fabric', count: counts.opticalEngines, impact: { zh: '其承载的光链路（OPT 类按等效 800G 链路计）', en: 'the links it carries (OPT counted per 800G-equivalent link)' }, confidence: 'derived' });
       row({ id: 'ubLink', name: blade ? { zh: '光链路（800G 等效，NPO 承载）', en: 'Optical link (800G-equivalent, carried by NPO)' } : sp.fabric === 'mesh-4d' ? { zh: '柜–HRS 光链路（8-lane）', en: 'Cabinet-to-HRS optical link (8 lanes)' } : { zh: `柜–交换 800G 光链路（每 NPU ${sp.podUplinksPerNpu} 条，2+2 保护）`, en: `Cabinet-to-switch 800G optical link (${sp.podUplinksPerNpu} per NPU, 2+2 protection)` }, level: 'fabric', count: counts.opticalLinks, faultUnit: 'ub-link', impact: blade ? { zh: '1 条 800G 等效光通道；光引擎失效是保护倒换还是降带宽，华为未披露（OPT 类按 CloudMatrix384 每链路 FIT 计）', en: 'one 800G-equivalent optical channel; whether an engine failure is masked by protection or degrades bandwidth is not disclosed (OPT at the CloudMatrix384 per-link FIT)' } : { zh: '1 条光上联；单模块故障由 2+2 交叉保护与降 lane 吸收的部分不计入', en: 'one optical uplink; single-module faults absorbed by 2+2 cross protection and lane degradation are not counted' }, confidence: 'derived' });
-      if (counts.transceivers > 0) row({ id: 'ubTransceiver', name: { zh: 'UB 光模块（链路两端）', en: 'UB transceiver (both link ends)' }, level: 'fabric', count: counts.transceivers, impact: { zh: '计入所在链路（OPT 类）', en: 'counted with its link (OPT)' }, confidence: 'derived' });
-      if (counts.backupNpus > 0) row({ id: 'backupNpu', name: { zh: `柜内备份 NPU（每柜 ${sp.backupNpusPerRack}）`, en: `Backup NPU in the cabinet (${sp.backupNpusPerRack} per cabinet)` }, level: 'cabinet', count: counts.backupNpus, impact: { zh: '不参与作业；替换故障 NPU（计数项）', en: 'not used by the job; replaces a failed NPU (counted only)' }, confidence: 'paper' });
+      if (counts.transceivers > 0 || userRow('ubTransceiver')) row({ id: 'ubTransceiver', name: { zh: 'UB 光模块（链路两端）', en: 'UB transceiver (both link ends)' }, level: 'fabric', count: counts.transceivers, impact: { zh: '计入所在链路（OPT 类）', en: 'counted with its link (OPT)' }, confidence: 'derived' });
+      if (counts.backupNpus > 0 || userRow('backupNpu')) row({ id: 'backupNpu', name: { zh: `柜内备份 NPU（每柜 ${sp.backupNpusPerRack}）`, en: `Backup NPU in the cabinet (${sp.backupNpusPerRack} per cabinet)` }, level: 'cabinet', count: counts.backupNpus, impact: { zh: '不参与作业；替换故障 NPU（计数项）', en: 'not used by the job; replaces a failed NPU (counted only)' }, confidence: 'paper' });
     }
   }
   if (so) {
@@ -531,14 +543,47 @@ export function topologyBom(s: Scenario): TopologyBom {
     hardPerHour += perHour;
     hardFitPerNpu[u] = N > 0 ? (perHour / N) * 1e9 : 0;
   }
+  // v4.3 components that sit on no hardware unit of the template (a fixed count, or a scope such as zone / supernode / L2 chip
+  // chosen in the scenario editor): their rate is the evaluator's (component instances × rate), shown on one row so the table's
+  // total equals the evaluator's hardware interruption rate
+  let otherPerHour = 0;
+  const otherIds: string[] = [];
+  for (const c of s.components) {
+    if (!c.enabled || unitOfComponent(c.id, c.countRule.per) && c.countRule.per !== 'fixed') continue;
+    const r = componentInstances(c, counts).total * toPerHour(c.failure.value, c.failure.unit);
+    if (r <= 0) continue;
+    otherPerHour += r;
+    otherIds.push(`${c.id} (${c.countRule.per === 'fixed' ? `fixed ${c.countRule.count}` : `per ${c.countRule.per}`})`);
+  }
+  // the classes count different kinds of units, so the row carries a rate and no unit count
+  if (otherPerHour > 0) {
+    rows.push({ id: 'otherComponents', name: { zh: '其他部件（固定数量或非模板单元口径）', en: 'Other components (fixed count or a scope outside the template units)' }, level: 'cluster', count: 0, perNpu: 0, noCount: true, hardPerHour: otherPerHour, impact: { zh: `按各部件的计数规则与故障率计（与评估器一致）：${otherIds.join('、')}`, en: `each component by its own count rule and rate (as the evaluator): ${otherIds.join(', ')}` }, confidence: 'assumed' });
+    hardPerHour += otherPerHour;
+  }
+  const hardFitPerNpuOther = N > 0 ? (otherPerHour / N) * 1e9 : 0;
+  // v4.3 user count overrides: mark the rows, keep the geometry count beside them
   const notes: string[] = [];
+  const overrideInfo: TopologyBom['countOverrides'] = { applied: [], ignored: [] };
+  if (t.countOverrides && Object.keys(t.countOverrides).length) {
+    const r = resolveCountOverrides(geometryCounts(s), t);
+    overrideInfo.applied = r.applied;
+    overrideInfo.ignored = r.ignored;
+    for (const a of r.applied) {
+      const row = rows.find((x) => x.id === (a.tier ? `roceTier${a.tier}` : a.id));
+      if (row) Object.assign(row, { confidence: 'user', geometryCount: a.geometry });
+      const o = t.countOverrides[a.id];
+      notes.push(`user count ${a.id}${a.tier ? ` → tier ${a.tier} (the ${a.tier === 1 ? 'leaf' : 'top'} tier at this size; entered with ${o.tiers} tiers)` : ''}: ${a.count.toLocaleString('en-US')} (geometry ${a.geometry.toLocaleString('en-US')}; entered as ${o.count.toLocaleString('en-US')} at ${o.npus.toLocaleString('en-US')} NPUs, scales with N)`);
+    }
+    for (const x of r.ignored) notes.push(`user count ${x.id} ignored: ${x.reason}`);
+  }
+  for (const row of rows) if (COUNT_OVERRIDE_ROWS[row.id] || /^roceTier\d+$/.test(row.id)) row.overridable = true;
   const tierWord = sp && sp.fabric !== 'two-level' ? 'pod-tier switches' : 'L2 chips';
   if (sp && sp.fabric !== 'two-level') notes.push(`UB fabric ${sp.fabric}: ${counts.rackSwitches.toLocaleString('en-US')} in-cabinet switches, ${counts.podSwitches.toLocaleString('en-US')} pod-tier switches, ${counts.opticalLinks.toLocaleString('en-US')} optical links${counts.meshLinks ? `, ${counts.meshLinks.toLocaleString('en-US')} electrical mesh links` : ''}${counts.opticalEngines ? `, ${counts.opticalEngines.toLocaleString('en-US')} NPO engines` : ''}; every switch carries the FIT of one CloudMatrix384 UB chip and every optical link that of one CloudMatrix384 L1–L2 link (assumed per-unit equivalence)`);
   if (sp && t.fabricFill === 'proportional' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0 && sp.fabric !== 'two-level') notes.push(`the last SuperPoD is partly populated: its ${tierWord} and interconnect cabinets follow the populated NPUs`);
   if (sp && t.fabricFill === 'proportional' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0 && sp.fabric === 'two-level') notes.push('the last SuperPoD is partly populated: its L2 chips and communication cabinets follow the populated nodes (port-count fill; parallel L1–L2 links allowed)');
   if (sp && t.fabricFill === 'full-pod' && counts.nodes % (sp.nodesPerRack * sp.computeRacks) !== 0) notes.push(sp.fabric === 'two-level' ? 'full-pod fill: the last, partly populated SuperPoD counts its whole L2 tier and all communication cabinets' : `full-pod fill: the last, partly populated SuperPoD counts all its ${tierWord} and interconnect cabinets`);
   if (so) notes.push(`scale-out Clos: ${(so.planes ?? 1) > 1 ? `${so.planes} planes × ` : ''}${counts.scaleOutTiers} tier(s) for ${counts.scaleOutPorts.toLocaleString('en-US')} ports at radix ${so.radix}${so.oversubscription > 1 ? `, ${so.oversubscription}:1 at the leaves` : ', non-blocking'} (assumed)`);
-  return { template: t.template, npus: N, counts, rows, hardFitPerNpu, hardFitPerNpuTotal: N > 0 ? (hardPerHour / N) * 1e9 : 0, hardPerHour, notes };
+  return { template: t.template, npus: N, counts, rows, hardFitPerNpu, hardFitPerNpuTotal: N > 0 ? (hardPerHour / N) * 1e9 : 0, hardFitPerNpuOther, hardPerHour, countOverrides: overrideInfo, notes };
 }
 
 /**
@@ -631,7 +676,8 @@ export function applySuperpodVariant(s: Scenario, id: string): Scenario {
   if (!v) return s;
   const sp = v.values();
   const pod = sp.npusPerNode * sp.nodesPerRack * sp.computeRacks;
-  return { ...s, topology: { ...s.topology, superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, racksPerZone: sp.computeRacks + sp.commRacks, nvlinkDomainGpus: pod } };
+  // user counts of SuperPoD rows belonged to the previous variant's devices: they go; node, CPU, cabinet and scale-out counts stay
+  return { ...s, topology: { ...withoutSuperpodOverrides(s.topology), superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, racksPerZone: sp.computeRacks + sp.commRacks, nvlinkDomainGpus: pod } };
 }
 
 /** v4.2 built-in examples: the four topology templates at the first built-in scale (10,000 NPUs) with the six default mechanisms — the whole example registry; the scale is a parameter (`resizeTopology`) */

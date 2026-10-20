@@ -211,7 +211,19 @@ function meshFabricCounts(sp: NonNullable<Scenario['topology']['superpod']>, nod
   };
 }
 
+/**
+ * Hardware counts of a scenario: the geometry (`geometryCounts`) with the v4.3 user count overrides of topology.countOverrides
+ * applied (each replaces one count, scaled with N; the aggregates follow). Every consumer — the evaluator's component instances,
+ * the bill of materials, the picture, CLI and MCP — reads these counts, so an override changes all of them alike.
+ */
 export function computeCounts(s: Scenario): Counts {
+  const g = geometryCounts(s);
+  const o = s.topology.countOverrides;
+  return o && Object.keys(o).length ? resolveCountOverrides(g, s.topology).counts : g;
+}
+
+/** counts from the topology geometry only (no user overrides) */
+export function geometryCounts(s: Scenario): Counts {
   const t = s.topology;
   const { gpusPerNode, nodesPerRack } = nodeGeometry(s);
   let workloadGpus: number;
@@ -289,6 +301,95 @@ export function computeCounts(s: Scenario): Counts {
     transceivers: links * sp.transceiversPerLink,
     ubSwitches: nodes * sp.l1PerNode + l2Switches,
   };
+}
+
+type Fabric = Counts['fabric'];
+type Topo = Scenario['topology'];
+/**
+ * v4.3 the bill-of-materials rows whose count the user may override: the Counts field each replaces and when it applies. NPU and
+ * job rows follow the scale N; the Qingtian card is count-only and not a Counts field. Scale-out tiers are `roceTier<k>`.
+ */
+export const COUNT_OVERRIDE_ROWS: Record<string, { field: Exclude<keyof Counts, 'fabric' | 'scaleOutPerTier'>; applies: (t: Topo, f: Fabric) => boolean; superpod?: true }> = {
+  node: { field: 'nodes', applies: () => true },
+  cpu: { field: 'cpus', applies: () => true },
+  cabinet: { field: 'racks', applies: () => true },
+  pod: { field: 'supernodes', applies: (t) => !!t.superpod, superpod: true },
+  commCabinet: { field: 'commRacks', applies: (t) => !!t.superpod, superpod: true },
+  ubL1: { field: 'l1Switches', applies: (t, f) => !!t.superpod && f === 'two-level', superpod: true },
+  ubL2: { field: 'l2Switches', applies: (t, f) => !!t.superpod && f === 'two-level', superpod: true },
+  ubRackSwitch: { field: 'rackSwitches', applies: (t, f) => !!t.superpod && f !== 'two-level', superpod: true },
+  ubPodSwitch: { field: 'podSwitches', applies: (t, f) => !!t.superpod && f !== 'two-level', superpod: true },
+  ubMeshLink: { field: 'meshLinks', applies: (t, f) => !!t.superpod && (f === 'mesh-clos' || f === 'mesh-4d'), superpod: true },
+  ubRackMesh: { field: 'rackMeshLinks', applies: (t, f) => !!t.superpod && f === 'mesh-4d', superpod: true },
+  npoEngine: { field: 'opticalEngines', applies: (t, f) => !!t.superpod && f === 'blade-clos', superpod: true },
+  backupNpu: { field: 'backupNpus', applies: (t, f) => !!t.superpod && f !== 'two-level', superpod: true },
+  ubLink: { field: 'opticalLinks', applies: (t) => !!t.superpod, superpod: true },
+  ubTransceiver: { field: 'transceivers', applies: (t, f) => !!t.superpod && f !== 'blade-clos', superpod: true },
+  rocePort: { field: 'scaleOutPorts', applies: (t) => !!t.scaleOut },
+  roceLink: { field: 'scaleOutLinks', applies: (t) => !!t.scaleOut },
+  roceTransceiver: { field: 'scaleOutTransceivers', applies: (t) => !!t.scaleOut },
+};
+
+/** the topology without the user counts of SuperPoD rows (used when the SuperPoD variant or the UB fabric changes: those counts belonged to other devices) */
+export function withoutSuperpodOverrides(t: Topo): Topo {
+  if (!t.countOverrides) return t;
+  const o = Object.fromEntries(Object.entries(t.countOverrides).filter(([id]) => !COUNT_OVERRIDE_ROWS[id]?.superpod));
+  return { ...t, countOverrides: Object.keys(o).length ? o : undefined };
+}
+
+/** a user count entered at `npus` NPUs, at the size `n`: the per-NPU ratio is kept */
+export const overrideAt = (o: { count: number; npus: number }, n: number) => Math.max(0, Math.round((o.count * n) / o.npus));
+
+export interface CountOverrideResolution {
+  counts: Counts;
+  /** overrides in effect: row id, the geometry count and the user count at this size (`tier`: the tier a tier override landed on when it differs from its id) */
+  applied: { id: string; geometry: number; count: number; tier?: number }[];
+  /** overrides that do not apply to this topology or size, with the reason */
+  ignored: { id: string; reason: string }[];
+}
+
+/** apply topology.countOverrides to geometry counts (each replaces one count; ubSwitches and the scale-out switch total follow) */
+export function resolveCountOverrides(g: Counts, t: Topo): CountOverrideResolution {
+  const c: Counts = { ...g, scaleOutPerTier: [...g.scaleOutPerTier] };
+  const applied: CountOverrideResolution['applied'] = [];
+  const ignored: CountOverrideResolution['ignored'] = [];
+  const n = g.gpus;
+  for (const [id, o] of Object.entries(t.countOverrides ?? {})) {
+    const tier = /^roceTier(\d+)$/.exec(id);
+    if (tier) {
+      const k0 = Number(tier[1]);
+      const T = c.scaleOutTiers;
+      if (!t.scaleOut) { ignored.push({ id, reason: 'no scale-out network' }); continue; }
+      // the role of the tier when it was entered: the leaf and the top tier keep their role at sizes with another tier count
+      const T0 = o.tiers ?? T;
+      const k = k0 === 1 ? 1 : k0 === T0 ? T : k0;
+      if (k < 1 || k > T || (k0 !== 1 && k0 !== T0 && k >= T)) { ignored.push({ id, reason: `the scale-out Clos has ${T} tier(s) at ${n.toLocaleString('en-US')} NPUs${o.tiers && o.tiers !== T ? ` (entered with ${o.tiers})` : ''}` }); continue; }
+      const v = overrideAt(o, n);
+      applied.push({ id, geometry: g.scaleOutPerTier[k - 1], count: v, ...(k !== k0 ? { tier: k } : {}) });
+      c.scaleOutPerTier[k - 1] = v;
+      continue;
+    }
+    const def = COUNT_OVERRIDE_ROWS[id];
+    if (!def) { ignored.push({ id, reason: 'not an overridable row' }); continue; }
+    if (!def.applies(t, g.fabric)) { ignored.push({ id, reason: `no such unit in this topology (${t.superpod ? `fabric ${g.fabric}` : 'no SuperPoD'}${t.scaleOut ? '' : ', no scale-out'})` }); continue; }
+    const v = overrideAt(o, n);
+    applied.push({ id, geometry: g[def.field] as number, count: v });
+    (c[def.field] as number) = v;
+  }
+  c.ubSwitches = c.fabric === 'two-level' ? c.l1Switches + c.l2Switches : c.rackSwitches + c.podSwitches;
+  c.scaleOutSwitches = c.scaleOutPerTier.reduce((a, b) => a + b, 0);
+  return { counts: c, applied, ignored };
+}
+
+/**
+ * Working nodes of a training job for the node-level spare models: ⌈N / NPUs per node⌉ from the geometry, or — with a user node
+ * count (v4.3) — that count's share of the job (nodes × N_job / N_total), so the per-node rate Σλ·total / nodes and the node
+ * count it is multiplied by come from the same count.
+ */
+export function workingNodeCount(s: Scenario, counts: Counts): number {
+  const nJob = s.workload.type === 'training' ? s.workload.nGpus : counts.workloadGpus;
+  if (s.topology.countOverrides?.node === undefined) return Math.ceil(nJob / counts.gpusPerNode);
+  return counts.gpus > 0 ? Math.max(0, Math.round((counts.nodes * nJob) / counts.gpus)) : 0;
 }
 
 export interface ComponentInstances {
@@ -391,6 +492,18 @@ export function componentInstances(c: Component, counts: Counts, subhealthThresh
       break;
     case 'roce_link':
       instances = counts.scaleOutLinks;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'rack_switch':
+      instances = counts.rackSwitches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'pod_switch':
+      instances = counts.podSwitches;
+      unitsPerInstance = c.countRule.factor;
+      break;
+    case 'npo_engine':
+      instances = counts.opticalEngines;
       unitsPerInstance = c.countRule.factor;
       break;
   }
@@ -519,6 +632,7 @@ export function scopeOfCountRule(per: Component['countRule']['per']): ScopeLevel
     case 'cpu':
       return 'node';
     case 'rack':
+    case 'rack_switch':
       return 'rack';
     case 'zone':
       return 'zone';
@@ -617,8 +731,8 @@ export function buildStructure(s: Scenario, counts: Counts): { root: Block; item
   if (template === 'training-hot-spares' && s.workload.type === 'training') {
     const nodeMembers = items.filter((ci) => PER_UNIT_SCOPES.has(ci.component.countRule.per) && !(ci.component as Component & { redundancy?: Redundancy }).redundancy);
     const others = items.filter((ci) => !nodeMembers.includes(ci));
-    const perNode = nodeMembers.reduce((a, ci) => a + ci.lambdaIndependent * ci.total / counts.nodes, 0);
-    const workingNodes = Math.ceil(s.workload.nGpus / counts.gpusPerNode);
+    const perNode = counts.nodes > 0 ? nodeMembers.reduce((a, ci) => a + ci.lambdaIndependent * ci.total / counts.nodes, 0) : 0;
+    const workingNodes = workingNodeCount(s, counts);
     const nodeUnit: LeafBlock = { kind: 'leaf', id: 'node', name: 'Node (GPUs, NICs, host)', count: 1, lambda: perNode, mttr: s.workload.spareReplenishHours };
     const pool: Block = { kind: 'kofn', id: 'node-pool', name: `Nodes ${workingNodes}-of-${workingNodes + s.workload.hotSpareNodes} with hot spares`, n: workingNodes + s.workload.hotSpareNodes, k: workingNodes, unit: nodeUnit };
     notes.push(`node unit aggregates ${nodeMembers.map((m) => m.component.id).join(', ')}; pool MTTR = spare replenishment ${s.workload.spareReplenishHours} h`);

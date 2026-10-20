@@ -14,7 +14,7 @@ import { binomCdf } from '../math/special.js';
 import { lostDollarsPerDay, wastedGpuHoursPerDay } from '../cost/index.js';
 import { chainOutcome, emptyMixedRates, addOutcome, addPlainEvents, type ChainParams, type MixedRates } from '../mechanisms/chain.js';
 import { sdcDelivery, pClearedBeforePersist, type SdcDeliveryResult } from '../sdc/index.js';
-import { computeCounts, buildStructure, interruptionRatePerHour, sdcRatePerHour, replicaComposition, classSdcCoverage, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
+import { computeCounts, buildStructure, interruptionRatePerHour, sdcRatePerHour, replicaComposition, classSdcCoverage, workingNodeCount, type Counts, type ComponentInstances, type ScopeLevel } from './build.js';
 import { designReviewChecklist, type ChecklistItem } from './checklist.js';
 import type { Scenario, RecoveryStages } from './schema.js';
 
@@ -421,7 +421,7 @@ function findBlock(result: BlockResult, id: string): BlockResult | undefined {
 function nodeLambda(items: ComponentInstances[], counts: Counts): number {
   return items
     .filter((ci) => (ci.component.countRule.per === 'gpu' || ci.component.countRule.per === 'node') && !ci.component.redundancy)
-    .reduce((a, ci) => a + (ci.lambda * ci.total) / counts.nodes, 0);
+    .reduce((a, ci) => a + (counts.nodes > 0 ? (ci.lambda * ci.total) / counts.nodes : 0), 0);
 }
 
 export function evaluateScenario(s: Scenario): EvaluationResult;
@@ -781,7 +781,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     // spares at node granularity
     const lamNode = nodeLambda(items, counts);
     const pDaily = 1 - Math.exp(-lamNode * 24);
-    const workingNodes = Math.ceil(N / counts.gpusPerNode);
+    const workingNodes = workingNodeCount(s, counts);
     spares = {
       nodes: workingNodes,
       nodeLambdaPerHour: lamNode,

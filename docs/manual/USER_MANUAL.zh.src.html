@@ -216,6 +216,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </table></div>
 <p>全互联与刀片拓扑（v4.2）：每柜电链路 = t·C(p, 2) + p·C(t, 2)（8 托盘 × 8 NPU 为 448 条），超节点层交换 = ⌈超节点 NPU × 每 NPU 上联 ÷ 端口数⌉（最后一个超节点按实际 NPU），光链路 = NPU × 每 NPU 链路数，NPO 引擎 = NPU × 每 NPU 引擎数；多平面 scale-out 每平面是一个 Clos，端口数 ⌈N × 每 NPU 端口 ÷ 平面数⌉。</p>
 <p>这些数量是用 Python 独立计算的黄金向量（<code>packages/core/test/golden/compute_golden_v4.py</code>）。</p>
+<p><b>用户数量（v4.3）。</b>要直接设定某一行的数量，点硬件清单上方的<b>修改数量</b>，在当前规模一列输入数字；节点、CPU、机柜、超节点、互联柜、交换芯片、链路、光模块、NPO 光引擎、备份 NPU 与 scale-out 各行均可修改（NPU 与作业级两行随规模变化，不可改）。用户数量只替换该行——其他行仍按几何推算，UB 交换与 scale-out 交换的合计随之更新——并在其他规模按每 NPU 比例缩放：在 10,000 NPU 输入 200 台超节点层交换，100,000 NPU 时为 2,000 台。评估器、指标、拓扑图与分配使用同一组数量。用户数量以橙色显示，悬停显示几何推算值，并列在表下注释中；↺ 恢复单行，<b>清除</b>恢复全部。与拓扑不符的用户数量（例如全互联拓扑下的 L1 芯片数、只有三层 Clos 时的第四层）会被忽略、注明，并在表上方列出，可点<b>删除</b>。scale-out 各层的用户数量保持其角色：在顶层（或叶层）输入的数量，在层数不同的规模上仍作用于顶层（或叶层）。切换超节点形态或 UB 互联拓扑时，超节点各行的用户数量会被清除（它们属于原来的设备），节点、CPU、机柜与 scale-out 的用户数量保留。在方案编辑器中改为非模板单元口径的部件类（固定数量，或按 zone / 超节点 / L2 芯片 / 光模块计）显示为只有故障率的<b>其他部件</b>一行，使表的合计始终等于评估器的硬件中断率；备件模型与蒙特卡洛也使用同一组数量。方案文件中为 <code>topology.countOverrides</code>（<code>{ "ubPodSwitch": { "count": 200, "npus": 10000 } }</code>）；命令行用 <code>hacd topology a950-ub2 --count ubPodSwitch=200,cabinet=170</code>，MCP 的 <code>topology_bom</code> 用 <code>counts</code>。</p>
 <h3>4.3 各硬件单元的故障类型</h3>
 <p>审核参考目录的 54 个事件（18 个故障域 × 中断 / 亚健康 / 静默）给出每卡·小时的业务影响 FIT。v4 把每个事件挂到它所属的硬件单元上，并在 CloudMatrix384 几何下换算（这里目录与论文的数量一致）：<b>每单元 FIT = 每卡 FIT × 384 ÷ 一个 384 卡超节点中该单元的数量</b>。NPU 承载 CORE、SRAM、IOD、MODULE、MEMT、MEMP 与 NIC（每 NPU 1,676.7 中断 FIT）；作业级服务承载 STORAGE 与 UNKNOWN（每 NPU 543.3）；CPU 承载本域（每颗 333.3）；节点承载 DDR、SSD、BOXIO 与 MGMT（每节点 4,373.3）；计算柜承载 POWER 与 COOL（每柜 8,533.3）；UB 交换芯片承载 FABRIC（每片 57.1）；UB L1–L2 链路承载 OPT（每条 4.76）。RoCE 交换机与链路沿用 UB 芯片与链路的数值作为类比（假设；没有保护的以太网叶交换机可能更差——阿里 HPN 报告每月 0.051 % 的 ToR 严重错误，约 708 FIT）。不含 scale-out 网络的 CloudMatrix384 集群精确复现按卡计的目录；A2、Atlas 950 与 Atlas 960E 因硬件构成不同而不同：</p>
 <div class="table-wrap"><table>
@@ -657,7 +658,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <div class="table-wrap"><table>
   <tr><th>命令</th><th>作用</th></tr>
   <tr><td><code>hacd examples</code>、<code>hacd example &lt;id&gt;</code></td><td>列出 / 打印内置方案（v3.7 的 GPU 示例仍可按 ID 打印）</td></tr>
-  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2|a960e-ub&gt; --npus 10000 [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件</td></tr>
+  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2|a960e-ub&gt; --npus 10000 [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--variant a950-8k] [--count ubPodSwitch=200,…] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件；<code>--variant</code> 选 Atlas 950 超节点形态，<code>--count</code> 按行设定用户数量（v4.3）</td></tr>
   <tr><td><code>hacd strategy &lt;s&gt; | --template a3-ub384 --npus 50000 [--strategy optimal|mttr-first|mttf-first] --target 0.998 [--metric aOp|delivered] [--split min-effort|agree|arinc] [--sizes …] [--trials 200]</code></td><td>v4 分配策略（不指定策略时运行三种），<code>--sizes</code> 跨规模运行</td></tr>
   <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>评估：可用率、MTBF、goodput、备件、推理、清单</td></tr>
   <tr><td><code>hacd compare a.json b.json …</code></td><td>并排 KPI</td></tr>

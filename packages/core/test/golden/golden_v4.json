@@ -5240,6 +5240,420 @@
     "fitPerUnit": 4.0699812668268,
     "cardsPerUnit": 1
    }
+  },
+  {
+   "id": "override-a950-podsw-10000",
+   "group": "override",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 10000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "ubPodSwitch": {
+      "count": 200,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 2500,
+    "cabinets": 157,
+    "pods": 10,
+    "commCabinets": 40,
+    "l1": 0,
+    "l2": 0,
+    "ubLinks": 20000,
+    "ubTransceivers": 40000,
+    "rackSwitches": 11304,
+    "podSwitches": 200,
+    "meshLinks": 69952,
+    "rackMeshLinks": 0,
+    "opticalEngines": 0,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 786,
+    "roLinks": 60000,
+    "roTier1": 314,
+    "roTier2": 314,
+    "roTier3": 158,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 83.33333333333333,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.ub-switch": 65.73714285714284,
+    "hardFitPerNpu.ub-link": 9.523809523809522,
+    "hardFitPerNpu.roce-switch": 4.49142857142857,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3092.2971428571427,
+    "hardPerHour": 0.030922971428571425
+   }
+  },
+  {
+   "id": "override-a950-podsw-100000",
+   "group": "override",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 100000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "ubPodSwitch": {
+      "count": 200,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 25000,
+    "cabinets": 1563,
+    "pods": 98,
+    "commCabinets": 391,
+    "l1": 0,
+    "l2": 0,
+    "ubLinks": 200000,
+    "ubTransceivers": 400000,
+    "rackSwitches": 112536,
+    "podSwitches": 2000,
+    "meshLinks": 699936,
+    "rackMeshLinks": 0,
+    "opticalEngines": 0,
+    "roPorts": 200000,
+    "roTiers": 3,
+    "roSwitches": 7816,
+    "roLinks": 600000,
+    "roTier1": 3126,
+    "roTier2": 3126,
+    "roTier3": 1564,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 83.33333333333333,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.37599999999998,
+    "hardFitPerNpu.ub-switch": 65.44914285714285,
+    "hardFitPerNpu.ub-link": 9.523809523809522,
+    "hardFitPerNpu.roce-switch": 4.466285714285713,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3091.3866666666663,
+    "hardPerHour": 0.3091386666666666
+   }
+  },
+  {
+   "id": "override-a3-l2-cabinet-10000",
+   "group": "override",
+   "inputs": {
+    "template": "a3-ub384",
+    "npus": 10000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "ubL2": {
+      "count": 3000,
+      "npus": 10000
+     },
+     "cabinet": {
+      "count": 400,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 400,
+    "pods": 27,
+    "commCabinets": 105,
+    "l1": 8750,
+    "l2": 3000,
+    "ubLinks": 140000,
+    "ubTransceivers": 280000,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 1563,
+    "roLinks": 60000,
+    "roTier1": 625,
+    "roTier2": 625,
+    "roTier3": 313,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 341.3333333333333,
+    "hardFitPerNpu.ub-switch": 67.14285714285712,
+    "hardFitPerNpu.ub-link": 66.66666666666666,
+    "hardFitPerNpu.roce-switch": 8.931428571428569,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3445.9790476190465,
+    "hardPerHour": 0.034459790476190466
+   }
+  },
+  {
+   "id": "override-a2-tier2-cpu-10000",
+   "group": "override",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 10000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "roceTier2": {
+      "count": 500,
+      "npus": 10000
+     },
+     "cpu": {
+      "count": 6000,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 6000,
+    "cabinets": 157,
+    "roPorts": 10000,
+    "roTiers": 3,
+    "roSwitches": 970,
+    "roLinks": 30000,
+    "roTier1": 313,
+    "roTier2": 500,
+    "roTier3": 157,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 200.0,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.roce-switch": 5.542857142857142,
+    "hardFitPerNpu.roce-link": 14.285714285714285,
+    "hardFitPerNpuTotal": 3120.4685714285706,
+    "hardPerHour": 0.031204685714285706
+   }
+  },
+  {
+   "id": "override-a2-tier2-cpu-200000",
+   "group": "override",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 200000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "roceTier2": {
+      "count": 500,
+      "npus": 10000
+     },
+     "cpu": {
+      "count": 6000,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 200000,
+    "nodes": 25000,
+    "cpus": 120000,
+    "cabinets": 3125,
+    "roPorts": 200000,
+    "roTiers": 4,
+    "roSwitches": 25625,
+    "roLinks": 800000,
+    "roTier1": 6250,
+    "roTier2": 10000,
+    "roTier3": 6250,
+    "roTier4": 3125,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 200.0,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.33333333333331,
+    "hardFitPerNpu.roce-switch": 7.32142857142857,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3126.3690476190473,
+    "hardPerHour": 0.6252738095238094
+   }
+  },
+  {
+   "id": "override-a960e-cpu-npo-4032",
+   "group": "override",
+   "inputs": {
+    "template": "a960e-ub",
+    "npus": 4032,
+    "fabricFill": "proportional",
+    "overrides": {
+     "cpu": {
+      "count": 900,
+      "npus": 4032
+     },
+     "npoEngine": {
+      "count": 6000,
+      "npus": 4032
+     },
+     "ubTransceiver": {
+      "count": 100,
+      "npus": 4032
+     }
+    }
+   },
+   "expected": {
+    "npus": 4032,
+    "nodes": 504,
+    "cpus": 900,
+    "cabinets": 56,
+    "pods": 1,
+    "commCabinets": 14,
+    "l1": 0,
+    "l2": 0,
+    "ubLinks": 23625,
+    "ubTransceivers": 0,
+    "rackSwitches": 280,
+    "podSwitches": 126,
+    "meshLinks": 0,
+    "rackMeshLinks": 0,
+    "opticalEngines": 6000,
+    "roPorts": 16128,
+    "roTiers": 2,
+    "roSwitches": 48,
+    "roLinks": 32256,
+    "roTier1": 32,
+    "roTier2": 16,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 74.4047619047619,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 118.5185185185185,
+    "hardFitPerNpu.ub-switch": 5.753968253968253,
+    "hardFitPerNpu.ub-link": 27.901785714285708,
+    "hardFitPerNpu.roce-switch": 0.6802721088435373,
+    "hardFitPerNpu.roce-link": 38.09523809523809,
+    "hardFitPerNpuTotal": 3032.0212112622817,
+    "hardPerHour": 0.01222510952380952
+   }
+  },
+  {
+   "id": "override-a950-l1-ignored-10000",
+   "group": "override",
+   "inputs": {
+    "template": "a950-ub2",
+    "npus": 10000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "ubL1": {
+      "count": 999,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 2500,
+    "cabinets": 157,
+    "pods": 10,
+    "commCabinets": 40,
+    "l1": 0,
+    "l2": 0,
+    "ubLinks": 20000,
+    "ubTransceivers": 40000,
+    "rackSwitches": 11304,
+    "podSwitches": 157,
+    "meshLinks": 69952,
+    "rackMeshLinks": 0,
+    "opticalEngines": 0,
+    "roPorts": 20000,
+    "roTiers": 3,
+    "roSwitches": 786,
+    "roLinks": 60000,
+    "roTier1": 314,
+    "roTier2": 314,
+    "roTier3": 158,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 83.33333333333333,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.ub-switch": 65.49142857142856,
+    "hardFitPerNpu.ub-link": 9.523809523809522,
+    "hardFitPerNpu.roce-switch": 4.49142857142857,
+    "hardFitPerNpu.roce-link": 28.57142857142857,
+    "hardFitPerNpuTotal": 3092.0514285714285,
+    "hardPerHour": 0.030920514285714285
+   }
+  },
+  {
+   "id": "override-a2-tier4-10000",
+   "group": "override",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 10000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "roceTier4": {
+      "count": 10,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 10000,
+    "nodes": 1250,
+    "cpus": 5000,
+    "cabinets": 157,
+    "roPorts": 10000,
+    "roTiers": 3,
+    "roSwitches": 783,
+    "roLinks": 30000,
+    "roTier1": 313,
+    "roTier2": 313,
+    "roTier3": 157,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.97333333333333,
+    "hardFitPerNpu.roce-switch": 4.474285714285714,
+    "hardFitPerNpu.roce-link": 14.285714285714285,
+    "hardFitPerNpuTotal": 3086.066666666666,
+    "hardPerHour": 0.03086066666666666
+   }
+  },
+  {
+   "id": "override-a2-tier4-100000",
+   "group": "override",
+   "inputs": {
+    "template": "a2-roce",
+    "npus": 100000,
+    "fabricFill": "proportional",
+    "overrides": {
+     "roceTier4": {
+      "count": 10,
+      "npus": 10000
+     }
+    }
+   },
+   "expected": {
+    "npus": 100000,
+    "nodes": 12500,
+    "cpus": 50000,
+    "cabinets": 1563,
+    "roPorts": 100000,
+    "roTiers": 4,
+    "roSwitches": 9475,
+    "roLinks": 400000,
+    "roTier1": 3125,
+    "roTier2": 3125,
+    "roTier3": 3125,
+    "roTier4": 100,
+    "hardFitPerNpu.npu": 1676.6666666666663,
+    "hardFitPerNpu.job": 543.3333333333334,
+    "hardFitPerNpu.cpu": 166.66666666666666,
+    "hardFitPerNpu.node": 546.6666666666665,
+    "hardFitPerNpu.cabinet": 133.37599999999998,
+    "hardFitPerNpu.roce-switch": 5.414285714285714,
+    "hardFitPerNpu.roce-link": 19.047619047619044,
+    "hardFitPerNpuTotal": 3091.1712380952376,
+    "hardPerHour": 0.3091171238095238
+   }
   }
  ]
 }

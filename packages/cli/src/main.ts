@@ -3,7 +3,7 @@
  * hacd — command-line access to the HAC-D core.
  *   hacd examples                                   list the example scenarios (the four topology templates; scale with --npus)
  *   hacd example <id> [--npus N]                    print an example scenario as JSON at N NPUs (built-in 10k / 100k / 200k / 500k, any N)
- *   hacd topology <a2-roce|a3-ub384|a950-ub2|a960e-ub> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
+ *   hacd topology <a2-roce|a3-ub384|a950-ub2|a960e-ub> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--count ubPodSwitch=200,cabinet=170] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
  *   hacd strategy <scenario.json | --template a3-ub384 [--npus 10000]> [--strategy optimal|mttr-first|mttf-first] [--target 0.985] [--metric aOp|delivered] [--split min-effort|agree|arinc] [--candidates D-HARD,…] [--no-levers] [--no-derate] [--sizes 1000,10000] [--trials 0] [--json]   allocation strategy (v4)
  *   hacd eval <scenario.json> [--json]              evaluate a scenario (table or JSON)
  *   hacd compare <a.json> <b.json> ... [--json]     side-by-side KPIs
@@ -30,7 +30,7 @@ import {
   type AllocationMethod, type TornadoMetric, type AttributionMetric, type AllocationBasis,
   rateFromCounts, unitRateFromCounts,
   importRemapCatalog,
-  GPU_EXAMPLES, REFERENCE_FIXTURES, resizeTopology, scaleLabel, topologyScenario, topologyBom, bomAtSizes, bomRowsAcross, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, applySuperpodVariant, allocateStrategy, strategyAcrossSizes, STRATEGY_IDS,
+  GPU_EXAMPLES, REFERENCE_FIXTURES, resizeTopology, scaleLabel, topologyScenario, topologyBom, bomAtSizes, bomRowsAcross, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, applySuperpodVariant, computeCounts, COUNT_OVERRIDE_ROWS, allocateStrategy, strategyAcrossSizes, STRATEGY_IDS,
   type TopologyTemplate, type StrategyId, type StrategyMetric, type HardwareSplit,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
@@ -77,7 +77,7 @@ switch (cmd) {
   case 'topology': {
     const t = rest[0] as TopologyTemplate;
     if (!TOPOLOGY_TEMPLATES[t]) {
-      console.error(`usage: hacd topology <${Object.keys(TOPOLOGY_TEMPLATES).join('|')}> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]`);
+      console.error(`usage: hacd topology <${Object.keys(TOPOLOGY_TEMPLATES).join('|')}> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--count <row>=<n>,…] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]`);
       process.exit(1);
     }
     const npus = Number(flag('npus') ?? 10000);
@@ -87,20 +87,29 @@ switch (cmd) {
     const variant = flag('variant');
     if (variant && !SUPERPOD_VARIANTS[t]?.some((v) => v.id === variant)) { console.error(`variant ${variant} does not belong to ${t} (${(SUPERPOD_VARIANTS[t] ?? []).map((v) => v.id).join(', ') || 'none'})`); process.exit(1); }
     const s0 = topologyScenario(t, npus, { scaleOut: !rest.includes('--no-scale-out'), topology: { ...(fill ? { fabricFill: fill } : {}), ...(radix && base.scaleOut ? { scaleOut: { ...base.scaleOut, radix: Number(radix) } as never } : {}) } });
-    const s = variant ? applySuperpodVariant(s0, variant) : s0;
+    const s1 = variant ? applySuperpodVariant(s0, variant) : s0;
+    // v4.3 user counts per bill-of-materials row at this size (scaled with N at the other sizes)
+    const countArg = flag('count');
+    const k1 = computeCounts(s1);
+    const s = countArg ? parseScenario({ ...s1, topology: { ...s1.topology, countOverrides: Object.fromEntries(countArg.split(',').map((kv) => {
+      const m = /^\s*([A-Za-z][A-Za-z0-9]*)\s*=\s*(\d+)\s*$/.exec(kv);
+      if (!m) { console.error(`bad --count item "${kv}": use row=count with a whole number ≥ 0 (rows: ${Object.keys(COUNT_OVERRIDE_ROWS).join(', ')}, roceTier1…)`); process.exit(1); }
+      return [m[1], { count: Number(m[2]), npus: k1.gpus, ...(/^roceTier\d+$/.test(m[1]) ? { tiers: k1.scaleOutTiers } : {}) }];
+    })) } }) : s1;
     const sizes = (flag('sizes') ?? TOPOLOGY_SCALES.join(',')).split(',').map(Number).filter((x) => x > 0);
     const at = bomAtSizes(s, sizes);
     const bom = topologyBom(s);
     if (flag('out')) writeFileSync(flag('out')!, JSON.stringify(s, null, 2));
     if (json) {
-      out({ template: TOPOLOGY_TEMPLATES[t], bom, sizes: at.map((x) => ({ npus: x.npus, counts: x.bom.counts, hardFitPerNpu: x.bom.hardFitPerNpu, hardFitPerNpuTotal: x.bom.hardFitPerNpuTotal })) });
+      out({ template: TOPOLOGY_TEMPLATES[t], bom, sizes: at.map((x) => ({ npus: x.npus, counts: x.bom.counts, hardFitPerNpu: x.bom.hardFitPerNpu, hardFitPerNpuOther: x.bom.hardFitPerNpuOther, hardFitPerNpuTotal: x.bom.hardFitPerNpuTotal, countOverrides: x.bom.countOverrides })) });
       break;
     }
     console.log(`# ${TOPOLOGY_TEMPLATES[t].name.en} — ${npus.toLocaleString('en-US')} NPUs`);
     console.log(TOPOLOGY_TEMPLATES[t].summary.en + '\n');
-    printTable([['unit', 'per NPU', ...sizes.map((n) => n.toLocaleString('en-US')), 'hard FIT / unit', 'impact'], ...bomRowsAcross(bom, at).map((r) => [r.name.en, r.count === 0 ? '—' : r.perNpu < 0.01 ? r.perNpu.toExponential(2) : r.perNpu.toFixed(3), ...at.map((x) => x.bom.rows.find((q) => q.id === r.id)?.count.toLocaleString('en-US') ?? '—'), r.fit ? r.fit.hard.toFixed(1) : '—', r.impact.en])]);
+    printTable([['unit', 'per NPU', ...sizes.map((n) => n.toLocaleString('en-US')), 'hard FIT / unit', 'impact'], ...bomRowsAcross(bom, at).map((r) => [r.name.en + (r.confidence === 'user' ? ' [user count]' : ''), r.noCount ? '—' : r.perNpu === 0 ? '0' : r.perNpu < 0.01 ? r.perNpu.toExponential(2) : r.perNpu.toFixed(3), ...at.map((x) => { const q = x.bom.rows.find((y) => y.id === r.id); return !q ? '—' : q.noCount ? `${((q.hardPerHour ?? 0) * 1e9 / Math.max(1, x.npus)).toFixed(1)} FIT/NPU` : q.count.toLocaleString('en-US'); }), r.fit ? r.fit.hard.toFixed(1) : '—', r.impact.en])]);
     console.log('\nhard (interruption) FIT per NPU by unit:');
-    printTable([['NPUs', ...Object.keys(bom.hardFitPerNpu), 'total'], ...at.map((x) => [x.npus.toLocaleString('en-US'), ...Object.keys(bom.hardFitPerNpu).map((u) => (x.bom.hardFitPerNpu[u as keyof typeof x.bom.hardFitPerNpu] ?? 0).toFixed(1)), x.bom.hardFitPerNpuTotal.toFixed(1)])]);
+    const withOther = at.some((x) => x.bom.hardFitPerNpuOther > 0);
+    printTable([['NPUs', ...Object.keys(bom.hardFitPerNpu), ...(withOther ? ['other'] : []), 'total'], ...at.map((x) => [x.npus.toLocaleString('en-US'), ...Object.keys(bom.hardFitPerNpu).map((u) => (x.bom.hardFitPerNpu[u as keyof typeof x.bom.hardFitPerNpu] ?? 0).toFixed(1)), ...(withOther ? [x.bom.hardFitPerNpuOther.toFixed(1)] : []), x.bom.hardFitPerNpuTotal.toFixed(1)])]);
     for (const n of bom.notes) console.log(`- ${n}`);
     break;
   }

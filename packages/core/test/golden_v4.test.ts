@@ -40,14 +40,12 @@ function compute(c: GoldenCase): Record<string, number> {
       const s = vid ? applySuperpodVariant(base, vid) : sp ? { ...base, topology: { ...base.topology, superpod: sp as never } } : base;
       if (vid && JSON.stringify(s.topology.superpod) !== JSON.stringify({ ...s.topology.superpod, ...sp })) throw new Error(`${c.id}: SUPERPOD_VARIANTS['${vid}'] differs from the golden inputs`);
       if (sp && !vid) throw new Error(`${c.id}: superpod override without a matching SUPERPOD_VARIANTS id`);
-      const b = topologyBom(s);
-      const k = b.counts;
-      const out: Record<string, number> = { npus: k.gpus, nodes: k.nodes, cpus: k.cpus, cabinets: k.racks, hardFitPerNpuTotal: b.hardFitPerNpuTotal, hardPerHour: b.hardPerHour };
-      if (s.topology.superpod) Object.assign(out, { pods: k.supernodes, commCabinets: k.commRacks, l1: k.l1Switches, l2: k.l2Switches, ubLinks: k.opticalLinks, ubTransceivers: k.transceivers });
-      if (s.topology.superpod && k.fabric !== 'two-level') Object.assign(out, { rackSwitches: k.rackSwitches, podSwitches: k.podSwitches, meshLinks: k.meshLinks, rackMeshLinks: k.rackMeshLinks, opticalEngines: k.opticalEngines });
-      if (s.topology.scaleOut) Object.assign(out, { roPorts: k.scaleOutPorts, roTiers: k.scaleOutTiers, roSwitches: k.scaleOutSwitches, roLinks: k.scaleOutLinks, ...Object.fromEntries(k.scaleOutPerTier.map((n, j) => [`roTier${j + 1}`, n])) });
-      for (const [u, v] of Object.entries(b.hardFitPerNpu)) out[`hardFitPerNpu.${u}`] = v!;
-      return out;
+      return templateOutputs(s);
+    }
+    case 'override': {
+      // v4.3 user count overrides (topology.countOverrides), entered at { count, npus } and scaled with N
+      const o = (c.inputs as { overrides: Record<string, { count: number; npus: number }> }).overrides;
+      return templateOutputs(topologyScenario(i.template as TopologyTemplate, i.npus as number, { topology: { fabricFill: i.fabricFill as 'proportional' | 'full-pod', countOverrides: o }, mechanisms: [] }));
     }
     case 'calibration': {
       const b = topologyBom(topologyScenario('a3-ub384', i.npus as number, { scaleOut: false, mechanisms: [] }));
@@ -61,6 +59,18 @@ function compute(c: GoldenCase): Record<string, number> {
     default:
       throw new Error(`no handler for group ${c.group}`);
   }
+}
+
+/** the outputs of a topology case: counts, hard rates per NPU and per unit */
+function templateOutputs(s: ReturnType<typeof topologyScenario>): Record<string, number> {
+  const b = topologyBom(s);
+  const k = b.counts;
+  const out: Record<string, number> = { npus: k.gpus, nodes: k.nodes, cpus: k.cpus, cabinets: k.racks, hardFitPerNpuTotal: b.hardFitPerNpuTotal, hardPerHour: b.hardPerHour };
+  if (s.topology.superpod) Object.assign(out, { pods: k.supernodes, commCabinets: k.commRacks, l1: k.l1Switches, l2: k.l2Switches, ubLinks: k.opticalLinks, ubTransceivers: k.transceivers });
+  if (s.topology.superpod && k.fabric !== 'two-level') Object.assign(out, { rackSwitches: k.rackSwitches, podSwitches: k.podSwitches, meshLinks: k.meshLinks, rackMeshLinks: k.rackMeshLinks, opticalEngines: k.opticalEngines });
+  if (s.topology.scaleOut) Object.assign(out, { roPorts: k.scaleOutPorts, roTiers: k.scaleOutTiers, roSwitches: k.scaleOutSwitches, roLinks: k.scaleOutLinks, ...Object.fromEntries(k.scaleOutPerTier.map((n, j) => [`roTier${j + 1}`, n])) });
+  for (const [u, v] of Object.entries(b.hardFitPerNpu)) out[`hardFitPerNpu.${u}`] = v!;
+  return out;
 }
 
 describe('v4 golden vectors (independent Python)', () => {

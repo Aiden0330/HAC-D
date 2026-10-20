@@ -188,6 +188,10 @@ table.data.faults td input { width: 86px; padding: 2px 4px; font-size: 12px; bac
 .fit-edit { display: inline-flex; gap: 2px; align-items: center; }
 .fit-edit.changed input { border-color: var(--warn); color: var(--warn); }
 .fit-edit .btn { padding: 0 4px; }
+.user-count { color: var(--warn); font-weight: 600; }
+table.data.bom td.cur input[type="number"] { width: 11ch; min-width: 88px; max-width: none; text-align: right; font-variant-numeric: tabular-nums; }
+table.data.bom td.cur .fit-edit { white-space: nowrap; }
+.badge.user { color: var(--warn); border-color: color-mix(in oklab, var(--warn) 40%, transparent); }
 ol.steps { padding-left: 20px; font-size: 13px; }
 .rung { min-width: 0; }
 

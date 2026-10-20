@@ -3,11 +3,12 @@ import { describe, it, expect } from 'vitest';
 import { topologyScenario, calibrationScenario, topologyBom, bomAtSizes, unitFaultLibrary, templateUnits, fitOverrides, switchTopologyTemplate, resizeTopology, scaleLabel, bomRowsAcross, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName } from '../src/topology/index.js';
 import { referenceCatalog, EXAMPLES, REFERENCE_FIXTURES, RETIRED_EXAMPLES } from '../src/scenario/examples.js';
 import { evaluateScenario } from '../src/scenario/evaluate.js';
-import { computeCounts, closCounts, scaleOutCounts } from '../src/scenario/build.js';
+import { computeCounts, closCounts, scaleOutCounts, componentInstances } from '../src/scenario/build.js';
 import { activeMechanisms, stripMechanisms, applyMechanisms, DEFAULT_PLAYERS, mechanismValues, editBase, mechanismOwner } from '../src/mechanisms/index.js';
 import { provisionalParameters } from '../src/mechanisms/auditLibrary.js';
 import { withSize, groupOf, decompose } from '../src/study/index.js';
-import { parseScenario, SUPERPOD_PRESETS } from '../src/scenario/schema.js';
+import { parseScenario, SUPERPOD_PRESETS, COUNT_RULE_PERS } from '../src/scenario/schema.js';
+import { mcSpecFromScenario } from '../src/mc/fromScenario.js';
 
 const tr = (s: Parameters<typeof evaluateScenario>[0]) => evaluateScenario(s, { structure: false }).training!;
 
@@ -268,6 +269,103 @@ describe('v4 topology templates', () => {
     const a950 = topologyScenario('a950-ub2', 10000, { mechanisms: [] });
     expect(JSON.stringify(a950.components.find((c) => c.id.endsWith('@roce'))!.name)).toMatch(/"en":"UBoE \/ RoCE/);
     expect(faultUnitName('roce-switch', 'a2-roce').en).toMatch(/^RoCE/);
+  });
+
+  it('v4.3 a user count replaces one row everywhere (evaluator, bill of materials, picture counts) and scales with N', () => {
+    const base = topologyScenario('a950-ub2', 10000);
+    const s = { ...base, topology: { ...base.topology, countOverrides: { ubPodSwitch: { count: 200, npus: 10000 } } } };
+    const g = computeCounts(base);
+    const k = computeCounts(s);
+    expect([g.podSwitches, k.podSwitches]).toEqual([157, 200]);
+    expect(k.ubSwitches).toBe(k.rackSwitches + 200);
+    expect([k.commRacks, k.opticalLinks, k.rackSwitches]).toEqual([g.commRacks, g.opticalLinks, g.rackSwitches]); // nothing else moves
+    const b = topologyBom(s);
+    const row = b.rows.find((r) => r.id === 'ubPodSwitch')!;
+    expect([row.count, row.geometryCount, row.confidence]).toEqual([200, 157, 'user']);
+    expect(b.notes.some((n) => n.startsWith('user count ubPodSwitch: 200 (geometry 157'))).toBe(true);
+    // the evaluator reads the same counts: its hardware interruption rate equals the table's
+    const ev = (x: Parameters<typeof evaluateScenario>[0]) => evaluateScenario(x, { structure: false }).training!.subhealth!.hardwareInterruptionsPerHour;
+    expect(ev(s)).toBeCloseTo(b.hardPerHour, 12);
+    expect(ev(s) - ev(base)).toBeCloseTo((43 * 400) / 7 / 1e9, 15); // 43 more switches × 57.14 FIT
+    // per-NPU ratio kept at the other sizes; resizing keeps the override
+    expect(computeCounts(withSize(s, 100000)).podSwitches).toBe(2000);
+    expect(bomAtSizes(s).map((x) => x.bom.rows.find((r) => r.id === 'ubPodSwitch')!.count)).toEqual([200, 2000, 4000, 10000]);
+    expect(resizeTopology(s, 500000).topology.countOverrides).toEqual({ ubPodSwitch: { count: 200, npus: 10000 } });
+    // the scenario file keeps it
+    expect(parseScenario(JSON.parse(JSON.stringify(s))).topology.countOverrides).toEqual(s.topology.countOverrides);
+  });
+
+  it('v4.3 overrides that do not apply are ignored and noted; tiers apply only where they exist', () => {
+    const a950 = topologyScenario('a950-ub2', 10000, { mechanisms: [] });
+    const x = { ...a950, topology: { ...a950.topology, countOverrides: { ubL1: { count: 999, npus: 10000 }, bogus: { count: 1, npus: 1 } } } };
+    expect(computeCounts(x)).toEqual(computeCounts(a950));
+    const notes = topologyBom(x).notes.join(' | ');
+    expect(notes).toMatch(/user count ubL1 ignored: no such unit in this topology \(fabric mesh-clos\)/);
+    expect(notes).toMatch(/user count bogus ignored: not an overridable row/);
+    const a2 = topologyScenario('a2-roce', 10000, { mechanisms: [] });
+    const t4 = { ...a2, topology: { ...a2.topology, countOverrides: { roceTier4: { count: 10, npus: 10000 } } } };
+    expect(computeCounts(t4).scaleOutTiers).toBe(3);
+    expect(computeCounts(t4).scaleOutSwitches).toBe(computeCounts(a2).scaleOutSwitches);
+    const big = computeCounts(withSize(t4, 100000));
+    expect(big.scaleOutPerTier[3]).toBe(100);
+    expect(big.scaleOutSwitches).toBe(3125 * 3 + 100);
+    expect(topologyBom(a2).rows.filter((r) => r.overridable).map((r) => r.id)).toEqual(['node', 'cpu', 'cabinet', 'rocePort', 'roceTier1', 'roceTier2', 'roceTier3', 'roceLink', 'roceTransceiver']);
+  });
+
+  it('v4.3 a component counted outside the template units still enters the table rate, as in the evaluator', () => {
+    const s0 = topologyScenario('a3-ub384', 10000, { mechanisms: [] });
+    const id = s0.components.find((c) => c.id === 'POWER-hard')!.id;
+    // the scenario editor sets the cabinet power class to a fixed count of 100 (seeded with its current units there)
+    const s = { ...s0, components: s0.components.map((c) => (c.id === id ? { ...c, countRule: { per: 'fixed' as const, count: 100 } } : c)) };
+    const b = topologyBom(s);
+    const other = b.rows.find((r) => r.id === 'otherComponents')!;
+    expect(other.noCount).toBe(true); // a rate-only row: its classes may count different kinds of units
+    const power = s0.components.find((c) => c.id === id)!;
+    expect(other.hardPerHour).toBeCloseTo((100 * power.failure.value) / 1e9, 15);
+    expect(b.hardFitPerNpuOther).toBeCloseTo((other.hardPerHour! / 10000) * 1e9, 9);
+    expect(Object.values(b.hardFitPerNpu).reduce((a, v) => a + v!, 0) + b.hardFitPerNpuOther).toBeCloseTo(b.hardFitPerNpuTotal, 9);
+    expect(b.hardPerHour).toBeCloseTo(evaluateScenario(s, { structure: false }).training!.subhealth!.hardwareInterruptionsPerHour, 12);
+    // the new scopes count the mesh / blade units
+    const e = topologyScenario('a960e-ub', 4032, { mechanisms: [] });
+    const k = computeCounts(e);
+    const mk = (per: 'rack_switch' | 'pod_switch' | 'npo_engine') => componentInstances({ ...e.components[0], countRule: { per, factor: 1 } }, k).total;
+    expect([mk('rack_switch'), mk('pod_switch'), mk('npo_engine')]).toEqual([k.rackSwitches, k.podSwitches, k.opticalEngines]);
+    expect(COUNT_RULE_PERS).toEqual(expect.arrayContaining(['cpu', 'ub_switch', 'roce_port', 'roce_switch', 'roce_link', 'rack_switch', 'pod_switch', 'npo_engine', 'fixed']));
+    expect(COUNT_RULE_PERS.length).toBe(20);
+  });
+
+  it('v4.3 review fixes: zero counts keep their row, tier roles, variant changes, spares, Monte Carlo units', () => {
+    // a user count of 0 keeps the row (and its reset) at every size
+    const a3 = topologyScenario('a3-ub384', 10000, { mechanisms: [] });
+    const z = { ...a3, topology: { ...a3.topology, countOverrides: { cpu: { count: 0, npus: 10000 } } } };
+    const zr = topologyBom(z).rows.find((r) => r.id === 'cpu')!;
+    expect([zr.count, zr.confidence]).toEqual([0, 'user']);
+    expect(bomAtSizes(z).every((x) => x.bom.rows.some((r) => r.id === 'cpu'))).toBe(true);
+    // a top-tier override entered with 3 tiers stays on the top tier where the Clos has 4
+    const a2 = topologyScenario('a2-roce', 10000, { mechanisms: [] });
+    const top = { ...a2, topology: { ...a2.topology, countOverrides: { roceTier3: { count: 200, npus: 10000, tiers: 3 } } } };
+    expect(computeCounts(top).scaleOutPerTier).toEqual([313, 313, 200]);
+    const big = computeCounts(withSize(top, 100000));
+    expect(big.scaleOutPerTier).toEqual([3125, 3125, 3125, 2000]);
+    expect(topologyBom(withSize(top, 100000)).rows.find((r) => r.id === 'roceTier4')!.confidence).toBe('user');
+    // without the recorded tier count the tier is taken by index (the goldens' rule)
+    expect(computeCounts(withSize({ ...a2, topology: { ...a2.topology, countOverrides: { roceTier3: { count: 200, npus: 10000 } } } }, 100000)).scaleOutPerTier[2]).toBe(2000);
+    // a SuperPoD variant change drops the counts of SuperPoD rows (they belonged to other devices) and keeps the rest
+    const a950 = topologyScenario('a950-ub2', 10000, { mechanisms: [] });
+    const withO = { ...a950, topology: { ...a950.topology, countOverrides: { ubPodSwitch: { count: 2000, npus: 10000 }, node: { count: 2500, npus: 10000 } } } };
+    expect(applySuperpodVariant(withO, 'a950-4d').topology.countOverrides).toEqual({ node: { count: 2500, npus: 10000 } });
+    // the Qingtian card follows the geometry node count
+    const q = { ...a3, topology: { ...a3.topology, countOverrides: { node: { count: 2500, npus: 10000 } } } };
+    expect(topologyBom(q).rows.find((r) => r.id === 'qingtian')!.count).toBe(1250);
+    // spares: more nodes, more spare demand (the per-node rate and the node count come from the same count)
+    const sp = (x: Parameters<typeof evaluateScenario>[0]) => evaluateScenario(x).spares!;
+    expect(sp(q).nodes).toBe(2500);
+    expect(sp(q).nodes * sp(q).nodeLambdaPerHour).toBeGreaterThan(sp(a3).nodes * sp(a3).nodeLambdaPerHour);
+    expect(sp(a3).nodes).toBe(1250);
+    // Monte Carlo builds exactly the closed form's units for a node count that is not a multiple of the geometry
+    const spec = mcSpecFromScenario(q, 300);
+    const ddr = spec.classes.find((c) => c.id === 'DDR-hard')!;
+    expect(ddr.count).toBe(2500);
   });
 
   it('v4.2 multi-plane scale-out = planes × one plane', () => {

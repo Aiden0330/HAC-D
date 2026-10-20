@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow, unitRateFromCounts } from '@hac-d/core';
+import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, COUNT_RULE_PERS, computeCounts, componentInstances, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow, unitRateFromCounts } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
@@ -385,7 +385,7 @@ function ComponentsEditor({ s, upd, rows }: { s: Scenario; upd: Upd; rows?: Comp
                     <td><Select value={c.subsystem} onChange={(v) => setComp(c.id, (q) => ({ ...q, subsystem: v }))} options={SUBSYSTEMS.map((x) => ({ value: x, label: x }))} /></td>
                     <td style={{ minWidth: 150 }}>
                       <div style={{ display: 'flex', gap: 4 }}>
-                        <Select value={c.countRule.per} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: v === 'fixed' ? { per: 'fixed', count: 1 } : { per: v as 'gpu', factor: 1 } }))} options={['gpu', 'node', 'rack', 'zone', 'fixed', 'supernode', 'comm_rack', 'l1_switch', 'l2_switch', 'subplane', 'optical_link', 'transceiver'].map((x) => ({ value: x, label: `per ${x}` }))} />
+                        <Select value={c.countRule.per} onChange={(v) => upd((x) => ({ ...x, components: x.components.map((q) => (q.id !== c.id ? q : { ...q, countRule: v === 'fixed' ? { per: 'fixed', count: componentInstances(q, computeCounts(x)).total } : { per: v as 'gpu', factor: 1 } })) }))} options={COUNT_RULE_PERS.map((x) => ({ value: x, label: x === 'fixed' ? 'fixed count' : `per ${x}` }))} />
                         <NumberInput value={units(c)} min={0} onChange={(v) => setComp(c.id, (q) => ({ ...q, countRule: q.countRule.per === 'fixed' ? { per: 'fixed', count: v } : { per: q.countRule.per, factor: v } }))} />
                       </div>
                     </td>

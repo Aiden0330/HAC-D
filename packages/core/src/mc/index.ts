@@ -255,8 +255,14 @@ function runOnce(spec: McJobSpec, rng: Rng): McReplication {
 
   spec.classes.forEach((c, ci) => {
     const scopeCount = c.scope === 'gpu' ? spec.nGpus : c.scope === 'node' ? nodes : c.scope === 'rack' ? racks : c.scope === 'zone' ? zones : 1;
-    const perInstance = Math.max(1, Math.round(c.count / scopeCount));
+    // the class's units spread over its scope instances (floor, the remainder one each on the first instances), so the simulated
+    // unit count equals the closed form's even when it is not a multiple of the scope count (fractional factors, v4.3 user counts)
+    const totalUnits = Math.max(0, Math.round(c.count));
+    const basePer = scopeCount > 0 ? Math.floor(totalUnits / scopeCount) : 0;
+    const extra = totalUnits - basePer * scopeCount;
     for (let inst = 0; inst < scopeCount; inst++) {
+      const perInstance = basePer + (inst < extra ? 1 : 0);
+      if (perInstance === 0 && !c.group) continue;
       let groupId = -1;
       if (c.group) {
         groupId = groups.length;

@@ -13,7 +13,10 @@ specification without reading the TypeScript engine:
     communication cabinets and L2 chips with the port-count fill of the last pod, L1 chips, UB links, scale-out Clos;
   * per-unit FIT: catalog FIT per card-hour x 384 / (units in one CloudMatrix384 pod: 48 nodes, 192 CPUs, 12 compute cabinets,
     336 + 112 UB chips, 5,376 L1-L2 links, paper geometry), the hard FIT per NPU of each unit type and the job's hard
-    interruption rate sum(count x FIT_unit) / 1e9 per hour.
+    interruption rate sum(count x FIT_unit) / 1e9 per hour;
+  * v4.3 hardware count overrides (group 'override'): a user count per bill-of-materials row entered at npus, effective value
+    floor(count x N / npus + 0.5) at the case's N, applied only where the row exists for the template; ubSwitches and the
+    scale-out switch total (sum of tiers) recomputed; hard rates from the overridden counts with the same per-unit FIT.
 The 54 catalog events are read as data from src/scenario/referenceEvents.ts (the JSON array literal).
 Run: python3 compute_golden_v4.py  -> golden_v4.json
 """
@@ -161,7 +164,10 @@ def hard_fit_per_unit():
     return f
 
 def hard_rates(tid, N, fill='proportional', scale_out=True, pod=None):
-    c = counts(tid, N, fill, scale_out, pod)
+    return rates_from_counts(tid, N, counts(tid, N, fill, scale_out, pod), scale_out)
+
+def rates_from_counts(tid, N, c, scale_out=True):
+    """Hard interruption rate from a counts dict (geometry counts, or counts after apply_overrides) with the per-unit FIT."""
     f = hard_fit_per_unit()
     unit_count = {"npu": N, "job": N, "cpu": c['cpus'], "node": c['nodes'], "cabinet": c['cabinets']}
     if TEMPLATES[tid]['pod']:
@@ -173,6 +179,69 @@ def hard_rates(tid, N, fill='proportional', scale_out=True, pod=None):
     per_npu = {u: f[u] * n / N for u, n in unit_count.items()}
     total = sum(f[u] * n for u, n in unit_count.items()) / 1e9
     return per_npu, total
+
+# ---------------------------------------------------------------------------------------------------------------------
+# v4.3 hardware count overrides (topology.countOverrides: { rowId: { count, npus } }), applied to the geometry counts.
+# Effective value at the case's N: floor(count * N / npus + 0.5) (JavaScript Math.round), N = NPUs in the job (the
+# templates carry no hot-spare nodes). An override replaces only its own field; the aggregates ubSwitches and the scale-out
+# switch total (= sum of the tiers) are recomputed, nothing else. Overrides that do not apply to the template are ignored.
+# row id -> (golden counts key, applicability(superpod geometry or None, scale-out present, scale-out tiers at N) -> bool).
+# A key of None is an overridable Counts field this generator does not emit (backupNpus, scale-out transceivers): such an
+# override can apply but changes no emitted count and no fault-unit count.
+def _fab(p):
+    return p.get('fabric', 'two-level') if p else None
+
+OVERRIDE_ROWS = {
+    'node': ('nodes', lambda p, so, t: True),
+    'cpu': ('cpus', lambda p, so, t: True),
+    'cabinet': ('cabinets', lambda p, so, t: True),
+    'pod': ('pods', lambda p, so, t: p is not None),
+    'commCabinet': ('commCabinets', lambda p, so, t: p is not None),
+    'ubL1': ('l1', lambda p, so, t: p is not None and _fab(p) == 'two-level'),
+    'ubL2': ('l2', lambda p, so, t: p is not None and _fab(p) == 'two-level'),
+    'ubRackSwitch': ('rackSwitches', lambda p, so, t: p is not None and _fab(p) != 'two-level'),
+    'ubPodSwitch': ('podSwitches', lambda p, so, t: p is not None and _fab(p) != 'two-level'),
+    'ubMeshLink': ('meshLinks', lambda p, so, t: p is not None and _fab(p) in ('mesh-clos', 'mesh-4d')),
+    'ubRackMesh': ('rackMeshLinks', lambda p, so, t: p is not None and _fab(p) == 'mesh-4d'),
+    'npoEngine': ('opticalEngines', lambda p, so, t: p is not None and _fab(p) == 'blade-clos'),
+    'backupNpu': (None, lambda p, so, t: p is not None and _fab(p) != 'two-level'),
+    'ubLink': ('ubLinks', lambda p, so, t: p is not None),
+    'ubTransceiver': ('ubTransceivers', lambda p, so, t: p is not None and _fab(p) != 'blade-clos'),
+    'rocePort': ('roPorts', lambda p, so, t: so),
+    'roceLink': ('roLinks', lambda p, so, t: so),
+    'roceTransceiver': (None, lambda p, so, t: so),
+}
+
+def override_row(row):
+    if row in OVERRIDE_ROWS:
+        return OVERRIDE_ROWS[row]
+    m = re.fullmatch(r'roceTier([1-9][0-9]*)', row)
+    if m:
+        k = int(m.group(1))
+        return ('roTier%d' % k, lambda p, so, t: so and k <= t)
+    return None  # unknown id (npu, job, qingtian are not overridable)
+
+def apply_overrides(tid, c, overrides, scale_out=True, pod=None):
+    """Return (counts with the overrides applied and aggregates recomputed, applied row ids, ignored row ids)."""
+    p = pod or TEMPLATES[tid]['pod']
+    N = c['npus']
+    so = bool(scale_out and TEMPLATES[tid]['so'])
+    tiers = c.get('roTiers', 0) if so else 0
+    out = dict(c)
+    applied, ignored = [], []
+    for row, ov in overrides.items():
+        spec = override_row(row)
+        if spec is None or not spec[1](p, so, tiers):
+            ignored.append(row)
+            continue
+        applied.append(row)
+        if spec[0] is not None:
+            out[spec[0]] = math.floor(float(ov['count']) * N / ov['npus'] + 0.5)
+    if p is not None:
+        out['ubSwitches'] = out['l1'] + out['l2'] if _fab(p) == 'two-level' else out['rackSwitches'] + out['podSwitches']
+    if so:
+        out['roSwitches'] = sum(out['roTier%d' % (i + 1)] for i in range(out['roTiers']))
+    return out, applied, ignored
 
 cases = []
 for (P, k, o) in [(1000, 64, 1), (2048, 64, 1), (2049, 64, 1), (10000, 64, 1), (50000, 64, 1), (100000, 64, 1), (100000, 128, 1), (40, 64, 1), (64, 64, 1), (65, 64, 1), (20000, 64, 3), (8192, 128, 1)]:
@@ -229,6 +298,30 @@ for e in EVENTS:
     if e['domainId'] in ROCE:
         r = ROCE[e['domainId']]
         cases.append({"id": "fit-%s@roce" % e['id'], "group": "fit", "inputs": {"id": e['id'] + '@roce'}, "expected": {"fitPerUnit": e['fit'] * CARDS[r], "cardsPerUnit": CARDS[r]}})
+# v4.3 count overrides (default templates, no mechanisms, proportional fill); appended last so earlier cases keep their place
+OVERRIDE_CASES = [
+    ('override-a950-podsw-10000', 'a950-ub2', 10000, {'ubPodSwitch': {'count': 200, 'npus': 10000}}),
+    ('override-a950-podsw-100000', 'a950-ub2', 100000, {'ubPodSwitch': {'count': 200, 'npus': 10000}}),
+    ('override-a3-l2-cabinet-10000', 'a3-ub384', 10000, {'ubL2': {'count': 3000, 'npus': 10000}, 'cabinet': {'count': 400, 'npus': 10000}}),
+    ('override-a2-tier2-cpu-10000', 'a2-roce', 10000, {'roceTier2': {'count': 500, 'npus': 10000}, 'cpu': {'count': 6000, 'npus': 10000}}),
+    ('override-a2-tier2-cpu-200000', 'a2-roce', 200000, {'roceTier2': {'count': 500, 'npus': 10000}, 'cpu': {'count': 6000, 'npus': 10000}}),
+    ('override-a960e-cpu-npo-4032', 'a960e-ub', 4032, {'cpu': {'count': 900, 'npus': 4032}, 'npoEngine': {'count': 6000, 'npus': 4032}, 'ubTransceiver': {'count': 100, 'npus': 4032}}),
+    ('override-a950-l1-ignored-10000', 'a950-ub2', 10000, {'ubL1': {'count': 999, 'npus': 10000}}),
+    ('override-a2-tier4-10000', 'a2-roce', 10000, {'roceTier4': {'count': 10, 'npus': 10000}}),
+    ('override-a2-tier4-100000', 'a2-roce', 100000, {'roceTier4': {'count': 10, 'npus': 10000}}),
+]
+OVERRIDE_IGNORED = {}
+for cid, tid, N, ovs in OVERRIDE_CASES:
+    c, applied, ignored = apply_overrides(tid, counts(tid, N, 'proportional'), ovs)
+    per_npu, total = rates_from_counts(tid, N, c)
+    exp = dict(c)
+    exp.pop('ubSwitches', None)
+    for u, v in per_npu.items():
+        exp["hardFitPerNpu." + u] = v
+    exp["hardFitPerNpuTotal"] = total * 1e9 / N
+    exp["hardPerHour"] = total
+    OVERRIDE_IGNORED[cid] = ignored
+    cases.append({"id": cid, "group": "override", "inputs": {"template": tid, "npus": N, "fabricFill": 'proportional', "overrides": ovs}, "expected": exp})
 
 with open(os.path.join(HERE, 'golden_v4.json'), 'w') as f:
     json.dump({"generated_by": "compute_golden_v4.py", "cases": cases}, f, indent=1)
@@ -239,3 +332,6 @@ for c in cases:
     if c['group'] == 'template' and c['inputs']['npus'] in (10000, 100000, 200000, 500000) and c['inputs']['fabricFill'] == 'proportional':
         e = c['expected']
         print(c['id'], {k: (round(v, 1) if isinstance(v, float) else v) for k, v in e.items() if not k.startswith('hardFitPerNpu.')})
+for c in cases:
+    if c['group'] == 'override':
+        print(c['id'], 'ignored:', OVERRIDE_IGNORED[c['id']], {k: (round(v, 4) if isinstance(v, float) else v) for k, v in c['expected'].items() if not k.startswith('hardFitPerNpu.')})

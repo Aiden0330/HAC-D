@@ -116,7 +116,13 @@ export const CountRuleSchema = z.discriminatedUnion('per', [
   z.object({ per: z.literal('roce_port'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('roce_switch'), factor: z.number().positive().default(1) }),
   z.object({ per: z.literal('roce_link'), factor: z.number().positive().default(1) }),
+  /** v4.3 units of the mesh / blade fabrics: in-cabinet switch chips (LRS, LinkBlade), pod-tier switches (UB switch, HRS, LinkDevice), NPO optical engines */
+  z.object({ per: z.literal('rack_switch'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('pod_switch'), factor: z.number().positive().default(1) }),
+  z.object({ per: z.literal('npo_engine'), factor: z.number().positive().default(1) }),
 ]);
+/** every count-rule scope, in schema order (the scenario editor's list) */
+export const COUNT_RULE_PERS = CountRuleSchema.options.map((o) => o.shape.per.value);
 
 export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'cdu', 'plane', 'zone', 'cluster', 'supernode', 'ub_subplane', 'l2_switch', 'l1_switch', 'optical_link', 'comm_rack']);
 
@@ -332,6 +338,15 @@ export const TopologySchema = z.object({
   fabricFill: z.enum(['full-pod', 'proportional']).default('full-pod'),
   /** v4 scale-out (RoCE / RDMA) Clos network over the NPU ports */
   scaleOut: ScaleOutSchema.optional(),
+  /**
+   * v4.3 user counts of hardware units, keyed by bill-of-materials row id (node, cpu, cabinet, pod, commCabinet, ubL1, ubL2,
+   * ubRackSwitch, ubPodSwitch, ubMeshLink, ubRackMesh, npoEngine, backupNpu, ubLink, ubTransceiver, rocePort, roceTier1…,
+   * roceLink, roceTransceiver): `count` entered at the job size `npus`; at another size N the count is round(count × N / npus).
+   * Each override replaces that one count (the aggregates ubSwitches and the scale-out switch total follow); see COUNT_OVERRIDE_ROWS.
+   * A scale-out tier override may record `tiers`, the Clos tier count when it was entered: the leaf and the top tier then keep
+   * their role at sizes with more or fewer tiers (a middle tier keeps its index); without it the tier is taken by index.
+   */
+  countOverrides: z.record(z.string(), z.object({ count: z.number().nonnegative(), npus: z.number().positive(), tiers: z.number().int().positive().optional() })).optional(),
 });
 
 const BlockBaseSchema = z.object({ id: z.string(), name: z.string().optional() });

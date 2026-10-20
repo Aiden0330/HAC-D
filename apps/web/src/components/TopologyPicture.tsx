@@ -60,8 +60,10 @@ function NodeDetail({ x, y, npus, cpus, l1, ports, lang, ub, fabric = 'two-level
   const nl = !ub ? (lang === 'zh' ? 'NPU（HCCS 全互连）' : 'NPUs (HCCS mesh)') : mesh ? (lang === 'zh' ? 'NPU（UB 全互联）' : 'NPUs (UB mesh)') : fabric === 'blade-clos' ? (lang === 'zh' ? 'NPU（经 LinkBlade）' : 'NPUs (LinkBlade)') : lang === 'zh' ? 'NPU（UB 经 L1）' : 'NPUs (UB via L1)';
   items.push(<Txt key="nl" x={cx} y={y + 124} anchor="middle">{nl}</Txt>);
   // CPUs
-  for (let i = 0; i < cpus; i++) items.push(<rect key={`c${i}`} x={x + 112 + (i % 2) * 38} y={y + 32 + Math.floor(i / 2) * 20} width={32} height={14} rx={2} className="tp-cpu" />);
-  items.push(<Txt key="cl" x={x + 112} y={y + 32 + Math.ceil(cpus / 2) * 20 + 8}>{lang === 'zh' ? '鲲鹏 CPU' : 'Kunpeng CPUs'}</Txt>);
+  // at most four CPUs drawn (a user CPU count can be large); the label keeps the true number
+  const drawn = Math.max(0, Math.min(cpus, 4));
+  for (let i = 0; i < drawn; i++) items.push(<rect key={`c${i}`} x={x + 112 + (i % 2) * 38} y={y + 32 + Math.floor(i / 2) * 20} width={32} height={14} rx={2} className="tp-cpu" />);
+  items.push(<Txt key="cl" x={x + 112} y={y + 32 + Math.ceil(drawn / 2) * 20 + 8}>{cpus > drawn ? `… ${lang === 'zh' ? '鲲鹏 CPU' : 'Kunpeng CPUs'}` : lang === 'zh' ? '鲲鹏 CPU' : 'Kunpeng CPUs'}</Txt>);
   if (ub && fabric !== 'two-level') {
     // per cabinet, not per node: the LRS of the cabinet mesh or the LinkBlade chips
     for (let i = 0; i < Math.min(rackSwitches, 7); i++) items.push(<rect key={`l${i}`} x={x + 112 + i * 11} y={y + 94} width={9} height={14} rx={1} className="tp-ub" />);

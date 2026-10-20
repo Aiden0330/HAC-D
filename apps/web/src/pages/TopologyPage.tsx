@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, STRATEGY_IDS, LEVER_SHORT, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, STRATEGY_IDS, LEVER_SHORT, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
   type Scenario, type TopologyTemplate, type FaultUnit, type BomRow, type StrategyResult, type StrategyId,
 } from '@hac-d/core';
 import { useStore } from '../state/store.js';
@@ -18,6 +18,8 @@ type Tab = 'picture' | 'hardware' | 'reliability' | 'allocation';
 const LIB = unitFaultLibrary();
 const L = (x: { zh: string; en: string }, lang: Lang) => (lang === 'zh' ? x.zh : x.en);
 const fmtCount = (n: number) => (n >= 1 ? fmtInt(n) : '—');
+/** a count of a row that exists at that size (0 is a real count there, e.g. a user count of 0) */
+const fmtRowCount = (r: BomRow) => (r.noCount ? '—' : fmtInt(r.count));
 const FABRICS = ['two-level', 'mesh-clos', 'mesh-4d', 'blade-clos'] as const;
 
 /** thumbnails of the four templates for the selector cards */
@@ -167,6 +169,7 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
   const sp = tp.superpod;
   const so = tp.scaleOut;
   const twoLevel = !sp || sp.fabric === 'two-level';
+  const nApplied = tp.countOverrides ? resolveCountOverrides(geometryCounts(s), tp).applied.length : 0;
   const variants = tp.template ? SUPERPOD_VARIANTS[tp.template] : undefined;
   const variant = superpodVariantOf(s);
   const setTop = (patch: Partial<Scenario['topology']>) => upd((x) => ({ ...x, topology: { ...x.topology, ...patch } }));
@@ -196,7 +199,7 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
             </Row>
           )}
           <Row label={t('topology.fabric')} hint={t('topology.fabricHint')}>
-            <Select value={sp.fabric} onChange={(v) => upd((x) => (x.topology.superpod ? { ...x, topology: { ...x.topology, superpod: withFabric(x.topology.superpod, v) } } : x))} options={FABRICS.map((f) => ({ value: f, label: t(`topology.fabric_${f}`) }))} />
+            <Select value={sp.fabric} onChange={(v) => upd((x) => (x.topology.superpod && x.topology.superpod.fabric !== v ? { ...x, topology: { ...withoutSuperpodOverrides(x.topology), superpod: withFabric(x.topology.superpod, v) } } : x))} options={FABRICS.map((f) => ({ value: f, label: t(`topology.fabric_${f}`) }))} />
           </Row>
           <Row label={t('topology.nodesPerCabinet')} assumed={assumed('superpod.nodesPerRack')}><NumberInput value={sp.nodesPerRack} min={1} step={1} onChange={(v) => setSp({ nodesPerRack: Math.max(1, Math.round(v)) })} /></Row>
           <Row label={t('topology.computeCabinets')}><NumberInput value={sp.computeRacks} min={1} step={1} onChange={(v) => setSp({ computeRacks: Math.max(1, Math.round(v)) })} /></Row>
@@ -232,6 +235,7 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
           {!twoLevel && <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{t('topology.fabricHint')}</div>}
         </>
       )}
+      {nApplied > 0 && <div className="callout" style={{ fontSize: 12, margin: '6px 0' }}>{t('topology.userCountsLeft', { n: nApplied })}</div>}
       <div className="kv-sep" />
       <label className="check"><input type="checkbox" checked={!!so} onChange={(e) => toggleScaleOut(e.target.checked)} />{tp.template === 'a950-ub2' || tp.template === 'a960e-ub' ? t('topology.scaleOutUboe') : sp ? t('topology.scaleOutUb') : t('topology.scaleOutA2')}</label>
       {so && (
@@ -399,16 +403,54 @@ function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn
   const { t } = useTranslation();
   const bom = useMemo(() => topologyBom(s), [s]);
   const sizes = useMemo(() => bomAtSizes(s), [s]);
+  const [editCounts, setEditCounts] = useState(false);
   const N = bom.npus;
   const extra = !TOPOLOGY_SCALES.includes(N);
   const total = bom.hardPerHour;
   // rows of every displayed size (a fourth Clos tier appears from 100,000 NPUs); '—' where a row does not exist at that size
   const rows = useMemo(() => bomRowsAcross(bom, sizes), [bom, sizes]);
-  const here = useMemo(() => new Set(bom.rows.map((r) => r.id)), [bom]);
-  const cell = (r: BomRow, i: number) => { const q = sizes[i].bom.rows.find((x) => x.id === r.id); return q ? fmtCount(q.count) : '—'; };
+  const here = useMemo(() => new Map(bom.rows.map((r) => [r.id, r])), [bom]);
+  const overrides = s.topology.countOverrides ?? {};
+  const nOver = Object.keys(overrides).length;
+  const { applied, ignored } = bom.countOverrides;
+  // v4.3 a user count is entered at the current size and kept as a per-NPU ratio at the other sizes
+  const setCount = (id: string, v: number | undefined) => upBase((b) => {
+    const o = { ...(b.topology.countOverrides ?? {}) };
+    // a scale-out tier records the tier count, so the leaf / top tier keeps its role at sizes with another tier count
+    if (v === undefined) delete o[id]; else o[id] = { count: Math.max(0, Math.round(v)), npus: N, ...(/^roceTier\d+$/.test(id) ? { tiers: bom.counts.scaleOutTiers } : {}) };
+    return { ...b, topology: { ...b.topology, countOverrides: Object.keys(o).length ? o : undefined } };
+  });
+  const userMark = (q: BomRow | undefined) => (q?.confidence === 'user' ? ' user-count' : '');
+  const cell = (r: BomRow, i: number) => { const q = sizes[i].bom.rows.find((x) => x.id === r.id); return q ? <span className={userMark(q).trim() || undefined} title={q.geometryCount !== undefined ? `${t('topology.geometry')} ${fmtInt(q.geometryCount)}` : undefined}>{fmtRowCount(q)}</span> : '—'; };
+  /** the current size: an input when editing counts on an overridable row, the count otherwise; ↺ returns to the geometry */
+  const curCell = (r: BomRow) => {
+    const q = here.get(r.id);
+    if (!q) return '—';
+    const over = overrides[r.id] !== undefined || q.confidence === 'user';
+    if (editCounts && q.overridable) {
+      return (
+        <span className={`fit-edit${over ? ' changed' : ''}`} title={q.geometryCount !== undefined ? `${t('topology.geometry')} ${fmtInt(q.geometryCount)}` : undefined}>
+          <NumberInput value={q.count} min={0} step={1} onChange={(v) => setCount(r.id, v)} />
+          {over && <button type="button" className="btn small" aria-label={t('topology.resetCount')} onClick={() => setCount(overrides[r.id] !== undefined ? r.id : applied.find((a) => a.tier && `roceTier${a.tier}` === r.id)?.id ?? r.id, undefined)}>↺</button>}
+        </span>
+      );
+    }
+    return <span className={userMark(q).trim() || undefined} title={q.geometryCount !== undefined ? `${t('topology.geometry')} ${fmtInt(q.geometryCount)}` : undefined}>{fmtRowCount(q)}{q.confidence === 'user' && !editCounts ? ' ✎' : ''}</span>;
+  };
   return (
     <div className="grid" style={{ gap: 12 }}>
-      <Card title={t('topology.bomTitle')} sub={t('topology.bomSub')} formula="count(N) from the template geometry (computeCounts) · FIT_unit = FIT_card × cards per unit (CloudMatrix384 geometry) · λ_row = count × FIT_unit / 1e9 per hour">
+      <Card title={t('topology.bomTitle')} sub={t('topology.bomSub')} formula="count(N) from the template geometry (computeCounts) or a user count × N / N_entered · FIT_unit = FIT_card × cards per unit (CloudMatrix384 geometry) · λ_row = count × FIT_unit / 1e9 per hour">
+        <div className="btn-row" style={{ marginBottom: 6 }}>
+          <button type="button" className="btn small" aria-pressed={editCounts} onClick={() => setEditCounts((x) => !x)}>{editCounts ? t('topology.doneCounts') : t('topology.editCounts')}</button>
+          {nOver > 0 && <button type="button" className="btn small" onClick={() => upBase((b) => ({ ...b, topology: { ...b.topology, countOverrides: undefined } }))}>{t('topology.resetCounts', { n: nOver })}</button>}
+          <span className="muted" style={{ fontSize: 12 }}>{editCounts ? t('topology.editCountsNote', { n: fmtInt(N) }) : applied.length > 0 ? t('topology.userCountsNote', { n: applied.length }) : ''}</span>
+        </div>
+        {ignored.length > 0 && (
+          <div className="callout warn" style={{ fontSize: 12, margin: '0 0 6px' }}>
+            {t('topology.ignoredCounts', { n: ignored.length })}{' '}
+            {ignored.map((x) => <span key={x.id} className="chip" title={x.reason}><b>{x.id}</b> <button type="button" className="btn small" onClick={() => setCount(x.id, undefined)}>{t('topology.remove')}</button></span>)}
+          </div>
+        )}
         <div className="table-wrap">
           <table className="data bom">
             <thead>
@@ -425,10 +467,10 @@ function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className={r.faultUnit ? undefined : 'count-only'}>
-                  <td>{L(r.name, lang)} <Badge status={r.confidence === 'paper' ? 'paper-reported' : r.confidence}>{r.confidence}</Badge></td>
-                  <td className="num">{!here.has(r.id) ? '—' : r.perNpu >= 0.01 ? fmtNum(r.perNpu, 3) : r.perNpu.toExponential(2)}</td>
-                  {TOPOLOGY_SCALES.map((n, i) => <td key={n} className={`num${n === N ? ' cur' : ''}`}>{cell(r, i)}</td>)}
-                  {extra && <td className="num cur">{here.has(r.id) ? fmtCount(r.count) : '—'}</td>}
+                  <td>{L(r.name, lang)} <Badge status={r.confidence === 'paper' ? 'paper-reported' : r.confidence}>{r.confidence === 'user' ? t('topology.userValue') : r.confidence}</Badge></td>
+                  <td className="num">{!here.has(r.id) || here.get(r.id)!.noCount ? '—' : here.get(r.id)!.perNpu === 0 ? '0' : here.get(r.id)!.perNpu >= 0.01 ? fmtNum(here.get(r.id)!.perNpu, 3) : here.get(r.id)!.perNpu.toExponential(2)}</td>
+                  {TOPOLOGY_SCALES.map((n, i) => <td key={n} className={`num${n === N ? ' cur' : ''}`}>{n === N ? curCell(r) : cell(r, i)}</td>)}
+                  {extra && <td className="num cur">{curCell(r)}</td>}
                   <td className="num">{r.fit ? fmtNum(r.fit.hard, r.fit.hard >= 100 ? 0 : 2) : '—'}</td>
                   <td className="num">{here.has(r.id) && r.hardPerHour !== undefined && total > 0 ? fmtPct(r.hardPerHour / total, 1) : '—'}</td>
                   <td style={{ fontSize: 12, minWidth: 150 }}>{L(r.impact, lang)}</td>

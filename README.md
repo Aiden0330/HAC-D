@@ -4,6 +4,11 @@
 
 HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training and inference clusters. It takes a cluster design — topology, component classes with 口径-typed failure parameters and provenance, workload, recovery pipeline, spares — and returns availability, MTBF/MTBI, MTTR, goodput and its loss terms, spare counts, N+k replica sizing and the cost of unavailability. It allocates a goodput or availability target to subsystem budgets, compares design options, runs one-at-a-time sensitivity, and cross-checks the closed forms with a Monte Carlo discrete-event simulation. It is grounded in the survey chapter *AI 集群可靠性建模：MTBF、MTTR 与可靠性框图* (2026-10).
 
+## v4.3 (2026-10-19): user hardware counts
+
+- **Edit counts** on the Topology page's bill of materials: type the number of nodes, CPUs, cabinets, SuperPoDs, interconnect cabinets, switches (per tier), links, transceivers or NPO engines at the current size; the user count replaces that row (kept as a per-NPU ratio at the other sizes) and the evaluator, KPIs, picture and allocation all use it (`topology.countOverrides`, `hacd topology --count ubPodSwitch=200`, MCP `topology_bom` `counts`). Non-applicable counts are ignored and noted.
+- The scenario editor's count-rule list offers every scope (adds `cpu`, `ub_switch`, scale-out and the new `rack_switch` / `pod_switch` / `npo_engine`); a class counted outside the template units shows as 'Other components' so the bill of materials always matches the evaluator's hardware rate. Goldens: 9 independent override cases.
+
 ## v4.2 (2026-10-19): Atlas 950 to the product-page spec and Atlas 960E
 
 - **Atlas 950 rebuilt from the evidence**: the default SuperPoD is the 1,024-NPU configuration of the product page (16 compute + 4 UB interconnect cabinets, 64 NPUs and 16 Kunpeng per cabinet) with an in-cabinet 2D full mesh (72 low-radix UB switches per cabinet) and 2 × 800G optical links per NPU into a one-tier Clos of 128-port UB switches: 4,096 transceivers per pod, as LightCounting counted on the WAIC 2026 machine. The 8,192-NPU roadmap pod (128 × 100T switches, Hot Chips 2025), the UB-Mesh paper's 4D mesh (64 HRS per 8K) and the v4.1 CloudMatrix384 two-level copy are selectable SuperPoD variants (`SUPERPOD_VARIANTS`). Scale-out: 2 × 400G UBoE per NPU as two planes of a three-tier Clos (128³ / 4 = 524,288, the SuperCluster; assumed).
