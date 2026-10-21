@@ -18,6 +18,7 @@ const SIZES = R.sizes, MAIN = R.main, TARGET = R.target;
 const LV = R.layers.map((l) => l.id), LAYER = Object.fromEntries(R.layers.map((l) => [l.id, l]));
 const DEPLOY = Object.fromEntries(MJ.mechanisms.map((m) => [m.id, m.deploy]));
 const MLIB = R.mechanismLibrary, REF = new Set(R.reference);
+const MNAME = Object.fromEntries(MJ.mechanisms.map((m) => [m.id, m.name])), MEFF = Object.fromEntries(MJ.mechanisms.map((m) => [m.id, m.effort])), MORIG = Object.fromEntries(MJ.mechanisms.map((m) => [m.id, m.origin]));
 const UNIT_LAYER = { npu: 'npu', cluster: 'cluster', node: 'node', cabinet: 'cabinet', fabric: 'superpod', 'scale-out': 'scaleout' };
 const FILES = { native950: '950', ubl128: 'UBL128', cm384: 'CM384', a3server: 'A3SERVER' };
 
@@ -33,6 +34,9 @@ const sum = (o, pred) => Object.entries(o).filter(([k]) => pred(k)).reduce((a, [
 
 function build(arch) {
   const A = R.archs[arch], Z = (n) => A.sizes[String(n)], Z5 = Z(MAIN);
+  // the 23-mechanism Shapley study of this architecture (bare scenario, ReMAP-latest parameters; scripts/arch-mechanism-shapley.ts)
+  const SJ = JSON.parse(readFileSync(`docs/backup/arch-mechanism-shapley/${arch}.json`, 'utf8'));
+  if (JSON.stringify(SJ.sizes) !== JSON.stringify(SIZES) || SJ.players.some((id) => !MNAME[id])) throw new Error(`${arch}: the Shapley study does not match the report's sizes or mechanism set`);
   for (const n of SIZES) { const r = Z(n).recommended; if (r.final.mttr.nom.mttrS && Math.abs(sum(r.final.mttr.nom.contrib, () => true) - r.final.mttr.nom.mttrS) > 1e-6) throw new Error(`MTTR composition does not close (${arch} ${n})`); }
 
   function body(lang) {
@@ -196,6 +200,21 @@ function build(arch) {
     const note6 = T(`口径（公式 6）：P = ${R.trials} 个 30 天窗口（名义参数、种子 1）中 A_op ≥ 98.5 % 的比例，括号为 Wilson 95 % 区间（%）；下界 ≥ 90 % 为“支持”。kPlan = 方案本身的硬件系数（不动时为 1），k = 同时满足降额均值与逐窗口的系数；努力 = 机制 + 杠杆 + 硬件（每减半 2，公式 4）。`,
       `口径 (formula 6): P = share of ${R.trials} 30-day windows (nominal parameters, seed 1) with A_op ≥ 98.5 %, brackets = Wilson 95 % interval (%); supported when the lower bound ≥ 90 %. kPlan = the plan’s own hardware factor (1 when unchanged), k = the factor meeting both the derated mean and the window check; effort = mechanisms + levers + hardware (2 per halving, formula 4).`);
 
+    /* ---------------- Table 7: Shapley contribution of the 23 mechanisms by scale (heat-map table) ---------------- */
+    const gains = (n) => SJ.perSize[String(n)].gains;
+    const rows7 = SJ.players.map((id) => { const vals = SIZES.map((n) => 100 * gains(n).find((g) => g.id === id).aOp.shapley); return { id, vals, mean: vals.reduce((a, b) => a + b, 0) / vals.length }; }).sort((a, b) => b.mean - a.mean);
+    const vmax = Math.max(...rows7.flatMap((r) => r.vals));
+    const inDesign = (n, id) => REF.has(id) || Z(n).recommended.mechanisms.includes(id);
+    const hm = (v, boxed) => { const a = v > 0.005 ? 0.12 + 0.83 * Math.min(1, v / vmax) : 0; return `<td class="hm${boxed ? ' box' : ''}"${a ? ` style="background:rgba(47,79,184,${a.toFixed(2)})${a > 0.6 ? ';color:#fff' : ''}"` : ''}>${v < 0 ? '−' : '+'}${fmt(Math.abs(v), 2)}</td>`; };
+    const t7rows = rows7.map((r) => `<tr><td><span class="tag">${MORIG[r.id] === 'original' ? 'R' : T('新', 'new')}</span><b>${esc(r.id)}</b> <span class="nm">${esc(MNAME[r.id][lang])}</span></td>${r.vals.map((v, j) => hm(v, inDesign(SIZES[j], r.id))).join('')}<td class="num">${MEFF[r.id]}</td></tr>`).join('');
+    const sum7 = SIZES.map((n, j) => rows7.reduce((a, r) => a + r.vals[j], 0));
+    const t7sum = `<tr class="sum"><td class="b">${esc(T('23 项合计（= 全部启用 − 全部关闭）', 'Sum of the 23 (= all on − all off)'))}</td>${sum7.map((v) => `<td class="hm b">${v < 0 ? '−' : '+'}${fmt(Math.abs(v), 2)}</td>`).join('')}<td></td></tr>`;
+    const table7 = `<div class="table-wrap"><table class="s7"><thead><tr>${th(T('机制（R = ReMAP 原有，新 = 新增；按平均贡献排序）', 'Mechanism (R = ReMAP original, new = extension; sorted by mean contribution)'), false)}${SIZES.map((n) => `<th class="hm">${kN(n, lang)}</th>`).join('')}${th(T('工作量', 'Effort'))}</tr></thead><tbody>${t7rows}${t7sum}</tbody></table></div>`;
+    const halfMax = SIZES.map((n) => `${kN(n, lang)} ±${fmt(100 * Math.max(...gains(n).map((g) => g.halfWidth)), 2)}`).join(T('、', ', '));
+    const allOn = SIZES.map((n) => `${kN(n, lang)} ${pct(SJ.perSize[String(n)].allOn)} / ${pct(SJ.perSize[String(n)].allOnDerated)}`).join(T('、', ', '));
+    const note7 = T(`口径：23 项（ReMAP 8 项原有 + 15 项新增；I-CONTAIN 不可单独应用）在裸架构场景（不加任何机制，HAC-D 单元口径 FIT，ReMAP 最新参数）上同时参与时对 A_op 的 Shapley 贡献，百分点，${SJ.permutations} 次置换抽样，95 % 半宽最大 ${halfMax}；贡献可加，合计 = 全部启用 − 全部关闭。带框 = 本报告该规模的推荐设计所含（六个参考机制在每个设计的基线中，新增候选见表 1）。全部 23 项启用时 A_op 名义 / 降额：${allOn}——只靠机制在 ${kN(MAIN, lang)}卡达不到 98.5 %，所以推荐设计还用恢复杠杆与硬件系数 k。静默检测类（D-SDC-FP8 / FP4、D-ABFT、D-NET-SDC）对 A_op 为零或略负，其价值在有效产出（方法 §4）。`,
+      `口径: Shapley contribution to A_op of the 23 mechanisms (ReMAP’s 8 original + 15 extensions; I-CONTAIN cannot be applied alone) all playing together on the bare architecture scenario (no mechanism applied, HAC-D per-unit FIT, ReMAP-latest parameters), in points, ${SJ.permutations} sampled permutations, largest 95 % half-width ${halfMax}; contributions are additive, the sum = all on − all off. Boxed = in this report’s recommended design at that scale (the six reference mechanisms are in every design’s baseline; the added candidates per Table 1). A_op with all 23 on, nominal / derated: ${allOn} — mechanisms alone do not reach 98.5 % at ${kN(MAIN, lang)}, hence the recovery levers and the hardware factor k of the recommended design. The silent-corruption detectors (D-SDC-FP8 / FP4, D-ABFT, D-NET-SDC) are zero or slightly negative on A_op; their value is in goodput (Methodology §4).`);
+
     const geo = T(`几何（${kN(MAIN, lang)}卡）：${fmt(Z5.instances.superpod)} 个超节点 / UB 域、${fmt(Z5.instances.cabinet)} 个计算柜、${fmt(Z5.instances.node)} 个节点、跨超节点 ${Z5.counts.scaleOutTiers} 层 ${fmt(Z5.counts.scaleOutSwitches)} 台交换机`, `Geometry (${kN(MAIN, lang)}): ${fmt(Z5.instances.superpod)} SuperPoDs / UB domains, ${fmt(Z5.instances.cabinet)} compute cabinets, ${fmt(Z5.instances.node)} nodes, scale-out ${Z5.counts.scaleOutTiers} tiers of ${fmt(Z5.counts.scaleOutSwitches)} switches`);
     const sub = T(`<b>目标</b>：一个同步作业 30 天窗口 A_op ≥ 98.5 %，名义、降额与逐窗口都要满足。<b>口径</b>：HAC-D 单元 FIT（拓扑模板上的单元故障库；跨超节点单元为 @roce 类比值，assumed）。<b>机制</b>：基线含 ReMAP 六个参考机制，另有七个 A_op 候选与三个恢复杠杆（方法 §4）。${geo}。假设：${esc(A.assumed.join('; '))}。`,
       `<b>Goal</b>: A_op ≥ 98.5 % over a 30-day window for one synchronous job, nominal, derated and per window. <b>Basis</b>: HAC-D per-unit FIT (unit fault library on the topology template; scale-out units the @roce analogue, assumed). <b>Mechanisms</b>: the six ReMAP reference mechanisms in the baseline, plus the seven A_op candidates and three recovery levers (Methodology §4). ${geo}. Assumptions: ${esc(A.assumed.join('; '))}.`);
@@ -221,10 +240,13 @@ function build(arch) {
   <p class="note">${note4}</p>
   <h3>${esc(T(`表 5：MTTR 构成（${kN(MAIN, lang)}卡）`, `Table 5: MTTR composition (${kN(MAIN, lang)})`))}</h3>
   ${table5}
-  <p class="note">${note5}</p>
-  <h3>${esc(T('表 6：校核', 'Table 6: Checks'))}</h3>
+  <p class="note">${note5}</p>`,
+      `<h3 class="first">${esc(T('表 6：校核', 'Table 6: Checks'))}</h3>
   ${table6}
   <p class="note">${note6}</p>
+  <h3>${esc(T('表 7：原有 + 新增共 23 项同时参与时各机制对 A_op 的 Shapley 贡献（百分点）；带框 = 该规模推荐设计所含', 'Table 7: Shapley contribution of the 23 mechanisms (original + extensions, all playing together) to A_op (points); boxed = in the recommended design at that scale'))}</h3>
+  ${table7}
+  <p class="note">${note7}</p>
   <footer>${T(`数据：<code>docs/backup/ascend-allocation/results.json</code>、<code>mechanisms.json</code>（${DATE}）。复现：<code>node --import tsx scripts/ascend-allocation-data.ts</code> → <code>node scripts/build-ascend-allocation-findings.mjs</code>。方法与公式 (1)–(6)：ASCEND_ALLOCATION_METHODOLOGY.html；元件数量：ASCEND_BOM_100K.html。数字已用 Python 独立重算（层合计、A_op 闭合、k 的闭式解、MTTR 构成），误差 ≤ 1e-9。`,
         `Data: <code>docs/backup/ascend-allocation/results.json</code>, <code>mechanisms.json</code> (${DATE}). Reproduce: <code>node --import tsx scripts/ascend-allocation-data.ts</code> → <code>node scripts/build-ascend-allocation-findings.mjs</code>. Method and formulas (1)–(6): ASCEND_ALLOCATION_METHODOLOGY.html; component counts: ASCEND_BOM_100K.html. Numbers re-derived independently in Python (layer sums, A_op closure, k closed form, MTTR composition) to within 1e-9.`)}</footer>`,
     ];
@@ -236,7 +258,9 @@ function build(arch) {
   table.s1 td.w { min-width: 12em; } table.s4 td.w { min-width: 13em; } table.s4 td:nth-child(6) { min-width: 11em; } table.s3 td:first-child { min-width: 12em; } table.s2 td:first-child { min-width: 11em; }
   table.s6 td.w { min-width: 14em; } table.s2b td:last-child { min-width: 14em; } table.s5 td:first-child { min-width: 16em; } table.s5 { width: auto; min-width: 62%; }
   span.cf { font-size: 0.82em; color: var(--muted); margin-left: 3px; } sub { font-size: 0.75em; line-height: 0; }
-  @media print { table.s1 { font-size: 6.8px; } table.s2, table.s2b, table.s3 { font-size: 7.4px; } table.s4, table.s5, table.s6 { font-size: 7.3px; } }`;
+  table.s7 { print-color-adjust: exact; -webkit-print-color-adjust: exact; } table.s7 td.hm, table.s7 th.hm { text-align: center; font-variant-numeric: tabular-nums; min-width: 5.5em; } table.s7 td.box { box-shadow: inset 0 0 0 2px var(--ink); }
+  table.s7 td:first-child { min-width: 19em; } table.s7 span.nm { color: var(--muted); font-size: 0.92em; margin-left: 3px; } table.s7 span.tag { margin: 0 4px 0 0; }
+  @media print { table.s1 { font-size: 6.8px; } table.s2, table.s2b, table.s3 { font-size: 7.4px; } table.s4, table.s5, table.s6 { font-size: 7.3px; } table.s7 { font-size: 7.1px; } table.s7 td.box { box-shadow: inset 0 0 0 1.5px var(--ink); } }`;
   const html = pageShell({
     title: `${A.short.zh} 可用度分配结果 · ${A.short.en} allocation findings`,
     description: `${A.name.zh}：A_op ≥ 98.5 % 在 1 万–50 万卡上的 MTBF / MTTR 分层预算。${A.name.en}: hierarchical MTBF / MTTR budgets for A_op ≥ 98.5 % at 10k–500k NPUs.`,
