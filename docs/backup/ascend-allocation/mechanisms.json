@@ -1,0 +1,2928 @@
+{
+ "generated": "2026-10-21T12:02:18.190Z",
+ "threshold": 0.0015,
+ "rule": {
+  "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除；其余：50 万卡上四种拓扑的 A_op Shapley 均 ≥ 0.15 个百分点 → A_op 候选，有效产出 Shapley 均 ≥ 0.15 点 → 只保有效产出，否则剪除",
+  "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned; otherwise A_op Shapley ≥ 0.15 pt at 500k on every architecture → A_op candidate, delivered Shapley ≥ 0.15 pt → goodput-only, else pruned"
+ },
+ "archs": [
+  "native950",
+  "ubl128",
+  "cm384",
+  "a3server"
+ ],
+ "studies": {
+  "native950": {
+   "baseline": {
+    "10000": 0.9976614935469884,
+    "100000": 0.9771824567255016,
+    "200000": 0.9554676439444064,
+    "500000": 0.8958668563638622
+   },
+   "allOn": {
+    "10000": 0.9996598465306498,
+    "100000": 0.9966118420540403,
+    "200000": 0.9932469976968216,
+    "500000": 0.9832866358853575
+   },
+   "allOnDerated": {
+    "10000": 0.999494583493852,
+    "100000": 0.9949722000418236,
+    "200000": 0.9899952488496612,
+    "500000": 0.9753580780618599
+   },
+   "plan": {
+    "10000": {
+     "ids": [],
+     "feasible": true,
+     "effort": 0,
+     "nominal": 0.9976614935469884,
+     "derated": 0.9976614935469884
+    },
+    "100000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "feasible": true,
+     "effort": 5,
+     "nominal": 0.9897849338006544,
+     "derated": 0.9877623802635288
+    },
+    "200000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC"
+     ],
+     "feasible": true,
+     "effort": 15,
+     "nominal": 0.9886882147566675,
+     "derated": 0.985841540022037
+    },
+    "500000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY",
+      "R-LINK-LOCAL",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "feasible": false,
+     "effort": 37,
+     "nominal": 0.9831313773307716,
+     "derated": 0.9751107585122122
+    }
+   }
+  },
+  "ubl128": {
+   "baseline": {
+    "10000": 0.9977019792626517,
+    "100000": 0.9775672696235379,
+    "200000": 0.9562022101506066,
+    "500000": 0.8974809289945981
+   },
+   "allOn": {
+    "10000": 0.9996606033319457,
+    "100000": 0.9966193201362189,
+    "200000": 0.9932618467501405,
+    "500000": 0.9833230207679402
+   },
+   "allOnDerated": {
+    "10000": 0.9994964462060515,
+    "100000": 0.9949905620482163,
+    "200000": 0.9900315920671349,
+    "500000": 0.9754462727536679
+   },
+   "plan": {
+    "10000": {
+     "ids": [],
+     "feasible": true,
+     "effort": 0,
+     "nominal": 0.9977019792626517,
+     "derated": 0.9977019792626517
+    },
+    "100000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "feasible": true,
+     "effort": 5,
+     "nominal": 0.9902371313484788,
+     "derated": 0.9882066592742926
+    },
+    "200000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC"
+     ],
+     "feasible": true,
+     "effort": 15,
+     "nominal": 0.9893437906363244,
+     "derated": 0.986530891222934
+    },
+    "500000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-LINK-LOCAL",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "feasible": false,
+     "effort": 37,
+     "nominal": 0.9831677908687178,
+     "derated": 0.9751996971068747
+    }
+   }
+  },
+  "cm384": {
+   "baseline": {
+    "10000": 0.9974562101771166,
+    "100000": 0.9751193882045136,
+    "200000": 0.9515299318005268,
+    "500000": 0.8872598435834531
+   },
+   "allOn": {
+    "10000": 0.9995909045433998,
+    "100000": 0.9959234828890687,
+    "200000": 0.9918800743751058,
+    "500000": 0.9799445145740777
+   },
+   "allOnDerated": {
+    "10000": 0.9994094565580354,
+    "100000": 0.9941241772153709,
+    "200000": 0.9883170579967636,
+    "500000": 0.9712960592602679
+   },
+   "plan": {
+    "10000": {
+     "ids": [],
+     "feasible": true,
+     "effort": 0,
+     "nominal": 0.9974562101771166,
+     "derated": 0.9974562101771166
+    },
+    "100000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "feasible": true,
+     "effort": 5,
+     "nominal": 0.988409925553128,
+     "derated": 0.9862241264417666
+    },
+    "200000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "R-LINK-LOCAL"
+     ],
+     "feasible": true,
+     "effort": 20,
+     "nominal": 0.9894847740090498,
+     "derated": 0.9858815010719809
+    },
+    "500000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "R-LINK-LOCAL",
+      "H-CONTROL-CONTINUITY",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "feasible": false,
+     "effort": 37,
+     "nominal": 0.979798079865904,
+     "derated": 0.9710485867189322
+    }
+   }
+  },
+  "a3server": {
+   "baseline": {
+    "10000": 0.9975190000201286,
+    "100000": 0.9757192936096658,
+    "200000": 0.9526728033503067,
+    "500000": 0.8897477533758188
+   },
+   "allOn": {
+    "10000": 0.9995926648539588,
+    "100000": 0.9959409555069255,
+    "200000": 0.9919147370066832,
+    "500000": 0.98002910172
+   },
+   "allOnDerated": {
+    "10000": 0.9994120268798559,
+    "100000": 0.9941496057265522,
+    "200000": 0.9883673235587729,
+    "500000": 0.971417437682016
+   },
+   "plan": {
+    "10000": {
+     "ids": [],
+     "feasible": true,
+     "effort": 0,
+     "nominal": 0.9975190000201286,
+     "derated": 0.9975190000201286
+    },
+    "100000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS"
+     ],
+     "feasible": true,
+     "effort": 5,
+     "nominal": 0.9886255965222631,
+     "derated": 0.9864812109667068
+    },
+    "200000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY"
+     ],
+     "feasible": true,
+     "effort": 20,
+     "nominal": 0.9896301376591677,
+     "derated": 0.9859164824549526
+    },
+    "500000": {
+     "ids": [
+      "R-REPLAY",
+      "R-PROCESS",
+      "D-RECOVERY-CLASSIFY",
+      "D-HARD",
+      "R-ELASTIC",
+      "C-LOSSLESS",
+      "H-CONTROL-CONTINUITY",
+      "R-LINK-LOCAL",
+      "R-WARM-PROCESS",
+      "R-RUNTIME-SNAPSHOT",
+      "R-FABRIC-DEGRADE",
+      "H-SDC-SCREEN"
+     ],
+     "feasible": false,
+     "effort": 37,
+     "nominal": 0.9798802272177032,
+     "derated": 0.9711705778617198
+    }
+   }
+  }
+ },
+ "source": {
+  "dir": "docs/backup/arch-mechanism-shapley",
+  "players": 23,
+  "permutations": 300,
+  "basis": "bare architecture scenario, HAC-D per-unit FIT, REMAP_LATEST_PARAMS"
+ },
+ "mechanisms": [
+  {
+   "id": "D-HARD",
+   "name": {
+    "zh": "中断检测 / 超时兜底",
+    "en": "Interruption detection / timeout fallback"
+   },
+   "kind": "detect",
+   "origin": "original",
+   "remapCategory": "ReMAP 基线扩展",
+   "eventCandidates": null,
+   "change": {
+    "zh": "基线 95 % 在 10 s 发现、其余 60 s 超时 → 99.9 % 在 1 s 发现、其余 60 s；只改变停机中的发现时间",
+    "en": "baseline 95 % detected in 10 s, rest by a 60 s timeout → 99.9 % in 1 s, rest 60 s; only the detection part of the outage changes"
+   },
+   "effort": 2,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群管理：中断检测",
+    "en": "cluster management: interruption detection"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "检测延迟：95 % 在 10 s、其余 60 s → 99.9 % 在 1 s",
+    "en": "detection delay: 95 % in 10 s, rest 60 s → 99.9 % in 1 s"
+   },
+   "stage": "detection",
+   "nominal": {
+    "coverage": 0.999,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.949,
+    "detectSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0012934536663282304,
+      "halfWidth": 0.00005082881441440432,
+      "delivered": 0.0009219959238746263
+     },
+     "500000": {
+      "aOp": 0.003039413230071269,
+      "halfWidth": 0.00011230914291773652,
+      "delivered": 0.0017177061449550847
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0012840616056648646,
+      "halfWidth": 0.000050239002018141186,
+      "delivered": 0.000920124787299623
+     },
+     "500000": {
+      "aOp": 0.003020128039986555,
+      "halfWidth": 0.0001113451549793074,
+      "delivered": 0.0017340396718644798
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0014053247288116125,
+      "halfWidth": 0.00005362278884571551,
+      "delivered": 0.0010071824440040173
+     },
+     "500000": {
+      "aOp": 0.0032795926348414732,
+      "halfWidth": 0.00011672717583742166,
+      "delivered": 0.0017819694933478526
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0013907720827193522,
+      "halfWidth": 0.0000526501848522886,
+      "delivered": 0.0009990185585420962
+     },
+     "500000": {
+      "aOp": 0.003249505888376563,
+      "halfWidth": 0.0001150591598393686,
+      "delivered": 0.0017677892827716035
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.003020128039986555,
+    "max": 0.0032795926348414732
+   },
+   "delivered500": {
+    "min": 0.0017177061449550847,
+    "max": 0.0017819694933478526
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.30 点（50 万卡），每层都受益",
+    "en": "+0.30 pt on A_op (500k), every layer benefits"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-SLOW",
+   "name": {
+    "zh": "亚健康检测",
+    "en": "Sub-health detection"
+   },
+   "kind": "detect",
+   "origin": "original",
+   "remapCategory": "ReMAP 基线扩展",
+   "eventCandidates": null,
+   "change": {
+    "zh": "95 % 在 5 min 发现 → 99 % 在 30 s 发现；漏检仍降速 24 h；恢复仍 3 min、零回滚",
+    "en": "95 % detected in 5 min → 99 % in 30 s; undetected units stay slow for 24 h; recovery unchanged (3 min, no rollback)"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群监控：亚健康检出",
+    "en": "cluster monitoring: sub-health detection"
+   },
+   "acts": [
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "亚健康检出 95 % / 5 min → 99 % / 30 s（隔离暂停随之增加）",
+    "en": "sub-health detection 95 % / 5 min → 99 % / 30 s (more isolation pauses)"
+   },
+   "stage": "rate",
+   "nominal": {
+    "coverage": 0.99,
+    "detectSeconds": 30
+   },
+   "derated": {
+    "coverage": 0.94,
+    "detectSeconds": 45
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.000030510144832534005,
+      "halfWidth": 5.043702198582348e-7,
+      "delivered": 0.0004666265063361047
+     },
+     "500000": {
+      "aOp": -0.00007182433434899697,
+      "halfWidth": 0.0000010760095716904647,
+      "delivered": 0.0009678495146286573
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.00003013775990427773,
+      "halfWidth": 4.99143526128409e-7,
+      "delivered": 0.00046201923732827404
+     },
+     "500000": {
+      "aOp": -0.00007100279531845222,
+      "halfWidth": 0.0000010672469716178669,
+      "delivered": 0.0009595560604108613
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.000034459296074284735,
+      "halfWidth": 5.651680022113278e-7,
+      "delivered": 0.0005270275718613019
+     },
+     "500000": {
+      "aOp": -0.00008056710333224303,
+      "halfWidth": 0.0000011911656423899035,
+      "delivered": 0.0010873773748765168
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.00003317263410710814,
+      "halfWidth": 5.454879767196108e-7,
+      "delivered": 0.0005077500924142127
+     },
+     "500000": {
+      "aOp": -0.00007763746120005632,
+      "halfWidth": 0.0000011521817772476528,
+      "delivered": 0.0010488808386613212
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.00008056710333224303,
+    "max": -0.00007100279531845222
+   },
+   "delivered500": {
+    "min": 0.0009595560604108613,
+    "max": 0.0010873773748765168
+   },
+   "verdict": "pruned",
+   "reason": {
+    "zh": "A_op −0.007 点（更多隔离暂停），有效产出 +0.1 点：两项都在噪声内",
+    "en": "−0.007 pt A_op (more isolation pauses), +0.1 pt goodput: both within noise"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-SDC",
+   "name": {
+    "zh": "静默即时检测",
+    "en": "Immediate silent-corruption detection"
+   },
+   "kind": "detect",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "即时检出 0 % → 95 %，检测 1 s；仅启用检测时回到现有干净 CKPT 并用全局恢复；漏检仍 120 h 后发现",
+    "en": "immediate detection 0 % → 95 % after 1 s; the job rolls back to the last checkpoint and runs the global recovery; the remaining 5 % are still found after 120 h"
+   },
+   "effort": 5,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片与框架：step 级计算校验",
+    "en": "device and framework: step-level compute checks"
+   },
+   "acts": [
+    "npu",
+    "node",
+    "superpod"
+   ],
+   "changes": {
+    "zh": "静默损坏即时检出 0 → 95 %（1 s）",
+    "en": "immediate silent-corruption detection 0 → 95 % (1 s)"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "coverage": 0.95,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.8999999999999999,
+    "detectSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.00005192302173558816,
+      "halfWidth": 0.000019865245961600666,
+      "delivered": 0.24955951306562033
+     },
+     "500000": {
+      "aOp": -0.0002166848929610262,
+      "halfWidth": 0.0000526520435394979,
+      "delivered": 0.37217777329725743
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.000050956586276480845,
+      "halfWidth": 0.0000195998759828621,
+      "delivered": 0.24726722662036427
+     },
+     "500000": {
+      "aOp": -0.00021359000501625054,
+      "halfWidth": 0.000052084300969674386,
+      "delivered": 0.369850691071959
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.000051689074893197884,
+      "halfWidth": 0.00001979648810058028,
+      "delivered": 0.24843826630275928
+     },
+     "500000": {
+      "aOp": -0.00021347304677719761,
+      "halfWidth": 0.0000519741142906467,
+      "delivered": 0.36805703800002654
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.000051537902426114593,
+      "halfWidth": 0.000019750428761442053,
+      "delivered": 0.248101093319725
+     },
+     "500000": {
+      "aOp": -0.00021345728999731787,
+      "halfWidth": 0.000051980907087736494,
+      "delivered": 0.36809658625841657
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.0002166848929610262,
+    "max": -0.00021345728999731787
+   },
+   "delivered500": {
+    "min": 0.36805703800002654,
+    "max": 0.37217777329725743
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；对 A_op −0.02 点（检出的静默变成暂停），对有效产出 +37 点",
+    "en": "reference set; −0.02 pt on A_op (detected corruption becomes pauses), +37 pt on delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-SDC",
+   "name": {
+    "zh": "干净状态恢复与 step 重算",
+    "en": "Clean step-state recovery"
+   },
+   "kind": "recover",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "已即时检出的静默从全局 CKPT / 3 min 恢复 → 易失干净 step 状态 / 1 s 恢复，最多重做 1 s 计算；不缩短漏检的兜底",
+    "en": "a detected corruption recovers from the volatile clean step state in 1 s and redoes at most 1 s instead of the global checkpoint recovery; the fallback for undetected corruption is unchanged"
+   },
+   "effort": 4,
+   "requires": [
+    "D-SDC"
+   ],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片：HBM 中的干净 step 状态",
+    "en": "device: clean step state kept in HBM"
+   },
+   "acts": [
+    "npu"
+   ],
+   "changes": {
+    "zh": "检出的静默从 1 s 干净状态恢复，不回滚全局 CKPT",
+    "en": "detected corruption recovers from the 1 s clean state, no global rollback"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "stepSeconds": 1,
+    "recoverSeconds": 1
+   },
+   "derated": {
+    "stepSeconds": 1.5,
+    "recoverSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0002934994875076465,
+      "halfWidth": 0.000022285233742983425,
+      "delivered": 0.00037247069423939814
+     },
+     "500000": {
+      "aOp": 0.0006978573675798442,
+      "halfWidth": 0.000052679657105107463,
+      "delivered": 0.0007702565656471281
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0002900186211168058,
+      "halfWidth": 0.000022052915401291692,
+      "delivered": 0.0003689916311635906
+     },
+     "500000": {
+      "aOp": 0.000689949111762509,
+      "halfWidth": 0.00005216050525941807,
+      "delivered": 0.0007643651664083455
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.00029293753482674637,
+      "halfWidth": 0.000022224881764205494,
+      "delivered": 0.0003734558012092698
+     },
+     "500000": {
+      "aOp": 0.000692167871153367,
+      "halfWidth": 0.000052189350335929894,
+      "delivered": 0.0007661599448616331
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0002921437123361566,
+      "halfWidth": 0.00002217578198193674,
+      "delivered": 0.0003725515431900661
+     },
+     "500000": {
+      "aOp": 0.000690751285766273,
+      "halfWidth": 0.000052114204342404837,
+      "delivered": 0.0007658173537923396
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.000689949111762509,
+    "max": 0.0006978573675798442
+   },
+   "delivered500": {
+    "min": 0.0007643651664083455,
+    "max": 0.0007702565656471281
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；需 D-SDC；A_op +0.07 点",
+    "en": "reference set; needs D-SDC; +0.07 pt on A_op"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-REPLAY",
+   "name": {
+    "zh": "通信 / 算子重执行",
+    "en": "Operator / communication replay"
+   },
+   "kind": "recover",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "瞬态中断先重执行：90 % 在 5 s 成功且不回滚；失败耗时 10 s 后进入后续恢复链",
+    "en": "transient interruptions are re-executed first: 90 % succeed in 5 s without rollback; a failure costs 10 s and continues down the chain"
+   },
+   "effort": 2,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片运行时：算子 / 集合通信重执行",
+    "en": "device runtime: operator / collective replay"
+   },
+   "acts": [
+    "npu",
+    "node",
+    "superpod",
+    "scaleout"
+   ],
+   "changes": {
+    "zh": "瞬态中断的第一梯级：90 % 在 5 s",
+    "en": "first rung for transient interruptions: 90 % in 5 s"
+   },
+   "stage": "rung",
+   "nominal": {
+    "success": 0.9,
+    "successSeconds": 5,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.8200000000000001,
+    "successSeconds": 7.5,
+    "failureSeconds": 15
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0047525768028091825,
+      "halfWidth": 0.0006887590519203991,
+      "delivered": 0.004892204027648295
+     },
+     "500000": {
+      "aOp": 0.010880613889514779,
+      "halfWidth": 0.0015651703372630069,
+      "delivered": 0.007694069213234362
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.004790836469420742,
+      "halfWidth": 0.0006928607931580575,
+      "delivered": 0.004950533427183205
+     },
+     "500000": {
+      "aOp": 0.010984929018991587,
+      "halfWidth": 0.0015770109720079704,
+      "delivered": 0.00784648688432782
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.004919575664086441,
+      "halfWidth": 0.0007035853136177802,
+      "delivered": 0.005075580010717211
+     },
+     "500000": {
+      "aOp": 0.011167415237202166,
+      "halfWidth": 0.0015828946952407997,
+      "delivered": 0.007766546469259312
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.004693864583616102,
+      "halfWidth": 0.0006816633786791006,
+      "delivered": 0.0048808778188843775
+     },
+     "500000": {
+      "aOp": 0.010665230765922027,
+      "halfWidth": 0.0015371829294622082,
+      "delivered": 0.0075452665574522754
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.010665230765922027,
+    "max": 0.011167415237202166
+   },
+   "delivered500": {
+    "min": 0.0075452665574522754,
+    "max": 0.00784648688432782
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；A_op +1.1 点（50 万卡）",
+    "en": "reference set; +1.1 pt on A_op (500k)"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-PROCESS",
+   "name": {
+    "zh": "进程 / Pod 重调度",
+    "en": "Process / pod rescheduling"
+   },
+   "kind": "recover",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "适用中断 95 % 在 60 s 重建进程，仍全局暂停并回滚 CKPT；失败 120 s 后全局 CKPT",
+    "en": "95 % of applicable interruptions rebuild the process in 60 s (global pause, rollback to the checkpoint); a failure costs 120 s before the global recovery"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "node",
+   "how": {
+    "zh": "节点：训练进程 / 容器重建",
+    "en": "node: training process / container rebuilt"
+   },
+   "acts": [
+    "npu",
+    "node"
+   ],
+   "changes": {
+    "zh": "进程级梯级：95 % 在 60 s（回滚）",
+    "en": "process rung: 95 % in 60 s (rollback)"
+   },
+   "stage": "rung",
+   "nominal": {
+    "success": 0.95,
+    "successSeconds": 60,
+    "failureSeconds": 120
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 90,
+    "failureSeconds": 180
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.00589963955495723,
+      "halfWidth": 0.0008367522847988357,
+      "delivered": 0.003278753794861848
+     },
+     "500000": {
+      "aOp": 0.013571365817741609,
+      "halfWidth": 0.0019048655493716855,
+      "delivered": 0.004857401181369198
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.005904988650505086,
+      "halfWidth": 0.0008376879463546927,
+      "delivered": 0.003297433684691862
+     },
+     "500000": {
+      "aOp": 0.013600460782992803,
+      "halfWidth": 0.0019098768481839452,
+      "delivered": 0.004913945660183913
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.006145910831869338,
+      "halfWidth": 0.0008644368033272789,
+      "delivered": 0.003456142719215321
+     },
+     "500000": {
+      "aOp": 0.01402073587528408,
+      "halfWidth": 0.001950001920531028,
+      "delivered": 0.005003113094037471
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0061541208224886465,
+      "halfWidth": 0.0008659356458518935,
+      "delivered": 0.003458662481260036
+     },
+     "500000": {
+      "aOp": 0.014064697545730824,
+      "halfWidth": 0.001957904998329337,
+      "delivered": 0.005026457248103822
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.013571365817741609,
+    "max": 0.014064697545730824
+   },
+   "delivered500": {
+    "min": 0.004857401181369198,
+    "max": 0.005026457248103822
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；A_op +1.4 点",
+    "en": "reference set; +1.4 pt on A_op"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-ELASTIC",
+   "name": {
+    "zh": "DP 域弹性恢复",
+    "en": "DP-domain elastic recovery"
+   },
+   "kind": "recover",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "适用中断 98 % 局部恢复成功：50 域中一个域 180 s 不可用，全局协调 1 s；状态冗余避免回滚；失败 120 s 后后续全局恢复",
+    "en": "98 % of applicable interruptions recover locally: one of 50 domains is out for 180 s, the job pauses 1 s to re-synchronise; redundant state avoids rollback; a failure costs 120 s before the next rung"
+   },
+   "effort": 5,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：50 个 DP 域的局部恢复",
+    "en": "cluster: local recovery in 50 DP domains"
+   },
+   "acts": [
+    "npu",
+    "node"
+   ],
+   "changes": {
+    "zh": "弹性梯级：98 % 局部恢复，作业只停 1 s",
+    "en": "elastic rung: 98 % local, the job pauses 1 s"
+   },
+   "stage": "rung",
+   "nominal": {
+    "domains": 50,
+    "success": 0.98,
+    "recoverSeconds": 180,
+    "failureSeconds": 120,
+    "syncSeconds": 1
+   },
+   "derated": {
+    "domains": 50,
+    "success": 0.9,
+    "recoverSeconds": 270,
+    "failureSeconds": 180,
+    "syncSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.012538198657315112,
+      "halfWidth": 0.0010787338302770638,
+      "delivered": 0.011685205373157457
+     },
+     "500000": {
+      "aOp": 0.029329997418388456,
+      "halfWidth": 0.002462259298096633,
+      "delivered": 0.019325381132096805
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.01254910043198838,
+      "halfWidth": 0.0010802423467277324,
+      "delivered": 0.011750426958400135
+     },
+     "500000": {
+      "aOp": 0.02939060217729532,
+      "halfWidth": 0.002470491669965452,
+      "delivered": 0.019482293229047418
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.013115860631669972,
+      "halfWidth": 0.0011051606745643213,
+      "delivered": 0.012384733360490114
+     },
+     "500000": {
+      "aOp": 0.03045007308326357,
+      "halfWidth": 0.002496580405115912,
+      "delivered": 0.02028789309465963
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.013132084999341574,
+      "halfWidth": 0.0011076117613589363,
+      "delivered": 0.012394238625688567
+     },
+     "500000": {
+      "aOp": 0.030538969097435496,
+      "halfWidth": 0.0025097731235981507,
+      "delivered": 0.02034727400023174
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.029329997418388456,
+    "max": 0.030538969097435496
+   },
+   "delivered500": {
+    "min": 0.019325381132096805,
+    "max": 0.02034727400023174
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；最大的单项，A_op +2.9–3.1 点",
+    "en": "reference set; the largest single gain, +2.9–3.1 pt on A_op"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "C-FAST",
+   "name": {
+    "zh": "缩短 CKPT 周期和保存阻塞",
+    "en": "Faster checkpoints"
+   },
+   "kind": "checkpoint",
+   "origin": "original",
+   "remapCategory": "参考机制",
+   "eventCandidates": null,
+   "change": {
+    "zh": "每计算 300 s 保存 4 s → 每计算 60 s 保存 1 s；同时改变保存开销与回滚",
+    "en": "save 4 s every 300 s of compute → save 1 s every 60 s; both the save overhead and the rollback change"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：检查点与共享存储",
+    "en": "cluster: checkpoints and shared storage"
+   },
+   "acts": [
+    "cluster"
+   ],
+   "changes": {
+    "zh": "保存 4 s / 300 s → 1 s / 60 s（回滚损失）",
+    "en": "save 4 s / 300 s → 1 s / 60 s (rollback loss)"
+   },
+   "stage": "checkpoint",
+   "nominal": {
+    "computeSeconds": 60,
+    "saveSeconds": 1
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -7.210795255548537e-7,
+      "halfWidth": 1.0200293586713175e-7,
+      "delivered": 0.00010638881142128539
+     },
+     "500000": {
+      "aOp": -0.0000018301049496693978,
+      "halfWidth": 2.1717793490781718e-7,
+      "delivered": 0.004931438214668968
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -7.067292914616126e-7,
+      "halfWidth": 1.0054863242294789e-7,
+      "delivered": 0.00006300505743766709
+     },
+     "500000": {
+      "aOp": -0.000001802614391827421,
+      "halfWidth": 2.1496516165091406e-7,
+      "delivered": 0.004864385109225045
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -7.961449384881932e-7,
+      "halfWidth": 1.1058418215577273e-7,
+      "delivered": 0.0009593641983189701
+     },
+     "500000": {
+      "aOp": -0.0000020180263570531337,
+      "halfWidth": 2.3427300633786838e-7,
+      "delivered": 0.006413293980704051
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -7.827908938847401e-7,
+      "halfWidth": 1.0867891510782433e-7,
+      "delivered": 0.000892766932181589
+     },
+     "500000": {
+      "aOp": -0.0000019897251974643206,
+      "halfWidth": 2.3082524787270318e-7,
+      "delivered": 0.006308537937199134
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.0000020180263570531337,
+    "max": -0.000001802614391827421
+   },
+   "delivered500": {
+    "min": 0.004864385109225045,
+    "max": 0.006413293980704051
+   },
+   "verdict": "reference",
+   "reason": {
+    "zh": "参考集；只影响回滚损失（有效产出 +0.5 点）",
+    "en": "reference set; rollback loss only (+0.5 pt delivered goodput)"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-LINK-LOCAL",
+   "name": {
+    "zh": "链路透明恢复",
+    "en": "Link-transparent recovery"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增",
+   "eventCandidates": [
+    "IOD-hard",
+    "NIC-hard",
+    "OPT-hard",
+    "BOXIO-hard",
+    "FABRIC-hard"
+   ],
+   "change": {
+    "zh": "常规全局恢复并回滚 → 链路恢复成功后继续训练。候选总停顿 2s，包含发现、协调和恢复。",
+    "en": "Global recovery with rollback → the link recovers and training continues: 2 s total pause (detection, coordination and recovery), no rollback"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "superpod",
+   "how": {
+    "zh": "UB / RoCE 链路层：链路透明恢复",
+    "en": "UB / RoCE link layer: link-transparent recovery"
+   },
+   "acts": [
+    "superpod",
+    "scaleout",
+    "npu"
+   ],
+   "changes": {
+    "zh": "新增透明梯级：瞬态链路异常 95 % 在 2 s，不检测延迟、不回滚",
+    "en": "new transparent rung: transient link faults 95 % in 2 s, no detection delay, no rollback"
+   },
+   "stage": "rung",
+   "nominal": {
+    "successSeconds": 2,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "successSeconds": 3,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0019849081505712756,
+      "halfWidth": 0.0002291489384954047,
+      "delivered": 0.0027245640811072117
+     },
+     "500000": {
+      "aOp": 0.004543219257616006,
+      "halfWidth": 0.0005100435315426999,
+      "delivered": 0.0046941566065281885
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0016333651624715988,
+      "halfWidth": 0.0002048761356745609,
+      "delivered": 0.0022202395753898735
+     },
+     "500000": {
+      "aOp": 0.003728360328600129,
+      "halfWidth": 0.00045587446880038864,
+      "delivered": 0.0037644216564043974
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0023096052360280558,
+      "halfWidth": 0.0002651287659139927,
+      "delivered": 0.0032696877012997816
+     },
+     "500000": {
+      "aOp": 0.005248614271593798,
+      "halfWidth": 0.0005859487716161655,
+      "delivered": 0.005652533145650995
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0019115988072769719,
+      "halfWidth": 0.00022115126952592244,
+      "delivered": 0.0026280717424160814
+     },
+     "500000": {
+      "aOp": 0.004343702160127309,
+      "halfWidth": 0.00048813848047828714,
+      "delivered": 0.004485096037934505
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.003728360328600129,
+    "max": 0.005248614271593798
+   },
+   "delivered500": {
+    "min": 0.0037644216564043974,
+    "max": 0.005652533145650995
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.37–0.53 点；光链路、交换与 NIC 的瞬态事件不再走全局恢复",
+    "en": "+0.37–0.53 pt on A_op; transient optics, switch and NIC events skip the global recovery"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-FABRIC-DEGRADE",
+   "name": {
+    "zh": "网络绕行与降级运行",
+    "en": "Fabric re-route and degraded running"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增",
+   "eventCandidates": [
+    "NIC-hard",
+    "OPT-hard",
+    "BOXIO-hard",
+    "FABRIC-hard"
+   ],
+   "change": {
+    "zh": "全局恢复到满性能资源 → 2s 切换后降速运行 30min，再恢复正常。",
+    "en": "Global recovery to full resources → 2 s switch, then degraded running for the repair time (throughput η = 1/[(1 − f) + f/r]), then back to normal"
+   },
+   "effort": 4,
+   "requires": [],
+   "appliable": true,
+   "deploy": "superpod",
+   "how": {
+    "zh": "UB / RoCE 交换层：绕行与降级运行",
+    "en": "UB / RoCE switching: re-route and degraded running"
+   },
+   "acts": [
+    "superpod",
+    "scaleout"
+   ],
+   "changes": {
+    "zh": "新增透明梯级：交换 / 链路资源故障 95 % 在 2 s 绕行，修复期降级运行（只损失有效产出）",
+    "en": "new transparent rung: switch / link faults re-routed 95 % in 2 s, degraded running during repair (goodput only)"
+   },
+   "stage": "rung",
+   "nominal": {
+    "switchSeconds": 2,
+    "exposedCommunicationFraction": 0.3,
+    "remainingBandwidthRatio": 0.75,
+    "repairSeconds": 1800,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "switchSeconds": 3,
+    "exposedCommunicationFraction": 0.35,
+    "remainingBandwidthRatio": 0.7,
+    "repairSeconds": 2700,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0011691419372116829,
+      "halfWidth": 0.00014119395917295082,
+      "delivered": 0.0001554396093051467
+     },
+     "500000": {
+      "aOp": 0.0026914007333214184,
+      "halfWidth": 0.000318231004057684,
+      "delivered": -0.00011349553005005083
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0008311948923508735,
+      "halfWidth": 0.0001096440172628632,
+      "delivered": 0.00003089437292835321
+     },
+     "500000": {
+      "aOp": 0.0019065295968008033,
+      "halfWidth": 0.0002458784799578913,
+      "delivered": -0.00026119240284605734
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0015037034763851157,
+      "halfWidth": 0.00018231835414281596,
+      "delivered": 0.0002194808981986122
+     },
+     "500000": {
+      "aOp": 0.0034358139271415725,
+      "halfWidth": 0.00040854723936577356,
+      "delivered": -0.0001294814823190275
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0010996907702600508,
+      "halfWidth": 0.0001328224109223027,
+      "delivered": 0.0001490158004885143
+     },
+     "500000": {
+      "aOp": 0.0025141397072398633,
+      "halfWidth": 0.0002969537466258033,
+      "delivered": -0.00008097837850185345
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.0019065295968008033,
+    "max": 0.0034358139271415725
+   },
+   "delivered500": {
+    "min": -0.00026119240284605734,
+    "max": -0.00008097837850185345
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.19–0.34 点；降级运行的损失只计入有效产出",
+    "en": "+0.19–0.34 pt on A_op; the degraded-running loss counts against goodput only"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "I-CONTAIN",
+   "name": {
+    "zh": "故障隔离与传播抑制",
+    "en": "Fault containment"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增／依赖能力",
+   "eventCandidates": [
+    "IOD-hard",
+    "NIC-hard",
+    "BOXIO-hard",
+    "FABRIC-hard"
+   ],
+   "change": {
+    "zh": "180s 全局停止 → 1s 全局协调，再由 1/50 域承担 180s 局部恢复。",
+    "en": "180 s global stop → 1 s global coordination plus 180 s local recovery in 1 of 50 domains; the enabling capability of DP-domain elasticity, no extra credit on top of R-ELASTIC"
+   },
+   "effort": 4,
+   "requires": [
+    "R-ELASTIC"
+   ],
+   "appliable": false,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：故障隔离与传播抑制",
+    "en": "cluster: fault containment"
+   },
+   "acts": [
+    "npu",
+    "node"
+   ],
+   "changes": {
+    "zh": "R-ELASTIC 的使能能力，不单独计收益",
+    "en": "enabling capability of R-ELASTIC, no separate credit"
+   },
+   "stage": "none",
+   "nominal": {
+    "domains": 50,
+    "coordinationSeconds": 1,
+    "stageSeconds": 180
+   },
+   "derated": {
+    "domains": 50,
+    "coordinationSeconds": 1,
+    "stageSeconds": 180
+   },
+   "shapley": {
+    "native950": {
+     "200000": null,
+     "500000": null
+    },
+    "ubl128": {
+     "200000": null,
+     "500000": null
+    },
+    "cm384": {
+     "200000": null,
+     "500000": null
+    },
+    "a3server": {
+     "200000": null,
+     "500000": null
+    }
+   },
+   "aOp500": {
+    "min": null,
+    "max": null
+   },
+   "delivered500": {
+    "min": null,
+    "max": null
+   },
+   "verdict": "capability",
+   "reason": {
+    "zh": "不可单独应用：R-ELASTIC 的使能能力",
+    "en": "not appliable on its own: the enabling capability of R-ELASTIC"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "H-CONTROL-CONTINUITY",
+   "name": {
+    "zh": "控制面异常下业务连续运行",
+    "en": "Data-plane continuity under control-plane faults"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增",
+   "eventCandidates": [
+    "MGMT-hard"
+   ],
+   "change": {
+    "zh": "管理异常触发训练恢复 → 数据面维持运行，训练停顿预算 0–1s。",
+    "en": "A management fault no longer triggers training recovery: the data plane keeps running, training pause budget 0–1 s"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cabinet",
+   "how": {
+    "zh": "管理面：控制面故障下数据面继续运行",
+    "en": "management: data plane continues under control-plane faults"
+   },
+   "acts": [
+    "node"
+   ],
+   "changes": {
+    "zh": "新增透明梯级：MGMT 事件 95 % 只停 1 s",
+    "en": "new transparent rung: MGMT events pause 1 s in 95 % of cases"
+   },
+   "stage": "rung",
+   "nominal": {
+    "pauseSeconds": 1,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "pauseSeconds": 1.5,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0014678799357325226,
+      "halfWidth": 0.00002657556074474909,
+      "delivered": 0.001477477077692673
+     },
+     "500000": {
+      "aOp": 0.003471811138652145,
+      "halfWidth": 0.0000567144396853916,
+      "delivered": 0.0027766126619083883
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0014686501129973543,
+      "halfWidth": 0.000026643231053707317,
+      "delivered": 0.001483660491975102
+     },
+     "500000": {
+      "aOp": 0.0034760547961118944,
+      "halfWidth": 0.00005702438879469703,
+      "delivered": 0.002807679532052586
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0014608930865369094,
+      "halfWidth": 0.000026243885987152824,
+      "delivered": 0.0014790132094297662
+     },
+     "500000": {
+      "aOp": 0.0034326235597200404,
+      "halfWidth": 0.00005524952252767607,
+      "delivered": 0.0027956424659660944
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0014618863568655028,
+      "halfWidth": 0.00002632900582228013,
+      "delivered": 0.0014803142407885138
+     },
+     "500000": {
+      "aOp": 0.003437980719513288,
+      "halfWidth": 0.00005558854481057525,
+      "delivered": 0.0027942249938548826
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.0034326235597200404,
+    "max": 0.0034760547961118944
+   },
+   "delivered500": {
+    "min": 0.0027766126619083883,
+    "max": 0.002807679532052586
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.35 点；唯一作用于管理面事件的机制",
+    "en": "+0.35 pt on A_op; the only mechanism acting on management-plane events"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-WARM-PROCESS",
+   "name": {
+    "zh": "预热进程与可信状态接替",
+    "en": "Warm standby process with trusted-state takeover"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增",
+   "eventCandidates": [
+    "UNKNOWN-hard"
+   ],
+   "change": {
+    "zh": "把 180s 恢复暂拆为启动 60s＋其他 120s；预热使启动 60s → 20s，其他阶段保持不变。",
+    "en": "The 180 s attempt split into startup 60 s + other 120 s; warm processes cut the startup to 20 s, the rest unchanged"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "node",
+   "how": {
+    "zh": "节点：预热进程与可信状态接替",
+    "en": "node: warm standby process"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "自动恢复的启动阶段 60 → 20 s",
+    "en": "startup stage of the automatic recovery 60 → 20 s"
+   },
+   "stage": "automatic",
+   "nominal": {
+    "startupTargetSeconds": 20,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 30,
+    "eligibleShare": 0.8999999999999999
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.00032207900560657035,
+      "halfWidth": 0.00003968174662399462,
+      "delivered": 0.00020338765407036774
+     },
+     "500000": {
+      "aOp": 0.0007509420298097621,
+      "halfWidth": 0.00009190021621211208,
+      "delivered": 0.0003464453909945701
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.00032233939293529914,
+      "halfWidth": 0.00003971907802219977,
+      "delivered": 0.00020432859615624708
+     },
+     "500000": {
+      "aOp": 0.0007523596844532117,
+      "halfWidth": 0.00009209654796048099,
+      "delivered": 0.0003372358350908613
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0003202917306588186,
+      "halfWidth": 0.00003944441837567505,
+      "delivered": 0.00020380815467024952
+     },
+     "500000": {
+      "aOp": 0.0007411367354914863,
+      "halfWidth": 0.00009063572677725843,
+      "delivered": 0.0003434435754125529
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0003206461658750522,
+      "halfWidth": 0.00003949574493284168,
+      "delivered": 0.00020395901657608851
+     },
+     "500000": {
+      "aOp": 0.0007430257119462824,
+      "halfWidth": 0.00009089695266259872,
+      "delivered": 0.00034452876709805715
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.0007411367354914863,
+    "max": 0.0007523596844532117
+   },
+   "delivered500": {
+    "min": 0.0003372358350908613,
+    "max": 0.0003464453909945701
+   },
+   "verdict": "pruned",
+   "reason": {
+    "zh": "与 R-RUNTIME-SNAPSHOT 同为启动阶段，20 s > 15 s，被支配（同阶段取最小值）；单独 +0.075 点",
+    "en": "same startup stage as R-RUNTIME-SNAPSHOT, 20 s > 15 s: dominated (minimum rule); +0.075 pt alone"
+   },
+   "dominatedBy": "R-RUNTIME-SNAPSHOT"
+  },
+  {
+   "id": "R-RUNTIME-SNAPSHOT",
+   "name": {
+    "zh": "运行时初始化快照",
+    "en": "Runtime initialisation snapshot"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "新增",
+   "eventCandidates": [
+    "CORE-hard",
+    "SRAM-hard",
+    "IOD-hard",
+    "MODULE-hard",
+    "MEMT-hard",
+    "MEMP-hard",
+    "NIC-hard",
+    "CPU-hard",
+    "DDR-hard",
+    "SSD-hard",
+    "UNKNOWN-hard"
+   ],
+   "change": {
+    "zh": "相同 60s 启动预算，用初始化快照恢复至 15s；加载最新训练状态和外部重绑定仍包含在其他阶段。",
+    "en": "The same 60 s startup budget restored from an initialisation snapshot in 15 s; loading the latest training state stays in the other stages"
+   },
+   "effort": 4,
+   "requires": [],
+   "appliable": true,
+   "deploy": "node",
+   "how": {
+    "zh": "节点：运行时初始化快照",
+    "en": "node: runtime initialisation snapshot"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "自动恢复的启动阶段 60 → 15 s",
+    "en": "startup stage of the automatic recovery 60 → 15 s"
+   },
+   "stage": "automatic",
+   "nominal": {
+    "startupTargetSeconds": 15,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 22.5,
+    "eligibleShare": 0.8999999999999999
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0018362474226094423,
+      "halfWidth": 0.00023690432590572617,
+      "delivered": 0.0010587716978237686
+     },
+     "500000": {
+      "aOp": 0.004187669867834578,
+      "halfWidth": 0.0005285548960669362,
+      "delivered": 0.0015464565574283306
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0018378688387553652,
+      "halfWidth": 0.00023716036869764103,
+      "delivered": 0.0010653329670140843
+     },
+     "500000": {
+      "aOp": 0.004196343242258017,
+      "halfWidth": 0.0005298886457033743,
+      "delivered": 0.0015125385153532604
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0018808880486415975,
+      "halfWidth": 0.00024362211109263258,
+      "delivered": 0.0010942662195953467
+     },
+     "500000": {
+      "aOp": 0.0042517251470682565,
+      "halfWidth": 0.0005384007953798022,
+      "delivered": 0.0015770413879321696
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0018832737129922173,
+      "halfWidth": 0.00024402989244454485,
+      "delivered": 0.001095270984889773
+     },
+     "500000": {
+      "aOp": 0.004264235470895775,
+      "halfWidth": 0.0005404884146169277,
+      "delivered": 0.001543623056530293
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.004187669867834578,
+    "max": 0.004264235470895775
+   },
+   "delivered500": {
+    "min": 0.0015125385153532604,
+    "max": 0.0015770413879321696
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.42 点；启动阶段三个机制中最短（15 s），同阶段取最小值",
+    "en": "+0.42 pt on A_op; the shortest of the three startup-stage mechanisms (15 s), minimum rule on the stage"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "C-ASYNC",
+   "name": {
+    "zh": "异步检查点保存",
+    "en": "Asynchronous checkpoint saves"
+   },
+   "kind": "checkpoint",
+   "origin": "extension",
+   "remapCategory": "扩展 C-FAST",
+   "eventCandidates": [],
+   "change": {
+    "zh": "每次保存阻塞 4s → 1s；另设相对原方案新增的有效持久化滞后 10s。",
+    "en": "Blocking per save 4 → 1 s at the same 300 s period; a 10 s durable lag is added to every rollback"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：异步检查点保存",
+    "en": "cluster: asynchronous checkpoint saves"
+   },
+   "acts": [
+    "cluster"
+   ],
+   "changes": {
+    "zh": "每次保存阻塞 4 → 1 s，回滚多 10 s 持久化滞后",
+    "en": "blocking per save 4 → 1 s, 10 s durable lag on every rollback"
+   },
+   "stage": "checkpoint",
+   "nominal": {
+    "blockingTargetSeconds": 1.15,
+    "durableLagSeconds": 10
+   },
+   "derated": {
+    "blockingTargetSeconds": 1.7249999999999999,
+    "durableLagSeconds": 15
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -6.093423317402961e-9,
+      "halfWidth": 1.1709986801005586e-9,
+      "delivered": 0.0026011634750655577
+     },
+     "500000": {
+      "aOp": -1.5069503860691094e-8,
+      "halfWidth": 2.6069389311642775e-9,
+      "delivered": 0.001129234933998561
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -5.962012651720509e-9,
+      "halfWidth": 1.1511642423913614e-9,
+      "delivered": 0.0026187315075579263
+     },
+     "500000": {
+      "aOp": -1.4825778997436718e-8,
+      "halfWidth": 2.573327979139133e-9,
+      "delivered": 0.0011502947162525604
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -6.692367738499645e-9,
+      "halfWidth": 1.2742717412225941e-9,
+      "delivered": 0.002516383444984475
+     },
+     "500000": {
+      "aOp": -1.6493136079098747e-8,
+      "halfWidth": 2.826270062199859e-9,
+      "delivered": 0.000948329353139148
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -6.5609494170892905e-9,
+      "halfWidth": 1.249373930695992e-9,
+      "delivered": 0.002527221381755671
+     },
+     "500000": {
+      "aOp": -1.6217563325963507e-8,
+      "halfWidth": 2.778875825381884e-9,
+      "delivered": 0.0009654373834263848
+     }
+    }
+   },
+   "aOp500": {
+    "min": -1.6493136079098747e-8,
+    "max": -1.4825778997436718e-8
+   },
+   "delivered500": {
+    "min": 0.000948329353139148,
+    "max": 0.0011502947162525604
+   },
+   "verdict": "pruned",
+   "reason": {
+    "zh": "A_op 0.000 点，有效产出 +0.1 点（50 万卡）：阻塞少 3 s，每次回滚多 10 s 滞后，低于 0.15 点阈值",
+    "en": "0.000 pt A_op, +0.1 pt goodput at 500k: 3 s less blocking against a 10 s lag on every rollback, below the 0.15-pt threshold"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "C-LOSSLESS",
+   "name": {
+    "zh": "无损检查点压缩",
+    "en": "Lossless checkpoint compression"
+   },
+   "kind": "checkpoint",
+   "origin": "extension",
+   "remapCategory": "扩展 C-FAST",
+   "eventCandidates": [],
+   "change": {
+    "zh": "180s 恢复暂拆为读取 60s＋其他 120s；压缩后读取 30s，再解压 10s。",
+    "en": "The checkpoint-read stage 60 s → 60/r + decompression (40 s at r = 2); the save period is unchanged"
+   },
+   "effort": 2,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：无损检查点压缩",
+    "en": "cluster: lossless checkpoint compression"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "自动恢复的检查点读取阶段 60 → 40 s",
+    "en": "checkpoint-read stage of the automatic recovery 60 → 40 s"
+   },
+   "stage": "automatic",
+   "nominal": {
+    "compressionRatio": 2,
+    "decompressSeconds": 10,
+    "share": 0.95
+   },
+   "derated": {
+    "compressionRatio": 1.6666666666666665,
+    "decompressSeconds": 15,
+    "share": 0.95
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.0014828404764677362,
+      "halfWidth": 0.00010164637726935627,
+      "delivered": 0.0009788224651643858
+     },
+     "500000": {
+      "aOp": 0.0034358208776756748,
+      "halfWidth": 0.00021971682315327905,
+      "delivered": 0.0016643020938714415
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.0014629951174515506,
+      "halfWidth": 0.00010042936932898055,
+      "delivered": 0.000970674714451272
+     },
+     "500000": {
+      "aOp": 0.0033932389828427935,
+      "halfWidth": 0.0002175002144889175,
+      "delivered": 0.001656312214725108
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0016651037846213705,
+      "halfWidth": 0.00010628331835433817,
+      "delivered": 0.0011154822752432751
+     },
+     "500000": {
+      "aOp": 0.003834985411130106,
+      "halfWidth": 0.00022615836119029492,
+      "delivered": 0.0018568066963440078
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.0016403939293924037,
+      "halfWidth": 0.00010430213867224643,
+      "delivered": 0.0011012338102748009
+     },
+     "500000": {
+      "aOp": 0.003783508404224914,
+      "halfWidth": 0.00022261127138517478,
+      "delivered": 0.0018944912241280283
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.0033932389828427935,
+    "max": 0.003834985411130106
+   },
+   "delivered500": {
+    "min": 0.001656312214725108,
+    "max": 0.0018944912241280283
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +0.34–0.38 点；缩短每次全局恢复的读取阶段",
+    "en": "+0.34–0.38 pt on A_op; shortens the read stage of every global recovery"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-RECOVERY-CLASSIFY",
+   "name": {
+    "zh": "故障分类与恢复动作匹配",
+    "en": "Fault classification and recovery-action matching"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "扩展恢复编排",
+   "eventCandidates": [],
+   "change": {
+    "zh": "自动恢复仍 180s；需要额外 2h 人工恢复的概率从 1% 降至 0.1%。",
+    "en": "The automatic attempt stays 180 s; the probability of a 2 h manual fallback drops from 1 % to 0.1 %"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群运维：故障分类与恢复动作匹配",
+    "en": "operations: fault classification and action matching"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "2 h 人工兜底的概率 1 % → 0.1 %",
+    "en": "probability of the 2 h manual fallback 1 % → 0.1 %"
+   },
+   "stage": "manual",
+   "nominal": {
+    "manualProbabilityTarget": 0.001,
+    "eligibleShare": 1,
+    "success": 0.95
+   },
+   "derated": {
+    "manualProbabilityTarget": 0.0015,
+    "eligibleShare": 0.95,
+    "success": 0.87
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.004561612772416728,
+      "halfWidth": 0.000321797679989956,
+      "delivered": 0.003068458023618398
+     },
+     "500000": {
+      "aOp": 0.01064335758662478,
+      "halfWidth": 0.0007039422519598343,
+      "delivered": 0.005484015689170554
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.004503862265022062,
+      "halfWidth": 0.0003181547631302004,
+      "delivered": 0.0030435581237860565
+     },
+     "500000": {
+      "aOp": 0.010517695425753957,
+      "halfWidth": 0.0006971741785432932,
+      "delivered": 0.005497732341943292
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.005138890780045275,
+      "halfWidth": 0.0003366514763980677,
+      "delivered": 0.003505819262822154
+     },
+     "500000": {
+      "aOp": 0.011922737512654324,
+      "halfWidth": 0.0007259601583453725,
+      "delivered": 0.006129735329065418
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.005068159136547113,
+      "halfWidth": 0.000330518205059556,
+      "delivered": 0.0034643577454319214
+     },
+     "500000": {
+      "aOp": 0.011773256388706474,
+      "halfWidth": 0.0007146227483707929,
+      "delivered": 0.006122918054988443
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.010517695425753957,
+    "max": 0.011922737512654324
+   },
+   "delivered500": {
+    "min": 0.005484015689170554,
+    "max": 0.006129735329065418
+   },
+   "verdict": "candidate",
+   "reason": {
+    "zh": "A_op +1.1–1.2 点；降额后仍有效（人工概率 ×1.5），而“自动成功率”杠杆降额后无效",
+    "en": "+1.1–1.2 pt on A_op; survives derating (manual probability ×1.5) where the automatic-success lever does not"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-SDC-FP8",
+   "name": {
+    "zh": "FP8 计算路径 SDC 检测",
+    "en": "FP8 compute-path silent-corruption detection"
+   },
+   "kind": "detect",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 检测扩展",
+   "eventCandidates": [
+    "CORE-sdc"
+   ],
+   "change": {
+    "zh": "现有 BF16 检测尚未验证的 FP8 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+    "en": "A 95 % detection target registered on the FP8 path that the BF16 detector does not cover; the path's share of the silent-corruption risk is to be calibrated"
+   },
+   "effort": 4,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片：FP8 计算路径校验",
+    "en": "device: FP8 compute-path checks"
+   },
+   "acts": [
+    "npu"
+   ],
+   "changes": {
+    "zh": "FP8 路径的静默检出 95 %（CORE 风险的一半）",
+    "en": "silent detection 95 % on the FP8 path (half the CORE risk)"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.000024207213314927368,
+      "halfWidth": 0.000007290828030582624,
+      "delivered": 0.0372678374677453
+     },
+     "500000": {
+      "aOp": -0.00007760866499075332,
+      "halfWidth": 0.000019445916807796047,
+      "delivered": 0.04079591428953063
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.00002403455619837384,
+      "halfWidth": 0.000007274976900402385,
+      "delivered": 0.03771476612649845
+     },
+     "500000": {
+      "aOp": -0.00007750754983570437,
+      "halfWidth": 0.000019468593886847957,
+      "delivered": 0.04151861508859185
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.00002405045785835965,
+      "halfWidth": 0.0000072424517510422726,
+      "delivered": 0.036959328505632556
+     },
+     "500000": {
+      "aOp": -0.00007632430950748096,
+      "halfWidth": 0.00001912836859244281,
+      "delivered": 0.04024602103435822
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.000024044696638306403,
+      "halfWidth": 0.000007248583585637267,
+      "delivered": 0.03711044838484096
+     },
+     "500000": {
+      "aOp": -0.00007654741214452902,
+      "halfWidth": 0.000019195471787582276,
+      "delivered": 0.04049355217908674
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.00007760866499075332,
+    "max": -0.00007632430950748096
+   },
+   "delivered500": {
+    "min": 0.04024602103435822,
+    "max": 0.04151861508859185
+   },
+   "verdict": "goodput",
+   "reason": {
+    "zh": "A_op −0.008 点，有效产出 +4.1 点",
+    "en": "−0.008 pt A_op, +4.1 pt delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-SDC-FP4",
+   "name": {
+    "zh": "FP4 计算路径 SDC 检测",
+    "en": "FP4 compute-path silent-corruption detection"
+   },
+   "kind": "detect",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 检测扩展",
+   "eventCandidates": [
+    "CORE-sdc"
+   ],
+   "change": {
+    "zh": "现有 BF16 检测尚未验证的 FP4 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+    "en": "A 95 % detection target registered on the FP4 path that the BF16 detector does not cover; the path's share of the silent-corruption risk is to be calibrated"
+   },
+   "effort": 4,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片：FP4 计算路径校验",
+    "en": "device: FP4 compute-path checks"
+   },
+   "acts": [
+    "npu"
+   ],
+   "changes": {
+    "zh": "FP4 路径的静默检出 95 %",
+    "en": "silent detection 95 % on the FP4 path"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.000026113354888784117,
+      "halfWidth": 0.000007935012868619494,
+      "delivered": 0.04404603084689037
+     },
+     "500000": {
+      "aOp": -0.00008652242306338765,
+      "halfWidth": 0.00002061331552114618,
+      "delivered": 0.04650066408874061
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.000025912980230317812,
+      "halfWidth": 0.000007923667466856413,
+      "delivered": 0.04456456163852672
+     },
+     "500000": {
+      "aOp": -0.0000863979775886999,
+      "halfWidth": 0.000020642722538688094,
+      "delivered": 0.04728441230151571
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.000025933935353168458,
+      "halfWidth": 0.00000788097020873336,
+      "delivered": 0.043682871671792946
+     },
+     "500000": {
+      "aOp": -0.00008504229934147826,
+      "halfWidth": 0.000020271829592267304,
+      "delivered": 0.045860392498020985
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.000025929861726085025,
+      "halfWidth": 0.00000788978896847379,
+      "delivered": 0.043862910313048065
+     },
+     "500000": {
+      "aOp": -0.00008531519047172198,
+      "halfWidth": 0.000020348976557324737,
+      "delivered": 0.04614751464333095
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.00008652242306338765,
+    "max": -0.00008504229934147826
+   },
+   "delivered500": {
+    "min": 0.045860392498020985,
+    "max": 0.04728441230151571
+   },
+   "verdict": "goodput",
+   "reason": {
+    "zh": "A_op −0.009 点，有效产出 +4.6 点",
+    "en": "−0.009 pt A_op, +4.6 pt delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-ABFT",
+   "name": {
+    "zh": "算子 ABFT／实时矩阵校验",
+    "en": "Operator ABFT / online matrix checks"
+   },
+   "kind": "detect",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 漏检补充",
+   "eventCandidates": [
+    "CORE-sdc"
+   ],
+   "change": {
+    "zh": "以 0.1% 正常态吞吐损失为压测预算；示例捕获前一道 95% 检测剩余漏检中的 90%，该子集两级覆盖变为 99.5%。",
+    "en": "Catches 90 % of the misses left by the upstream 95 % detector (joint 99.5 %) at a 0.1 % steady throughput cost"
+   },
+   "effort": 4,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片：算子 ABFT / 矩阵校验",
+    "en": "device: operator ABFT / matrix checks"
+   },
+   "acts": [
+    "npu"
+   ],
+   "changes": {
+    "zh": "上游漏检的 90 % 被补检（联合 99.5 %），0.1 % 吞吐",
+    "en": "90 % of the upstream misses caught (joint 99.5 %), 0.1 % throughput"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "upstreamDetection": 0.95,
+    "conditionalMissDetection": 0.855,
+    "overhead": 0.001
+   },
+   "derated": {
+    "upstreamDetection": 0.8999999999999999,
+    "conditionalMissDetection": 0.8049999999999999,
+    "overhead": 0.0015
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.000038577028726736186,
+      "halfWidth": 0.000014099855067878519,
+      "delivered": 0.10646155958784925
+     },
+     "500000": {
+      "aOp": -0.00014408275127782347,
+      "halfWidth": 0.00003705758071259567,
+      "delivered": 0.13030882188134135
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.000037974184765409514,
+      "halfWidth": 0.000014063999215582479,
+      "delivered": 0.10786497506317935
+     },
+     "500000": {
+      "aOp": -0.0001431932559862011,
+      "halfWidth": 0.00003704329277556414,
+      "delivered": 0.13299460538007024
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.000038365952078494394,
+      "halfWidth": 0.00001400851974739467,
+      "delivered": 0.10549506446492228
+     },
+     "500000": {
+      "aOp": -0.00014167670848730496,
+      "halfWidth": 0.00003645091041653752,
+      "delivered": 0.12831098123535356
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.00003827266805488949,
+      "halfWidth": 0.000014016746247517903,
+      "delivered": 0.10597038340101793
+     },
+     "500000": {
+      "aOp": -0.00014189819239374826,
+      "halfWidth": 0.00003655210073277067,
+      "delivered": 0.12922922243912788
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.00014408275127782347,
+    "max": -0.00014167670848730496
+   },
+   "delivered500": {
+    "min": 0.12831098123535356,
+    "max": 0.13299460538007024
+   },
+   "verdict": "goodput",
+   "reason": {
+    "zh": "A_op −0.014 点，有效产出 +13 点",
+    "en": "−0.014 pt A_op, +13 pt delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "D-NET-SDC",
+   "name": {
+    "zh": "网络端到端 SDC 检测",
+    "en": "Network end-to-end silent-corruption detection"
+   },
+   "kind": "detect",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 检测扩展",
+   "eventCandidates": [
+    "NIC-sdc",
+    "BOXIO-sdc",
+    "FABRIC-sdc"
+   ],
+   "change": {
+    "zh": "在目标网络残余 SDC 子集内登记 95% 检出目标，剩余漏检比例降至 5%。",
+    "en": "A 95 % detection target registered on the residual network silent-corruption subset"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "superpod",
+   "how": {
+    "zh": "网络：端到端静默检测",
+    "en": "network: end-to-end silent-corruption detection"
+   },
+   "acts": [
+    "superpod",
+    "scaleout",
+    "node"
+   ],
+   "changes": {
+    "zh": "网络残余静默的检出 95 %",
+    "en": "residual network silent corruption detected 95 %"
+   },
+   "stage": "sdc",
+   "nominal": {
+    "detectionTarget": 0.9025,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "detectionTarget": 0.8524999999999999,
+    "detectSeconds": 1.5
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": -0.00000302076812252657,
+      "halfWidth": 0.000001077419744942961,
+      "delivered": 0.009115373054637221
+     },
+     "500000": {
+      "aOp": -0.000011195349430186038,
+      "halfWidth": 0.0000026697911953185434,
+      "delivered": 0.01217885839481451
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": -0.0000020955038049412047,
+      "halfWidth": 7.568321580162951e-7,
+      "delivered": 0.006457710538039494
+     },
+     "500000": {
+      "aOp": -0.000007811389126955263,
+      "halfWidth": 0.000001878136032124206,
+      "delivered": 0.008692390568302755
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": -0.000003189455106652472,
+      "halfWidth": 0.0000011373702169068524,
+      "delivered": 0.00961403940001358
+     },
+     "500000": {
+      "aOp": -0.00001170141999631095,
+      "halfWidth": 0.0000027935824989138923,
+      "delivered": 0.012765270929193379
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": -0.000002950243585240949,
+      "halfWidth": 0.0000010547994697845748,
+      "delivered": 0.008933256903446884
+     },
+     "500000": {
+      "aOp": -0.000010854921600711073,
+      "halfWidth": 0.0000025953286211463634,
+      "delivered": 0.011890281090222768
+     }
+    }
+   },
+   "aOp500": {
+    "min": -0.00001170141999631095,
+    "max": -0.000007811389126955263
+   },
+   "delivered500": {
+    "min": 0.008692390568302755,
+    "max": 0.012765270929193379
+   },
+   "verdict": "goodput",
+   "reason": {
+    "zh": "A_op −0.001 点，有效产出 +0.9–1.3 点",
+    "en": "−0.001 pt A_op, +0.9–1.3 pt delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "H-SDC-SCREEN",
+   "name": {
+    "zh": "在线压测与异常资源筛除",
+    "en": "Online stress screening and eviction"
+   },
+   "kind": "physical",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 发生率改善",
+   "eventCandidates": [
+    "CORE-sdc",
+    "IOD-sdc",
+    "NIC-sdc",
+    "BOXIO-sdc",
+    "FABRIC-sdc",
+    "UNKNOWN-sdc"
+   ],
+   "change": {
+    "zh": "保留“SDC 发生率下降 25%”目标；表中显示全部风险适用时的条件情景。落地只对验证过的子集乘以 0.75，不改变检出率或单次恢复时间。",
+    "en": "Silent-corruption FIT of the screened subset × 0.75; detection and recovery unchanged"
+   },
+   "effort": 3,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片：在线压测与异常资源筛除",
+    "en": "device: online stress screening and eviction"
+   },
+   "acts": [
+    "npu"
+   ],
+   "changes": {
+    "zh": "筛除子集的静默 FIT × 0.75",
+    "en": "silent FIT of the screened subset × 0.75"
+   },
+   "stage": "rate",
+   "nominal": {
+    "occurrenceReduction": 0.25,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "occurrenceReduction": 0.125,
+    "eligibleShare": 0.8999999999999999
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.00004655266768684404,
+      "halfWidth": 0.0000056885600008504454,
+      "delivered": 0.029114989274567828
+     },
+     "500000": {
+      "aOp": 0.0000917612919619204,
+      "halfWidth": 0.000013594784391349783,
+      "delivered": 0.032360837489100625
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.000046084190086598623,
+      "halfWidth": 0.000005628110403779089,
+      "delivered": 0.028927451642159503
+     },
+     "500000": {
+      "aOp": 0.0000908902261294257,
+      "halfWidth": 0.000013464416152847708,
+      "delivered": 0.03232296483304309
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.00004644080691249811,
+      "halfWidth": 0.000005672409425020555,
+      "delivered": 0.028992963313347234
+     },
+     "500000": {
+      "aOp": 0.0000909786028843566,
+      "halfWidth": 0.000013463667545781025,
+      "delivered": 0.03209192347376633
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.00004634395497253863,
+      "halfWidth": 0.000005659783635519395,
+      "delivered": 0.028971213136706298
+     },
+     "500000": {
+      "aOp": 0.00009085585372674454,
+      "halfWidth": 0.00001344562790954253,
+      "delivered": 0.03211766118832265
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.00009085585372674454,
+    "max": 0.0000917612919619204
+   },
+   "delivered500": {
+    "min": 0.03209192347376633,
+    "max": 0.032360837489100625
+   },
+   "verdict": "goodput",
+   "reason": {
+    "zh": "A_op +0.009 点，有效产出 +3.2 点",
+    "en": "+0.009 pt A_op, +3.2 pt delivered goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-HCCL-ELASTIC",
+   "name": {
+    "zh": "HCCL 通信域弹性重建",
+    "en": "HCCL communicator elastic rebuild"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 局部恢复加速",
+   "eventCandidates": [
+    "CORE-hard",
+    "IOD-hard",
+    "NIC-hard",
+    "BOXIO-hard",
+    "FABRIC-hard",
+    "UNKNOWN-hard"
+   ],
+   "change": {
+    "zh": "将通信重建阶段从 60s 压缩到 15s 候选值，其他阶段不变；局部恢复总时长示例 180s → 135s。",
+    "en": "The communication-rebuild stage of a local (elastic) recovery 60 s → 15 s: local recovery 180 → 135 s"
+   },
+   "effort": 3,
+   "requires": [
+    "R-ELASTIC"
+   ],
+   "appliable": true,
+   "deploy": "cluster",
+   "how": {
+    "zh": "集群：HCCL 通信域弹性重建",
+    "en": "cluster: HCCL communicator elastic rebuild"
+   },
+   "acts": [
+    "npu",
+    "node"
+   ],
+   "changes": {
+    "zh": "弹性局部恢复的通信重建 60 → 15 s（局部损失，不停作业）",
+    "en": "communication rebuild of a local recovery 60 → 15 s (local loss, no job pause)"
+   },
+   "stage": "local",
+   "nominal": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 15,
+    "share": 0.95
+   },
+   "derated": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 22.5,
+    "share": 0.95
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.000025919106995000994
+     },
+     "500000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.0000562724096982159
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.000025985200375333584
+     },
+     "500000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.000056490952112967877
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.00002748952629864946
+     },
+     "500000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.00005956036085731938
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.00002751501473778506
+     },
+     "500000": {
+      "aOp": 0,
+      "halfWidth": 0,
+      "delivered": 0.000059651883651476815
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0,
+    "max": 0
+   },
+   "delivered500": {
+    "min": 0.0000562724096982159,
+    "max": 0.000059651883651476815
+   },
+   "verdict": "pruned",
+   "reason": {
+    "zh": "只缩短弹性局部恢复（作业不停），A_op 0.000、有效产出 +0.01 点",
+    "en": "shortens only the local elastic recovery (no job pause): 0.000 pt A_op, +0.01 pt goodput"
+   },
+   "dominatedBy": null
+  },
+  {
+   "id": "R-CANN-GRAPH",
+   "name": {
+    "zh": "CANN 图准备与启动缓存加速",
+    "en": "CANN graph preparation and startup caches"
+   },
+   "kind": "recover",
+   "origin": "extension",
+   "remapCategory": "用户方案 · 启动加速",
+   "eventCandidates": [
+    "CORE-hard",
+    "MODULE-hard",
+    "CPU-hard",
+    "NIC-hard",
+    "UNKNOWN-hard"
+   ],
+   "change": {
+    "zh": "在启动 60s 内单列图准备 30s，目标降为 7.5s；其他 150s 不变，总恢复示例 180s → 157.5s。",
+    "en": "The 30 s graph-preparation share of the 60 s startup drops to 7.5 s; recovery 180 → 157.5 s"
+   },
+   "effort": 2,
+   "requires": [],
+   "appliable": true,
+   "deploy": "npu",
+   "how": {
+    "zh": "芯片运行时：CANN 图准备与启动缓存",
+    "en": "device runtime: CANN graph preparation caches"
+   },
+   "acts": [
+    "cluster",
+    "scaleout",
+    "superpod",
+    "cabinet",
+    "node",
+    "npu"
+   ],
+   "changes": {
+    "zh": "启动阶段中的图准备 30 → 7.5 s",
+    "en": "graph preparation within startup 30 → 7.5 s"
+   },
+   "stage": "automatic",
+   "nominal": {
+    "graphTargetSeconds": 7.5,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "graphTargetSeconds": 11.25,
+    "eligibleShare": 0.8999999999999999
+   },
+   "shapley": {
+    "native950": {
+     "200000": {
+      "aOp": 0.00030580191976490277,
+      "halfWidth": 0.00005369307982537791,
+      "delivered": 0.00015474924207673307
+     },
+     "500000": {
+      "aOp": 0.0006943126052287681,
+      "halfWidth": 0.00012017387303459141,
+      "delivered": 0.00016097567974838393
+     }
+    },
+    "ubl128": {
+     "200000": {
+      "aOp": 0.00030609511125126,
+      "halfWidth": 0.000053751069607876145,
+      "delivered": 0.00015571966440328322
+     },
+     "500000": {
+      "aOp": 0.0006958707724061919,
+      "halfWidth": 0.00012047457128731098,
+      "delivered": 0.0001909958173767177
+     }
+    },
+    "cm384": {
+     "200000": {
+      "aOp": 0.0003232072421556531,
+      "halfWidth": 0.00005711017546790746,
+      "delivered": 0.0001646998848630717
+     },
+     "500000": {
+      "aOp": 0.0007268905281311422,
+      "halfWidth": 0.00012653975016497054,
+      "delivered": 0.00022343743017676646
+     }
+    },
+    "a3server": {
+     "200000": {
+      "aOp": 0.00032365198007387795,
+      "halfWidth": 0.000057202857535418406,
+      "delivered": 0.00016480862348902282
+     },
+     "500000": {
+      "aOp": 0.0007292057551382717,
+      "halfWidth": 0.00012701011939482185,
+      "delivered": 0.00019658615034048624
+     }
+    }
+   },
+   "aOp500": {
+    "min": 0.0006943126052287681,
+    "max": 0.0007292057551382717
+   },
+   "delivered500": {
+    "min": 0.00016097567974838393,
+    "max": 0.00022343743017676646
+   },
+   "verdict": "pruned",
+   "reason": {
+    "zh": "启动阶段内的图准备 30 → 7.5 s，启动 60 → 37.5 s，被 15 s 的快照支配；单独 +0.07 点",
+    "en": "graph share of startup 30 → 7.5 s (startup 60 → 37.5 s), dominated by the 15 s snapshot; +0.07 pt alone"
+   },
+   "dominatedBy": "R-RUNTIME-SNAPSHOT"
+  }
+ ],
+ "candidates": [
+  "D-HARD",
+  "R-LINK-LOCAL",
+  "R-FABRIC-DEGRADE",
+  "H-CONTROL-CONTINUITY",
+  "R-RUNTIME-SNAPSHOT",
+  "C-LOSSLESS",
+  "D-RECOVERY-CLASSIFY"
+ ]
+}

@@ -1,0 +1,652 @@
+{
+ "generated": "2026-10-21T01:49:31.854Z",
+ "sizes": [
+  10000,
+  100000,
+  200000,
+  500000
+ ],
+ "target": 0.985,
+ "topologies": {
+  "native950": {
+   "podNpus": 1024,
+   "cabinetNpus": 64,
+   "nodeNpus": 8,
+   "sizes": {
+    "10000": {
+     "instances": {
+      "superpod": 10,
+      "cabinet": 157,
+      "node": 1250,
+      "npu": 10000,
+      "commRacks": 40
+     },
+     "fitPerNpu": 3097.7695238095234,
+     "aOp": 0.9991981248930076,
+     "aOpDerated": 0.9991004303705745,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 17.742415516227016
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 17.742415516227016,
+      "final": 0.9991981248930076,
+      "finalDerated": 0.9991004303705745,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 17.74241552176162,
+      "k": 14.324645408051877,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9891955420852095,
+      "aOpDerated": 0.987846015140285
+     }
+    },
+    "100000": {
+     "instances": {
+      "superpod": 98,
+      "cabinet": 1563,
+      "node": 12500,
+      "npu": 100000,
+      "commRacks": 391
+     },
+     "fitPerNpu": 3096.8664761904756,
+     "aOp": 0.9920457373021923,
+     "aOpDerated": 0.9910844839270437,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 1.7288619190951051
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 1.7288619190951051,
+      "final": 0.9920457373021923,
+      "finalDerated": 0.9910844839270437,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.98,
+      "wilson": [
+       0.96103658423074,
+       0.9898316132083353
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 1.7288619194342814,
+      "k": 1.3068462808912875,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9897594805680715,
+      "aOpDerated": 0.9885138166631502
+     }
+    },
+    "200000": {
+     "instances": {
+      "superpod": 196,
+      "cabinet": 3125,
+      "node": 25000,
+      "npu": 200000,
+      "commRacks": 782
+     },
+     "fitPerNpu": 3096.801809523809,
+     "aOp": 0.9842186261269651,
+     "aOpDerated": 0.982329899107101,
+     "p1": {
+      "needed": true,
+      "factor": 0.8386398346765062,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "manual"
+      ],
+      "needed": true,
+      "factor": 0.9835902392418706,
+      "slack": null,
+      "final": 0.9872993059394202,
+      "finalDerated": 0.9850000004534182,
+      "effort": 2.9548270645527106
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.45,
+      "wilson": [
+       0.40195222801404185,
+       0.4989990014193878
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "manual"
+      ],
+      "escalated": false,
+      "kMean": 0.9835902709462498,
+      "k": 0.9835902709462498,
+      "binding": "mean",
+      "pAtLeastTarget": 0.9525,
+      "wilson": [
+       0.9270084505901734,
+       0.9693829230372881
+      ],
+      "verdict": "supported",
+      "aOp": 0.9872993055564875,
+      "aOpDerated": 0.9850000000000001
+     }
+    },
+    "500000": {
+     "instances": {
+      "superpod": 489,
+      "cabinet": 7813,
+      "node": 62500,
+      "npu": 500000,
+      "commRacks": 1954
+     },
+     "fitPerNpu": 3096.8138285714276,
+     "aOp": 0.9614626855269741,
+     "aOpDerated": 0.9569789615887387,
+     "p1": {
+      "needed": true,
+      "factor": 0.30472352760375465,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "needed": true,
+      "factor": 0.5666871725295797,
+      "slack": null,
+      "final": 0.9906244765786307,
+      "finalDerated": 0.9850000003751104,
+      "effort": 37.775021950458246
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0,
+      "wilson": [
+       0,
+       0.009512294334296505
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "escalated": false,
+      "kMean": 0.5666871879668808,
+      "k": 0.5666871879668808,
+      "binding": "mean",
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported",
+      "aOp": 0.9906244763437044,
+      "aOpDerated": 0.985
+     }
+    }
+   }
+  },
+  "ubl128": {
+   "podNpus": 128,
+   "cabinetNpus": 64,
+   "nodeNpus": 8,
+   "sizes": {
+    "10000": {
+     "instances": {
+      "superpod": 79,
+      "cabinet": 157,
+      "node": 1250,
+      "npu": 10000,
+      "commRacks": 20
+     },
+     "fitPerNpu": 3043.590476190475,
+     "aOp": 0.9992442682162701,
+     "aOpDerated": 0.9991459642668962,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 18.72875233076372
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 18.72875233076372,
+      "final": 0.9992442682162701,
+      "finalDerated": 0.9991459642668962,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 18.72875233369143,
+      "k": 14.37086368717439,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9898041963873483,
+      "aOpDerated": 0.9884399478855016
+     }
+    },
+    "100000": {
+     "instances": {
+      "superpod": 782,
+      "cabinet": 1563,
+      "node": 12500,
+      "npu": 100000,
+      "commRacks": 195
+     },
+     "fitPerNpu": 3042.9765714285713,
+     "aOp": 0.992498639542136,
+     "aOpDerated": 0.9915305716213115,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 1.8252048574434323
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 1.8252048574434323,
+      "final": 0.992498639542136,
+      "finalDerated": 0.9915305716213115,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.985,
+      "wilson": [
+       0.9676653664151733,
+       0.993107708080559
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 1.825204857968119,
+      "k": 1.4250496269865138,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9895207099313424,
+      "aOpDerated": 0.9881560023736932
+     }
+    },
+    "200000": {
+     "instances": {
+      "superpod": 1563,
+      "cabinet": 3125,
+      "node": 25000,
+      "npu": 200000,
+      "commRacks": 391
+     },
+     "fitPerNpu": 3042.9327619047613,
+     "aOp": 0.9851102750901405,
+     "aOpDerated": 0.9832064108195786,
+     "p1": {
+      "needed": true,
+      "factor": 0.8857169298921735,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "manual"
+      ],
+      "needed": false,
+      "factor": null,
+      "slack": 1.0363933840034412,
+      "final": 0.9878129349985424,
+      "finalDerated": 0.9854945252219903,
+      "effort": 2
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.6,
+      "wilson": [
+       0.5512590700269543,
+       0.6468384711061864
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "manual"
+      ],
+      "escalated": false,
+      "kMean": 1.0363933843713398,
+      "k": 1.0363933843713398,
+      "binding": "mean",
+      "pAtLeastTarget": 0.9725,
+      "wilson": [
+       0.9514345181143852,
+       0.9845763637397046
+      ],
+      "verdict": "supported",
+      "aOp": 0.9873987000161348,
+      "aOpDerated": 0.985
+     }
+    },
+    "500000": {
+     "instances": {
+      "superpod": 3907,
+      "cabinet": 7813,
+      "node": 62500,
+      "npu": 500000,
+      "commRacks": 977
+     },
+     "fitPerNpu": 3042.940609523809,
+     "aOp": 0.9635927527696029,
+     "aOpDerated": 0.9590611215039903,
+     "p1": {
+      "needed": true,
+      "factor": 0.32226522656568657,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "needed": true,
+      "factor": 0.592877060894355,
+      "slack": null,
+      "final": 0.9906781599633638,
+      "finalDerated": 0.9850000002378394,
+      "effort": 35.16780466540922
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0,
+      "wilson": [
+       0,
+       0.009512294334296505
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "escalated": false,
+      "kMean": 0.5928770711252956,
+      "k": 0.5928770711252956,
+      "binding": "mean",
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported",
+      "aOp": 0.9906781598153103,
+      "aOpDerated": 0.9850000000000001
+     }
+    }
+   }
+  },
+  "cm384": {
+   "podNpus": 384,
+   "cabinetNpus": 32,
+   "nodeNpus": 8,
+   "sizes": {
+    "10000": {
+     "instances": {
+      "superpod": 27,
+      "cabinet": 313,
+      "node": 1250,
+      "npu": 10000,
+      "commRacks": 105
+     },
+     "fitPerNpu": 3371.2761904761905,
+     "aOp": 0.9990813895356668,
+     "aOpDerated": 0.9989739342990346,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 15.532113733758003
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 15.532113733758003,
+      "final": 0.9990813895356668,
+      "finalDerated": 0.9989739342990346,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 15.532113739754722,
+      "k": 11.376158839906886,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9901397184412568,
+      "aOpDerated": 0.9889562493616484
+     }
+    },
+    "100000": {
+     "instances": {
+      "superpod": 261,
+      "cabinet": 3125,
+      "node": 12500,
+      "npu": 100000,
+      "commRacks": 1042
+     },
+     "fitPerNpu": 3383.9299047619033,
+     "aOp": 0.9908531968895767,
+     "aOpDerated": 0.9897920970391594,
+     "p1": {
+      "needed": false,
+      "factor": null,
+      "slack": 1.5008916723821912
+     },
+     "p3": {
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 1.5008916723821912,
+      "final": 0.9908531968895767,
+      "finalDerated": 0.9897920970391594,
+      "effort": 0
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.9575,
+      "wilson": [
+       0.9329979456752499,
+       0.9732983050088689
+      ],
+      "verdict": "supported"
+     },
+     "recommended": {
+      "levers": [],
+      "escalated": false,
+      "kMean": 1.5008916732289286,
+      "k": 1.1160466530772855,
+      "binding": "window",
+      "pAtLeastTarget": 0.93,
+      "wilson": [
+       0.9006910535722495,
+       0.9511283733002555
+      ],
+      "verdict": "supported",
+      "aOp": 0.9898577642591905,
+      "aOpDerated": 0.9886777180136509
+     }
+    },
+    "200000": {
+     "instances": {
+      "superpod": 521,
+      "cabinet": 6250,
+      "node": 25000,
+      "npu": 200000,
+      "commRacks": 2084
+     },
+     "fitPerNpu": 3383.9299047619033,
+     "aOp": 0.9818728700312997,
+     "aOpDerated": 0.9797929086725031,
+     "p1": {
+      "needed": true,
+      "factor": 0.725088635172252,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "auto"
+      ],
+      "needed": false,
+      "factor": null,
+      "slack": 1.0332868025077748,
+      "final": 0.9893163302369414,
+      "finalDerated": 0.9854560094149056,
+      "effort": 3
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0.19,
+      "wilson": [
+       0.15457385084236502,
+       0.2313237716448988
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "escalated": true,
+      "kMean": 1.2995860293553012,
+      "k": 1.2995860293553012,
+      "binding": "mean",
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported",
+      "aOp": 0.9906272301768133,
+      "aOpDerated": 0.985
+     }
+    },
+    "500000": {
+     "instances": {
+      "superpod": 1303,
+      "cabinet": 15625,
+      "node": 62500,
+      "npu": 500000,
+      "commRacks": 5209
+     },
+     "fitPerNpu": 3383.929104761904,
+     "aOp": 0.9558859607640934,
+     "aOpDerated": 0.950982284923952,
+     "p1": {
+      "needed": true,
+      "factor": 0.259851110707933,
+      "slack": null
+     },
+     "p3": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "needed": true,
+      "factor": 0.4953089558987241,
+      "slack": null,
+      "final": 0.9906026816275151,
+      "finalDerated": 0.985000000357016,
+      "effort": 45.54397550706669
+     },
+     "todayWindow": {
+      "pAtLeastTarget": 0,
+      "wilson": [
+       0,
+       0.009512294334296505
+      ],
+      "verdict": "below"
+     },
+     "recommended": {
+      "levers": [
+       "auto",
+       "manual"
+      ],
+      "escalated": false,
+      "kMean": 0.4953089688589422,
+      "k": 0.4953089688589422,
+      "binding": "mean",
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported",
+      "aOp": 0.9906026814035176,
+      "aOpDerated": 0.985
+     }
+    }
+   }
+  }
+ }
+}

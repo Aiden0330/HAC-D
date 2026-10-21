@@ -1,0 +1,1811 @@
+{
+ "generated": "2026-10-20T16:32:34.104Z",
+ "arch": "native950",
+ "sizes": [
+  10000,
+  100000,
+  200000,
+  500000
+ ],
+ "target": 0.985,
+ "permutations": 300,
+ "players": [
+  "D-HARD",
+  "D-SLOW",
+  "D-SDC",
+  "R-SDC",
+  "R-REPLAY",
+  "R-PROCESS",
+  "R-ELASTIC",
+  "C-FAST",
+  "R-LINK-LOCAL",
+  "R-FABRIC-DEGRADE",
+  "H-CONTROL-CONTINUITY",
+  "R-WARM-PROCESS",
+  "R-RUNTIME-SNAPSHOT",
+  "C-ASYNC",
+  "C-LOSSLESS",
+  "D-RECOVERY-CLASSIFY",
+  "D-SDC-FP8",
+  "D-SDC-FP4",
+  "D-ABFT",
+  "D-NET-SDC",
+  "H-SDC-SCREEN",
+  "R-HCCL-ELASTIC",
+  "R-CANN-GRAPH"
+ ],
+ "original": [
+  "D-HARD",
+  "D-SLOW",
+  "D-SDC",
+  "R-SDC",
+  "R-REPLAY",
+  "R-PROCESS",
+  "R-ELASTIC",
+  "C-FAST"
+ ],
+ "extensions": [
+  "R-LINK-LOCAL",
+  "R-FABRIC-DEGRADE",
+  "H-CONTROL-CONTINUITY",
+  "R-WARM-PROCESS",
+  "R-RUNTIME-SNAPSHOT",
+  "C-ASYNC",
+  "C-LOSSLESS",
+  "D-RECOVERY-CLASSIFY",
+  "D-SDC-FP8",
+  "D-SDC-FP4",
+  "D-ABFT",
+  "D-NET-SDC",
+  "H-SDC-SCREEN",
+  "R-HCCL-ELASTIC",
+  "R-CANN-GRAPH"
+ ],
+ "parameters": {
+  "R-LINK-LOCAL": {
+   "successSeconds": 2,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "R-FABRIC-DEGRADE": {
+   "switchSeconds": 2,
+   "exposedCommunicationFraction": 0.3,
+   "remainingBandwidthRatio": 0.75,
+   "repairSeconds": 1800,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "H-CONTROL-CONTINUITY": {
+   "pauseSeconds": 1,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "R-WARM-PROCESS": {
+   "startupTargetSeconds": 20,
+   "eligibleShare": 0.95
+  },
+  "R-RUNTIME-SNAPSHOT": {
+   "startupTargetSeconds": 15,
+   "eligibleShare": 0.95
+  },
+  "R-CANN-GRAPH": {
+   "graphTargetSeconds": 7.5,
+   "eligibleShare": 0.95
+  },
+  "C-ASYNC": {
+   "blockingTargetSeconds": 1.15,
+   "durableLagSeconds": 10
+  },
+  "C-LOSSLESS": {
+   "compressionRatio": 2,
+   "decompressSeconds": 10,
+   "share": 0.95
+  },
+  "D-RECOVERY-CLASSIFY": {
+   "manualProbabilityTarget": 0.001,
+   "eligibleShare": 1,
+   "success": 0.95
+  },
+  "D-SDC-FP8": {
+   "detectionTarget": 0.95,
+   "detectSeconds": 1,
+   "riskShare": 0.475
+  },
+  "D-SDC-FP4": {
+   "detectionTarget": 0.95,
+   "detectSeconds": 1,
+   "riskShare": 0.475
+  },
+  "D-ABFT": {
+   "upstreamDetection": 0.95,
+   "conditionalMissDetection": 0.855,
+   "overhead": 0.001
+  },
+  "D-NET-SDC": {
+   "detectionTarget": 0.9025,
+   "detectSeconds": 1
+  },
+  "H-SDC-SCREEN": {
+   "occurrenceReduction": 0.25,
+   "eligibleShare": 0.95
+  },
+  "R-HCCL-ELASTIC": {
+   "communicationBeforeSeconds": 60,
+   "communicationTargetSeconds": 15,
+   "share": 0.95
+  }
+ },
+ "remap": {
+  "repo": "https://github.com/lzq0927/remap",
+  "commit": "f53ab7e",
+  "note": "extension definitions unchanged since eaacb05"
+ },
+ "library": {
+  "D-HARD": {
+   "name": {
+    "zh": "中断检测 / 超时兜底",
+    "en": "Interruption detection / timeout fallback"
+   },
+   "effort": 2,
+   "parameters": {
+    "coverage": 0.999,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.949,
+    "detectSeconds": 1.5
+   },
+   "confidence": "baseline USER; 99.9 % / 1 s is a target to be audited",
+   "kind": "detect",
+   "scope": "hard"
+  },
+  "D-SLOW": {
+   "name": {
+    "zh": "亚健康检测",
+    "en": "Sub-health detection"
+   },
+   "effort": 3,
+   "parameters": {
+    "coverage": 0.99,
+    "detectSeconds": 30
+   },
+   "derated": {
+    "coverage": 0.94,
+    "detectSeconds": 45
+   },
+   "confidence": "baseline USER; 99 % / 30 s is a target to be audited",
+   "kind": "detect",
+   "scope": "slow"
+  },
+  "D-SDC": {
+   "name": {
+    "zh": "静默即时检测",
+    "en": "Immediate silent-corruption detection"
+   },
+   "effort": 5,
+   "parameters": {
+    "coverage": 0.95,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.8999999999999999,
+    "detectSeconds": 1.5
+   },
+   "confidence": "95 % is a user target; 1 s a provisional step-level value",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "R-SDC": {
+   "name": {
+    "zh": "干净状态恢复与 step 重算",
+    "en": "Clean step-state recovery"
+   },
+   "effort": 4,
+   "parameters": {
+    "stepSeconds": 1,
+    "recoverSeconds": 1
+   },
+   "derated": {
+    "stepSeconds": 1.5,
+    "recoverSeconds": 1.5
+   },
+   "confidence": "ideal capability target, not a vendor measurement",
+   "kind": "recover",
+   "scope": "sdc"
+  },
+  "R-REPLAY": {
+   "name": {
+    "zh": "通信 / 算子重执行",
+    "en": "Operator / communication replay"
+   },
+   "effort": 2,
+   "parameters": {
+    "success": 0.9,
+    "successSeconds": 5,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.8200000000000001,
+    "successSeconds": 7.5,
+    "failureSeconds": 15
+   },
+   "confidence": "PRIOR from the old mechanism library; not for persistent device damage",
+   "kind": "recover",
+   "scope": "replay"
+  },
+  "R-PROCESS": {
+   "name": {
+    "zh": "进程 / Pod 重调度",
+    "en": "Process / pod rescheduling"
+   },
+   "effort": 3,
+   "parameters": {
+    "success": 0.95,
+    "successSeconds": 60,
+    "failureSeconds": 120
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 90,
+    "failureSeconds": 180
+   },
+   "confidence": "PRIOR from the old mechanism library",
+   "kind": "recover",
+   "scope": "process"
+  },
+  "R-ELASTIC": {
+   "name": {
+    "zh": "DP 域弹性恢复",
+    "en": "DP-domain elastic recovery"
+   },
+   "effort": 5,
+   "parameters": {
+    "domains": 50,
+    "success": 0.98,
+    "recoverSeconds": 180,
+    "failureSeconds": 120,
+    "syncSeconds": 1
+   },
+   "derated": {
+    "domains": 50,
+    "success": 0.9,
+    "recoverSeconds": 270,
+    "failureSeconds": 180,
+    "syncSeconds": 1.5
+   },
+   "confidence": "50 domains USER; 98 % and 1 s are priors to be audited; a capacity model, not a synchronous-training performance promise",
+   "kind": "recover",
+   "scope": "elastic"
+  },
+  "C-FAST": {
+   "name": {
+    "zh": "缩短 CKPT 周期和保存阻塞",
+    "en": "Faster checkpoints"
+   },
+   "effort": 3,
+   "parameters": {
+    "computeSeconds": 60,
+    "saveSeconds": 1
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 1.5
+   },
+   "confidence": "target prior of this round",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "R-LINK-LOCAL": {
+   "name": {
+    "zh": "链路透明恢复",
+    "en": "Link-transparent recovery"
+   },
+   "effort": 3,
+   "parameters": {
+    "successSeconds": 2,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "successSeconds": 3,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "engineering budget (NVLink layered-resilience design), not measured",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-FABRIC-DEGRADE": {
+   "name": {
+    "zh": "网络绕行与降级运行",
+    "en": "Fabric re-route and degraded running"
+   },
+   "effort": 4,
+   "parameters": {
+    "switchSeconds": 2,
+    "exposedCommunicationFraction": 0.3,
+    "remainingBandwidthRatio": 0.75,
+    "repairSeconds": 1800,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "switchSeconds": 3,
+    "exposedCommunicationFraction": 0.35,
+    "remainingBandwidthRatio": 0.7,
+    "repairSeconds": 2700,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "official degraded-bandwidth operation exists; f, r and the repair time are example budgets",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "H-CONTROL-CONTINUITY": {
+   "name": {
+    "zh": "控制面异常下业务连续运行",
+    "en": "Data-plane continuity under control-plane faults"
+   },
+   "effort": 3,
+   "parameters": {
+    "pauseSeconds": 1,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "pauseSeconds": 1.5,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "control / data plane decoupling is public design; the pause budget is a candidate",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-WARM-PROCESS": {
+   "name": {
+    "zh": "预热进程与可信状态接替",
+    "en": "Warm standby process with trusted-state takeover"
+   },
+   "effort": 3,
+   "parameters": {
+    "startupTargetSeconds": 20,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 30,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "engineering estimate; the public 7.3 s result is an inference experiment",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-RUNTIME-SNAPSHOT": {
+   "name": {
+    "zh": "运行时初始化快照",
+    "en": "Runtime initialisation snapshot"
+   },
+   "effort": 4,
+   "parameters": {
+    "startupTargetSeconds": 15,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 22.5,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "process-snapshot principle is public; the 15 s training target and compatibility range are to be verified",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "C-ASYNC": {
+   "name": {
+    "zh": "异步检查点保存",
+    "en": "Asynchronous checkpoint saves"
+   },
+   "effort": 3,
+   "parameters": {
+    "blockingTargetSeconds": 1.15,
+    "durableLagSeconds": 10
+   },
+   "derated": {
+    "blockingTargetSeconds": 1.7249999999999999,
+    "durableLagSeconds": 15
+   },
+   "confidence": "public design (Megatron-Core async saves); 1 s blocking and 10 s lag are candidates",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "C-LOSSLESS": {
+   "name": {
+    "zh": "无损检查点压缩",
+    "en": "Lossless checkpoint compression"
+   },
+   "effort": 2,
+   "parameters": {
+    "compressionRatio": 2,
+    "decompressSeconds": 10,
+    "share": 0.95
+   },
+   "derated": {
+    "compressionRatio": 1.6666666666666665,
+    "decompressSeconds": 15,
+    "share": 0.95
+   },
+   "confidence": "public (nvCOMP); 2× ratio, 60 s read and 10 s decompression are budgets",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "D-RECOVERY-CLASSIFY": {
+   "name": {
+    "zh": "故障分类与恢复动作匹配",
+    "en": "Fault classification and recovery-action matching"
+   },
+   "effort": 3,
+   "parameters": {
+    "manualProbabilityTarget": 0.001,
+    "eligibleShare": 1,
+    "success": 0.95
+   },
+   "derated": {
+    "manualProbabilityTarget": 0.0015,
+    "eligibleShare": 0.95,
+    "success": 0.87
+   },
+   "confidence": "GPU error-recovery action interface is public; the 0.1 % target is a candidate",
+   "kind": "recover",
+   "scope": "all"
+  },
+  "D-SDC-FP8": {
+   "name": {
+    "zh": "FP8 计算路径 SDC 检测",
+    "en": "FP8 compute-path silent-corruption detection"
+   },
+   "effort": 4,
+   "parameters": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "confidence": "user proposal; detection target and risk share are acceptance targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-SDC-FP4": {
+   "name": {
+    "zh": "FP4 计算路径 SDC 检测",
+    "en": "FP4 compute-path silent-corruption detection"
+   },
+   "effort": 4,
+   "parameters": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "confidence": "user proposal; detection target and risk share are acceptance targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-ABFT": {
+   "name": {
+    "zh": "算子 ABFT／实时矩阵校验",
+    "en": "Operator ABFT / online matrix checks"
+   },
+   "effort": 4,
+   "parameters": {
+    "upstreamDetection": 0.95,
+    "conditionalMissDetection": 0.855,
+    "overhead": 0.001
+   },
+   "derated": {
+    "upstreamDetection": 0.8999999999999999,
+    "conditionalMissDetection": 0.8049999999999999,
+    "overhead": 0.0015
+   },
+   "confidence": "NVIDIA algorithm-based error detection research; conditional detection and overhead are targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-NET-SDC": {
+   "name": {
+    "zh": "网络端到端 SDC 检测",
+    "en": "Network end-to-end silent-corruption detection"
+   },
+   "effort": 3,
+   "parameters": {
+    "detectionTarget": 0.9025,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "detectionTarget": 0.8524999999999999,
+    "detectSeconds": 1.5
+   },
+   "confidence": "user proposal; target to be verified",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "H-SDC-SCREEN": {
+   "name": {
+    "zh": "在线压测与异常资源筛除",
+    "en": "Online stress screening and eviction"
+   },
+   "effort": 3,
+   "parameters": {
+    "occurrenceReduction": 0.25,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "occurrenceReduction": 0.125,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "user target (25 % lower occurrence); eligible share, interval and cost unknown",
+   "kind": "physical",
+   "scope": "sdc"
+  },
+  "R-HCCL-ELASTIC": {
+   "name": {
+    "zh": "HCCL 通信域弹性重建",
+    "en": "HCCL communicator elastic rebuild"
+   },
+   "effort": 3,
+   "parameters": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 15,
+    "share": 0.95
+   },
+   "derated": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 22.5,
+    "share": 0.95
+   },
+   "confidence": "NCCL / HCCL communicator management APIs are public; 15 s is a candidate",
+   "kind": "recover",
+   "scope": "elastic"
+  },
+  "R-CANN-GRAPH": {
+   "name": {
+    "zh": "CANN 图准备与启动缓存加速",
+    "en": "CANN graph preparation and startup caches"
+   },
+   "effort": 2,
+   "parameters": {
+    "graphTargetSeconds": 7.5,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "graphTargetSeconds": 11.25,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "CANN graph capture API is public; 7.5 s is a candidate",
+   "kind": "recover",
+   "scope": "hard"
+  }
+ },
+ "perSize": {
+  "10000": {
+   "baseline": 0.9976614935469884,
+   "plan": {
+    "ids": [],
+    "feasible": true,
+    "effort": 0,
+    "nominal": 0.9976614935469884,
+    "derated": 0.9976614935469884
+   },
+   "allOn": 0.9996598465306498,
+   "allOnDerated": 0.999494583493852,
+   "gains": [
+    {
+     "id": "D-HARD",
+     "halfWidth": 0.0000027690846950166823,
+     "aOp": {
+      "single": 0.00009799868302151626,
+      "lastAdded": 0.000052131272649469373,
+      "shapley": 0.00006743478074079748
+     },
+     "delivered": {
+      "shapley": 0.00006556801050566996
+     }
+    },
+    {
+     "id": "D-SLOW",
+     "halfWidth": 2.8822477084308314e-8,
+     "aOp": {
+      "single": -0.000001861932997337945,
+      "lastAdded": -0.000001271787439471872,
+      "shapley": -0.000001589146749222022
+     },
+     "delivered": {
+      "shapley": 0.0000294528954451397
+     }
+    },
+    {
+     "id": "D-SDC",
+     "halfWidth": 7.653141182071131e-7,
+     "aOp": {
+      "single": -0.000006872907501342951,
+      "lastAdded": 0.0000019847920742499525,
+      "shapley": 0.0000014381039128893065
+     },
+     "delivered": {
+      "shapley": 0.021925567626890095
+     }
+    },
+    {
+     "id": "R-SDC",
+     "halfWidth": 0.000001158566663244627,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0.00001719614702466732,
+      "shapley": 0.000015172553598770862
+     },
+     "delivered": {
+      "shapley": 0.000021453876049250716
+     }
+    },
+    {
+     "id": "R-REPLAY",
+     "halfWidth": 0.00003670152401541005,
+     "aOp": {
+      "single": 0.0008456404487653391,
+      "lastAdded": -0.000006156592459616306,
+      "shapley": 0.00025191404855472
+     },
+     "delivered": {
+      "shapley": 0.00041296777133342864
+     }
+    },
+    {
+     "id": "R-PROCESS",
+     "halfWidth": 0.00004452573341020872,
+     "aOp": {
+      "single": 0.001038279404229514,
+      "lastAdded": 0.0000029531572218743918,
+      "shapley": 0.0003117165116092372
+     },
+     "delivered": {
+      "shapley": 0.00029493757332848424
+     }
+    },
+    {
+     "id": "R-ELASTIC",
+     "halfWidth": 0.000057295953217510485,
+     "aOp": {
+      "single": 0.001506483071504472,
+      "lastAdded": 0.00016369952083383765,
+      "shapley": 0.000655162271774595
+     },
+     "delivered": {
+      "shapley": 0.0010100748231826285
+     }
+    },
+    {
+     "id": "C-FAST",
+     "halfWidth": 9.560492748659361e-10,
+     "aOp": {
+      "single": -2.646284402718635e-8,
+      "lastAdded": -2.5129898162390418e-11,
+      "shapley": -5.504648970718525e-9
+     },
+     "delivered": {
+      "shapley": -0.007125344131673869
+     }
+    },
+    {
+     "id": "R-LINK-LOCAL",
+     "halfWidth": 0.000012394477676562654,
+     "aOp": {
+      "single": 0.0003175731963011019,
+      "lastAdded": 0.0000053393996352069095,
+      "shapley": 0.00010539701321362912
+     },
+     "delivered": {
+      "shapley": 0.00020922656953895207
+     }
+    },
+    {
+     "id": "R-FABRIC-DEGRADE",
+     "halfWidth": 0.000007587866591260224,
+     "aOp": {
+      "single": 0.0001796118537785718,
+      "lastAdded": 0.00000273814530982186,
+      "shapley": 0.00006190025976029505
+     },
+     "delivered": {
+      "shapley": 0.000031840380737108894
+     }
+    },
+    {
+     "id": "H-CONTROL-CONTINUITY",
+     "halfWidth": 0.0000015050279042374189,
+     "aOp": {
+      "single": 0.0000922871553269422,
+      "lastAdded": 0.00006029755807557269,
+      "shapley": 0.0000761733887261969
+     },
+     "delivered": {
+      "shapley": 0.00010449677428521061
+     }
+    },
+    {
+     "id": "R-WARM-PROCESS",
+     "halfWidth": 0.0000020923005563965306,
+     "aOp": {
+      "single": 0.00004307752052912228,
+      "lastAdded": 0.00000216241235284631,
+      "shapley": 0.00001687851774570981
+     },
+     "delivered": {
+      "shapley": 0.000016138278315073936
+     }
+    },
+    {
+     "id": "R-RUNTIME-SNAPSHOT",
+     "halfWidth": 0.000012780132651548626,
+     "aOp": {
+      "single": 0.00029991248841310103,
+      "lastAdded": 0.000007657127464311131,
+      "shapley": 0.00009763173937561469
+     },
+     "delivered": {
+      "shapley": 0.00009253903391248097
+     }
+    },
+    {
+     "id": "C-ASYNC",
+     "halfWidth": 1.0779770256994976e-11,
+     "aOp": {
+      "single": -3.1016900159386296e-10,
+      "lastAdded": 0,
+      "shapley": -4.806226157801537e-11
+     },
+     "delivered": {
+      "shapley": 0.004257874924129769
+     }
+    },
+    {
+     "id": "C-LOSSLESS",
+     "halfWidth": 0.000005609066003685917,
+     "aOp": {
+      "single": 0.00016786007561675476,
+      "lastAdded": 0.00003939542498498927,
+      "shapley": 0.00007822713873015178
+     },
+     "delivered": {
+      "shapley": 0.00007508946851221128
+     }
+    },
+    {
+     "id": "D-RECOVERY-CLASSIFY",
+     "halfWidth": 0.000017615631730825254,
+     "aOp": {
+      "single": 0.000544071642014643,
+      "lastAdded": 0.00012762990994341639,
+      "shapley": 0.0002395035560370684
+     },
+     "delivered": {
+      "shapley": 0.00023007301837635552
+     }
+    },
+    {
+     "id": "D-SDC-FP8",
+     "halfWidth": 2.5490192774549465e-7,
+     "aOp": {
+      "single": -0.000003065979748417824,
+      "lastAdded": 2.1807414096741695e-8,
+      "shapley": 1.2166195613764568e-7
+     },
+     "delivered": {
+      "shapley": 0.0048319968350096065
+     }
+    },
+    {
+     "id": "D-SDC-FP4",
+     "halfWidth": 3.292206043622813e-7,
+     "aOp": {
+      "single": -0.000003065979748417824,
+      "lastAdded": 2.1807414096741695e-8,
+      "shapley": 4.0050149976618895e-7
+     },
+     "delivered": {
+      "shapley": 0.0059805176153974755
+     }
+    },
+    {
+     "id": "D-ABFT",
+     "halfWidth": 5.927869824092285e-7,
+     "aOp": {
+      "single": -0.00000547915702686641,
+      "lastAdded": 1.5631243299729647e-7,
+      "shapley": 8.969549006014137e-7
+     },
+     "delivered": {
+      "shapley": 0.010742675069667916
+     }
+    },
+    {
+     "id": "D-NET-SDC",
+     "halfWidth": 4.4599488255326446e-8,
+     "aOp": {
+      "single": -3.3727281423256983e-7,
+      "lastAdded": 2.8577613830904625e-8,
+      "shapley": 8.297864531196335e-8
+     },
+     "delivered": {
+      "shapley": 0.0009781851635352434
+     }
+    },
+    {
+     "id": "H-SDC-SCREEN",
+     "halfWidth": 3.384288151352043e-7,
+     "aOp": {
+      "single": 0.000006081683032510554,
+      "lastAdded": 1.2825629802648564e-7,
+      "shapley": 0.0000035847086066712976
+     },
+     "delivered": {
+      "shapley": 0.0038887454697505808
+     }
+    },
+    {
+     "id": "R-HCCL-ELASTIC",
+     "halfWidth": 0,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0,
+      "shapley": 0
+     },
+     "delivered": {
+      "shapley": 0.0000015388724640360193
+     }
+    },
+    {
+     "id": "R-CANN-GRAPH",
+     "halfWidth": 0.0000028926069467555445,
+     "aOp": {
+      "single": 0.00007269547387656061,
+      "lastAdded": 0,
+      "shapley": 0.000016310993733645862
+     },
+     "delivered": {
+      "shapley": 0.000015299652291264436
+     }
+    }
+   ],
+   "attribution": {
+    "method": "sampled",
+    "permutations": 300
+   }
+  },
+  "100000": {
+   "baseline": 0.9771824567255016,
+   "plan": {
+    "ids": [
+     "R-REPLAY",
+     "R-PROCESS"
+    ],
+    "feasible": true,
+    "effort": 5,
+    "nominal": 0.9897849338006544,
+    "derated": 0.9877623802635288
+   },
+   "allOn": 0.9966118420540403,
+   "allOnDerated": 0.9949722000418236,
+   "gains": [
+    {
+     "id": "D-HARD",
+     "halfWidth": 0.00002656664757370731,
+     "aOp": {
+      "single": 0.0009407616249926809,
+      "lastAdded": 0.0005177077228315508,
+      "shapley": 0.0006608503916971176
+     },
+     "delivered": {
+      "shapley": 0.0005269119340043882
+     }
+    },
+    {
+     "id": "D-SLOW",
+     "halfWidth": 2.6976386020361844e-7,
+     "aOp": {
+      "single": -0.00001785568025658435,
+      "lastAdded": -0.00001263501736570305,
+      "shapley": -0.00001557938145506199
+     },
+     "delivered": {
+      "shapley": 0.0002581376915125455
+     }
+    },
+    {
+     "id": "D-SDC",
+     "halfWidth": 0.000009038618041379797,
+     "aOp": {
+      "single": -0.00014443483685089298,
+      "lastAdded": 0.00001866700209351979,
+      "shapley": -0.000011194568630176945
+     },
+     "delivered": {
+      "shapley": 0.16092436978965471
+     }
+    },
+    {
+     "id": "R-SDC",
+     "halfWidth": 0.000011369147757447425,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0.00017087713378827196,
+      "shapley": 0.000149319586932678
+     },
+     "delivered": {
+      "shapley": 0.0001982315194000883
+     }
+    },
+    {
+     "id": "R-REPLAY",
+     "halfWidth": 0.0003559817342820604,
+     "aOp": {
+      "single": 0.008173732340437945,
+      "lastAdded": -0.000061194458674807,
+      "shapley": 0.0024496885139302853
+     },
+     "delivered": {
+      "shapley": 0.0029954468073087022
+     }
+    },
+    {
+     "id": "R-PROCESS",
+     "halfWidth": 0.0004321703812175988,
+     "aOp": {
+      "single": 0.010053532958475109,
+      "lastAdded": 0.000029350983144049714,
+      "shapley": 0.003035894439102753
+     },
+     "delivered": {
+      "shapley": 0.00204948155890944
+     }
+    },
+    {
+     "id": "R-ELASTIC",
+     "halfWidth": 0.0005566046893500793,
+     "aOp": {
+      "single": 0.014647286677902716,
+      "lastAdded": 0.001624640910680597,
+      "shapley": 0.006414711519956864
+     },
+     "delivered": {
+      "shapley": 0.007199021320780696
+     }
+    },
+    {
+     "id": "C-FAST",
+     "halfWidth": 4.5443501233564574e-8,
+     "aOp": {
+      "single": -0.0000012224815578720793,
+      "lastAdded": -2.4771948936574972e-9,
+      "shapley": -2.9295583966952125e-7
+     },
+     "delivered": {
+      "shapley": -0.003086399943315767
+     }
+    },
+    {
+     "id": "R-LINK-LOCAL",
+     "halfWidth": 0.00011931810419726387,
+     "aOp": {
+      "single": 0.0030532230586932663,
+      "lastAdded": 0.00005299804256841956,
+      "shapley": 0.0010235172543714296
+     },
+     "delivered": {
+      "shapley": 0.0016029744341382805
+     }
+    },
+    {
+     "id": "R-FABRIC-DEGRADE",
+     "halfWidth": 0.00007324083929459453,
+     "aOp": {
+      "single": 0.0017238469111001686,
+      "lastAdded": 0.000027145754531554545,
+      "shapley": 0.0006017564912695117
+     },
+     "delivered": {
+      "shapley": 0.00013997249129627038
+     }
+    },
+    {
+     "id": "H-CONTROL-CONTINUITY",
+     "halfWidth": 0.000014158010071191244,
+     "aOp": {
+      "single": 0.0008860969642632277,
+      "lastAdded": 0.000598980028410967,
+      "shapley": 0.0007482647117900032
+     },
+     "delivered": {
+      "shapley": 0.0008424531250981138
+     }
+    },
+    {
+     "id": "R-WARM-PROCESS",
+     "halfWidth": 0.000020392698617957162,
+     "aOp": {
+      "single": 0.0004134532202009211,
+      "lastAdded": 0.000021492041926474137,
+      "shapley": 0.00016501926360095657
+     },
+     "delivered": {
+      "shapley": 0.00012095119819449699
+     }
+    },
+    {
+     "id": "R-RUNTIME-SNAPSHOT",
+     "halfWidth": 0.0001232309507816308,
+     "aOp": {
+      "single": 0.002885061736963457,
+      "lastAdded": 0.00007609982036227425,
+      "shapley": 0.0009479627541749325
+     },
+     "delivered": {
+      "shapley": 0.0006526482932170289
+     }
+    },
+    {
+     "id": "C-ASYNC",
+     "halfWidth": 5.156967015652597e-10,
+     "aOp": {
+      "single": -1.4289130767508595e-8,
+      "lastAdded": 0,
+      "shapley": -2.5090999274575883e-9
+     },
+     "delivered": {
+      "shapley": 0.0033032739540518495
+     }
+    },
+    {
+     "id": "C-LOSSLESS",
+     "halfWidth": 0.00005347229864308714,
+     "aOp": {
+      "single": 0.0016064243627764707,
+      "lastAdded": 0.0003910893313933128,
+      "shapley": 0.0007618701985190201
+     },
+     "delivered": {
+      "shapley": 0.0005747854506483648
+     }
+    },
+    {
+     "id": "D-RECOVERY-CLASSIFY",
+     "halfWidth": 0.00016857626752336794,
+     "aOp": {
+      "single": 0.005223999533635948,
+      "lastAdded": 0.0012660165791215094,
+      "shapley": 0.002337869319088136
+     },
+     "delivered": {
+      "shapley": 0.0017821548587123163
+     }
+    },
+    {
+     "id": "D-SDC-FP8",
+     "halfWidth": 0.0000031953496583012596,
+     "aOp": {
+      "single": -0.00007275925208194423,
+      "lastAdded": 2.1535380378967517e-7,
+      "shapley": -0.00000786937728850412
+     },
+     "delivered": {
+      "shapley": 0.02857133211615261
+     }
+    },
+    {
+     "id": "D-SDC-FP4",
+     "halfWidth": 0.0000036139846627898575,
+     "aOp": {
+      "single": -0.00007275925208194423,
+      "lastAdded": 2.1535380378967517e-7,
+      "shapley": -0.000007703628430807037
+     },
+     "delivered": {
+      "shapley": 0.03446123438906397
+     }
+    },
+    {
+     "id": "D-ABFT",
+     "halfWidth": 0.000006463431636401425,
+     "aOp": {
+      "single": -0.00012291357560856309,
+      "lastAdded": 0.0000015383690962211816,
+      "shapley": -0.000009547560934095219
+     },
+     "delivered": {
+      "shapley": 0.07566453568573224
+     }
+    },
+    {
+     "id": "D-NET-SDC",
+     "halfWidth": 5.080538832151778e-7,
+     "aOp": {
+      "single": -0.000008206988443171248,
+      "lastAdded": 2.8175778787886685e-7,
+      "shapley": -7.520322795817602e-7
+     },
+     "delivered": {
+      "shapley": 0.006341600906985897
+     }
+    },
+    {
+     "id": "H-SDC-SCREEN",
+     "halfWidth": 0.000002933140308409111,
+     "aOp": {
+      "single": 0.000030224576437531958,
+      "lastAdded": 0.0000012724994582491433,
+      "shapley": 0.000027475538895597543
+     },
+     "delivered": {
+      "shapley": 0.02243009254836366
+     }
+    },
+    {
+     "id": "R-HCCL-ELASTIC",
+     "halfWidth": 0,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0,
+      "shapley": 0
+     },
+     "delivered": {
+      "shapley": 0.000013962966003726596
+     }
+    },
+    {
+     "id": "R-CANN-GRAPH",
+     "halfWidth": 0.000027907585718304864,
+     "aOp": {
+      "single": 0.000697905328466808,
+      "lastAdded": 0,
+      "shapley": 0.0001581273591672024
+     },
+     "delivered": {
+      "shapley": 0.0001002068585525658
+     }
+    }
+   ],
+   "attribution": {
+    "method": "sampled",
+    "permutations": 300
+   }
+  },
+  "200000": {
+   "baseline": 0.9554676439444064,
+   "plan": {
+    "ids": [
+     "R-REPLAY",
+     "R-PROCESS",
+     "D-RECOVERY-CLASSIFY",
+     "D-HARD",
+     "R-ELASTIC"
+    ],
+    "feasible": true,
+    "effort": 15,
+    "nominal": 0.9886882147566675,
+    "derated": 0.985841540022037
+   },
+   "allOn": 0.9932469976968216,
+   "allOnDerated": 0.9899952488496612,
+   "gains": [
+    {
+     "id": "D-HARD",
+     "halfWidth": 0.00005082881441440432,
+     "aOp": {
+      "single": 0.0018005768848242676,
+      "lastAdded": 0.0010278784539468067,
+      "shapley": 0.0012934536663282304
+     },
+     "delivered": {
+      "shapley": 0.0009219959238746263
+     }
+    },
+    {
+     "id": "D-SLOW",
+     "halfWidth": 5.043702198582348e-7,
+     "aOp": {
+      "single": -0.000034142592194807975,
+      "lastAdded": -0.000025099210648860115,
+      "shapley": -0.000030510144832534005
+     },
+     "delivered": {
+      "shapley": 0.0004666265063361047
+     }
+    },
+    {
+     "id": "D-SDC",
+     "halfWidth": 0.000019865245961600666,
+     "aOp": {
+      "single": -0.0003590031948221828,
+      "lastAdded": 0.000034989557771702984,
+      "shapley": -0.00005192302173558816
+     },
+     "delivered": {
+      "shapley": 0.24955951306562033
+     }
+    },
+    {
+     "id": "R-SDC",
+     "halfWidth": 0.000022285233742983425,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0.00033939102645252905,
+      "shapley": 0.0002934994875076465
+     },
+     "delivered": {
+      "shapley": 0.00037247069423939814
+     }
+    },
+    {
+     "id": "R-REPLAY",
+     "halfWidth": 0.0006887590519203991,
+     "aOp": {
+      "single": 0.01575591466364812,
+      "lastAdded": -0.00012157132183265862,
+      "shapley": 0.0047525768028091825
+     },
+     "delivered": {
+      "shapley": 0.004892204027648295
+     }
+    },
+    {
+     "id": "R-PROCESS",
+     "halfWidth": 0.0008367522847988357,
+     "aOp": {
+      "single": 0.019415643469823274,
+      "lastAdded": 0.00005830454147448538,
+      "shapley": 0.00589963955495723
+     },
+     "delivered": {
+      "shapley": 0.003278753794861848
+     }
+    },
+    {
+     "id": "R-ELASTIC",
+     "halfWidth": 0.0010787338302770638,
+     "aOp": {
+      "single": 0.028415926254977908,
+      "lastAdded": 0.003222159176310191,
+      "shapley": 0.012538198657315112
+     },
+     "delivered": {
+      "shapley": 0.011685205373157457
+     }
+    },
+    {
+     "id": "C-FAST",
+     "halfWidth": 1.0200293586713175e-7,
+     "aOp": {
+      "single": -0.000002660637736684457,
+      "lastAdded": -9.762110897426624e-9,
+      "shapley": -7.210795255548537e-7
+     },
+     "delivered": {
+      "shapley": 0.00010638881142128539
+     }
+    },
+    {
+     "id": "R-LINK-LOCAL",
+     "halfWidth": 0.0002291489384954047,
+     "aOp": {
+      "single": 0.005855632105355779,
+      "lastAdded": 0.00010526621447537465,
+      "shapley": 0.0019849081505712756
+     },
+     "delivered": {
+      "shapley": 0.0027245640811072117
+     }
+    },
+    {
+     "id": "R-FABRIC-DEGRADE",
+     "halfWidth": 0.00014119395917295082,
+     "aOp": {
+      "single": 0.003301656657870189,
+      "lastAdded": 0.0000539142885531696,
+      "shapley": 0.0011691419372116829
+     },
+     "delivered": {
+      "shapley": 0.0001554396093051467
+     }
+    },
+    {
+     "id": "H-CONTROL-CONTINUITY",
+     "halfWidth": 0.00002657556074474909,
+     "aOp": {
+      "single": 0.0016958794666662724,
+      "lastAdded": 0.0011891743077414585,
+      "shapley": 0.0014678799357325226
+     },
+     "delivered": {
+      "shapley": 0.001477477077692673
+     }
+    },
+    {
+     "id": "R-WARM-PROCESS",
+     "halfWidth": 0.00003968174662399462,
+     "aOp": {
+      "single": 0.000790939747087438,
+      "lastAdded": 0.00004269340683371592,
+      "shapley": 0.00032207900560657035
+     },
+     "delivered": {
+      "shapley": 0.00020338765407036774
+     }
+    },
+    {
+     "id": "R-RUNTIME-SNAPSHOT",
+     "halfWidth": 0.00023690432590572617,
+     "aOp": {
+      "single": 0.00553252940544624,
+      "lastAdded": 0.00015116217414756772,
+      "shapley": 0.0018362474226094423
+     },
+     "delivered": {
+      "shapley": 0.0010587716978237686
+     }
+    },
+    {
+     "id": "C-ASYNC",
+     "halfWidth": 1.1709986801005586e-9,
+     "aOp": {
+      "single": -3.10962183780461e-8,
+      "lastAdded": 0,
+      "shapley": -6.093423317402961e-9
+     },
+     "delivered": {
+      "shapley": 0.0026011634750655577
+     }
+    },
+    {
+     "id": "C-LOSSLESS",
+     "halfWidth": 0.00010164637726935627,
+     "aOp": {
+      "single": 0.003070254819030893,
+      "lastAdded": 0.0007765559309974579,
+      "shapley": 0.0014828404764677362
+     },
+     "delivered": {
+      "shapley": 0.0009788224651643858
+     }
+    },
+    {
+     "id": "D-RECOVERY-CLASSIFY",
+     "halfWidth": 0.000321797679989956,
+     "aOp": {
+      "single": 0.010019527274551798,
+      "lastAdded": 0.002511642547088244,
+      "shapley": 0.004561612772416728
+     },
+     "delivered": {
+      "shapley": 0.003068458023618398
+     }
+    },
+    {
+     "id": "D-SDC-FP8",
+     "halfWidth": 0.000007290828030582624,
+     "aOp": {
+      "single": -0.00017710358780909097,
+      "lastAdded": 4.247800635681642e-7,
+      "shapley": -0.000024207213314927368
+     },
+     "delivered": {
+      "shapley": 0.0372678374677453
+     }
+    },
+    {
+     "id": "D-SDC-FP4",
+     "halfWidth": 0.000007935012868619494,
+     "aOp": {
+      "single": -0.00017710358780909097,
+      "lastAdded": 4.247800635681642e-7,
+      "shapley": -0.000026113354888784117
+     },
+     "delivered": {
+      "shapley": 0.04404603084689037
+     }
+    },
+    {
+     "id": "D-ABFT",
+     "halfWidth": 0.000014099855067878519,
+     "aOp": {
+      "single": -0.000304975262806928,
+      "lastAdded": 0.0000030231099984456833,
+      "shapley": -0.000038577028726736186
+     },
+     "delivered": {
+      "shapley": 0.10646155958784925
+     }
+    },
+    {
+     "id": "D-NET-SDC",
+     "halfWidth": 0.000001077419744942961,
+     "aOp": {
+      "single": -0.000019541101806241912,
+      "lastAdded": 5.555987869776402e-7,
+      "shapley": -0.00000302076812252657
+     },
+     "delivered": {
+      "shapley": 0.009115373054637221
+     }
+    },
+    {
+     "id": "H-SDC-SCREEN",
+     "halfWidth": 0.0000056885600008504454,
+     "aOp": {
+      "single": 0.000034450793649387634,
+      "lastAdded": 0.0000025230999509684437,
+      "shapley": 0.00004655266768684404
+     },
+     "delivered": {
+      "shapley": 0.029114989274567828
+     }
+    },
+    {
+     "id": "R-HCCL-ELASTIC",
+     "halfWidth": 0,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0,
+      "shapley": 0
+     },
+     "delivered": {
+      "shapley": 0.000025919106995000994
+     }
+    },
+    {
+     "id": "R-CANN-GRAPH",
+     "halfWidth": 0.00005369307982537791,
+     "aOp": {
+      "single": 0.001335470910524439,
+      "lastAdded": 0,
+      "shapley": 0.00030580191976490277
+     },
+     "delivered": {
+      "shapley": 0.00015474924207673307
+     }
+    }
+   ],
+   "attribution": {
+    "method": "sampled",
+    "permutations": 300
+   }
+  },
+  "500000": {
+   "baseline": 0.8958668563638622,
+   "plan": {
+    "ids": [
+     "R-REPLAY",
+     "R-PROCESS",
+     "D-RECOVERY-CLASSIFY",
+     "D-HARD",
+     "R-ELASTIC",
+     "C-LOSSLESS",
+     "H-CONTROL-CONTINUITY",
+     "R-LINK-LOCAL",
+     "R-WARM-PROCESS",
+     "R-RUNTIME-SNAPSHOT",
+     "R-FABRIC-DEGRADE",
+     "H-SDC-SCREEN"
+    ],
+    "feasible": false,
+    "effort": 37,
+    "nominal": 0.9831313773307716,
+    "derated": 0.9751107585122122
+   },
+   "allOn": 0.9832866358853575,
+   "allOnDerated": 0.9753580780618599,
+   "gains": [
+    {
+     "id": "D-HARD",
+     "halfWidth": 0.00011230914291773652,
+     "aOp": {
+      "single": 0.003967927718058983,
+      "lastAdded": 0.0025145913733504166,
+      "shapley": 0.003039413230071269
+     },
+     "delivered": {
+      "shapley": 0.0017177061449550847
+     }
+    },
+    {
+     "id": "D-SLOW",
+     "halfWidth": 0.0000010760095716904647,
+     "aOp": {
+      "single": -0.00007504588770834708,
+      "lastAdded": -0.00006149851928882732,
+      "shapley": -0.00007182433434899697
+     },
+     "delivered": {
+      "shapley": 0.0009678495146286573
+     }
+    },
+    {
+     "id": "D-SDC",
+     "halfWidth": 0.0000526520435394979,
+     "aOp": {
+      "single": -0.0010104839824262024,
+      "lastAdded": 0.00007326966589571438,
+      "shapley": -0.0002166848929610262
+     },
+     "delivered": {
+      "shapley": 0.37217777329725743
+     }
+    },
+    {
+     "id": "R-SDC",
+     "halfWidth": 0.000052679657105107463,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0.0008311270090629597,
+      "shapley": 0.0006978573675798442
+     },
+     "delivered": {
+      "shapley": 0.0007702565656471281
+     }
+    },
+    {
+     "id": "R-REPLAY",
+     "halfWidth": 0.0015651703372630069,
+     "aOp": {
+      "single": 0.0354188581735726,
+      "lastAdded": -0.0002979172718725609,
+      "shapley": 0.010880613889514779
+     },
+     "delivered": {
+      "shapley": 0.007694069213234362
+     }
+    },
+    {
+     "id": "R-PROCESS",
+     "halfWidth": 0.0019048655493716855,
+     "aOp": {
+      "single": 0.04387635473977458,
+      "lastAdded": 0.00014284024000033035,
+      "shapley": 0.013571365817741609
+     },
+     "delivered": {
+      "shapley": 0.004857401181369198
+     }
+    },
+    {
+     "id": "R-ELASTIC",
+     "halfWidth": 0.002462259298096633,
+     "aOp": {
+      "single": 0.06506365988547425,
+      "lastAdded": 0.007857043027523769,
+      "shapley": 0.029329997418388456
+     },
+     "delivered": {
+      "shapley": 0.019325381132096805
+     }
+    },
+    {
+     "id": "C-FAST",
+     "halfWidth": 2.1717793490781718e-7,
+     "aOp": {
+      "single": -0.0000051958868724222285,
+      "lastAdded": -5.83898126516047e-8,
+      "shapley": -0.0000018301049496693978
+     },
+     "delivered": {
+      "shapley": 0.004931438214668968
+     }
+    },
+    {
+     "id": "R-LINK-LOCAL",
+     "halfWidth": 0.0005100435315426999,
+     "aOp": {
+      "single": 0.012978462646988986,
+      "lastAdded": 0.000257877329602918,
+      "shapley": 0.004543219257616006
+     },
+     "delivered": {
+      "shapley": 0.0046941566065281885
+     }
+    },
+    {
+     "id": "R-FABRIC-DEGRADE",
+     "halfWidth": 0.000318231004057684,
+     "aOp": {
+      "single": 0.007291431908108881,
+      "lastAdded": 0.00013208914407203398,
+      "shapley": 0.0026914007333214184
+     },
+     "delivered": {
+      "shapley": -0.00011349553005005083
+     }
+    },
+    {
+     "id": "H-CONTROL-CONTINUITY",
+     "halfWidth": 0.0000567144396853916,
+     "aOp": {
+      "single": 0.003736673241237609,
+      "lastAdded": 0.002908471644003763,
+      "shapley": 0.003471811138652145
+     },
+     "delivered": {
+      "shapley": 0.0027766126619083883
+     }
+    },
+    {
+     "id": "R-WARM-PROCESS",
+     "halfWidth": 0.00009190021621211208,
+     "aOp": {
+      "single": 0.0017405065731610492,
+      "lastAdded": 0.00010459696082443237,
+      "shapley": 0.0007509420298097621
+     },
+     "delivered": {
+      "shapley": 0.0003464453909945701
+     }
+    },
+    {
+     "id": "R-RUNTIME-SNAPSHOT",
+     "halfWidth": 0.0005285548960669362,
+     "aOp": {
+      "single": 0.01225650278479562,
+      "lastAdded": 0.00037028101133496083,
+      "shapley": 0.004187669867834578
+     },
+     "delivered": {
+      "shapley": 0.0015464565574283306
+     }
+    },
+    {
+     "id": "C-ASYNC",
+     "halfWidth": 2.6069389311642775e-9,
+     "aOp": {
+      "single": -6.098234295315308e-8,
+      "lastAdded": 0,
+      "shapley": -1.5069503860691094e-8
+     },
+     "delivered": {
+      "shapley": 0.001129234933998561
+     }
+    },
+    {
+     "id": "C-LOSSLESS",
+     "halfWidth": 0.00021971682315327905,
+     "aOp": {
+      "single": 0.006760605623378102,
+      "lastAdded": 0.001900473698416616,
+      "shapley": 0.0034358208776756748
+     },
+     "delivered": {
+      "shapley": 0.0016643020938714415
+     }
+    },
+    {
+     "id": "D-RECOVERY-CLASSIFY",
+     "halfWidth": 0.0007039422519598343,
+     "aOp": {
+      "single": 0.022280042043510084,
+      "lastAdded": 0.006130991236053762,
+      "shapley": 0.01064335758662478
+     },
+     "delivered": {
+      "shapley": 0.005484015689170554
+     }
+    },
+    {
+     "id": "D-SDC-FP8",
+     "halfWidth": 0.000019445916807796047,
+     "aOp": {
+      "single": -0.00046910759564167126,
+      "lastAdded": 0.0000010192674233522325,
+      "shapley": -0.00007760866499075332
+     },
+     "delivered": {
+      "shapley": 0.04079591428953063
+     }
+    },
+    {
+     "id": "D-SDC-FP4",
+     "halfWidth": 0.00002061331552114618,
+     "aOp": {
+      "single": -0.00046910759564167126,
+      "lastAdded": 0.0000010192674233522325,
+      "shapley": -0.00008652242306338765
+     },
+     "delivered": {
+      "shapley": 0.04650066408874061
+     }
+    },
+    {
+     "id": "D-ABFT",
+     "halfWidth": 0.00003705758071259567,
+     "aOp": {
+      "single": -0.0008399738892479469,
+      "lastAdded": 0.000007176149308674162,
+      "shapley": -0.00014408275127782347
+     },
+     "delivered": {
+      "shapley": 0.13030882188134135
+     }
+    },
+    {
+     "id": "D-NET-SDC",
+     "halfWidth": 0.0000026697911953185434,
+     "aOp": {
+      "single": -0.00005023587021457665,
+      "lastAdded": 0.0000013324638351575047,
+      "shapley": -0.000011195349430186038
+     },
+     "delivered": {
+      "shapley": 0.01217885839481451
+     }
+    },
+    {
+     "id": "H-SDC-SCREEN",
+     "halfWidth": 0.000013594784391349783,
+     "aOp": {
+      "single": 0.00002893618760246852,
+      "lastAdded": 0.000006148282477136391,
+      "shapley": 0.0000917612919619204
+     },
+     "delivered": {
+      "shapley": 0.032360837489100625
+     }
+    },
+    {
+     "id": "R-HCCL-ELASTIC",
+     "halfWidth": 0,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0,
+      "shapley": 0
+     },
+     "delivered": {
+      "shapley": 0.0000562724096982159
+     }
+    },
+    {
+     "id": "R-CANN-GRAPH",
+     "halfWidth": 0.00012017387303459141,
+     "aOp": {
+      "single": 0.0029410334503736646,
+      "lastAdded": 0,
+      "shapley": 0.0006943126052287681
+     },
+     "delivered": {
+      "shapley": 0.00016097567974838393
+     }
+    }
+   ],
+   "attribution": {
+    "method": "sampled",
+    "permutations": 300
+   }
+  }
+ }
+}

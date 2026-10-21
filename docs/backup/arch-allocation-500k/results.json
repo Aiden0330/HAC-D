@@ -1,0 +1,7232 @@
+{
+ "generated": "2026-10-20T16:08:22.324Z",
+ "npus": 500000,
+ "target": 0.985,
+ "trials": 400,
+ "derate": {
+  "coverageDelta": 0.05,
+  "successDelta": 0.08,
+  "timeFactor": 1.5,
+  "reductionFactor": 0.5
+ },
+ "candidates": [
+  {
+   "id": "D-HARD",
+   "name": {
+    "zh": "中断检测 / 超时兜底",
+    "en": "Interruption detection / timeout fallback"
+   },
+   "kind": "detect",
+   "effort": 2,
+   "change": {
+    "zh": "基线 95 % 在 10 s 发现、其余 60 s 超时 → 99.9 % 在 1 s 发现、其余 60 s；只改变停机中的发现时间",
+    "en": "baseline 95 % detected in 10 s, rest by a 60 s timeout → 99.9 % in 1 s, rest 60 s; only the detection part of the outage changes"
+   },
+   "nominal": {
+    "coverage": 0.999,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.949,
+    "detectSeconds": 1.5
+   },
+   "requires": []
+  },
+  {
+   "id": "D-SLOW",
+   "name": {
+    "zh": "亚健康检测",
+    "en": "Sub-health detection"
+   },
+   "kind": "detect",
+   "effort": 3,
+   "change": {
+    "zh": "95 % 在 5 min 发现 → 99 % 在 30 s 发现；漏检仍降速 24 h；恢复仍 3 min、零回滚",
+    "en": "95 % detected in 5 min → 99 % in 30 s; undetected units stay slow for 24 h; recovery unchanged (3 min, no rollback)"
+   },
+   "nominal": {
+    "coverage": 0.99,
+    "detectSeconds": 30
+   },
+   "derated": {
+    "coverage": 0.94,
+    "detectSeconds": 45
+   },
+   "requires": []
+  },
+  {
+   "id": "P-PREDICT",
+   "name": {
+    "zh": "故障预测与预先迁移",
+    "en": "Failure prediction and pre-emptive migration"
+   },
+   "kind": "detect",
+   "effort": 3,
+   "change": {
+    "zh": "预测器召回 50 % 的即将发生的中断，在下一个 checkpoint 做计划内迁移（180 s 停顿、不回滚、无检测时延）；精度 80 %，误报按 r(1 − p)/p 增加同样的停顿",
+    "en": "the predictor catches 50 % of impending interruptions, which become planned migrations at the next checkpoint (180 s pause, no rollback, no detection delay); precision 80 %, false alarms add the same pause at r(1 − p)/p per interruption"
+   },
+   "nominal": {
+    "recall": 0.5,
+    "precision": 0.8,
+    "migrationSeconds": 180
+   },
+   "derated": {
+    "recall": 0.42,
+    "precision": 0.7200000000000001,
+    "migrationSeconds": 270
+   },
+   "requires": []
+  },
+  {
+   "id": "R-NETFAIL",
+   "name": {
+    "zh": "容错集合通信 / 多网卡切换",
+    "en": "Fault-tolerant collectives and multi-NIC failover"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "网卡或链路故障在一次迭代内被集合通信库吸收：95 % 在 2 s 内切换、不回滚、无检测时延；失败耗时 10 s 后进入检测与恢复链",
+    "en": "NIC or link failures are absorbed inside the collective: 95 % fail over in 2 s with no rollback and no detection delay; a failure costs 10 s before the normal detection and chain"
+   },
+   "nominal": {
+    "success": 0.95,
+    "successSeconds": 2,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 3,
+    "failureSeconds": 15
+   },
+   "requires": []
+  },
+  {
+   "id": "R-HOTSWAP",
+   "name": {
+    "zh": "故障卡热替换（零开销 checkpoint）",
+    "en": "Hot-swap of failed devices with zero-overhead checkpoints"
+   },
+   "kind": "recover",
+   "effort": 4,
+   "change": {
+    "zh": "卡 / 服务器级中断 90 % 在 180 s 内由备用设备热替换、不回滚；失败 60 s 后进入弹性 / 进程 / 全局",
+    "en": "card / server interruptions are hot-swapped from a spare in 180 s with 90 % success and no rollback; a failure costs 60 s before elastic / process / global"
+   },
+   "nominal": {
+    "success": 0.9,
+    "successSeconds": 180,
+    "failureSeconds": 60
+   },
+   "derated": {
+    "success": 0.8200000000000001,
+    "successSeconds": 270,
+    "failureSeconds": 90
+   },
+   "requires": []
+  },
+  {
+   "id": "C-MEM",
+   "name": {
+    "zh": "内存 / 分层 checkpoint",
+    "en": "In-memory and tiered checkpointing"
+   },
+   "kind": "checkpoint",
+   "effort": 3,
+   "change": {
+    "zh": "暴露保存时间降到 0.5 s、每 60 s 一次；从主机 / 邻居内存加载使全局恢复缩短 60 s；主机内存与流量干扰计 1 % 开销",
+    "en": "exposed save time 0.5 s every 60 s; loading from host / peer memory shortens the global recovery by 60 s; host-memory and traffic interference cost 1 % of throughput"
+   },
+   "nominal": {
+    "computeSeconds": 60,
+    "saveSeconds": 0.5,
+    "loadSavingSeconds": 60,
+    "overhead": 0.01
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 0.75,
+    "loadSavingSeconds": 40,
+    "overhead": 0.015
+   },
+   "requires": []
+  }
+ ],
+ "defaults": [
+  {
+   "id": "D-SDC",
+   "name": {
+    "zh": "静默即时检测",
+    "en": "Immediate silent-corruption detection"
+   },
+   "kind": "detect",
+   "effort": 5,
+   "change": {
+    "zh": "即时检出 0 % → 95 %，检测 1 s；仅启用检测时回到现有干净 CKPT 并用全局恢复；漏检仍 120 h 后发现",
+    "en": "immediate detection 0 % → 95 % after 1 s; the job rolls back to the last checkpoint and runs the global recovery; the remaining 5 % are still found after 120 h"
+   },
+   "nominal": {
+    "coverage": 0.95,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.8999999999999999,
+    "detectSeconds": 1.5
+   },
+   "requires": []
+  },
+  {
+   "id": "R-SDC",
+   "name": {
+    "zh": "干净状态恢复与 step 重算",
+    "en": "Clean step-state recovery"
+   },
+   "kind": "recover",
+   "effort": 4,
+   "change": {
+    "zh": "已即时检出的静默从全局 CKPT / 3 min 恢复 → 易失干净 step 状态 / 1 s 恢复，最多重做 1 s 计算；不缩短漏检的兜底",
+    "en": "a detected corruption recovers from the volatile clean step state in 1 s and redoes at most 1 s instead of the global checkpoint recovery; the fallback for undetected corruption is unchanged"
+   },
+   "nominal": {
+    "stepSeconds": 1,
+    "recoverSeconds": 1
+   },
+   "derated": {
+    "stepSeconds": 1.5,
+    "recoverSeconds": 1.5
+   },
+   "requires": [
+    "D-SDC"
+   ]
+  },
+  {
+   "id": "R-REPLAY",
+   "name": {
+    "zh": "通信 / 算子重执行",
+    "en": "Operator / communication replay"
+   },
+   "kind": "recover",
+   "effort": 2,
+   "change": {
+    "zh": "瞬态中断先重执行：90 % 在 5 s 成功且不回滚；失败耗时 10 s 后进入后续恢复链",
+    "en": "transient interruptions are re-executed first: 90 % succeed in 5 s without rollback; a failure costs 10 s and continues down the chain"
+   },
+   "nominal": {
+    "success": 0.9,
+    "successSeconds": 5,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.8200000000000001,
+    "successSeconds": 7.5,
+    "failureSeconds": 15
+   },
+   "requires": []
+  },
+  {
+   "id": "R-PROCESS",
+   "name": {
+    "zh": "进程 / Pod 重调度",
+    "en": "Process / pod rescheduling"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "适用中断 95 % 在 60 s 重建进程，仍全局暂停并回滚 CKPT；失败 120 s 后全局 CKPT",
+    "en": "95 % of applicable interruptions rebuild the process in 60 s (global pause, rollback to the checkpoint); a failure costs 120 s before the global recovery"
+   },
+   "nominal": {
+    "success": 0.95,
+    "successSeconds": 60,
+    "failureSeconds": 120
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 90,
+    "failureSeconds": 180
+   },
+   "requires": []
+  },
+  {
+   "id": "R-ELASTIC",
+   "name": {
+    "zh": "DP 域弹性恢复",
+    "en": "DP-domain elastic recovery"
+   },
+   "kind": "recover",
+   "effort": 5,
+   "change": {
+    "zh": "适用中断 98 % 局部恢复成功：50 域中一个域 180 s 不可用，全局协调 1 s；状态冗余避免回滚；失败 120 s 后后续全局恢复",
+    "en": "98 % of applicable interruptions recover locally: one of 50 domains is out for 180 s, the job pauses 1 s to re-synchronise; redundant state avoids rollback; a failure costs 120 s before the next rung"
+   },
+   "nominal": {
+    "domains": 50,
+    "success": 0.98,
+    "recoverSeconds": 180,
+    "failureSeconds": 120,
+    "syncSeconds": 1
+   },
+   "derated": {
+    "domains": 50,
+    "success": 0.9,
+    "recoverSeconds": 270,
+    "failureSeconds": 180,
+    "syncSeconds": 1.5
+   },
+   "requires": []
+  },
+  {
+   "id": "C-FAST",
+   "name": {
+    "zh": "缩短 CKPT 周期和保存阻塞",
+    "en": "Faster checkpoints"
+   },
+   "kind": "checkpoint",
+   "effort": 3,
+   "change": {
+    "zh": "每计算 300 s 保存 4 s → 每计算 60 s 保存 1 s；同时改变保存开销与回滚",
+    "en": "save 4 s every 300 s of compute → save 1 s every 60 s; both the save overhead and the rollback change"
+   },
+   "nominal": {
+    "computeSeconds": 60,
+    "saveSeconds": 1
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 1.5
+   },
+   "requires": []
+  }
+ ],
+ "levers": [
+  {
+   "id": "auto",
+   "limit": 60,
+   "effort": 3,
+   "name": {
+    "zh": "自动恢复尝试时间 → 下限",
+    "en": "automatic attempt time → limit"
+   },
+   "current": 180,
+   "deratedLimit": 90
+  },
+  {
+   "id": "success",
+   "limit": 0.999,
+   "effort": 3,
+   "name": {
+    "zh": "自动恢复成功率 → 上限",
+    "en": "automatic success → limit"
+   },
+   "current": 0.99,
+   "deratedLimit": 0.919
+  },
+  {
+   "id": "manual",
+   "limit": 1800,
+   "effort": 2,
+   "name": {
+    "zh": "人工恢复时间 → 下限",
+    "en": "manual recovery time → limit"
+   },
+   "current": 7200,
+   "deratedLimit": 2700
+  }
+ ],
+ "baseline": {
+  "recovery": {
+   "mode": "mixture",
+   "detection": {
+    "coverage": 0.95,
+    "autoSeconds": 10,
+    "timeoutSeconds": 60
+   },
+   "automatic": {
+    "successProbability": 0.99,
+    "seconds": 180
+   },
+   "manual": {
+    "seconds": 7200
+   }
+  },
+  "workload": {
+   "type": "training",
+   "nGpus": 500000,
+   "durationDays": 30,
+   "deltaS": 1,
+   "intervalModel": "young",
+   "intervalS": 60,
+   "hotSpareNodes": 0,
+   "spareReplenishHours": 24,
+   "recovery": "checkpoint"
+  }
+ },
+ "archs": {
+  "cm384": {
+   "id": "cm384",
+   "gen": "910C",
+   "ref": false,
+   "name": {
+    "zh": "910C · Atlas 900 A3 超节点 / CloudMatrix384",
+    "en": "910C · Atlas 900 A3 SuperPoD / CloudMatrix384"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3383.929104761904,
+   "counts": {
+    "racks": 15625,
+    "commRacks": 5209,
+    "ubSwitches": 583338,
+    "opticalLinks": 7000000,
+    "scaleOutSwitches": 109375,
+    "scaleOutLinks": 4000000
+   },
+   "nominal": {
+    "aOp": 0.9558859607640934,
+    "aRun": 0.9559430836536186,
+    "phi": 0.000059755534091876505,
+    "F": 8.490987775929513,
+    "sumC": 157.42359600952383,
+    "B": 46.11295138881087,
+    "x": 0.29292274193775325,
+    "lamHw": 1.691964552380952,
+    "mtbfHwH": 0.5910289305959682,
+    "mttrS": 93.0418996000806,
+    "delivered": 0.8253518849760761,
+    "mttrReqS": 27.254088345952756,
+    "lamStar": 0.49561489594491176
+   },
+   "derated": {
+    "aOp": 0.950982284923952,
+    "aRun": 0.9510841329976928,
+    "phi": 0.0001070862925867111,
+    "F": 8.520048724627857,
+    "sumC": 176.63404553333334,
+    "B": 45.91090492683161,
+    "x": 0.25992104063634536,
+    "lamHw": 1.691964552380952,
+    "mtbfHwH": 0.5910289305959682,
+    "mttrS": 104.39583103840555,
+    "delivered": 0.7311182824340953,
+    "mttrReqS": 27.134673041598454,
+    "lamStar": 0.43977718717466535
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.4954792534829532,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 435.68369562030085,
+     "allowedMttrFirst": 1006.0620393119337,
+     "allowedOptimal": 1005.4712948081667,
+     "mtbfHwOnlyH": 2295243.1088252193,
+     "mtbfOptimalH": 994558.4773663672
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.16056285947857135,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 141.18577015131027,
+     "allowedMttrFirst": 326.0201041905472,
+     "allowedOptimal": 325.8286700869408,
+     "mtbfHwOnlyH": 7082866.77140543,
+     "mtbfOptimalH": 3069097.6326090954
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.16154790769623129,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1136.4155241626936,
+     "allowedMttrFirst": 2624.161820233116,
+     "allowedOptimal": 2622.6209518654373,
+     "mtbfHwOnlyH": 879959.8199230832,
+     "mtbfOptimalH": 381297.9528317703
+    },
+    {
+     "unit": "cpu",
+     "count": 250000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 166.66666666666669,
+     "share": 0.04925241088299735,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 86.61703690264434,
+     "allowedMttrFirst": 200.01233385923143,
+     "allowedOptimal": 199.89488962389007,
+     "mtbfHwOnlyH": 11545072.83739085,
+     "mtbfOptimalH": 5002629.141152825
+    },
+    {
+     "unit": "cabinet",
+     "count": 15625,
+     "fitPerUnit": 8533.333333333332,
+     "fitPerNpu": 266.66666666666663,
+     "share": 0.07880385741279575,
+     "mtbfUnitH": 117187.50000000001,
+     "allowedHwOnly": 2217.3961447076945,
+     "allowedMttrFirst": 5120.315746796324,
+     "allowedOptimal": 5117.309174371585,
+     "mtbfHwOnlyH": 450979.40771058016,
+     "mtbfOptimalH": 195415.20082628226
+    },
+    {
+     "unit": "ub-switch",
+     "count": 583338,
+     "fitPerUnit": 57.14285714285714,
+     "fitPerNpu": 66.6672,
+     "share": 0.019701121960913764,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 14.84863489759617,
+     "allowedMttrFirst": 34.28782866158252,
+     "allowedOptimal": 34.26769536409544,
+     "mtbfHwOnlyH": 67346258.2181133,
+     "mtbfOptimalH": 29182003.323391482
+    },
+    {
+     "unit": "ub-link",
+     "count": 7000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 66.66666666666666,
+     "share": 0.019700964353198937,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.2373862414663472,
+     "allowedMttrFirst": 2.857319055131877,
+     "allowedOptimal": 2.855641280341286,
+     "mtbfHwOnlyH": 808155098.6173598,
+     "mtbfOptimalH": 350184039.88069785
+    },
+    {
+     "unit": "roce-switch",
+     "count": 109375,
+     "fitPerUnit": 57.142857142857146,
+     "fitPerNpu": 12.5,
+     "share": 0.003693930816224801,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 14.848634897596172,
+     "allowedMttrFirst": 34.28782866158253,
+     "allowedOptimal": 34.26769536409544,
+     "mtbfHwOnlyH": 67346258.21811329,
+     "mtbfOptimalH": 29182003.323391482
+    },
+    {
+     "unit": "roce-link",
+     "count": 4000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 38.09523809523809,
+     "share": 0.011257693916113677,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.2373862414663472,
+     "allowedMttrFirst": 2.857319055131877,
+     "allowedOptimal": 2.855641280341286,
+     "mtbfHwOnlyH": 808155098.6173598,
+     "mtbfOptimalH": 350184039.88069785
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9635843740567259,
+    "aOpDerated": 0.9389061267860865,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.0034888019493852784,
+     "derated": 0.0024015037536991857
+    },
+    "D-SLOW": {
+     "nominal": -0.00009695323831981906,
+     "derated": 0.000016095915872593736
+    },
+    "P-PREDICT": {
+     "nominal": -0.01196154313452269,
+     "derated": -0.015774865364741597
+    },
+    "R-NETFAIL": {
+     "nominal": 0.004688560786035523,
+     "derated": 0.004508461828105825
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.02187013908340507,
+     "derated": -0.029879280699030897
+    },
+    "C-MEM": {
+     "nominal": 0.008831882700023108,
+     "derated": 0.005928275172410236
+    },
+    "lever:auto": {
+     "nominal": 0.017828466369903984,
+     "derated": 0.01344332765138323
+    },
+    "lever:success": {
+     "nominal": 0.009545489383224637,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.007941359602891218,
+     "derated": 0.00667451266518837
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9558859607640934,
+      "aOp": 0.9558859607640934,
+      "delivered": 0.8253518849760761,
+      "mtbiHours": 0.5795807689233353,
+      "meanPauseS": 94.89554830548332,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.950982284923952
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 77.7697147684307,
+      "total": 77.7697147684307
+     },
+     "final": {
+      "value": 0.9864033550822949,
+      "aOp": 0.9864033550822949,
+      "delivered": 0.8539136632162205,
+      "mtbiHours": 2.113810176940569,
+      "meanPauseS": 99.57484785124379,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000014309088
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 77.7697147684307,
+       "value": 0.9864033550822949,
+       "derated": 0.9850000014309088
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 77.7697147684307,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.259851111
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.259851110707933
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9558859607640934,
+      "aOp": 0.9558859607640934,
+      "delivered": 0.8253518849760761,
+      "mtbiHours": 0.5795807689233353,
+      "meanPauseS": 94.89554830548332,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.950982284923952
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 29.475065076868443,
+      "total": 42.47506507686845
+     },
+     "final": {
+      "value": 0.9918807621957143,
+      "aOp": 0.9918807621957143,
+      "delivered": 0.8587228038727626,
+      "mtbiHours": 0.9522196879311021,
+      "meanPauseS": 27.394185250860623,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000008580835
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9737144271339974,
+       "derated": 0.9644256125753352
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9819560071301311,
+       "derated": 0.9712907417754244
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9856380554860785,
+       "derated": 0.9737960173254918
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9870899314183369,
+       "derated": 0.9759752866919568
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.9870579287864452,
+       "derated": 0.975983157606162
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 29.475065076868443,
+       "value": 0.9918807621957143,
+       "derated": 0.9850000008580835
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 29.475065076868443,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.600037002
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6000370015776942
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9558859607640934,
+      "aOp": 0.9558859607640934,
+      "delivered": 0.8253518849760761,
+      "mtbiHours": 0.5795807689233353,
+      "meanPauseS": 94.89554830548332,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.950982284923952
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 29.508960182698885,
+      "total": 39.508960182698885
+     },
+     "final": {
+      "value": 0.9919173478846556,
+      "aOp": 0.9919173478846556,
+      "delivered": 0.8572317594465282,
+      "mtbiHours": 0.9541386480935931,
+      "meanPauseS": 27.323220127522916,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002127318
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9593747627134787,
+       "derated": 0.9533837886776512
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9636477850524552,
+       "derated": 0.957635730914242
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9796936661104988,
+       "derated": 0.9697845947224449
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9870899314183369,
+       "derated": 0.9759752866919568
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 29.508960182698885,
+       "value": 0.9919173478846556,
+       "derated": 0.9850000002127318
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 29.508960182698885,
+        "total": 39.508960182698885
+       },
+       "value": 0.9870899314183369,
+       "derated": 0.9759752866919568,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 34.89250056327443,
+        "total": 41.89250056327443
+       },
+       "value": 0.9856380554860785,
+       "derated": 0.9737960173254918,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 29.475065076868443,
+        "total": 42.47506507686845
+       },
+       "value": 0.9870579287864452,
+       "derated": 0.975983157606162,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 29.507093384019004,
+        "total": 42.507093384019
+       },
+       "value": 0.9893306332423268,
+       "derated": 0.9759752866919568,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 29.507102781264454,
+        "total": 42.50710278126445
+       },
+       "value": 0.987089930858264,
+       "derated": 0.9759752844902714,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 35.0048297734712,
+        "total": 43.0048297734712
+       },
+       "value": 0.9838655906962197,
+       "derated": 0.973747479760867,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 34.85627398032834,
+        "total": 44.85627398032834
+       },
+       "value": 0.9856061469267734,
+       "derated": 0.9738038531282845,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 34.89016881666212,
+        "total": 44.89016881666212
+       },
+       "value": 0.9881566035301386,
+       "derated": 0.9737960173254918,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9918669490467785,
+       "sd": 0.0011661413649924192,
+       "ci95": 0.00011462745701705125,
+       "p05": 0.9896036844135769,
+       "p50": 0.9919508101851822,
+       "p95": 0.9937176504629607,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 29.508960182698885,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.599684669
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.5996846688716702
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9558859607640934,
+      "aOp": 0.9558859607640934,
+      "delivered": 0.8253518849760761,
+      "mtbiHours": 0.5795807689233353,
+      "meanPauseS": 94.89554830548332,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.950982284923952
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 10.903113694694055,
+      "total": 20.903113694694056
+     },
+     "final": {
+      "value": 0.9930786079424431,
+      "aOp": 0.9930786079424431,
+      "delivered": 0.8585302594583849,
+      "mtbiHours": 0.690992493319657,
+      "meanPauseS": 17.018860583456902,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002730261
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9593747627134787,
+       "derated": 0.9533837886776512
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9636477850524552,
+       "derated": 0.957635730914242
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9796936661104988,
+       "derated": 0.9697845947224449
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9870899314183369,
+       "derated": 0.9759752866919568
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 10.903113694694055,
+       "value": 0.9930786079424431,
+       "derated": 0.9850000002730261
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 10.903113694694055,
+        "total": 20.903113694694056
+       },
+       "value": 0.9870899314183369,
+       "derated": 0.9759752866919568,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 14.715677753641033,
+        "total": 22.71567775364103
+       },
+       "value": 0.9838655906962197,
+       "derated": 0.973747479760867,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 10.884866680800116,
+        "total": 23.884866680800116
+       },
+       "value": 0.9870579287864452,
+       "derated": 0.975983157606162,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 10.902058755820404,
+        "total": 23.902058755820406
+       },
+       "value": 0.9893306332423268,
+       "derated": 0.9759752866919568,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 10.90206381593784,
+        "total": 23.90206381593784
+       },
+       "value": 0.987089930858264,
+       "derated": 0.9759752844902714,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 16.930523231478155,
+        "total": 23.930523231478155
+       },
+       "value": 0.9856380554860785,
+       "derated": 0.9737960173254918,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 3,
+        "hardware": 16.94687301271054,
+        "total": 24.94687301271054
+       },
+       "value": 0.9796936661104988,
+       "derated": 0.9697845947224449,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 6,
+        "levers": 5,
+        "hardware": 14.693990535071105,
+        "total": 25.693990535071105
+       },
+       "value": 0.9838337967938271,
+       "derated": 0.9737553147826092,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 10.903113694694055,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.464340794,
+       0.773901323,
+       0.580425992,
+       0.18875642
+      ],
+      "classes": 20,
+      "improved": 5,
+      "improvedRows": [
+       {
+        "id": "POWER-hard",
+        "factor": 0.46434079379061205,
+        "currentFit": 5333.333333333333,
+        "allowedFit": 2476.4842335499307,
+        "count": 15625
+       },
+       {
+        "id": "COOL-hard",
+        "factor": 0.7739013229843535,
+        "currentFit": 3199.9999999999995,
+        "allowedFit": 2476.484233549931,
+        "count": 15625
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5804259922382652,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 619.1210583874828,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.5804259922382652,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 77.39013229843535,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.18875642024008618,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 77.39013229843535,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.18875642024008618
+    }
+   },
+   "final": {
+    "aOp": 0.9919173478846556,
+    "aOpDerated": 0.9850000002127318,
+    "phi": 0.000019150975557824523,
+    "phiDerated": 0.00005123158811848327,
+    "mtbfHwH": 0.9855661838212602,
+    "mttrS": 26.205539277621817,
+    "mtbfHwDerH": 0.9855661838212602,
+    "mttrDerS": 49.89607364816115,
+    "delivered": 0.8572317594465282,
+    "lamHw": 1.014645202337175,
+    "fitPerNpu": 2029.2904046743502,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.03342050802686883,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 29.921747425144996,
+      "sPerH": 2.606799626095769
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.023006584386188605,
+      "pauseS": 3,
+      "mtbfH": 43.46581757700302,
+      "sPerH": 0.06901975315856582
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.5027356474040834,
+      "lp": 3.13187589823808,
+      "mttrS": 6.229667449304176,
+      "ends": {
+       "replay": 0.6647117296222663,
+       "elastic": 0.2730556660039761,
+       "process": 0.005293936381709746,
+       "global": 0.00027862823061630264,
+       "netfail": 0.056660039761431434
+      }
+     },
+     "ub-link": {
+      "lam": 0.019989488962389005,
+      "lp": 0.062326227110280824,
+      "mttrS": 3.1179500000000013,
+      "ends": {
+       "netfail": 0.95,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "roce-link": {
+      "lam": 0.011422565121365144,
+      "lp": 0.03561498692016047,
+      "mttrS": 3.1179500000000013,
+      "ends": {
+       "netfail": 0.95,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "node": {
+      "lam": 0.16391380949158982,
+      "lp": 3.770628397141812,
+      "mttrS": 23.0037262195122,
+      "ends": {
+       "netfail": 0.08109756097560977,
+       "global": 0.24884146341463415,
+       "elastic": 0.6573170731707317,
+       "process": 0.012743902439024403
+      }
+     },
+     "ub-switch": {
+      "lam": 0.0199896488783007,
+      "lp": 0.1269932398414005,
+      "mttrS": 6.352950000000004,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.05000000000000004
+      }
+     },
+     "roce-switch": {
+      "lam": 0.003748029180447938,
+      "lp": 0.023811041981926746,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "cpu": {
+      "lam": 0.04997372240597251,
+      "lp": 0.23683446575193698,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.079957955849556,
+      "lp": 6.32139603151005,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.16291433504347042,
+      "lp": 12.879844414201727,
+      "mttrS": 79.059,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.589324702697375,
+    "ends": {
+     "replay": 0.33074401119672214,
+     "elastic": 0.2897489780800203,
+     "process": 0.005617582228082031,
+     "global": 0.281078387502861,
+     "netfail": 0.09281104099231438
+    },
+    "mttrParts": {
+     "detect": 0.6538689398023977,
+     "replay": 1.6537200559836107,
+     "failed:replay": 0.36749334577413567,
+     "elastic": 0.2897489780800203,
+     "failed:elastic": 0.7095893340735197,
+     "process": 0.33705493368492184,
+     "failed:process": 0.03547946670367602,
+     "globalAuto": 16.864703250171658,
+     "globalManual": 5.059410975051502,
+     "netfail": 0.18562208198462876,
+     "failed:netfail": 0.04884791631174447
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.6710894879751647,
+     "mttrS": 45.139593271226836,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.6006170422101399,
+     "mttrS": 49.92982390411221,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.5424835921248139,
+     "mttrS": 54.72005453699759,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.4522029679223979,
+     "mttrS": 64.30051580276833,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.38533819009904513,
+     "mttrS": 73.8809770685391,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.3338255902061556,
+     "mttrS": 83.46143833430985,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.29292274193775325,
+     "mttrS": 93.0418996000806,
+     "globalS": 264.50000000000006
+    }
+   ]
+  },
+  "a3server": {
+   "id": "a3server",
+   "gen": "910C",
+   "ref": false,
+   "name": {
+    "zh": "910C · Atlas 800T A3 服务器集群",
+    "en": "910C · Atlas 800T A3 server cluster"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3300.595238095237,
+   "counts": {
+    "racks": 15625,
+    "commRacks": 0,
+    "ubSwitches": 437500,
+    "opticalLinks": 0,
+    "scaleOutSwitches": 109375,
+    "scaleOutLinks": 4000000
+   },
+   "nominal": {
+    "aOp": 0.9568936297167486,
+    "aRun": 0.9569506952301531,
+    "phi": 0.000059632657867236816,
+    "F": 8.169943222360128,
+    "sumC": 153.7793588095238,
+    "B": 46.434445033150425,
+    "x": 0.3019549918312877,
+    "lamHw": 1.6502976190476188,
+    "mtbfHwH": 0.6059513074842201,
+    "mttrS": 93.18280353471597,
+    "delivered": 0.826696290244266,
+    "mttrReqS": 28.13701268014165,
+    "lamStar": 0.49831560407871733
+   },
+   "derated": {
+    "aOp": 0.9521771056144698,
+    "aRun": 0.952278911097936,
+    "phi": 0.00010690721203610032,
+    "F": 8.198903583528748,
+    "sumC": 172.20614166666667,
+    "B": 46.23270457552684,
+    "x": 0.2684730296380361,
+    "lamHw": 1.6502976190476188,
+    "mtbfHwH": 0.6059513074842201,
+    "mttrS": 104.3485366997295,
+    "delivered": 0.732632547709,
+    "mttrReqS": 28.014767786072174,
+    "lamStar": 0.44306040159015175
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.5079891794409378,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 450.02400277467086,
+     "allowedMttrFirst": 1014.671426091277,
+     "allowedOptimal": 1014.0999977877071,
+     "mtbfHwOnlyH": 2222103.6963237375,
+     "mtbfOptimalH": 986096.0479060578
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.1646167718665465,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 145.83282793692123,
+     "allowedMttrFirst": 328.8100247572131,
+     "allowedOptimal": 328.6248501777263,
+     "mtbfHwOnlyH": 6857166.621170795,
+     "mtbfOptimalH": 3042983.5097959936
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.1656266907123535,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1173.8200629033167,
+     "allowedMttrFirst": 2646.618113383212,
+     "allowedOptimal": 2645.1276284243977,
+     "mtbfHwOnlyH": 851919.3286972863,
+     "mtbfOptimalH": 378053.5915371547
+    },
+    {
+     "unit": "cpu",
+     "count": 250000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 166.66666666666669,
+     "share": 0.05049594229035169,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 89.46799259933817,
+     "allowedMttrFirst": 201.72394156884243,
+     "allowedOptimal": 201.61033753234742,
+     "mtbfHwOnlyH": 11177181.592508396,
+     "mtbfOptimalH": 4960063.120967469
+    },
+    {
+     "unit": "cabinet",
+     "count": 15625,
+     "fitPerUnit": 8533.333333333332,
+     "fitPerNpu": 266.66666666666663,
+     "share": 0.08079350766456268,
+     "mtbfUnitH": 117187.50000000001,
+     "allowedHwOnly": 2290.3806105430567,
+     "allowedMttrFirst": 5164.132904162365,
+     "allowedOptimal": 5161.224640828093,
+     "mtbfHwOnlyH": 436608.6559573593,
+     "mtbfOptimalH": 193752.4656627918
+    },
+    {
+     "unit": "ub-switch",
+     "count": 437500,
+     "fitPerUnit": 57.142857142857146,
+     "fitPerNpu": 50,
+     "share": 0.015148782687105504,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 15.337370159886543,
+     "allowedMttrFirst": 34.58124712608727,
+     "allowedOptimal": 34.56177214840241,
+     "mtbfHwOnlyH": 65200225.95629898,
+     "mtbfOptimalH": 28933701.538976904
+    },
+    {
+     "unit": "roce-switch",
+     "count": 109375,
+     "fitPerUnit": 57.142857142857146,
+     "fitPerNpu": 12.5,
+     "share": 0.003787195671776376,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 15.337370159886543,
+     "allowedMttrFirst": 34.58124712608727,
+     "allowedOptimal": 34.56177214840241,
+     "mtbfHwOnlyH": 65200225.95629898,
+     "mtbfOptimalH": 28933701.538976904
+    },
+    {
+     "unit": "roce-link",
+     "count": 4000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 38.09523809523809,
+     "share": 0.011541929666366097,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.278114179990545,
+     "allowedMttrFirst": 2.881770593840605,
+     "allowedOptimal": 2.880147679033534,
+     "mtbfHwOnlyH": 782402711.4755878,
+     "mtbfOptimalH": 347204418.4677229
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9636437177118027,
+    "aOpDerated": 0.9390578092079639,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.0033740522610476997,
+     "derated": 0.0023230073446707244
+    },
+    "D-SLOW": {
+     "nominal": -0.0000934572213749929,
+     "derated": 0.000015521717325328588
+    },
+    "P-PREDICT": {
+     "nominal": -0.011986617033001967,
+     "derated": -0.01581419882765045
+    },
+    "R-NETFAIL": {
+     "nominal": 0.0038357137208319125,
+     "derated": 0.0035896167780327115
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.021915744027948603,
+     "derated": -0.02995322439446324
+    },
+    "C-MEM": {
+     "nominal": 0.008649453327123191,
+     "derated": 0.005784016309459461
+    },
+    "lever:auto": {
+     "nominal": 0.01745667517883276,
+     "derated": 0.013113565238841995
+    },
+    "lever:success": {
+     "nominal": 0.009348169950605056,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.007777480365779965,
+     "derated": 0.006511965049478152
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9568936297167486,
+      "aOp": 0.9568936297167486,
+      "delivered": 0.826696290244266,
+      "mtbiHours": 0.5943730387919799,
+      "meanPauseS": 94.96420611224234,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9521771056144698
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 72.10583760268236,
+      "total": 72.10583760268236
+     },
+     "final": {
+      "value": 0.986390771569929,
+      "aOp": 0.986390771569929,
+      "delivered": 0.854303482539768,
+      "mtbiHours": 2.104846995506625,
+      "meanPauseS": 99.28285746123548,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000012330669
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 72.10583760268236,
+       "value": 0.986390771569929,
+       "derated": 0.9850000012330669
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 72.10583760268236,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.268403978
+      ],
+      "classes": 19,
+      "improved": 19,
+      "improvedRows": []
+     },
+     "factor": 0.2684039777980145
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9568936297167486,
+      "aOp": 0.9568936297167486,
+      "delivered": 0.826696290244266,
+      "mtbiHours": 0.5943730387919799,
+      "meanPauseS": 94.96420611224234,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9521771056144698
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 27.53416441421989,
+      "total": 40.53416441421989
+     },
+     "final": {
+      "value": 0.9918729785753045,
+      "aOp": 0.9918729785753045,
+      "delivered": 0.8590615843115992,
+      "mtbiHours": 0.9686925122991299,
+      "meanPauseS": 27.887052616379535,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.985000000892717
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9743503048955814,
+       "derated": 0.9652906708533118
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9824152893285802,
+       "derated": 0.9719837688709706
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9859720414467059,
+       "derated": 0.9744045211893851
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9871593919882714,
+       "derated": 0.9761394816478173
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.9871286040144461,
+       "derated": 0.9761470552920583
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 27.53416441421989,
+       "value": 0.9918729785753045,
+       "derated": 0.985000000892717
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 27.53416441421989,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.605171825
+      ],
+      "classes": 19,
+      "improved": 19,
+      "improvedRows": []
+     },
+     "factor": 0.6051718247065272
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9568936297167486,
+      "aOp": 0.9568936297167486,
+      "delivered": 0.826696290244266,
+      "mtbiHours": 0.5943730387919799,
+      "meanPauseS": 94.96420611224234,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9521771056144698
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 27.565047221510532,
+      "total": 37.56504722151053
+     },
+     "final": {
+      "value": 0.9919081784736282,
+      "aOp": 0.9919081784736282,
+      "delivered": 0.8576253230279455,
+      "mtbiHours": 0.9705923620067348,
+      "meanPauseS": 27.81826460774736,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002781423
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9602676819777963,
+       "derated": 0.9545001129591405
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9637974488026375,
+       "derated": 0.9579018788551587
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9797888600613381,
+       "derated": 0.9699836518486562
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9871593919882714,
+       "derated": 0.9761394816478173
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 27.565047221510532,
+       "value": 0.9919081784736282,
+       "derated": 0.9850000002781423
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 27.565047221510532,
+        "total": 37.56504722151053
+       },
+       "value": 0.9871593919882714,
+       "derated": 0.9761394816478173,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 31.69374061064051,
+        "total": 38.69374061064051
+       },
+       "value": 0.9859720414467059,
+       "derated": 0.9744045211893851,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 27.53416441421989,
+        "total": 40.53416441421989
+       },
+       "value": 0.9871286040144461,
+       "derated": 0.9761470552920583,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 27.563313917182338,
+        "total": 40.56331391718234
+       },
+       "value": 0.9893922199418862,
+       "derated": 0.9761394816478173,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 27.563322770091276,
+        "total": 40.563322770091276
+       },
+       "value": 0.9871593914302943,
+       "derated": 0.976139479457672,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 32.7883185300227,
+        "total": 40.7883185300227
+       },
+       "value": 0.9839410082638055,
+       "derated": 0.973922367063439,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 31.66077668797326,
+        "total": 41.66077668797326
+       },
+       "value": 0.985941327490634,
+       "derated": 0.9744120679348464,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 31.69165930038182,
+        "total": 41.691659300381815
+       },
+       "value": 0.9884353927356432,
+       "derated": 0.9744045211893851,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9919271726958933,
+       "sd": 0.0011549051701919165,
+       "ci95": 0.00011352297991402162,
+       "p05": 0.9896413966049353,
+       "p50": 0.9921278935185158,
+       "p95": 0.9934951626803837,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 27.565047221510532,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.604831013
+      ],
+      "classes": 19,
+      "improved": 19,
+      "improvedRows": []
+     },
+     "factor": 0.6048310125970422
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9568936297167486,
+      "aOp": 0.9568936297167486,
+      "delivered": 0.826696290244266,
+      "mtbiHours": 0.5943730387919799,
+      "meanPauseS": 94.96420611224234,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9521771056144698
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 10.527214072724604,
+      "total": 20.527214072724604
+     },
+     "final": {
+      "value": 0.9930382973449723,
+      "aOp": 0.9930382973449723,
+      "delivered": 0.8588870775716526,
+      "mtbiHours": 0.7095413795270903,
+      "meanPauseS": 17.572236008174908,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000004472792
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9602676819777963,
+       "derated": 0.9545001129591405
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9637974488026375,
+       "derated": 0.9579018788551587
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9797888600613381,
+       "derated": 0.9699836518486562
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9871593919882714,
+       "derated": 0.9761394816478173
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 10.527214072724604,
+       "value": 0.9930382973449723,
+       "derated": 0.9850000004472792
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 10.527214072724604,
+        "total": 20.527214072724604
+       },
+       "value": 0.9871593919882714,
+       "derated": 0.9761394816478173,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 15.065856311372865,
+        "total": 22.065856311372865
+       },
+       "value": 0.9859720414467059,
+       "derated": 0.9744045211893851,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 14.268301418214033,
+        "total": 22.268301418214033
+       },
+       "value": 0.9839410082638055,
+       "derated": 0.973922367063439,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 10.509107059600545,
+        "total": 23.509107059600545
+       },
+       "value": 0.9871286040144461,
+       "derated": 0.9761470552920583,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 10.526206687012989,
+        "total": 23.526206687012987
+       },
+       "value": 0.9893922199418862,
+       "derated": 0.9761394816478173,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 10.526211590341386,
+        "total": 23.526211590341386
+       },
+       "value": 0.9871593914302943,
+       "derated": 0.976139479457672,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 3,
+        "hardware": 16.437347214295993,
+        "total": 24.437347214295993
+       },
+       "value": 0.9797888600613381,
+       "derated": 0.9699836518486562,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 19.896232886842782,
+        "total": 24.896232886842782
+       },
+       "value": 0.9824152893285802,
+       "derated": 0.9719837688709706,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 10.527214072724604,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.476598362,
+       0.794330604,
+       0.595747953,
+       0.193739172
+      ],
+      "classes": 19,
+      "improved": 5,
+      "improvedRows": [
+       {
+        "id": "POWER-hard",
+        "factor": 0.47659836224386753,
+        "currentFit": 5333.333333333333,
+        "allowedFit": 2541.8579319672936,
+        "count": 15625
+       },
+       {
+        "id": "COOL-hard",
+        "factor": 0.7943306037397794,
+        "currentFit": 3199.9999999999995,
+        "allowedFit": 2541.8579319672936,
+        "count": 15625
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5957479528048345,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 635.4644829918234,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.5957479528048345,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 79.43306037397792,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.19373917164384857,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 79.43306037397792,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.19373917164384857
+    }
+   },
+   "final": {
+    "aOp": 0.9919081784736282,
+    "aOpDerated": 0.9850000002781423,
+    "phi": 0.000019091815767757758,
+    "phiDerated": 0.00005108998087077765,
+    "mtbfHwH": 1.0018522444514997,
+    "mttrS": 26.772121836104603,
+    "mtbfHwDerH": 1.0018522444514997,
+    "mttrDerS": 50.87066471785754,
+    "delivered": 0.8576253230279455,
+    "lamHw": 0.9981511800150592,
+    "fitPerNpu": 1996.3023600301183,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.03214746970073275,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 31.10664725122073,
+      "sPerH": 2.5075026366571547
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.02292695259182461,
+      "pauseS": 3,
+      "mtbfH": 43.616786661677146,
+      "sPerH": 0.06878085777547382
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.5070499988938536,
+      "lp": 3.158752873278759,
+      "mttrS": 6.229667449304177,
+      "ends": {
+       "replay": 0.6647117296222664,
+       "elastic": 0.2730556660039761,
+       "process": 0.005293936381709745,
+       "global": 0.00027862823061630264,
+       "netfail": 0.05666003976143143
+      }
+     },
+     "roce-link": {
+      "lam": 0.011520590716134135,
+      "lp": 0.035920625823370446,
+      "mttrS": 3.1179500000000018,
+      "ends": {
+       "netfail": 0.95,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "node": {
+      "lam": 0.16532047677652484,
+      "lp": 3.8029869862464025,
+      "mttrS": 23.003726219512203,
+      "ends": {
+       "netfail": 0.08109756097560976,
+       "global": 0.24884146341463417,
+       "elastic": 0.6573170731707317,
+       "process": 0.012743902439024403
+      }
+     },
+     "ub-switch": {
+      "lam": 0.015120775314926052,
+      "lp": 0.09606152953695954,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "roce-switch": {
+      "lam": 0.003780193828731513,
+      "lp": 0.024015382384239885,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "cpu": {
+      "lam": 0.05040258438308685,
+      "lp": 0.23886691985663772,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.08064413501293896,
+      "lp": 6.375644669987942,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.16431242508886312,
+      "lp": 12.990376015100432,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.72262500221474,
+    "ends": {
+     "replay": 0.338185752930568,
+     "elastic": 0.2970645987376013,
+     "process": 0.005759415689810645,
+     "global": 0.2878216122633002,
+     "netfail": 0.07116862037871956
+    },
+    "mttrParts": {
+     "detect": 0.6690410209558161,
+     "replay": 1.6909287646528404,
+     "failed:replay": 0.37576194770063104,
+     "elastic": 0.2970645987376013,
+     "failed:elastic": 0.727505139765555,
+     "process": 0.3455649413886387,
+     "failed:process": 0.03637525698827779,
+     "globalAuto": 17.269296735798015,
+     "globalManual": 5.180789020739409,
+     "netfail": 0.14233724075743912,
+     "failed:netfail": 0.03745716862037875
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.6899063848911356,
+     "mttrS": 45.13149244364294,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.6175109895910291,
+     "mttrS": 49.936623552750234,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.5578256498662144,
+     "mttrS": 54.74175466185755,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.46519648747522396,
+     "mttrS": 64.35201688007216,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.39664049915149824,
+     "mttrS": 73.96227909828677,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.34385292302885295,
+     "mttrS": 83.57254131650139,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.3019549918312877,
+     "mttrS": 93.18280353471597,
+     "globalS": 264.50000000000006
+    }
+   ]
+  },
+  "native950": {
+   "id": "native950",
+   "gen": "950",
+   "ref": false,
+   "name": {
+    "zh": "950 · 华为原生 Atlas 950 超节点",
+    "en": "950 · Huawei native Atlas 950 SuperPoD"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3096.8138285714276,
+   "counts": {
+    "racks": 7813,
+    "commRacks": 1954,
+    "ubSwitches": 570349,
+    "opticalLinks": 1000000,
+    "scaleOutSwitches": 5864,
+    "scaleOutLinks": 4000000
+   },
+   "nominal": {
+    "aOp": 0.9614626855269741,
+    "aRun": 0.9615203309586846,
+    "phi": 0.00005995237942912901,
+    "F": 7.488556247960551,
+    "sumC": 136.58204120952382,
+    "B": 47.11466348204484,
+    "x": 0.3449550399511788,
+    "lamHw": 1.548406914285714,
+    "mtbfHwH": 0.6458250675413083,
+    "mttrS": 88.20810598907048,
+    "delivered": 0.8311928022884887,
+    "mttrReqS": 30.42783072547762,
+    "lamStar": 0.53413076897811
+   },
+   "derated": {
+    "aOp": 0.9569789615887387,
+    "aRun": 0.9570817989047271,
+    "phi": 0.00010744882632396369,
+    "F": 7.517536844163573,
+    "sumC": 153.9164431142857,
+    "B": 46.9120918108961,
+    "x": 0.3047893445410705,
+    "lamHw": 1.548406914285714,
+    "mtbfHwH": 0.6458250675413083,
+    "mttrS": 99.4030972700015,
+    "delivered": 0.736514838740333,
+    "mttrReqS": 30.29700486227603,
+    "lamStar": 0.4719379284880043
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.5414166816221301,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 510.91978128229516,
+     "allowedMttrFirst": 1148.6380385356085,
+     "allowedOptimal": 1148.0490685062457,
+     "mtbfHwOnlyH": 1957254.419647292,
+     "mtbfOptimalH": 871042.9087330946
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.1754491433487221,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 165.56644999804004,
+     "allowedMttrFirst": 372.2226645751576,
+     "allowedOptimal": 372.031805500036,
+     "mtbfHwOnlyH": 6039871.000506672,
+     "mtbfOptimalH": 2687942.2275628615
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.17652551846129094,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1332.6575607204202,
+     "allowedMttrFirst": 2996.049913635624,
+     "allowedOptimal": 2994.513673718081,
+     "mtbfHwOnlyH": 750380.3148495334,
+     "mtbfOptimalH": 333944.0419914226
+    },
+    {
+     "unit": "cpu",
+     "count": 125000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 83.33333333333334,
+     "share": 0.026909377814221185,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 101.57450920125156,
+     "allowedMttrFirst": 228.35746292954454,
+     "allowedOptimal": 228.24037147241475,
+     "mtbfHwOnlyH": 9844989.730825875,
+     "mtbfOptimalH": 4381345.830927464
+    },
+    {
+     "unit": "cabinet",
+     "count": 7813,
+     "fitPerUnit": 8533.333333333332,
+     "fitPerNpu": 133.34186666666665,
+     "share": 0.04305776002304206,
+     "mtbfUnitH": 117187.50000000001,
+     "allowedHwOnly": 2600.3074355520394,
+     "allowedMttrFirst": 5845.951050996338,
+     "allowedOptimal": 5842.953509693816,
+     "mtbfHwOnlyH": 384569.9113603858,
+     "mtbfOptimalH": 171146.3215206041
+    },
+    {
+     "unit": "ub-switch",
+     "count": 570349,
+     "fitPerUnit": 57.14285714285713,
+     "fitPerNpu": 65.18274285714284,
+     "share": 0.021048324654121004,
+     "mtbfUnitH": 17500000.000000004,
+     "allowedHwOnly": 17.412773005928834,
+     "allowedMttrFirst": 39.14699364506477,
+     "allowedOptimal": 39.12692082384252,
+     "mtbfHwOnlyH": 57429106.76315095,
+     "mtbfOptimalH": 25557850.680410214
+    },
+    {
+     "unit": "ub-link",
+     "count": 1000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 9.523809523809522,
+     "share": 0.0030753574644824203,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.451064417160736,
+     "allowedMttrFirst": 3.2622494704220637,
+     "allowedOptimal": 3.2605767353202095,
+     "mtbfHwOnlyH": 689149281.1578115,
+     "mtbfOptimalH": 306694208.1649226
+    },
+    {
+     "unit": "roce-switch",
+     "count": 5864,
+     "fitPerUnit": 57.14285714285713,
+     "fitPerNpu": 0.6701714285714284,
+     "share": 0.00021640675406069893,
+     "mtbfUnitH": 17500000.000000004,
+     "allowedHwOnly": 17.412773005928834,
+     "allowedMttrFirst": 39.14699364506477,
+     "allowedOptimal": 39.12692082384252,
+     "mtbfHwOnlyH": 57429106.76315095,
+     "mtbfOptimalH": 25557850.680410214
+    },
+    {
+     "unit": "roce-link",
+     "count": 4000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 38.09523809523809,
+     "share": 0.012301429857929681,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.451064417160736,
+     "allowedMttrFirst": 3.2622494704220637,
+     "allowedOptimal": 3.2605767353202095,
+     "mtbfHwOnlyH": 689149281.1578115,
+     "mtbfOptimalH": 306694208.1649226
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9668940402328519,
+    "aOpDerated": 0.944196839277283,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.0032257914617253025,
+     "derated": 0.0022145825713341116
+    },
+    "D-SLOW": {
+     "nominal": -0.00008641602878822763,
+     "derated": 0.00001435982355646459
+    },
+    "P-PREDICT": {
+     "nominal": -0.010952509403066357,
+     "derated": -0.01450281579031143
+    },
+    "R-NETFAIL": {
+     "nominal": 0.0040281609387274875,
+     "derated": 0.003788210464740427
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.020336385374622235,
+     "derated": -0.028059938939901663
+    },
+    "C-MEM": {
+     "nominal": 0.007678673747093967,
+     "derated": 0.00514919225811028
+    },
+    "lever:auto": {
+     "nominal": 0.015480963900554201,
+     "derated": 0.011664093216908977
+    },
+    "lever:success": {
+     "nominal": 0.00829826991843452,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.0069052937305575934,
+     "derated": 0.005796741906513803
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9614626855269741,
+      "aOp": 0.9614626855269741,
+      "delivered": 0.8311928022884887,
+      "mtbiHours": 0.6337736949810308,
+      "meanPauseS": 89.99950341728417,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9569789615887387
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 68.57708802203975,
+      "total": 68.57708802203975
+     },
+     "final": {
+      "value": 0.9864817199486474,
+      "aOp": 0.9864817199486474,
+      "delivered": 0.8544549737472388,
+      "mtbiHours": 1.9948955430127242,
+      "meanPauseS": 93.67841243552238,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000002239473
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 68.57708802203975,
+       "value": 0.9864817199486474,
+       "derated": 0.9850000002239473
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 68.57708802203975,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.304723528
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.30472352760375465
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9614626855269741,
+      "aOp": 0.9614626855269741,
+      "delivered": 0.8311928022884887,
+      "mtbiHours": 0.6337736949810308,
+      "meanPauseS": 89.99950341728417,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9569789615887387
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 21.826866203745894,
+      "total": 34.826866203745894
+     },
+     "final": {
+      "value": 0.9919873740569413,
+      "aOp": 0.9919873740569413,
+      "delivered": 0.8591520780426904,
+      "mtbiHours": 0.9161286437102216,
+      "meanPauseS": 26.028981681414727,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002300695
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9769436494275283,
+       "derated": 0.9686430548056477
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9840738838307072,
+       "derated": 0.9745823128897277
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9874534357743512,
+       "derated": 0.9768791899368289
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9886919878676778,
+       "derated": 0.9787002200910252
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.9886637019557373,
+       "derated": 0.978707193108599
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 21.826866203745894,
+       "value": 0.9919873740569413,
+       "derated": 0.9850000002300695
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 21.826866203745894,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.685072389
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6850723887886335
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9614626855269741,
+      "aOp": 0.9614626855269741,
+      "delivered": 0.8311928022884887,
+      "mtbiHours": 0.6337736949810308,
+      "meanPauseS": 89.99950341728417,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9569789615887387
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 21.85646376299949,
+      "total": 31.85646376299949
+     },
+     "final": {
+      "value": 0.9920195704317872,
+      "aOp": 0.9920195704317872,
+      "delivered": 0.8578335468801318,
+      "mtbiHours": 0.9177088034889676,
+      "meanPauseS": 25.96708975231361,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000014144151
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9646884769886994,
+       "derated": 0.9591935441600729
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9683892468216507,
+       "derated": 0.962780256961266
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9823006426163282,
+       "derated": 0.9733354286322555
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9886919878676778,
+       "derated": 0.9787002200910252
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 21.85646376299949,
+       "value": 0.9920195704317872,
+       "derated": 0.9850000014144151
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 21.85646376299949,
+        "total": 31.85646376299949
+       },
+       "value": 0.9886919878676778,
+       "derated": 0.9787002200910252,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 26.92971405712299,
+        "total": 33.92971405712299
+       },
+       "value": 0.9874534357743512,
+       "derated": 0.9768791899368289,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 21.826866203745894,
+        "total": 34.826866203745894
+       },
+       "value": 0.9886637019557373,
+       "derated": 0.978707193108599,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 21.85517462168403,
+        "total": 34.85517462168403
+       },
+       "value": 0.9906256377676508,
+       "derated": 0.9787002200910252,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 21.855182681148197,
+        "total": 34.85518268114819
+       },
+       "value": 0.9886919873854245,
+       "derated": 0.978700218180087,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 27.616351958603357,
+        "total": 35.61635195860336
+       },
+       "value": 0.9856709841940293,
+       "derated": 0.976620105859738,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 26.898461232437263,
+        "total": 36.89846123243726
+       },
+       "value": 0.9874252206857307,
+       "derated": 0.9768861370293312,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 26.928051552562113,
+        "total": 36.92805155256211
+       },
+       "value": 0.9896277144180153,
+       "derated": 0.9768791899368289,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9920150459411505,
+       "sd": 0.001173802140366341,
+       "ci95": 0.0001153804833878268,
+       "p05": 0.9901081983024663,
+       "p50": 0.9920414737654291,
+       "p95": 0.9937704668209845,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 21.85646376299949,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.684721114
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6847211144172441
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9614626855269741,
+      "aOp": 0.9614626855269741,
+      "delivered": 0.8311928022884887,
+      "mtbiHours": 0.6337736949810308,
+      "meanPauseS": 89.99950341728417,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9569789615887387
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 6.043972469205412,
+      "total": 16.043972469205414
+     },
+     "final": {
+      "value": 0.9928666713986237,
+      "aOp": 0.9928666713986237,
+      "delivered": 0.8587886959417904,
+      "mtbiHours": 0.7224404852471811,
+      "meanPauseS": 18.33159425302453,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002678818
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9646884769886994,
+       "derated": 0.9591935441600729
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9683892468216507,
+       "derated": 0.962780256961266
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9823006426163282,
+       "derated": 0.9733354286322555
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9886919878676778,
+       "derated": 0.9787002200910252
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 6.043972469205412,
+       "value": 0.9928666713986237,
+       "derated": 0.9850000002678818
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 6.043972469205412,
+        "total": 16.043972469205414
+       },
+       "value": 0.9886919878676778,
+       "derated": 0.9787002200910252,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 10.179457283319199,
+        "total": 17.1794572833192
+       },
+       "value": 0.9874534357743512,
+       "derated": 0.9768791899368289,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 9.413493283092778,
+        "total": 17.413493283092777
+       },
+       "value": 0.9856709841940293,
+       "derated": 0.976620105859738,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 6.030487119552005,
+        "total": 19.030487119552006
+       },
+       "value": 0.9886637019557373,
+       "derated": 0.978707193108599,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 6.043382832058496,
+        "total": 19.043382832058498
+       },
+       "value": 0.9906256377676508,
+       "derated": 0.9787002200910252,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 6.043386346135233,
+        "total": 19.043386346135232
+       },
+       "value": 0.9886919873854245,
+       "derated": 0.978700218180087,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 3,
+        "hardware": 11.400064410504717,
+        "total": 19.40006441050472
+       },
+       "value": 0.9823006426163282,
+       "derated": 0.9733354286322555,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 14.79143409272713,
+        "total": 19.79143409272713
+       },
+       "value": 0.9840738838307072,
+       "derated": 0.9745823128897277,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 6.043972469205412,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.723400613,
+       0.235252232
+      ],
+      "classes": 20,
+      "improved": 3,
+      "improvedRows": [
+       {
+        "id": "MGMT-hard",
+        "factor": 0.7234006128273804,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 771.6273203492057,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.7234006128273804,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 96.45341504365071,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.2352522318137822,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 96.45341504365071,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.2352522318137822
+    }
+   },
+   "final": {
+    "aOp": 0.9920195704317872,
+    "aOpDerated": 0.9850000014144151,
+    "phi": 0.000019106591567341624,
+    "phiDerated": 0.00005112030944554036,
+    "mtbfHwH": 0.9431943223935196,
+    "mttrS": 25.019094063702077,
+    "mtbfHwDerH": 0.9431943223935196,
+    "mttrDerS": 48.19044945069497,
+    "delivered": 0.8578335468801318,
+    "lamHw": 1.0602269079210804,
+    "fitPerNpu": 2120.453815842161,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.029443362428485602,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 33.96351223230295,
+      "sPerH": 2.296582269421877
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.02294297199405895,
+      "pauseS": 3,
+      "mtbfH": 43.58633224409412,
+      "sPerH": 0.06882891598217684
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.574024534253123,
+      "lp": 3.575981956138671,
+      "mttrS": 6.229667449304176,
+      "ends": {
+       "replay": 0.6647117296222664,
+       "elastic": 0.27305566600397607,
+       "process": 0.005293936381709745,
+       "global": 0.00027862823061630264,
+       "netfail": 0.05666003976143143
+      }
+     },
+     "ub-link": {
+      "lam": 0.00326057673532021,
+      "lp": 0.010166315231891652,
+      "mttrS": 3.117950000000001,
+      "ends": {
+       "netfail": 0.95,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "roce-link": {
+      "lam": 0.01304230694128084,
+      "lp": 0.04066526092756661,
+      "mttrS": 3.117950000000001,
+      "ends": {
+       "netfail": 0.95,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "node": {
+      "lam": 0.18715710460738008,
+      "lp": 4.305310794424777,
+      "mttrS": 23.003726219512203,
+      "ends": {
+       "netfail": 0.08109756097560974,
+       "global": 0.24884146341463415,
+       "elastic": 0.6573170731707317,
+       "process": 0.012743902439024402
+      }
+     },
+     "ub-switch": {
+      "lam": 0.02231600016495776,
+      "lp": 0.1417724332479685,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.05000000000000004
+      }
+     },
+     "roce-switch": {
+      "lam": 0.00022944026371101253,
+      "lp": 0.0014576225233428781,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "cpu": {
+      "lam": 0.028530046434051843,
+      "lp": 0.13520902545932992,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.045650995771237796,
+      "lp": 3.6091220746782895,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.186015902750018,
+      "lp": 14.706231255513675,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.52591673814551,
+    "ends": {
+     "replay": 0.3605779743169026,
+     "elastic": 0.2902413199788519,
+     "process": 0.005627127632243052,
+     "global": 0.26375165557256064,
+     "netfail": 0.07980192249944193
+    },
+    "mttrParts": {
+     "detect": 0.6671242062154871,
+     "replay": 1.8028898715845125,
+     "failed:replay": 0.40064219368544723,
+     "elastic": 0.2902413199788519,
+     "failed:elastic": 0.7107950693359645,
+     "process": 0.3376276579345831,
+     "failed:process": 0.03553975346679826,
+     "globalAuto": 15.82509933435364,
+     "globalManual": 4.747529800306095,
+     "netfail": 0.15960384499888386,
+     "failed:netfail": 0.04200101184181158
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.7714386886070491,
+     "mttrS": 43.24818570824064,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.6926423642154607,
+     "mttrS": 47.74417773632363,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.6274096547664273,
+     "mttrS": 52.2401697644066,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.525684112844758,
+     "mttrS": 61.23215382057256,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.4500115499916216,
+     "mttrS": 70.22413787673854,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.3915199694168899,
+     "mttrS": 79.2161219329045,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.3449550399511788,
+     "mttrS": 88.20810598907048,
+     "globalS": 264.50000000000006
+    }
+   ]
+  },
+  "ubl128": {
+   "id": "ubl128",
+   "gen": "950",
+   "ref": false,
+   "name": {
+    "zh": "950 · SuperPoD Flex / UBL128",
+    "en": "950 · SuperPoD Flex / UBL128"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3042.940609523809,
+   "counts": {
+    "racks": 7813,
+    "commRacks": 977,
+    "ubSwitches": 15625,
+    "opticalLinks": 2000000,
+    "scaleOutSwitches": 5864,
+    "scaleOutLinks": 4000000
+   },
+   "nominal": {
+    "aOp": 0.9635927527696029,
+    "aRun": 0.9636499730375934,
+    "phi": 0.00005937868478333996,
+    "F": 7.392797622223906,
+    "sumC": 128.4034984666667,
+    "B": 47.2125188597863,
+    "x": 0.3676887267370101,
+    "lamHw": 1.5214703047619045,
+    "mtbfHwH": 0.6572589664551425,
+    "mttrS": 84.39435069142583,
+    "delivered": 0.8344922229899794,
+    "mttrReqS": 31.030851349527065,
+    "lamStar": 0.5594274791260753
+   },
+   "derated": {
+    "aOp": 0.9590611215039903,
+    "aRun": 0.959163290307689,
+    "phi": 0.00010651867594513309,
+    "F": 7.421395613640534,
+    "sumC": 145.84985275238094,
+    "B": 47.011632575798735,
+    "x": 0.32232896837827824,
+    "lamHw": 1.5214703047619045,
+    "mtbfHwH": 0.6572589664551425,
+    "mttrS": 95.86112347766462,
+    "delivered": 0.740160192000531,
+    "mttrReqS": 30.898817038138386,
+    "lamStar": 0.4904139537520893
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.5510021002115609,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 540.3313632084677,
+     "allowedMttrFirst": 1159.0463416934674,
+     "allowedOptimal": 1102.2859451540035,
+     "mtbfHwOnlyH": 1850716.186567511,
+     "mtbfOptimalH": 907205.6161074314
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.17855535255364705,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 175.09743976735638,
+     "allowedMttrFirst": 375.5955341869488,
+     "allowedOptimal": 357.202006083703,
+     "mtbfHwOnlyH": 5711105.778180722,
+     "mtbfOptimalH": 2799536.3490922567
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.17965078416440558,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1409.3732575139359,
+     "allowedMttrFirst": 3023.198410142802,
+     "allowedOptimal": 2875.1474354712777,
+     "mtbfHwOnlyH": 709535.2453075136,
+     "mtbfOptimalH": 347808.2506875289
+    },
+    {
+     "unit": "cpu",
+     "count": 125000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 83.33333333333334,
+     "share": 0.02738579026896427,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 107.4217421885622,
+     "allowedMttrFirst": 230.42670809015263,
+     "allowedOptimal": 219.14233502067668,
+     "mtbfHwOnlyH": 9309102.418434577,
+     "mtbfOptimalH": 4563244.249020379
+    },
+    {
+     "unit": "cabinet",
+     "count": 7813,
+     "fitPerUnit": 8533.333333333332,
+     "fitPerNpu": 133.34186666666665,
+     "share": 0.043820068735266365,
+     "mtbfUnitH": 117187.50000000001,
+     "allowedHwOnly": 2749.9966000271916,
+     "allowedMttrFirst": 5898.9237271079055,
+     "allowedOptimal": 5610.043776529322,
+     "mtbfHwOnlyH": 363636.81322010077,
+     "mtbfOptimalH": 178251.72847735859
+    },
+    {
+     "unit": "ub-switch",
+     "count": 15625,
+     "fitPerUnit": 57.14285714285714,
+     "fitPerNpu": 1.7857142857142856,
+     "share": 0.0005868383629063772,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 18.415155803753517,
+     "allowedMttrFirst": 39.501721386883304,
+     "allowedOptimal": 37.567257432115994,
+     "mtbfHwOnlyH": 54303097.44086837,
+     "mtbfOptimalH": 26618924.785952214
+    },
+    {
+     "unit": "ub-link",
+     "count": 2000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 19.047619047619044,
+     "share": 0.006259609204334689,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.5345963169794596,
+     "allowedMttrFirst": 3.291810115573608,
+     "allowedOptimal": 3.130604786009666,
+     "mtbfHwOnlyH": 651637169.2904205,
+     "mtbfOptimalH": 319427097.4314266
+    },
+    {
+     "unit": "roce-switch",
+     "count": 5864,
+     "fitPerUnit": 57.14285714285713,
+     "fitPerNpu": 0.6701714285714284,
+     "share": 0.00022023809024531167,
+     "mtbfUnitH": 17500000.000000004,
+     "allowedHwOnly": 18.415155803753514,
+     "allowedMttrFirst": 39.5017213868833,
+     "allowedOptimal": 37.567257432115994,
+     "mtbfHwOnlyH": 54303097.440868385,
+     "mtbfOptimalH": 26618924.785952214
+    },
+    {
+     "unit": "roce-link",
+     "count": 4000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 38.09523809523809,
+     "share": 0.012519218408669378,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.5345963169794596,
+     "allowedMttrFirst": 3.291810115573608,
+     "allowedOptimal": 3.130604786009666,
+     "mtbfHwOnlyH": 651637169.2904205,
+     "mtbfOptimalH": 319427097.4314266
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9669426338686427,
+    "aOpDerated": 0.9443576214022524,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.0031601085827307474,
+     "derated": 0.002168814178188594
+    },
+    "D-SLOW": {
+     "nominal": -0.00008568982630463573,
+     "derated": 0.000014238003051003645
+    },
+    "P-PREDICT": {
+     "nominal": -0.011000813441621404,
+     "derated": -0.014565508142635575
+    },
+    "R-NETFAIL": {
+     "nominal": 0.0020462207623941353,
+     "derated": 0.002032293627596493
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.02042563377090789,
+     "derated": -0.02818036734559992
+    },
+    "C-MEM": {
+     "nominal": 0.00721610227372893,
+     "derated": 0.00484911070575389
+    },
+    "lever:auto": {
+     "nominal": 0.014541079206014107,
+     "derated": 0.010979856067613425
+    },
+    "lever:success": {
+     "nominal": 0.007798062626571234,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.006489634191242266,
+     "derated": 0.005458701239711705
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9635927527696029,
+      "aOp": 0.9635927527696029,
+      "delivered": 0.8344922229899794,
+      "mtbiHours": 0.6449377347059042,
+      "meanPauseS": 86.31976277205067,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9590611215039903
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 65.34718277746833,
+      "total": 65.34718277746833
+     },
+     "final": {
+      "value": 0.9865731406489272,
+      "aOp": 0.9865731406489272,
+      "delivered": 0.855863957614343,
+      "mtbiHours": 1.9253579306910098,
+      "meanPauseS": 89.98269098087508,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000013479353
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 65.34718277746833,
+       "value": 0.9865731406489272,
+       "derated": 0.9850000013479353
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 65.34718277746833,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.322265227
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.32226522656568657
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9635927527696029,
+      "aOp": 0.9635927527696029,
+      "delivered": 0.8344922229899794,
+      "mtbiHours": 0.6449377347059042,
+      "meanPauseS": 86.31976277205067,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9590611215039903
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 21.306305964174676,
+      "total": 34.306305964174676
+     },
+     "final": {
+      "value": 0.9919657449881598,
+      "aOp": 0.9919657449881598,
+      "delivered": 0.8604488073923846,
+      "mtbiHours": 0.9240883125039241,
+      "meanPauseS": 26.329992388207828,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000011823485
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.978133831975617,
+       "derated": 0.9700409775716037
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9848214458509397,
+       "derated": 0.9756256633852614
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9881225512374493,
+       "derated": 0.9778701052260036
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9887510792782713,
+       "derated": 0.9788730503275693
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.98872315161174,
+       "derated": 0.9788799366351527
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 21.306305964174676,
+       "value": 0.9919657449881598,
+       "derated": 0.9850000011823485
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 21.306305964174676,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.691280124
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6912801242704578
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9635927527696029,
+      "aOp": 0.9635927527696029,
+      "delivered": 0.8344922229899794,
+      "mtbiHours": 0.6449377347059042,
+      "meanPauseS": 86.31976277205067,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9590611215039903
+     },
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 24.203895032597064,
+      "total": 31.203895032597064
+     },
+     "final": {
+      "value": 0.9919344265415557,
+      "aOp": 0.9919344265415557,
+      "delivered": 0.859083491685856,
+      "mtbiHours": 0.9715126837742534,
+      "meanPauseS": 27.761095736483508,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.985000000692407
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9667528613523336,
+       "derated": 0.9612299356821788
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9813901865574527,
+       "derated": 0.972259776768712
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9881225512374493,
+       "derated": 0.9778701052260036
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 24.203895032597064,
+       "value": 0.9919344265415557,
+       "derated": 0.985000000692407
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 24.203895032597064,
+        "total": 31.203895032597064
+       },
+       "value": 0.9881225512374493,
+       "derated": 0.9778701052260036,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 21.33549132775649,
+        "total": 31.33549132775649
+       },
+       "value": 0.9887510792782713,
+       "derated": 0.9788730503275693,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 24.174709771770626,
+        "total": 34.17470977177062
+       },
+       "value": 0.9880946590652699,
+       "derated": 0.9778769774293217,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 24.202450910605076,
+        "total": 34.20245091060508
+       },
+       "value": 0.9901603058544676,
+       "derated": 0.9778701052260036,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 24.20245928308148,
+        "total": 34.20245928308148
+       },
+       "value": 0.988122550732626,
+       "derated": 0.9778701032406922,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 21.30506613480537,
+        "total": 34.30506613480537
+       },
+       "value": 0.98872315161174,
+       "derated": 0.9788799366351527,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 21.3342514983872,
+        "total": 34.334251498387204
+       },
+       "value": 0.9906763574970773,
+       "derated": 0.9788730503275693,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 21.334259419064953,
+        "total": 34.33425941906495
+       },
+       "value": 0.988751078802675,
+       "derated": 0.9788730484474704,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9919108561350712,
+       "sd": 0.0011811432984906685,
+       "ci95": 0.00011610209254484116,
+       "p05": 0.9899229552469113,
+       "p50": 0.9919750096575318,
+       "p95": 0.9936173225308623,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 24.203895032597064,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.657427005
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.65742700506203
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9635927527696029,
+      "aOp": 0.9635927527696029,
+      "delivered": 0.8344922229899794,
+      "mtbiHours": 0.6449377347059042,
+      "meanPauseS": 86.31976277205067,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9590611215039903
+     },
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 7.73443940124161,
+      "total": 14.734439401241609
+     },
+     "final": {
+      "value": 0.9928485296438823,
+      "aOp": 0.9928485296438823,
+      "delivered": 0.8601217883896657,
+      "mtbiHours": 0.7512129128058785,
+      "meanPauseS": 19.10311065824609,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000000369643
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9667528613523336,
+       "derated": 0.9612299356821788
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9813901865574527,
+       "derated": 0.972259776768712
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9881225512374493,
+       "derated": 0.9778701052260036
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 7.73443940124161,
+       "value": 0.9928485296438823,
+       "derated": 0.9850000000369643
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 7.73443940124161,
+        "total": 14.734439401241609
+       },
+       "value": 0.9881225512374493,
+       "derated": 0.9778701052260036,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 5.729891728351498,
+        "total": 15.729891728351497
+       },
+       "value": 0.9887510792782713,
+       "derated": 0.9788730503275693,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 11.847630738006602,
+        "total": 16.8476307380066
+       },
+       "value": 0.9848214458509397,
+       "derated": 0.9756256633852614,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 9.007895706325451,
+        "total": 17.00789570632545
+       },
+       "value": 0.9857338742204946,
+       "derated": 0.9767996427263631,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 7.718356035370714,
+        "total": 17.718356035370714
+       },
+       "value": 0.9880946590652699,
+       "derated": 0.9778769774293217,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 7.733644764508867,
+        "total": 17.733644764508867
+       },
+       "value": 0.9901603058544676,
+       "derated": 0.9778701052260036,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 7.73364915223634,
+        "total": 17.73364915223634
+       },
+       "value": 0.988122550732626,
+       "derated": 0.9778701032406922,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 5.717065589716592,
+        "total": 18.71706558971659
+       },
+       "value": 0.98872315161174,
+       "derated": 0.9788799366351527,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 7.73443940124161,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.963813797,
+       0.602422176,
+       0.195909651
+      ],
+      "classes": 20,
+      "improved": 4,
+      "improvedRows": [
+       {
+        "id": "POWER-hard",
+        "factor": 0.9638137974142486,
+        "currentFit": 5333.333333333333,
+        "allowedFit": 5140.340252875992,
+        "count": 7813
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.6024221759358019,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 642.583654331522,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.6024221759358019,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 80.32295679144025,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.19590965071082986,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 80.32295679144025,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.19590965071082986
+    }
+   },
+   "final": {
+    "aOp": 0.9919344265415557,
+    "aOpDerated": 0.985000000692407,
+    "phi": 0.000018880795360831648,
+    "phiDerated": 0.000050581373577385236,
+    "mtbfHwH": 0.9997443995978356,
+    "mttrS": 26.86162588978624,
+    "mtbfHwDerH": 0.9997443995978356,
+    "mttrDerS": 51.12704093585992,
+    "delivered": 0.859083491685856,
+    "lamHw": 1.0002556657504331,
+    "fitPerNpu": 2000.5113315008662,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.029066973780196077,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 34.403306225201895,
+      "sPerH": 2.2672239548552944
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.022640076538164234,
+      "pauseS": 3,
+      "mtbfH": 44.16946198544454,
+      "sPerH": 0.0679202296144927
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.5511429725770017,
+      "lp": 3.570861608711411,
+      "mttrS": 6.479011411530818,
+      "ends": {
+       "replay": 0.7157057654075548,
+       "elastic": 0.2786083499005964,
+       "process": 0.005401590457256466,
+       "global": 0.0002842942345924458
+      }
+     },
+     "ub-link": {
+      "lam": 0.006261209572019333,
+      "lp": 0.0899047082446256,
+      "mttrS": 14.358999999999998,
+      "ends": {
+       "replay": 0.9,
+       "global": 0.09999999999999998
+      }
+     },
+     "roce-link": {
+      "lam": 0.012522419144038666,
+      "lp": 0.1798094164892512,
+      "mttrS": 14.358999999999998,
+      "ends": {
+       "replay": 0.9,
+       "global": 0.09999999999999998
+      }
+     },
+     "node": {
+      "lam": 0.17969671471695486,
+      "lp": 5.249002177593724,
+      "mttrS": 29.210340243902447,
+      "ends": {
+       "global": 0.3299390243902439,
+       "elastic": 0.6573170731707316,
+       "process": 0.0127439024390244
+      }
+     },
+     "ub-switch": {
+      "lam": 0.0005869883973768125,
+      "lp": 0.04640671570821343,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "roce-switch": {
+      "lam": 0.00022029439758192824,
+      "lp": 0.017416254778429667,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "cpu": {
+      "lam": 0.027392791877584585,
+      "lp": 0.12981937141041142,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.0438312720260236,
+      "lp": 3.4652565351054,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.17860100304185153,
+      "lp": 14.120016699485742,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.868493487527207,
+    "ends": {
+     "replay": 0.41125632472478907,
+     "elastic": 0.29843938803506487,
+     "process": 0.005786069768026775,
+     "global": 0.2845182174721192
+    },
+    "mttrParts": {
+     "detect": 0.7429526880708665,
+     "replay": 2.0562816236239456,
+     "failed:replay": 0.4569514719164322,
+     "elastic": 0.29843938803506487,
+     "failed:elastic": 0.7308719706981189,
+     "process": 0.34716418608160643,
+     "failed:process": 0.036543598534905984,
+     "globalAuto": 17.071093048327153,
+     "globalManual": 5.121327914498149
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.8145545509765494,
+     "mttrS": 41.716618070607936,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.7325392829786234,
+     "mttrS": 45.98439133268973,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.6644552308352231,
+     "mttrS": 50.252164594771514,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.5579444992631888,
+     "mttrS": 58.787711118935086,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.4784432652676566,
+     "mttrS": 67.32325764309866,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.4168342800414254,
+     "mttrS": 75.85880416726224,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.3676887267370101,
+     "mttrS": 84.39435069142583,
+     "globalS": 264.50000000000006
+    }
+   ]
+  },
+  "a2": {
+   "id": "a2",
+   "gen": "910B",
+   "ref": true,
+   "name": {
+    "zh": "910B · A2 8 卡服务器 + RoCE（模板默认）",
+    "en": "910B · A2 8-NPU servers + RoCE (template default)"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3091.9728761904753,
+   "counts": {
+    "racks": 7813,
+    "commRacks": 0,
+    "ubSwitches": 0,
+    "opticalLinks": 0,
+    "scaleOutSwitches": 54688,
+    "scaleOutLinks": 2000000
+   },
+   "nominal": {
+    "aOp": 0.9636225628523677,
+    "aRun": 0.9636798268764241,
+    "phi": 0.00005942225048127803,
+    "F": 7.383894354481675,
+    "sumC": 128.29667049523812,
+    "B": 47.22126290264246,
+    "x": 0.3680630426367544,
+    "lamHw": 1.545986438095238,
+    "mtbfHwH": 0.6468362046125509,
+    "mttrS": 82.98693140756686,
+    "delivered": 0.8344031869084721,
+    "mttrReqS": 30.544422472956693,
+    "lamStar": 0.5690204722804917
+   },
+   "derated": {
+    "aOp": 0.958897354233485,
+    "aRun": 0.958999555339288,
+    "phi": 0.00010657054555873735,
+    "F": 7.412515243945447,
+    "sumC": 146.4995485904762,
+    "B": 47.020323371271104,
+    "x": 0.3209588276801547,
+    "lamHw": 1.545986438095238,
+    "mtbfHwH": 0.6468362046125509,
+    "mttrS": 94.7612119877156,
+    "delivered": 0.7398688605926117,
+    "mttrReqS": 30.41444750912782,
+    "lamStar": 0.49619799478046567
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.5422643515335218,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 538.0338256638394,
+     "allowedMttrFirst": 1140.9664162132026,
+     "allowedOptimal": 1089.9373007468917,
+     "mtbfHwOnlyH": 1858619.2025495337,
+     "mtbfOptimalH": 917483.9684032641
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.1757238355864097,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 174.3529097081627,
+     "allowedMttrFirst": 369.7366318941393,
+     "allowedOptimal": 353.2003578961101,
+     "mtbfHwOnlyH": 5735493.612775553,
+     "mtbfOptimalH": 2831254.2092444273
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.1768018959274306,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1403.380475687788,
+     "allowedMttrFirst": 2976.0396383135626,
+     "allowedOptimal": 2842.937850059487,
+     "mtbfHwOnlyH": 712565.1363433044,
+     "mtbfOptimalH": 351748.8080082635
+    },
+    {
+     "unit": "cpu",
+     "count": 250000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 166.66666666666669,
+     "share": 0.05390301705104592,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 106.96497528108142,
+     "allowedMttrFirst": 226.83228950560695,
+     "allowedOptimal": 216.6873361325829,
+     "mtbfHwOnlyH": 9348854.588824151,
+     "mtbfOptimalH": 4614944.361068416
+    },
+    {
+     "unit": "cabinet",
+     "count": 7813,
+     "fitPerUnit": 8533.333333333332,
+     "fitPerNpu": 133.34186666666665,
+     "share": 0.04312517347530974,
+     "mtbfUnitH": 117187.50000000001,
+     "allowedHwOnly": 2738.3033671956837,
+     "allowedMttrFirst": 5806.9066113435365,
+     "allowedOptimal": 5547.195804994121,
+     "mtbfHwOnlyH": 365189.63237594353,
+     "mtbfOptimalH": 180271.26410423504
+    },
+    {
+     "unit": "roce-switch",
+     "count": 54688,
+     "fitPerUnit": 57.14285714285714,
+     "fitPerNpu": 6.250057142857143,
+     "share": 0.002021381620448639,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 18.336852905328243,
+     "allowedMttrFirst": 38.885535343818326,
+     "allowedOptimal": 37.146400479871346,
+     "mtbfHwOnlyH": 54534985.10147422,
+     "mtbfOptimalH": 26920508.772899102
+    },
+    {
+     "unit": "roce-link",
+     "count": 2000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 19.047619047619044,
+     "share": 0.006160344805833818,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.5280710754440199,
+     "allowedMttrFirst": 3.240461278651527,
+     "allowedOptimal": 3.095533373322612,
+     "mtbfHwOnlyH": 654419821.2176908,
+     "mtbfOptimalH": 323046105.2747893
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9648260005550515,
+    "aOpDerated": 0.9412974836548684,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.003111837465662348,
+     "derated": 0.0021413679610255976
+    },
+    "D-SLOW": {
+     "nominal": -0.00008559034115807052,
+     "derated": 0.000014215735181677402
+    },
+    "P-PREDICT": {
+     "nominal": -0.012154719675146253,
+     "derated": -0.016036330524585418
+    },
+    "R-NETFAIL": {
+     "nominal": 0.0019780029095638474,
+     "derated": 0.0018801019466604396
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.02222147346416181,
+     "derated": -0.030370775290148977
+    },
+    "C-MEM": {
+     "nominal": 0.007216535761725096,
+     "derated": 0.004836879558973384
+    },
+    "lever:auto": {
+     "nominal": 0.01454195589199303,
+     "derated": 0.01095199723081064
+    },
+    "lever:success": {
+     "nominal": 0.007798531212302673,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.006490023901263631,
+     "derated": 0.005444924424189201
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9636225628523677,
+      "aOp": 0.9636225628523677,
+      "delivered": 0.8344031869084721,
+      "mtbiHours": 0.6349134329291105,
+      "meanPauseS": 84.9237010018936,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.958897354233485
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 59.033776238223325,
+      "total": 59.033776238223325
+     },
+     "final": {
+      "value": 0.9866323491296535,
+      "aOp": 0.9866323491296535,
+      "delivered": 0.8558261246025372,
+      "mtbiHours": 1.904288078152378,
+      "meanPauseS": 88.63569647035452,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000014920721
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 59.033776238223325,
+       "value": 0.9866323491296535,
+       "derated": 0.9850000014920721
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 59.033776238223325,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.320894926
+      ],
+      "classes": 18,
+      "improved": 18,
+      "improvedRows": []
+     },
+     "factor": 0.32089492584324425
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9636225628523677,
+      "aOp": 0.9636225628523677,
+      "delivered": 0.8344031869084721,
+      "mtbiHours": 0.6349134329291105,
+      "meanPauseS": 84.9237010018936,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.958897354233485
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 19.992224594842437,
+      "total": 32.99222459484244
+     },
+     "final": {
+      "value": 0.9920522242354713,
+      "aOp": 0.9920522242354713,
+      "delivered": 0.8604448684358978,
+      "mtbiHours": 0.9238837625720112,
+      "meanPauseS": 26.03751856141765,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000014737337
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9781645187443607,
+       "derated": 0.9698493514642956
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9848525400340876,
+       "derated": 0.9754196422293909
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9881032210902365,
+       "derated": 0.9776355003522454
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9887110364936332,
+       "derated": 0.9785604896060368
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.9886831452381446,
+       "derated": 0.9785673631006863
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 19.992224594842437,
+       "value": 0.9920522242354713,
+       "derated": 0.9850000014737337
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 19.992224594842437,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.680496869
+      ],
+      "classes": 18,
+      "improved": 18,
+      "improvedRows": []
+     },
+     "factor": 0.6804968685168208
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9636225628523677,
+      "aOp": 0.9636225628523677,
+      "delivered": 0.8344031869084721,
+      "mtbiHours": 0.6349134329291105,
+      "meanPauseS": 84.9237010018936,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.958897354233485
+     },
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 22.3686271353585,
+      "total": 29.3686271353585
+     },
+     "final": {
+      "value": 0.992004291482539,
+      "aOp": 0.992004291482539,
+      "delivered": 0.8590598790222604,
+      "mtbiHours": 0.9671007073604191,
+      "meanPauseS": 27.395310310013496,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000013233656
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.96673440031803,
+       "derated": 0.9610387221945106
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9813711323981817,
+       "derated": 0.9720399536481574
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9881032210902365,
+       "derated": 0.9776355003522454
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 22.3686271353585,
+       "value": 0.992004291482539,
+       "derated": 0.9850000013233656
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 22.3686271353585,
+        "total": 29.3686271353585
+       },
+       "value": 0.9881032210902365,
+       "derated": 0.9776355003522454,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 20.018457248932297,
+        "total": 30.018457248932297
+       },
+       "value": 0.9887110364936332,
+       "derated": 0.9785604896060368,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 22.342388226824553,
+        "total": 32.34238822682455
+       },
+       "value": 0.9880753641164092,
+       "derated": 0.9776423608584505,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 22.367283044657057,
+        "total": 32.36728304465706
+       },
+       "value": 0.9901408917756196,
+       "derated": 0.9776355003522454,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 22.367290622495716,
+        "total": 32.367290622495716
+       },
+       "value": 0.9881032205841775,
+       "derated": 0.9776354983560304,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 27.61480527023252,
+        "total": 32.61480527023252
+       },
+       "value": 0.9848525400340876,
+       "derated": 0.9754196422293909,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 19.991051687436833,
+        "total": 32.99105168743684
+       },
+       "value": 0.9886831452381446,
+       "derated": 0.9785673631006863,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 20.017284341526693,
+        "total": 33.01728434152669
+       },
+       "value": 0.9906361867081689,
+       "derated": 0.9785604896060368,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9920413465545904,
+       "sd": 0.0011472765716041145,
+       "ci95": 0.00011277311640435245,
+       "p05": 0.9900161265432069,
+       "p50": 0.992117283950615,
+       "p95": 0.9937393518518499,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 22.3686271353585,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.650062008
+      ],
+      "classes": 18,
+      "improved": 18,
+      "improvedRows": []
+     },
+     "factor": 0.6500620083977486
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9636225628523677,
+      "aOp": 0.9636225628523677,
+      "delivered": 0.8344031869084721,
+      "mtbiHours": 0.6349134329291105,
+      "meanPauseS": 84.9237010018936,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.958897354233485
+     },
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 8.269102250652253,
+      "total": 15.269102250652253
+     },
+     "final": {
+      "value": 0.9929864593227039,
+      "aOp": 0.9929864593227039,
+      "delivered": 0.8601610583920615,
+      "mtbiHours": 0.7416257848423969,
+      "meanPauseS": 18.495701081352557,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000003353405
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.96673440031803,
+       "derated": 0.9610387221945106
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9813711323981817,
+       "derated": 0.9720399536481574
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9881032210902365,
+       "derated": 0.9776355003522454
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 8.269102250652253,
+       "value": 0.9929864593227039,
+       "derated": 0.9850000003353405
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 8.269102250652253,
+        "total": 15.269102250652253
+       },
+       "value": 0.9881032210902365,
+       "derated": 0.9776355003522454,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 6.306594157257137,
+        "total": 16.306594157257138
+       },
+       "value": 0.9887110364936332,
+       "derated": 0.9785604896060368,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 12.398425611678281,
+        "total": 17.39842561167828
+       },
+       "value": 0.9848525400340876,
+       "derated": 0.9754196422293909,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 9.725185560763933,
+        "total": 17.725185560763933
+       },
+       "value": 0.9856941501369401,
+       "derated": 0.9764842913714467,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 8.2522479143804,
+        "total": 18.252247914380398
+       },
+       "value": 0.9880753641164092,
+       "derated": 0.9776423608584505,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 8.268241391722134,
+        "total": 18.268241391722135
+       },
+       "value": 0.9901408917756196,
+       "derated": 0.9776355003522454,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 8.26824601381595,
+        "total": 18.26824601381595
+       },
+       "value": 0.9881032205841775,
+       "derated": 0.9776354983560304,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 6.292870266503902,
+        "total": 19.292870266503904
+       },
+       "value": 0.9886831452381446,
+       "derated": 0.9785673631006863,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 8.269102250652253,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.920183507,
+       0.575151499,
+       0.187041138
+      ],
+      "classes": 18,
+      "improved": 4,
+      "improvedRows": [
+       {
+        "id": "POWER-hard",
+        "factor": 0.9201835066628531,
+        "currentFit": 5333.333333333333,
+        "allowedFit": 4907.64536886855,
+        "count": 7813
+       },
+       {
+        "id": "MGMT-hard",
+        "factor": 0.5751514990045498,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 613.4949322715197,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.5751514990045498,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 76.68686653393996,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.18704113788765842,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 76.68686653393996,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.18704113788765842
+    }
+   },
+   "final": {
+    "aOp": 0.992004291482539,
+    "aOpDerated": 0.9850000013233656,
+    "phi": 0.00001889576525304637,
+    "phiDerated": 0.00005061430770458841,
+    "mtbfHwH": 0.995037698337196,
+    "mttrS": 26.48348516581579,
+    "mtbfHwDerH": 0.995037698337196,
+    "mttrDerS": 50.89027897802788,
+    "delivered": 0.8590598790222604,
+    "lamHw": 1.0049870489038721,
+    "fitPerNpu": 2009.9740978077443,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.029031427547639745,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 34.44542981426003,
+      "sPerH": 2.2644513487159004
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.02265820415881928,
+      "pauseS": 3,
+      "mtbfH": 44.13412435472159,
+      "sPerH": 0.06797461247645784
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.5449686503734459,
+      "lp": 3.530858104696103,
+      "mttrS": 6.4790114115308155,
+      "ends": {
+       "replay": 0.7157057654075547,
+       "elastic": 0.27860834990059635,
+       "process": 0.005401590457256466,
+       "global": 0.00028429423459244577
+      }
+     },
+     "roce-link": {
+      "lam": 0.006191066746645224,
+      "lp": 0.08889752741507877,
+      "mttrS": 14.358999999999998,
+      "ends": {
+       "replay": 0.9,
+       "global": 0.09999999999999998
+      }
+     },
+     "node": {
+      "lam": 0.17768361562871793,
+      "lp": 5.190198868281634,
+      "mttrS": 29.21034024390245,
+      "ends": {
+       "global": 0.3299390243902439,
+       "elastic": 0.6573170731707317,
+       "process": 0.0127439024390244
+      }
+     },
+     "roce-switch": {
+      "lam": 0.002031462349443204,
+      "lp": 0.16060538188463028,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     },
+     "cpu": {
+      "lam": 0.05417183403314571,
+      "lp": 0.25673007241320367,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.04334024082441906,
+      "lp": 3.4264360993377476,
+      "mttrS": 79.05900000000003,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.17660017894805505,
+      "lp": 13.961833547454287,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.615559601482683,
+    "ends": {
+     "replay": 0.39364603309278084,
+     "elastic": 0.3201192376627513,
+     "process": 0.0062063933832574286,
+     "global": 0.2800283358612103
+    },
+    "mttrParts": {
+     "detect": 0.7199937273151463,
+     "replay": 1.968230165463904,
+     "failed:replay": 0.43738448121420076,
+     "elastic": 0.3201192376627513,
+     "failed:elastic": 0.7839654799904121,
+     "process": 0.3723836029954457,
+     "failed:process": 0.03919827399952064,
+     "globalAuto": 16.80170015167262,
+     "globalManual": 5.040510045501788
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.8160488400457402,
+     "mttrS": 40.9826810283853,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.7337653910468219,
+     "mttrS": 45.183106066303466,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.6654801127910716,
+     "mttrS": 49.38353110422162,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.5586935065401931,
+     "mttrS": 57.78438118005792,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.47901729252827085,
+     "mttrS": 66.18523125589422,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.417290885896846,
+     "mttrS": 74.58608133173055,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.3680630426367544,
+     "mttrS": 82.98693140756686,
+     "globalS": 264.50000000000006
+    }
+   ]
+  },
+  "a960e": {
+   "id": "a960e",
+   "gen": "960",
+   "ref": true,
+   "name": {
+    "zh": "960 · Atlas 960E 超节点（模板默认）",
+    "en": "960 · Atlas 960E SuperPoD (template default)"
+   },
+   "npus": 500000,
+   "fitPerNpu": 3040.9494857142854,
+   "counts": {
+    "racks": 6945,
+    "commRacks": 1737,
+    "ubSwitches": 50350,
+    "opticalLinks": 2929688,
+    "scaleOutSwitches": 5864,
+    "scaleOutLinks": 4000000
+   },
+   "nominal": {
+    "aOp": 0.9639181734920134,
+    "aRun": 0.9639754750964643,
+    "phi": 0.00005944301066918012,
+    "F": 7.374385197484771,
+    "sumC": 127.16045827428573,
+    "B": 47.23069618484092,
+    "x": 0.3714259670483735,
+    "lamHw": 1.5204747428571426,
+    "mtbfHwH": 0.657689320192776,
+    "mttrS": 83.63207535781684,
+    "delivered": 0.8347295486806446,
+    "mttrReqS": 31.063124466039564,
+    "lamStar": 0.5647438017383412
+   },
+   "derated": {
+    "aOp": 0.9593568488948868,
+    "aRun": 0.9594591463588141,
+    "phi": 0.00010661992677385435,
+    "F": 7.4030071394627734,
+    "sumC": 144.71089334514286,
+    "B": 47.02965099618649,
+    "x": 0.3249903991955766,
+    "lamHw": 1.5204747428571426,
+    "mtbfHwH": 0.657689320192776,
+    "mttrS": 95.17480906865633,
+    "delivered": 0.7402744627077181,
+    "mttrReqS": 30.930899192585404,
+    "lamStar": 0.4941396936479344
+   },
+   "units": [
+    {
+     "unit": "npu",
+     "count": 500000,
+     "fitPerUnit": 1676.6666666666663,
+     "fitPerNpu": 1676.6666666666663,
+     "share": 0.5513628800949437,
+     "mtbfUnitH": 596421.4711729623,
+     "allowedHwOnly": 544.7940769092914,
+     "allowedMttrFirst": 1172.212389393376,
+     "allowedOptimal": 1171.6211470450694,
+     "mtbfHwOnlyH": 1835555.932753837,
+     "mtbfOptimalH": 853518.2234650571
+    },
+    {
+     "unit": "job",
+     "count": 500000,
+     "fitPerUnit": 543.3333333333334,
+     "fitPerNpu": 543.3333333333334,
+     "share": 0.1786722653190375,
+     "mtbfUnitH": 1840490.797546012,
+     "allowedHwOnly": 176.5436074278619,
+     "allowedMttrFirst": 379.8620665429828,
+     "allowedOptimal": 379.6704711100325,
+     "mtbfHwOnlyH": 5664322.9090501815,
+     "mtbfOptimalH": 2633862.984067016
+    },
+    {
+     "unit": "node",
+     "count": 62500,
+     "fitPerUnit": 4373.333333333333,
+     "fitPerNpu": 546.6666666666666,
+     "share": 0.1797684141860254,
+     "mtbfUnitH": 228658.53658536586,
+     "allowedHwOnly": 1421.01357635187,
+     "allowedMttrFirst": 3057.540069352107,
+     "allowedOptimal": 3055.9979024316726,
+     "mtbfHwOnlyH": 703723.0443408382,
+     "mtbfOptimalH": 327225.3554900332
+    },
+    {
+     "unit": "cpu",
+     "count": 125000,
+     "fitPerUnit": 333.33333333333337,
+     "fitPerNpu": 83.33333333333334,
+     "share": 0.027403721674699,
+     "mtbfUnitH": 2999999.9999999995,
+     "allowedHwOnly": 108.30896161218523,
+     "allowedMttrFirst": 233.04421260305696,
+     "allowedOptimal": 232.926669392658,
+     "mtbfHwOnlyH": 9232846.341751795,
+     "mtbfOptimalH": 4293196.664029236
+    },
+    {
+     "unit": "cabinet",
+     "count": 6945,
+     "fitPerUnit": 8533.33333333333,
+     "fitPerNpu": 118.52799999999998,
+     "share": 0.038977299871904666,
+     "mtbfUnitH": 117187.50000000004,
+     "allowedHwOnly": 2772.7094172719403,
+     "allowedMttrFirst": 5965.931842638255,
+     "allowedOptimal": 5962.922736452042,
+     "mtbfHwOnlyH": 360658.0602246797,
+     "mtbfOptimalH": 167702.9946886421
+    },
+    {
+     "unit": "ub-switch",
+     "count": 50350,
+     "fitPerUnit": 57.14285714285714,
+     "fitPerNpu": 5.754285714285714,
+     "share": 0.0018922661298117866,
+     "mtbfUnitH": 17500000,
+     "allowedHwOnly": 18.56725056208889,
+     "allowedMttrFirst": 39.95043644623833,
+     "allowedOptimal": 39.930286181598504,
+     "mtbfHwOnlyH": 53858270.32688549,
+     "mtbfOptimalH": 25043647.206837215
+    },
+    {
+     "unit": "ub-link",
+     "count": 2929688,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 27.90179047619047,
+     "share": 0.00917535480522349,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.5472708801740742,
+     "allowedMttrFirst": 3.329203037186527,
+     "allowedOptimal": 3.3275238484665417,
+     "mtbfHwOnlyH": 646299243.9226259,
+     "mtbfOptimalH": 300523766.4820466
+    },
+    {
+     "unit": "roce-switch",
+     "count": 5864,
+     "fitPerUnit": 57.14285714285713,
+     "fitPerNpu": 0.6701714285714284,
+     "share": 0.00022038229563488214,
+     "mtbfUnitH": 17500000.000000004,
+     "allowedHwOnly": 18.56725056208889,
+     "allowedMttrFirst": 39.95043644623832,
+     "allowedOptimal": 39.930286181598504,
+     "mtbfHwOnlyH": 53858270.32688549,
+     "mtbfOptimalH": 25043647.206837215
+    },
+    {
+     "unit": "roce-link",
+     "count": 4000000,
+     "fitPerUnit": 4.761904761904761,
+     "fitPerNpu": 38.09523809523809,
+     "share": 0.01252741562271954,
+     "mtbfUnitH": 210000000.00000003,
+     "allowedHwOnly": 1.5472708801740742,
+     "allowedMttrFirst": 3.329203037186527,
+     "allowedOptimal": 3.3275238484665417,
+     "mtbfHwOnlyH": 646299243.9226259,
+     "mtbfOptimalH": 300523766.4820466
+    }
+   ],
+   "allCandidates": {
+    "aOp": 0.9670584250229963,
+    "aOpDerated": 0.944562721879321,
+    "mechanisms": [
+     "D-HARD",
+     "D-SLOW",
+     "P-PREDICT",
+     "R-NETFAIL",
+     "R-HOTSWAP",
+     "C-MEM"
+    ],
+    "levers": [
+     "auto",
+     "success",
+     "manual"
+    ]
+   },
+   "singles": {
+    "D-HARD": {
+     "nominal": 0.0031592878509481004,
+     "derated": 0.0021681038370169325
+    },
+    "D-SLOW": {
+     "nominal": -0.00008553151966206318,
+     "derated": 0.000014210862031127647
+    },
+    "P-PREDICT": {
+     "nominal": -0.011008202713119197,
+     "derated": -0.014574424428857036
+    },
+    "R-NETFAIL": {
+     "nominal": 0.0022199724164780887,
+     "derated": 0.002209275383002529
+    },
+    "R-HOTSWAP": {
+     "nominal": -0.020439286190467976,
+     "derated": -0.028197494515963317
+    },
+    "C-MEM": {
+     "nominal": 0.007141582540094116,
+     "derated": 0.004803580213377678
+    },
+    "lever:auto": {
+     "nominal": 0.014389757852996343,
+     "derated": 0.010876090517196624
+    },
+    "lever:success": {
+     "nominal": 0.007717483742607056,
+     "derated": 0
+    },
+    "lever:manual": {
+     "nominal": 0.006422667838198004,
+     "derated": 0.005407413871770683
+    }
+   },
+   "strategies": {
+    "hwOnly": {
+     "strategy": "mttf-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9639181734920134,
+      "aOp": 0.9639181734920134,
+      "delivered": 0.8347295486806446,
+      "mtbiHours": 0.6453826250286271,
+      "meanPauseS": 85.57502278061737,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9593568488948868
+     },
+     "mechanisms": [],
+     "levers": [],
+     "effort": {
+      "mechanisms": 0,
+      "levers": 0,
+      "hardware": 64.87251903917056,
+      "total": 64.87251903917056
+     },
+     "final": {
+      "value": 0.9865948729227388,
+      "aOp": 0.9865948729227388,
+      "delivered": 0.8558052643808913,
+      "mtbiHours": 1.9119113441078255,
+      "meanPauseS": 89.22962763513469,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9850000007822084
+     },
+     "steps": [
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 64.87251903917056,
+       "value": 0.9865948729227388,
+       "derated": 0.9850000007822084
+      }
+     ],
+     "evaluations": 38,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 64.87251903917056,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.324926885
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.32492688483655563
+    },
+    "mttrFirst": {
+     "strategy": "mttr-first",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9639181734920134,
+      "aOp": 0.9639181734920134,
+      "delivered": 0.8347295486806446,
+      "mtbiHours": 0.6453826250286271,
+      "meanPauseS": 85.57502278061737,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9593568488948868
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL",
+      "D-SLOW"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 8,
+      "levers": 5,
+      "hardware": 20.65447634362172,
+      "total": 33.654476343621724
+     },
+     "final": {
+      "value": 0.9919914568108834,
+      "aOp": 0.9919914568108834,
+      "delivered": 0.8603962134691031,
+      "mtbiHours": 0.9146433133192664,
+      "meanPauseS": 25.9815575834199,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000001393154
+     },
+     "steps": [
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9783079313450097,
+       "derated": 0.9702329394120834
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9849244081056209,
+       "derated": 0.9757639253021316
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9882231150700425,
+       "derated": 0.9780068835971767
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9889044771623222,
+       "derated": 0.9790934369972331
+      },
+      {
+       "kind": "mechanism",
+       "id": "D-SLOW",
+       "effort": 3,
+       "value": 0.9888766112687285,
+       "derated": 0.9791003090344376
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 20.65447634362172,
+       "value": 0.9919914568108834,
+       "derated": 0.9850000001393154
+      }
+     ],
+     "evaluations": 116,
+     "notes": [
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 20.65447634362172,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.699132638
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6991326378091708
+    },
+    "optimal": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "arinc",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9639181734920134,
+      "aOp": 0.9639181734920134,
+      "delivered": 0.8347295486806446,
+      "mtbiHours": 0.6453826250286271,
+      "meanPauseS": 85.57502278061737,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9593568488948868
+     },
+     "mechanisms": [
+      "D-HARD",
+      "R-NETFAIL"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 5,
+      "levers": 5,
+      "hardware": 20.683590439267054,
+      "total": 30.683590439267054
+     },
+     "final": {
+      "value": 0.9920231609868976,
+      "aOp": 0.9920231609868976,
+      "delivered": 0.859095504798679,
+      "mtbiHours": 0.9161947196960152,
+      "meanPauseS": 25.920630422850525,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000013466466
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9670774613429615,
+       "derated": 0.9615249527319037
+      },
+      {
+       "kind": "mechanism",
+       "id": "R-NETFAIL",
+       "effort": 3,
+       "value": 0.9690152725249173,
+       "derated": 0.9635617301603752
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9826451640406263,
+       "derated": 0.9738609029157166
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9889044771623222,
+       "derated": 0.9790934369972331
+      },
+      {
+       "kind": "hardware",
+       "id": "arinc",
+       "effort": 20.683590439267054,
+       "value": 0.9920231609868976,
+       "derated": 0.9850000013466466
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 20.683590439267054,
+        "total": 30.683590439267054
+       },
+       "value": 0.9889044771623222,
+       "derated": 0.9790934369972331,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 23.81747223849893,
+        "total": 30.81747223849893
+       },
+       "value": 0.9882231150700425,
+       "derated": 0.9780068835971767,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 20.65447634362172,
+        "total": 33.654476343621724
+       },
+       "value": 0.9888766112687285,
+       "derated": 0.9791003090344376,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 8,
+        "hardware": 20.682392877246652,
+        "total": 33.682392877246656
+       },
+       "value": 0.9907978470249345,
+       "derated": 0.9790934369972331,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 20.682400680649977,
+        "total": 33.68240068064998
+       },
+       "value": 0.9889044766946009,
+       "derated": 0.9790934351442522,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 23.78694935495175,
+        "total": 33.78694935495175
+       },
+       "value": 0.9881952875623676,
+       "derated": 0.9780137403900911,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 23.816056294842713,
+        "total": 33.81605629484271
+       },
+       "value": 0.9902389895766509,
+       "derated": 0.9780068835971767,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 23.816064591476668,
+        "total": 33.81606459147667
+       },
+       "value": 0.9882231145704738,
+       "derated": 0.9780068816292531,
+       "feasible": true
+      }
+     ],
+     "verification": {
+      "trials": 400,
+      "seed": 1,
+      "value": {
+       "mean": 0.9919911985586128,
+       "sd": 0.0011207130035411658,
+       "ci95": 0.00011016201422775231,
+       "p05": 0.9900393711419727,
+       "p50": 0.9920987836839832,
+       "p95": 0.9937071731565403,
+       "n": 400,
+       "ciMethod": "student-t"
+      },
+      "pAtLeastTarget": 1,
+      "wilson": [
+       0.9904877056657034,
+       0.9999999999999999
+      ],
+      "verdict": "supported"
+     },
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split arinc: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = current contribution (ARINC, uniform factor); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 20.683590439267054,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       0.698780008
+      ],
+      "classes": 20,
+      "improved": 20,
+      "improvedRows": []
+     },
+     "factor": 0.6987800081779739
+    },
+    "optimalMinEffort": {
+     "strategy": "optimal",
+     "metric": "aOp",
+     "target": 0.985,
+     "hardwareSplit": "min-effort",
+     "derate": {
+      "coverageDelta": 0.05,
+      "successDelta": 0.08,
+      "timeFactor": 1.5,
+      "reductionFactor": 0.5
+     },
+     "npus": 500000,
+     "feasible": true,
+     "baseline": {
+      "value": 0.9639181734920134,
+      "aOp": 0.9639181734920134,
+      "delivered": 0.8347295486806446,
+      "mtbiHours": 0.6453826250286271,
+      "meanPauseS": 85.57502278061737,
+      "recoveryS": 264.50000000000006,
+      "derated": 0.9593568488948868
+     },
+     "mechanisms": [
+      "D-HARD"
+     ],
+     "levers": [
+      "auto",
+      "manual"
+     ],
+     "effort": {
+      "mechanisms": 2,
+      "levers": 5,
+      "hardware": 7.434122430824203,
+      "total": 14.434122430824203
+     },
+     "final": {
+      "value": 0.9928583004439726,
+      "aOp": 0.9928583004439726,
+      "delivered": 0.8600555508282639,
+      "mtbiHours": 0.7494286447244611,
+      "meanPauseS": 19.031894866844464,
+      "recoveryS": 79.05900000000001,
+      "derated": 0.9850000002554371
+     },
+     "steps": [
+      {
+       "kind": "mechanism",
+       "id": "D-HARD",
+       "effort": 2,
+       "value": 0.9670774613429615,
+       "derated": 0.9615249527319037
+      },
+      {
+       "kind": "lever",
+       "id": "auto",
+       "effort": 3,
+       "value": 0.9815623988123976,
+       "derated": 0.9724505214233168
+      },
+      {
+       "kind": "lever",
+       "id": "manual",
+       "effort": 2,
+       "value": 0.9882231150700425,
+       "derated": 0.9780068835971767
+      },
+      {
+       "kind": "hardware",
+       "id": "min-effort",
+       "effort": 7.434122430824203,
+       "value": 0.9928583004439726,
+       "derated": 0.9850000002554371
+      }
+     ],
+     "alternatives": [
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 5,
+        "hardware": 7.434122430824203,
+        "total": 14.434122430824203
+       },
+       "value": 0.9882231150700425,
+       "derated": 0.9780068835971767,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 5.345390502860964,
+        "total": 15.345390502860964
+       },
+       "value": 0.9889044771623222,
+       "derated": 0.9790934369972331,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 3,
+        "levers": 5,
+        "hardware": 8.505226449196261,
+        "total": 16.50522644919626
+       },
+       "value": 0.9859082274274951,
+       "derated": 0.9770330697128958,
+       "feasible": true
+      },
+      {
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 0,
+        "levers": 5,
+        "hardware": 11.560039417405552,
+        "total": 16.56003941740555
+       },
+       "value": 0.9849244081056209,
+       "derated": 0.9757639253021316,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 7.418450492123268,
+        "total": 17.41845049212327
+       },
+       "value": 0.9881952875623676,
+       "derated": 0.9780137403900911,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 2,
+        "levers": 8,
+        "hardware": 7.433359487667019,
+        "total": 17.43335948766702
+       },
+       "value": 0.9902389895766509,
+       "derated": 0.9780068835971767,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "C-MEM"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 5,
+        "levers": 5,
+        "hardware": 7.433363739912881,
+        "total": 17.43336373991288
+       },
+       "value": 0.9882231145704738,
+       "derated": 0.9780068816292531,
+       "feasible": true
+      },
+      {
+       "mechanisms": [
+        "D-HARD",
+        "D-SLOW",
+        "R-NETFAIL"
+       ],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "effort": {
+        "mechanisms": 8,
+        "levers": 5,
+        "hardware": 5.3331692414116585,
+        "total": 18.33316924141166
+       },
+       "value": 0.9888766112687285,
+       "derated": 0.9791003090344376,
+       "feasible": true
+      }
+     ],
+     "evaluations": 1128,
+     "notes": [
+      "optimal: all 512 admissible subsets of 9 moves evaluated (hardware level in closed form, the chosen plan confirmed on the engine)",
+      "hardware split min-effort: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = effort per halving (minimum total log2 effort); factors act on the interruption FIT only (sub-health and silent-corruption rates stay)",
+      "derating: coverage −5 pt, success −8 pt, times ×1.5 on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated"
+     ],
+     "hardware": {
+      "effort": 7.434122430824203,
+      "needed": true,
+      "atFloors": [],
+      "factors": [
+       1,
+       0.61607379,
+       0.2003492
+      ],
+      "classes": 20,
+      "improved": 3,
+      "improvedRows": [
+       {
+        "id": "MGMT-hard",
+        "factor": 0.6160737901667441,
+        "currentFit": 1066.6666666666665,
+        "allowedFit": 657.1453761778603,
+        "count": 62500
+       },
+       {
+        "id": "STORAGE-hard",
+        "factor": 0.6160737901667441,
+        "currentFit": 133.33333333333331,
+        "allowedFit": 82.14317202223253,
+        "count": 500000
+       },
+       {
+        "id": "UNKNOWN-hard",
+        "factor": 0.20034920005422568,
+        "currentFit": 410.00000000000006,
+        "allowedFit": 82.14317202223255,
+        "count": 500000
+       }
+      ]
+     },
+     "factor": 0.20034920005422568
+    }
+   },
+   "final": {
+    "aOp": 0.9920231609868976,
+    "aOpDerated": 0.9850000013466466,
+    "phi": 0.000018897037302734176,
+    "phiDerated": 0.00005061632427805218,
+    "mtbfHwH": 0.9411965318064269,
+    "mttrS": 24.988268616720514,
+    "mtbfHwDerH": 0.9411965318064269,
+    "mttrDerS": 48.14076860006243,
+    "delivered": 0.859095504798679,
+    "lamHw": 1.0624773532481173,
+    "fitPerNpu": 2124.9547064962344,
+    "other": [
+     {
+      "id": "isolation",
+      "ratePerHour": 0.028993682878123074,
+      "pauseS": 78.00000000000001,
+      "mtbfH": 34.49027169827194,
+      "sPerH": 2.2615072644936003
+     },
+     {
+      "id": "sdcDetected",
+      "ratePerHour": 0.02265903739925181,
+      "pauseS": 3,
+      "mtbfH": 44.13250141124793,
+      "sPerH": 0.06797711219775543
+     },
+     {
+      "id": "falseAlarm",
+      "ratePerHour": 0,
+      "pauseS": 0,
+      "mtbfH": null,
+      "sPerH": 0
+     }
+    ],
+    "globalS": 79.05900000000001,
+    "units": {
+     "npu": {
+      "lam": 0.585810573522535,
+      "lp": 3.6494050613315467,
+      "mttrS": 6.229667449304176,
+      "ends": {
+       "replay": 0.6647117296222664,
+       "elastic": 0.273055666003976,
+       "process": 0.005293936381709744,
+       "global": 0.00027862823061630253,
+       "netfail": 0.05666003976143142
+      }
+     },
+     "ub-link": {
+      "lam": 0.009748606688566247,
+      "lp": 0.030395668224615143,
+      "mttrS": 3.1179500000000013,
+      "ends": {
+       "netfail": 0.9500000000000001,
+       "replay": 0.04500000000000004,
+       "global": 0.005000000000000004
+      }
+     },
+     "roce-link": {
+      "lam": 0.013310095393866168,
+      "lp": 0.04150021193330504,
+      "mttrS": 3.1179500000000018,
+      "ends": {
+       "netfail": 0.9500000000000001,
+       "replay": 0.04500000000000003,
+       "global": 0.005000000000000004
+      }
+     },
+     "node": {
+      "lam": 0.1909998689019795,
+      "lp": 4.39370869218386,
+      "mttrS": 23.003726219512206,
+      "ends": {
+       "netfail": 0.08109756097560979,
+       "global": 0.2488414634146342,
+       "elastic": 0.6573170731707317,
+       "process": 0.012743902439024403
+      }
+     },
+     "ub-switch": {
+      "lam": 0.0020104899092434846,
+      "lp": 0.012772541868928407,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "roce-switch": {
+      "lam": 0.00023415119816889366,
+      "lp": 0.0014875508544070742,
+      "mttrS": 6.352950000000005,
+      "ends": {
+       "netfail": 0.95,
+       "global": 0.050000000000000044
+      }
+     },
+     "cpu": {
+      "lam": 0.02911583367408225,
+      "lp": 0.13798517663153723,
+      "mttrS": 4.739180000000004,
+      "ends": {
+       "elastic": 0.98,
+       "process": 0.019000000000000017,
+       "global": 0.0010000000000000018
+      }
+     },
+     "cabinet": {
+      "lam": 0.04141249840465945,
+      "lp": 3.2740307113739724,
+      "mttrS": 79.05900000000003,
+      "ends": {
+       "global": 1
+      }
+     },
+     "job": {
+      "lam": 0.18983523555501627,
+      "lp": 15.008183887744034,
+      "mttrS": 79.05900000000001,
+      "ends": {
+       "global": 1
+      }
+     }
+    },
+    "sumLP": 26.549469502146206,
+    "ends": {
+     "replay": 0.3674739983466819,
+     "elastic": 0.29557325353670233,
+     "process": 0.005730501854283009,
+     "global": 0.26277857571151586,
+     "netfail": 0.06844367055081695
+    },
+    "mttrParts": {
+     "detect": 0.6735060773913171,
+     "replay": 1.8373699917334088,
+     "failed:replay": 0.4083044426074241,
+     "elastic": 0.29557325353670233,
+     "failed:elastic": 0.7238528658041695,
+     "process": 0.3438301112569805,
+     "failed:process": 0.036192643290208514,
+     "globalAuto": 15.766714542690952,
+     "globalManual": 4.730014362807289,
+     "netfail": 0.1368873411016339,
+     "failed:netfail": 0.036022984500430004
+    },
+    "recovery": {
+     "mode": "mixture",
+     "detection": {
+      "coverage": 0.999,
+      "autoSeconds": 1,
+      "timeoutSeconds": 60
+     },
+     "automatic": {
+      "successProbability": 0.99,
+      "seconds": 60
+     },
+     "manual": {
+      "seconds": 1800
+     }
+    }
+   },
+   "curve": [
+    {
+     "autoS": 30,
+     "x": 0.8210873074646976,
+     "mttrS": 41.4176865285835,
+     "globalS": 114.50000000000006
+    },
+    {
+     "autoS": 45,
+     "x": 0.7386857057050233,
+     "mttrS": 45.63912541150684,
+     "globalS": 129.50000000000006
+    },
+    {
+     "autoS": 60,
+     "x": 0.6702377167020395,
+     "mttrS": 49.86056429443017,
+     "globalS": 144.50000000000006
+    },
+    {
+     "autoS": 90,
+     "x": 0.5630788940669257,
+     "mttrS": 58.303442060276836,
+     "globalS": 174.50000000000006
+    },
+    {
+     "autoS": 120,
+     "x": 0.48303122045525865,
+     "mttrS": 66.7463198261235,
+     "globalS": 204.50000000000006
+    },
+    {
+     "autoS": 150,
+     "x": 0.42096187527345913,
+     "mttrS": 75.18919759197018,
+     "globalS": 234.50000000000006
+    },
+    {
+     "autoS": 180,
+     "x": 0.3714259670483735,
+     "mttrS": 83.63207535781684,
+     "globalS": 264.50000000000006
+    }
+   ]
+  }
+ }
+}

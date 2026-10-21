@@ -1,0 +1,279 @@
+{
+ "generated": "2026-10-20T12:38:49.728Z",
+ "designs": {
+  "a2": {
+   "label": {
+    "zh": "A2 · Atlas 800T A2 服务器",
+    "en": "A2 · Atlas 800T A2 server"
+   },
+   "template": "a2-roce",
+   "domainNpus": 8,
+   "perDomain": {
+    "nodes": 1,
+    "cpus": 4,
+    "racks": 1,
+    "commRacks": 0,
+    "l1": 0,
+    "l2": 0,
+    "rackSwitches": 0,
+    "podSwitches": 0,
+    "ubSwitches": 0,
+    "meshLinks": 0,
+    "opticalLinks": 0,
+    "transceivers": 0,
+    "opticalEngines": 0,
+    "scaleOutPorts": 8
+   },
+   "npusPerRack": 8,
+   "at10k": {
+    "hardFitPerNpu": 3086.066666666666,
+    "ubFitPerNpu": 0,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "roce-switch": 4.474285714285713,
+     "roce-link": 14.285714285714285
+    },
+    "scaleOut": 783,
+    "tiers": 3
+   },
+   "summary": {
+    "zh": "每台 Atlas 800T A2 服务器 8 × 910B（HCCS）、4 × 鲲鹏 920、8 × 200GE RoCE 口直出；每柜 8 台（64 NPU）；RoCE 叶脊 Clos 为参数面",
+    "en": "Atlas 800T A2 servers: 8 × 910B (HCCS), 4 × Kunpeng 920, 8 × 200GE RoCE ports direct; 8 servers (64 NPUs) per cabinet; RoCE leaf–spine Clos as the parameter plane"
+   }
+  },
+  "cm384": {
+   "label": {
+    "zh": "A3 · CloudMatrix384",
+    "en": "A3 · CloudMatrix384"
+   },
+   "template": "a3-ub384",
+   "domainNpus": 384,
+   "perDomain": {
+    "nodes": 48,
+    "cpus": 192,
+    "racks": 12,
+    "commRacks": 4,
+    "l1": 336,
+    "l2": 112,
+    "rackSwitches": 0,
+    "podSwitches": 0,
+    "ubSwitches": 448,
+    "meshLinks": 0,
+    "opticalLinks": 5376,
+    "transceivers": 10752,
+    "opticalEngines": 0,
+    "scaleOutPorts": 768
+   },
+   "npusPerRack": 32,
+   "at10k": {
+    "hardFitPerNpu": 3371.2761904761905,
+    "ubFitPerNpu": 133.34666666666664,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 267.0933333333333,
+     "ub-switch": 66.67999999999999,
+     "ub-link": 66.66666666666666,
+     "roce-switch": 8.93142857142857,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOut": 1563,
+    "tiers": 3
+   },
+   "summary": {
+    "zh": "48 节点 × (8 NPU + 4 CPU + 7 L1 UB 芯片)，12 计算柜 + 4 通信柜，7 子平面 × 16 片 L2；超节点之间为 RDMA 面（每 NPU 2 口）",
+    "en": "48 nodes × (8 NPUs + 4 CPUs + 7 L1 UB chips), 12 compute + 4 communication cabinets, 7 sub-planes × 16 L2 chips; RDMA plane between supernodes (2 ports per NPU)"
+   }
+  },
+  "a950": {
+   "label": {
+    "zh": "Atlas 950 · 1,024（现行规格）",
+    "en": "Atlas 950 · 1,024 (current spec)"
+   },
+   "template": "a950-ub2",
+   "domainNpus": 1024,
+   "perDomain": {
+    "nodes": 128,
+    "cpus": 256,
+    "racks": 16,
+    "commRacks": 4,
+    "l1": 0,
+    "l2": 0,
+    "rackSwitches": 1152,
+    "podSwitches": 16,
+    "ubSwitches": 1168,
+    "meshLinks": 7168,
+    "opticalLinks": 2048,
+    "transceivers": 4096,
+    "opticalEngines": 0,
+    "scaleOutPorts": 2048
+   },
+   "npusPerRack": 64,
+   "at10k": {
+    "hardFitPerNpu": 3092.051428571428,
+    "ubFitPerNpu": 75.01523809523808,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 65.49142857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.491428571428571,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOut": 786,
+    "tiers": 3
+   },
+   "summary": {
+    "zh": "产品页现行规格（真机 WAIC 2026 展示，交付数量未公布）：16 计算柜 + 4 灵衢互联柜、1,024 NPU；每计算柜 64 NPU（8 托盘 × 8）+ 16 颗鲲鹏 950；柜内 2D 全互联（72 片低阶 UB 交换），每 NPU 2 条 800G 光链路上联一层 100 Tb/s UB 交换（Clos）；8,192 NPU（128 + 32 柜）为路线图上限；超节点之间每 NPU 2 × 400G UBoE（两平面，假设）",
+    "en": "Product-page spec (machine shown at WAIC 2026, delivery volume undisclosed): 16 compute + 4 UB interconnect cabinets, 1,024 NPUs; 64 NPUs (8 trays × 8) + 16 Kunpeng 950 per compute cabinet; in-cabinet 2D full mesh (72 low-radix UB switches), 2 × 800G optical links per NPU up to one tier of 100 Tb/s UB switches (Clos); 8,192 NPUs (128 + 32 cabinets) is the roadmap maximum; 2 × 400G UBoE per NPU between SuperPoDs (two planes, assumed)"
+   }
+  },
+  "a950-8k": {
+   "label": {
+    "zh": "Atlas 950 · 8,192（路线图）",
+    "en": "Atlas 950 · 8,192 (roadmap)"
+   },
+   "template": "a950-ub2",
+   "domainNpus": 8192,
+   "perDomain": {
+    "nodes": 1024,
+    "cpus": 2048,
+    "racks": 128,
+    "commRacks": 32,
+    "l1": 0,
+    "l2": 0,
+    "rackSwitches": 9216,
+    "podSwitches": 128,
+    "ubSwitches": 9344,
+    "meshLinks": 57344,
+    "opticalLinks": 16384,
+    "transceivers": 32768,
+    "opticalEngines": 0,
+    "scaleOutPorts": 16384
+   },
+   "npusPerRack": 64,
+   "at10k": {
+    "hardFitPerNpu": 3092.051428571428,
+    "ubFitPerNpu": 75.01523809523808,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 65.49142857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.491428571428571,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOut": 786,
+    "tiers": 3
+   },
+   "summary": {
+    "zh": "产品页现行规格（真机 WAIC 2026 展示，交付数量未公布）：16 计算柜 + 4 灵衢互联柜、1,024 NPU；每计算柜 64 NPU（8 托盘 × 8）+ 16 颗鲲鹏 950；柜内 2D 全互联（72 片低阶 UB 交换），每 NPU 2 条 800G 光链路上联一层 100 Tb/s UB 交换（Clos）；8,192 NPU（128 + 32 柜）为路线图上限；超节点之间每 NPU 2 × 400G UBoE（两平面，假设）",
+    "en": "Product-page spec (machine shown at WAIC 2026, delivery volume undisclosed): 16 compute + 4 UB interconnect cabinets, 1,024 NPUs; 64 NPUs (8 trays × 8) + 16 Kunpeng 950 per compute cabinet; in-cabinet 2D full mesh (72 low-radix UB switches), 2 × 800G optical links per NPU up to one tier of 100 Tb/s UB switches (Clos); 8,192 NPUs (128 + 32 cabinets) is the roadmap maximum; 2 × 400G UBoE per NPU between SuperPoDs (two planes, assumed)"
+   }
+  },
+  "ubl128": {
+   "label": {
+    "zh": "SuperPoD Flex / UBL128",
+    "en": "SuperPoD Flex / UBL128"
+   },
+   "template": "a950-ub2",
+   "domainNpus": 128,
+   "perDomain": {
+    "nodes": 16,
+    "cpus": 32,
+    "racks": 2,
+    "commRacks": 0.25,
+    "l1": 0,
+    "l2": 0,
+    "rackSwitches": 0,
+    "podSwitches": 4,
+    "ubSwitches": 4,
+    "meshLinks": 448,
+    "opticalLinks": 512,
+    "transceivers": 1024,
+    "opticalEngines": 0,
+    "scaleOutPorts": 256
+   },
+   "npusPerRack": 64,
+   "at10k": {
+    "hardFitPerNpu": 3037.87238095238,
+    "ubFitPerNpu": 20.836190476190474,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 1.7885714285714285,
+     "ub-link": 19.047619047619044,
+     "roce-switch": 4.491428571428571,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOut": 786,
+    "tiers": 3
+   },
+   "summary": {
+    "zh": "产品页现行规格（真机 WAIC 2026 展示，交付数量未公布）：16 计算柜 + 4 灵衢互联柜、1,024 NPU；每计算柜 64 NPU（8 托盘 × 8）+ 16 颗鲲鹏 950；柜内 2D 全互联（72 片低阶 UB 交换），每 NPU 2 条 800G 光链路上联一层 100 Tb/s UB 交换（Clos）；8,192 NPU（128 + 32 柜）为路线图上限；超节点之间每 NPU 2 × 400G UBoE（两平面，假设）",
+    "en": "Product-page spec (machine shown at WAIC 2026, delivery volume undisclosed): 16 compute + 4 UB interconnect cabinets, 1,024 NPUs; 64 NPUs (8 trays × 8) + 16 Kunpeng 950 per compute cabinet; in-cabinet 2D full mesh (72 low-radix UB switches), 2 × 800G optical links per NPU up to one tier of 100 Tb/s UB switches (Clos); 8,192 NPUs (128 + 32 cabinets) is the roadmap maximum; 2 × 400G UBoE per NPU between SuperPoDs (two planes, assumed)"
+   }
+  },
+  "a960e": {
+   "label": {
+    "zh": "Atlas 960E · 4,032（媒体推断）",
+    "en": "Atlas 960E · 4,032 (media inference)"
+   },
+   "template": "a960e-ub",
+   "domainNpus": 4032,
+   "perDomain": {
+    "nodes": 504,
+    "cpus": 1008,
+    "racks": 56,
+    "commRacks": 14,
+    "l1": 0,
+    "l2": 0,
+    "rackSwitches": 280,
+    "podSwitches": 126,
+    "ubSwitches": 406,
+    "meshLinks": 0,
+    "opticalLinks": 23625,
+    "transceivers": 0,
+    "opticalEngines": 5415,
+    "scaleOutPorts": 16128
+   },
+   "npusPerRack": 72,
+   "at10k": {
+    "hardFitPerNpu": 3041.05619047619,
+    "ubFitPerNpu": 33.66190476190476,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 118.61333333333332,
+     "ub-switch": 5.76,
+     "ub-link": 27.901904761904756,
+     "roce-switch": 0.6857142857142856,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOut": 120,
+    "tiers": 2
+   },
+   "summary": {
+    "zh": "标称 4,096 NPU；按单一媒体口径 56 计算柜 + 14 灵衢互联柜，每柜 72 NPU（9 刀片 × 8）+ 18 颗鲲鹏（合 4,032；“一组柜内交换刀片互联 72 昇腾 + 18 鲲鹏”按一柜理解，为推断）；柜内 LinkBlade、跨柜 LinkDevice（176 × 1.6 Tb/s）；NPO 光引擎 Hi-ONE（5,500 个替代 48,000 个 800G 模块）；超节点之间两层四平面 Clos 至 51.2 万 NPU",
+    "en": "Nominal 4,096 NPUs; from one media source 56 compute + 14 UB interconnect cabinets with 72 NPUs (9 blades × 8) + 18 Kunpeng per cabinet (4,032; the article says the in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng, read here as one cabinet, an inference); in-cabinet LinkBlade, cross-cabinet LinkDevices (176 × 1.6 Tb/s); NPO optics (5,500 Hi-ONE engines replacing 48,000 × 800G modules); two-tier, four-plane Clos between SuperPoDs to 512,000 NPUs"
+   }
+  }
+ }
+}

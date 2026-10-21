@@ -1,0 +1,3301 @@
+{
+ "generated": "2026-10-20T13:33:49.897Z",
+ "trials": 2000,
+ "sizes": [
+  10000,
+  100000,
+  200000,
+  500000
+ ],
+ "repositories": {
+  "remap": {
+   "dir": "remap/remap-latest",
+   "head": "f53ab7e18ecfbcf49b4ec251cf7a877aaac3ac95 2026-10-16T06:40:29+00:00 feat: add bounded availability planning and decision comparisons"
+  },
+  "reference": {
+   "dir": "ai-cluster-reliability-main",
+   "note": "zip copy, identical to github.com/zy009197/ai-cluster-reliability 683afe8 (checked 2026-10-20 by a fresh clone)"
+  }
+ },
+ "refcheck": {
+  "generated": "2026-10-20T13:33:11.660Z",
+  "sources": {
+   "reference": "ai-cluster-reliability-main/catalogs/review-2026-10-09",
+   "remap": "remap/remap-latest/references/expert-review-2026-10-09"
+  },
+  "checks": [
+   {
+    "id": "repos.identical",
+    "pass": true,
+    "detail": "inputs.json, mechanisms.json, mechanism-policy.json, engine.cjs, reference.cjs are byte-identical in both repositories (sha256 inputs.json 9e6b7752ca8a)"
+   },
+   {
+    "id": "events",
+    "pass": true,
+    "detail": "54 repository events vs 54 in HAC-D; FIT, class, domain, description, scope, persistence and the three recovery flags compared; class FIT per card hard 3333.333333 / slow 69.013112 / sdc 48.309179 (repository 3333.333333 / 69.013112 / 48.309179; totalFit 3450.655624568668)",
+    "mismatches": []
+   },
+   {
+    "id": "mechanisms.parameters",
+    "pass": true,
+    "detail": "8 mechanisms of mechanism-policy.json (D-HARD, D-SLOW, D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST): every parameter equal in HAC-D's library",
+    "mismatches": []
+   },
+   {
+    "id": "mechanisms.applicability",
+    "pass": true,
+    "detail": "event lists of D-HARD, D-SLOW, D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC in mechanisms.json equal the events HAC-D applies them to",
+    "mismatches": []
+   },
+   {
+    "id": "baseline",
+    "pass": true,
+    "detail": "16 job / recovery settings of ReMAP config.json (= reference.cjs config) equal HAC-D's topology scenarios",
+    "mismatches": []
+   },
+   {
+    "id": "audit16",
+    "pass": true,
+    "detail": "ReMAP 新可靠性机制库-单点量化.json vs packages/core/data/mechanism-audit.json: byte-identical"
+   },
+   {
+    "id": "units.derived",
+    "pass": true,
+    "detail": "60 unit fault types: fitPerCard = catalog FIT and fitPerUnit = fitPerCard × cards per unit (CloudMatrix384 geometry)",
+    "mismatches": []
+   },
+   {
+    "id": "units.calibration",
+    "pass": true,
+    "detail": "CloudMatrix384 geometry without scale-out at 9,984 NPUs (26 whole pods): 3333.333333 hard FIT per NPU = catalog 3333.333333; at 10,000 NPUs 3333.773333 (partial last pod rounded up)"
+   }
+  ],
+  "perTemplate": [
+   {
+    "template": "a2-roce",
+    "hardFitPerNpu": 3086.067,
+    "vsCatalog": -0.0742,
+    "byUnit": {
+     "npu": 1676.667,
+     "job": 543.333,
+     "cpu": 166.667,
+     "node": 546.667,
+     "cabinet": 133.973,
+     "roce-switch": 4.474,
+     "roce-link": 14.286
+    }
+   },
+   {
+    "template": "a3-ub384",
+    "hardFitPerNpu": 3371.276,
+    "vsCatalog": 0.0114,
+    "byUnit": {
+     "npu": 1676.667,
+     "job": 543.333,
+     "cpu": 166.667,
+     "node": 546.667,
+     "cabinet": 267.093,
+     "ub-switch": 66.68,
+     "ub-link": 66.667,
+     "roce-switch": 8.931,
+     "roce-link": 28.571
+    }
+   },
+   {
+    "template": "a950-ub2",
+    "hardFitPerNpu": 3092.051,
+    "vsCatalog": -0.0724,
+    "byUnit": {
+     "npu": 1676.667,
+     "job": 543.333,
+     "cpu": 83.333,
+     "node": 546.667,
+     "cabinet": 133.973,
+     "ub-switch": 65.491,
+     "ub-link": 9.524,
+     "roce-switch": 4.491,
+     "roce-link": 28.571
+    }
+   },
+   {
+    "template": "a960e-ub",
+    "hardFitPerNpu": 3041.056,
+    "vsCatalog": -0.0877,
+    "byUnit": {
+     "npu": 1676.667,
+     "job": 543.333,
+     "cpu": 83.333,
+     "node": 546.667,
+     "cabinet": 118.613,
+     "ub-switch": 5.76,
+     "ub-link": 27.902,
+     "roce-switch": 0.686,
+     "roce-link": 38.095
+    }
+   }
+  ]
+ },
+ "catalogByUnit": {
+  "npu": 1676.6666666666663,
+  "ub-link": 66.66666666666666,
+  "node": 546.6666666666665,
+  "ub-switch": 66.66666666666666,
+  "cpu": 166.66666666666666,
+  "cabinet": 266.66666666666663,
+  "job": 543.3333333333334
+ },
+ "results": {
+  "refcat": {
+   "10000": {
+    "aOp": 0.9990924821420948,
+    "aRun": 0.9990938847390726,
+    "phi": 0.0000014038690449025282,
+    "lamHw": 0.03333333333333333,
+    "mtbfHwH": 30,
+    "mttrS": 92.968526,
+    "isoPerH": 0.0006533559654166079,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.0004589371980676328,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 29.03126177984859,
+    "meanPauseAllS": 94.7862969438952,
+    "mtbiUiH": 29.423283662900957,
+    "delivered": 0.9796803679557475,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.0009083396462534368,
+     "save": 0.01666664326884925,
+     "rollback": 0.00009029431768286897,
+     "slowdown": 0.00004333148676165937,
+     "local": 0.000010343893980867699,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.002364300701945504,
+     "terminal": 0.00023637872877892995,
+     "delivered": 0.9796803679557475
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3333.3333333333335,
+    "byUnit": null,
+    "scaleOutSwitches": 0,
+    "scaleOutTiers": 0,
+    "scaleOutLinks": 0
+   },
+   "100000": {
+    "aOp": 0.9909986675212139,
+    "aRun": 0.9910121436945791,
+    "phi": 0.000013598393774461037,
+    "lamHw": 0.33333333333333326,
+    "mtbfHwH": 3.000000000000001,
+    "mttrS": 92.96852600000004,
+    "isoPerH": 0.0065335596541660785,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.0045893719806763275,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 2.90312617798486,
+    "meanPauseAllS": 94.78629694389522,
+    "mtbiUiH": 2.9423283662900968,
+    "delivered": 0.9478745748963843,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.009082845569197038,
+     "save": 0.016666440026770424,
+     "rollback": 0.0009029321658503323,
+     "slowdown": 0.00042765016088297915,
+     "local": 0.00010245211133267566,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.022681143819916327,
+     "terminal": 0.0022619612496659206,
+     "delivered": 0.9478745748963843
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3333.3333333333326,
+    "byUnit": null,
+    "scaleOutSwitches": 0,
+    "scaleOutTiers": 0,
+    "scaleOutLinks": 0
+   },
+   "200000": {
+    "aOp": 0.9821585993321853,
+    "aRun": 0.9821844113400304,
+    "phi": 0.00002628020517037033,
+    "lamHw": 0.6666666666666665,
+    "mtbfHwH": 1.5000000000000004,
+    "mttrS": 92.96852600000004,
+    "isoPerH": 0.013067119308332157,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.009178743961352655,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 1.45156308899243,
+    "meanPauseAllS": 94.78629694389522,
+    "mtbiUiH": 1.4711641831450484,
+    "delivered": 0.9146437025395272,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.01816454452392317,
+     "save": 0.01666622866324716,
+     "rollback": 0.001805841429758374,
+     "slowdown": 0.000842807529961105,
+     "local": 0.00020271399912683344,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.0433609680881225,
+     "terminal": 0.004313193226333569,
+     "delivered": 0.9146437025395272
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3333.3333333333326,
+    "byUnit": null,
+    "scaleOutSwitches": 0,
+    "scaleOutTiers": 0,
+    "scaleOutLinks": 0
+   },
+   "500000": {
+    "aOp": 0.9565632103726093,
+    "aRun": 0.9566202811898371,
+    "phi": 0.00005965879915992289,
+    "lamHw": 1.6666666666666663,
+    "mtbfHwH": 0.6000000000000001,
+    "mttrS": 92.96852600000004,
+    "isoPerH": 0.0326677982708304,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.02294685990338164,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 0.580625235596972,
+    "meanPauseAllS": 94.78629694389522,
+    "mtbiUiH": 0.5884656732580194,
+    "delivered": 0.8262771817505293,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.045403805981862964,
+     "save": 0.016665672353347333,
+     "rollback": 0.0045144528793159035,
+     "slowdown": 0.002014807253974563,
+     "local": 0.0004904000986087016,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.09522471410874239,
+     "terminal": 0.009408965573618823,
+     "delivered": 0.8262771817505293
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3333.3333333333326,
+    "byUnit": null,
+    "scaleOutSwitches": 0,
+    "scaleOutTiers": 0,
+    "scaleOutLinks": 0
+   }
+  },
+  "a3tpl": {
+   "10000": {
+    "aOp": 0.9990813895356668,
+    "aRun": 0.9990827947054063,
+    "phi": 0.000001406459751773781,
+    "lamHw": 0.0337127619047619,
+    "mtbfHwH": 29.662357620683427,
+    "mttrS": 93.02356066940881,
+    "isoPerH": 0.0006647217014130457,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.0004597919156454323,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 28.70488535688299,
+    "meanPauseAllS": 94.86879635044662,
+    "mtbiUiH": 29.08880741405919,
+    "delivered": 0.9796627183103016,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.0009194525010229418,
+     "save": 0.016666643225670803,
+     "rollback": 0.00009131336363474068,
+     "slowdown": 0.000044084396721212786,
+     "local": 0.000010343758299469902,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.0023686327326051205,
+     "terminal": 0.00023681171174402406,
+     "delivered": 0.9796627183103016
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3371.2761904761905,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 267.0933333333333,
+     "ub-switch": 66.67999999999999,
+     "ub-link": 66.66666666666666,
+     "roce-switch": 8.93142857142857,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOutSwitches": 1563,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 60000
+   },
+   "100000": {
+    "aOp": 0.9908531968895767,
+    "aRun": 0.9908667031565844,
+    "phi": 0.000013630760792193719,
+    "lamHw": 0.3383929904761904,
+    "mtbfHwH": 2.9551439543496123,
+    "mttrS": 93.04194013475009,
+    "isoPerH": 0.006684102963276483,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.004601317641678484,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 2.8597704871403766,
+    "meanPauseAllS": 94.89558751705472,
+    "mtbiUiH": 2.897903161385643,
+    "delivered": 0.9476481728567576,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.009230987969926073,
+     "save": 0.01666643948732013,
+     "rollback": 0.0009165243323026011,
+     "slowdown": 0.0004373867858389789,
+     "local": 0.00010243405483469587,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.022731123783611158,
+     "terminal": 0.0022669307294089537,
+     "delivered": 0.9476481728567576
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3383.9299047619033,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 266.66666666666663,
+     "ub-switch": 66.66799999999999,
+     "ub-link": 66.66666666666666,
+     "roce-switch": 12.499999999999998,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 21875,
+    "scaleOutTiers": 4,
+    "scaleOutLinks": 800000
+   },
+   "200000": {
+    "aOp": 0.9818728700312997,
+    "aRun": 0.9818987305800242,
+    "phi": 0.00002633728705314642,
+    "lamHw": 0.6767859809523809,
+    "mtbfHwH": 1.4775719771748062,
+    "mttrS": 93.04194013475009,
+    "isoPerH": 0.013368205926552966,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.009202635283356969,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 1.4298852435701883,
+    "meanPauseAllS": 94.89558751705472,
+    "mtbiUiH": 1.4489515806928215,
+    "delivered": 0.9142148553565173,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.018460817460944915,
+     "save": 0.016666227711882448,
+     "rollback": 0.00183302537260672,
+     "slowdown": 0.0008617628935540544,
+     "local": 0.0002026418847596557,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.04343969487643165,
+     "terminal": 0.004320974443303302,
+     "delivered": 0.9142148553565173
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3383.9299047619033,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 266.66666666666663,
+     "ub-switch": 66.66799999999999,
+     "ub-link": 66.66666666666666,
+     "roce-switch": 12.499999999999998,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 43750,
+    "scaleOutTiers": 4,
+    "scaleOutLinks": 1600000
+   },
+   "500000": {
+    "aOp": 0.9558859607640934,
+    "aRun": 0.9559430836536186,
+    "phi": 0.000059755534091876505,
+    "lamHw": 1.691964552380952,
+    "mtbfHwH": 0.5910289305959682,
+    "mttrS": 93.0418996000806,
+    "isoPerH": 0.03342050802686883,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.023006584386188605,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 0.5719542317521297,
+    "meanPauseAllS": 94.89554830548332,
+    "mtbiUiH": 0.5795807689233353,
+    "delivered": 0.8253518849760761,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.046144385942671236,
+     "save": 0.016665670741098468,
+     "rollback": 0.004582406953112398,
+     "slowdown": 0.0020584067188666216,
+     "local": 0.0004899514353109443,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.09529187219473452,
+     "terminal": 0.009415421038129498,
+     "delivered": 0.8253518849760761
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3383.929104761904,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 166.66666666666669,
+     "node": 546.6666666666666,
+     "cabinet": 266.66666666666663,
+     "ub-switch": 66.6672,
+     "ub-link": 66.66666666666666,
+     "roce-switch": 12.5,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 109375,
+    "scaleOutTiers": 4,
+    "scaleOutLinks": 4000000
+   }
+  },
+  "a950tpl": {
+   "10000": {
+    "aOp": 0.9991966536575125,
+    "aRun": 0.9991980575286199,
+    "phi": 0.000001404997834852928,
+    "lamHw": 0.030920514285714278,
+    "mtbfHwH": 32.34098859933951,
+    "mttrS": 88.61820477328355,
+    "isoPerH": 0.0005865544779300782,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.0004592540769651943,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 31.282922498974905,
+    "meanPauseAllS": 90.38605947085678,
+    "mtbiUiH": 31.73890936988364,
+    "delivered": 0.9797987413238641,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.0008039899694631319,
+     "save": 0.016666643250036084,
+     "rollback": 0.00007913592056007849,
+     "slowdown": 0.00003890744817456001,
+     "local": 0.000009491596109626433,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.002366492670778643,
+     "terminal": 0.00023659782101365638,
+     "delivered": 0.9797987413238641
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3092.051428571428,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 65.49142857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.491428571428571,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOutSwitches": 786,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 60000
+   },
+   "100000": {
+    "aOp": 0.9920313195430115,
+    "aRun": 0.992044833185538,
+    "phi": 0.000013622007871472164,
+    "lamHw": 0.3091136952380952,
+    "mtbfHwH": 3.2350556297085085,
+    "mttrS": 88.56617223103427,
+    "isoPerH": 0.005862931786152537,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.004592237723492011,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 3.1292159853851125,
+    "meanPauseAllS": 90.3349965507354,
+    "mtbiUiH": 3.174838747393842,
+    "delivered": 0.9490144026636971,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.008032471744301875,
+     "save": 0.01666643963320214,
+     "rollback": 0.0007905874844326153,
+     "slowdown": 0.0003843868781362417,
+     "local": 0.00009411548315918261,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.02274888979243849,
+     "terminal": 0.0022687063206324205,
+     "delivered": 0.9490144026636971
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3091.136952380952,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.37599999999998,
+     "ub-switch": 65.19942857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.466285714285714,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOutSwitches": 7816,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 600000
+   },
+   "200000": {
+    "aOp": 0.9841902535295737,
+    "aRun": 0.9842161907366667,
+    "phi": 0.0000263531603493794,
+    "lamHw": 0.6182143428571427,
+    "mtbfHwH": 1.6175619533160532,
+    "mttrS": 88.56245908916229,
+    "isoPerH": 0.011725490564692615,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.009184432310683782,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 1.5646409526539735,
+    "meanPauseAllS": 90.33135254328703,
+    "mtbiUiH": 1.5874531930581315,
+    "delivered": 0.9168176274848238,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.01606286369393771,
+     "save": 0.01666622744732751,
+     "rollback": 0.0015810461111180432,
+     "slowdown": 0.0007587864543493345,
+     "local": 0.00018645420368315616,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.04359098599835431,
+     "terminal": 0.004336008606406098,
+     "delivered": 0.9168176274848238
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3091.071714285713,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.33333333333331,
+     "ub-switch": 65.17857142857142,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.464571428571428,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOutSwitches": 15626,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 1200000
+   },
+   "500000": {
+    "aOp": 0.9613949772682727,
+    "aRun": 0.9614526548915686,
+    "phi": 0.00005999008167734132,
+    "lamHw": 1.5455422666666663,
+    "mtbfHwH": 0.6470220980476584,
+    "mttrS": 88.5631887203615,
+    "isoPerH": 0.029313910975676746,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.022961101252801343,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 0.6258537901727275,
+    "meanPauseAllS": 90.33206876291142,
+    "mtbiUiH": 0.6349786184901416,
+    "delivered": 0.8310580275181346,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.040150401662471386,
+     "save": 0.016665666831972042,
+     "rollback": 0.003952535729976304,
+     "slowdown": 0.0018233149909748707,
+     "local": 0.0004528397973777354,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.09637520180325829,
+     "terminal": 0.009522011665834666,
+     "delivered": 0.8310580275181346
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3091.0845333333327,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.34186666666665,
+     "ub-switch": 65.18274285714284,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 4.464685714285714,
+     "roce-link": 28.57142857142857
+    },
+    "scaleOutSwitches": 39066,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 3000000
+   }
+  },
+  "a950main": {
+   "10000": {
+    "aOp": 0.9991981248930076,
+    "aRun": 0.9991995276598267,
+    "phi": 0.000001403890594664503,
+    "lamHw": 0.03097769523809523,
+    "mtbfHwH": 32.28129117786131,
+    "mttrS": 88.2624939357289,
+    "isoPerH": 0.0005891416059224495,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.00045889042157327715,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 31.224895900316326,
+    "meanPauseAllS": 90.05288061486269,
+    "mtbiUiH": 31.6788154904888,
+    "delivered": 0.9798023283490309,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.0008025163753778245,
+     "save": 0.01666664326849009,
+     "rollback": 0.00007889814320373728,
+     "slowdown": 0.00003907905788923038,
+     "local": 0.000009491610985901686,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.0023646314061658872,
+     "terminal": 0.00023641178885647709,
+     "delivered": 0.9798023283490309
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3097.7695238095234,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 65.49142857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 0.6857142857142856,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 120,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 80000
+   },
+   "100000": {
+    "aOp": 0.9920457373021923,
+    "aRun": 0.9920592409636688,
+    "phi": 0.000013611749096198444,
+    "lamHw": 0.3096866476190475,
+    "mtbfHwH": 3.229070441648884,
+    "mttrS": 88.21110300187308,
+    "isoPerH": 0.005888822464686515,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.004588612090155179,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 3.123398456223065,
+    "meanPauseAllS": 90.0024439754288,
+    "mtbiUiH": 3.1688141024860466,
+    "delivered": 0.9490481645205637,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.008017822204308807,
+     "save": 0.01666643980418173,
+     "rollback": 0.0007882192708110101,
+     "slowdown": 0.0003860843283418497,
+     "local": 0.00009411696331831657,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.02273211478213709,
+     "terminal": 0.0022670381263375406,
+     "delivered": 0.9490481645205637
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3096.8664761904756,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.37599999999998,
+     "ub-switch": 65.19942857142856,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 0.6719999999999999,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 1176,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 800000
+   },
+   "200000": {
+    "aOp": 0.9842186261269651,
+    "aRun": 0.9842445454347664,
+    "phi": 0.000026334215334489208,
+    "lamHw": 0.6193603619047617,
+    "mtbfHwH": 1.6145689351585737,
+    "mttrS": 88.20742177974768,
+    "isoPerH": 0.011777273861621597,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.009177182136068352,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 1.5617317794952923,
+    "meanPauseAllS": 89.99883123820909,
+    "mtbiUiH": 1.5844404505931755,
+    "delivered": 0.9168812100531115,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.016033575231581245,
+     "save": 0.01666622776307776,
+     "rollback": 0.0015763107102233591,
+     "slowdown": 0.0007621377495686062,
+     "local": 0.00018646013050064068,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.04356103260172791,
+     "terminal": 0.00433304576020912,
+     "delivered": 0.9168812100531115
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3096.801809523809,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.33333333333331,
+     "ub-switch": 65.17857142857142,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 0.6708571428571427,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 2348,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 1600000
+   },
+   "500000": {
+    "aOp": 0.9614626855269741,
+    "aRun": 0.9615203309586846,
+    "phi": 0.00005995237942912901,
+    "lamHw": 1.548406914285714,
+    "mtbfHwH": 0.6458250675413083,
+    "mttrS": 88.20810598907048,
+    "isoPerH": 0.029443362428485602,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.02294297199405895,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 0.624690290771115,
+    "meanPauseAllS": 89.99950341728419,
+    "mtbiUiH": 0.6337736949810308,
+    "delivered": 0.8311928022884887,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.04007716351341832,
+     "save": 0.01666566746034285,
+     "rollback": 0.0039406943667519055,
+     "slowdown": 0.0018313736424859126,
+     "local": 0.0004528770040406041,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.09632254173795435,
+     "terminal": 0.009516879986517419,
+     "delivered": 0.8311928022884887
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3096.8138285714276,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.34186666666665,
+     "ub-switch": 65.18274285714284,
+     "ub-link": 9.523809523809522,
+     "roce-switch": 0.6701714285714284,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 5864,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 4000000
+   }
+  },
+  "ubl128main": {
+   "10000": {
+    "aOp": 0.9992442682162701,
+    "aRun": 0.9992456525582665,
+    "phi": 0.0000013853870595159634,
+    "lamHw": 0.03043590476190475,
+    "mtbfHwH": 32.85593143436481,
+    "mttrS": 84.43280680399408,
+    "isoPerH": 0.0005815619222755932,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.0004528032889770414,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 31.77602228557148,
+    "meanPauseAllS": 86.35772375849064,
+    "mtbiUiH": 32.23989922136433,
+    "delivered": 0.979888418097498,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.0007563012525815964,
+     "save": 0.016666643576882342,
+     "rollback": 0.00007366894555890236,
+     "slowdown": 0.00003857849829892288,
+     "local": 0.000009492112849919678,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.0023335884603914283,
+     "terminal": 0.0002333090559388987,
+     "delivered": 0.979888418097498
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3043.590476190475,
+    "byUnit": {
+     "npu": 1676.666666666666,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.9733333333333,
+     "ub-switch": 1.7885714285714285,
+     "ub-link": 19.047619047619044,
+     "roce-switch": 0.6857142857142856,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 120,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 80000
+   },
+   "100000": {
+    "aOp": 0.992498639542136,
+    "aRun": 0.9925119820278646,
+    "phi": 0.000013443148264347116,
+    "lamHw": 0.3042976571428571,
+    "mtbfHwH": 3.2862559948351326,
+    "mttrS": 84.39647918044157,
+    "isoPerH": 0.005813516413057624,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.004528017054926021,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 3.178243619488721,
+    "meanPauseAllS": 86.32186289394109,
+    "mtbiUiH": 3.2246500135206984,
+    "delivered": 0.9498613301633986,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.007557853135437115,
+     "save": 0.016666442614195594,
+     "rollback": 0.0007361689923269364,
+     "slowdown": 0.00038136672277463046,
+     "local": 0.00009416688774064016,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.02246244958235444,
+     "terminal": 0.0022402219017720903,
+     "delivered": 0.9498613301633986
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3042.9765714285713,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.37599999999998,
+     "ub-switch": 1.7857142857142856,
+     "ub-link": 19.047619047619044,
+     "roce-switch": 0.6719999999999999,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 1176,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 800000
+   },
+   "200000": {
+    "aOp": 0.9851102750901405,
+    "aRun": 0.9851359165712464,
+    "phi": 0.000026028368953601166,
+    "lamHw": 0.6085865523809523,
+    "mtbfHwH": 1.6431516537585893,
+    "mttrS": 84.3938862051441,
+    "isoPerH": 0.011626732563291279,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.009056031925735574,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 1.5891447003550978,
+    "meanPauseAllS": 86.31930318726945,
+    "mtbiUiH": 1.6123485650422642,
+    "delivered": 0.9184188636610745,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.01511399368508847,
+     "save": 0.016666232860517438,
+     "rollback": 0.0014722464407337743,
+     "slowdown": 0.0007532697416666753,
+     "local": 0.0001866596427737086,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.04310116599847294,
+     "terminal": 0.004287567969672585,
+     "delivered": 0.9184188636610745
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3042.9327619047613,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.33333333333331,
+     "ub-switch": 1.7857142857142856,
+     "ub-link": 19.047619047619044,
+     "roce-switch": 0.6708571428571427,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 2348,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 1600000
+   },
+   "500000": {
+    "aOp": 0.9635927527696029,
+    "aRun": 0.9636499730375934,
+    "phi": 0.00005937868478333996,
+    "lamHw": 1.5214703047619045,
+    "mtbfHwH": 0.6572589664551425,
+    "mttrS": 84.39435069142583,
+    "isoPerH": 0.029066973780196077,
+    "isoPauseS": 252.00000000000006,
+    "sdcDetPerH": 0.022640076538164234,
+    "sdcDetPauseS": 3,
+    "mtbiAllH": 0.6356562384849349,
+    "meanPauseAllS": 86.31976277205068,
+    "mtbiUiH": 0.6449377347059042,
+    "delivered": 0.8344922229899794,
+    "goodputModel": "first-order",
+    "ledger": {
+     "downtime": 0.03777833220795839,
+     "save": 0.01666567702192028,
+     "rollback": 0.003680526045401043,
+     "slowdown": 0.0018133456746484366,
+     "local": 0.00045412190084473413,
+     "blocked": 0,
+     "overhead": 0,
+     "sdcRollback": 0.09566298450316911,
+     "terminal": 0.009452789656078679,
+     "delivered": 0.8344922229899794
+    },
+    "tauS": 60,
+    "hardFitPerNpu": 3042.940609523809,
+    "byUnit": {
+     "npu": 1676.6666666666663,
+     "job": 543.3333333333334,
+     "cpu": 83.33333333333334,
+     "node": 546.6666666666666,
+     "cabinet": 133.34186666666665,
+     "ub-switch": 1.7857142857142856,
+     "ub-link": 19.047619047619044,
+     "roce-switch": 0.6701714285714284,
+     "roce-link": 38.09523809523809
+    },
+    "scaleOutSwitches": 5864,
+    "scaleOutTiers": 2,
+    "scaleOutLinks": 4000000
+   }
+  }
+ },
+ "fitBreakdown": {
+  "a3tpl": {
+   "npu": 1676.666666666666,
+   "job": 543.3333333333334,
+   "cpu": 166.66666666666669,
+   "node": 546.6666666666666,
+   "cabinet": 267.0933333333333,
+   "ub-switch": 66.67999999999999,
+   "ub-link": 66.66666666666666,
+   "roce-switch": 8.93142857142857,
+   "roce-link": 28.57142857142857
+  },
+  "a950tpl": {
+   "npu": 1676.666666666666,
+   "job": 543.3333333333334,
+   "cpu": 83.33333333333334,
+   "node": 546.6666666666666,
+   "cabinet": 133.9733333333333,
+   "ub-switch": 65.49142857142856,
+   "ub-link": 9.523809523809522,
+   "roce-switch": 4.491428571428571,
+   "roce-link": 28.57142857142857
+  },
+  "a950main": {
+   "npu": 1676.666666666666,
+   "job": 543.3333333333334,
+   "cpu": 83.33333333333334,
+   "node": 546.6666666666666,
+   "cabinet": 133.9733333333333,
+   "ub-switch": 65.49142857142856,
+   "ub-link": 9.523809523809522,
+   "roce-switch": 0.6857142857142856,
+   "roce-link": 38.09523809523809
+  },
+  "ubl128main": {
+   "npu": 1676.666666666666,
+   "job": 543.3333333333334,
+   "cpu": 83.33333333333334,
+   "node": 546.6666666666666,
+   "cabinet": 133.9733333333333,
+   "ub-switch": 1.7885714285714285,
+   "ub-link": 19.047619047619044,
+   "roce-switch": 0.6857142857142856,
+   "roce-link": 38.09523809523809
+  }
+ },
+ "engine": {
+  "refcat": {
+   "10000": {
+    "hacdClosedForm": {
+     "aOp": 0.9990924821420948,
+     "delivered": 0.9796803679557475,
+     "ledger": {
+      "downtime": 0.0009083396462534368,
+      "save": 0.01666664326884925,
+      "rollback": 0.00009029431768286897,
+      "slowdown": 0.00004333148676165937,
+      "local": 0.000010343893980867699,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.002364300701945504,
+      "terminal": 0.00023637872877892995,
+      "delivered": 0.9796803679557475
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9990905212404709,
+      "sd": 0.0008303574807796455,
+      "ci95": 0.00003641339997411669,
+      "p05": 0.9965443287037034,
+      "p50": 0.9993099922839501,
+      "p95": 0.9996486304012341,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9800258313119495,
+      "sd": 0.019825530760389978,
+      "ci95": 0.0008694026343923684,
+      "p05": 0.9799674280330904,
+      "p50": 0.9828085467161516,
+      "p95": 0.9832071840217693,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.0009094787595282523,
+      "save": 0.01637676250768192,
+      "slowdown": 0.000039683921534270143,
+      "rollback": 0.0023034373279485487,
+      "terminalInvalid": 0.00033457327633638374,
+      "localLoss": 0.000010232895021693455
+     },
+     "counts": {
+      "hard": 23.89450000000009,
+      "slow": 0.5189999999999996,
+      "sdc": 0.32400000000000023,
+      "manual": 0.08200000000000006,
+      "sdcRecoveries": 0.013500000000000009
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9990974179120925,
+      "sd": 0.0008531153214593702,
+      "ci95": 0.00003741139225382731,
+      "p05": 0.9965721064814811,
+      "p50": 0.9993124999999996,
+      "p95": 0.9996454861111109,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9800588619319452,
+      "sd": 0.019764192007247737,
+      "ci95": 0.0008667127657468966,
+      "p05": 0.9799727190575094,
+      "p50": 0.9828086484275622,
+      "p95": 0.9831966576737374,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3333.333333333333,
+     "slow": 69.01311249137338,
+     "sdc": 48.30917874396136
+    }
+   },
+   "100000": {
+    "hacdClosedForm": {
+     "aOp": 0.9909986675212139,
+     "delivered": 0.9478745748963843,
+     "ledger": {
+      "downtime": 0.009082845569197038,
+      "save": 0.016666440026770424,
+      "rollback": 0.0009029321658503323,
+      "slowdown": 0.00042765016088297915,
+      "local": 0.00010245211133267566,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.022681143819916327,
+      "terminal": 0.0022619612496659206,
+      "delivered": 0.9478745748963843
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.990886129860668,
+      "sd": 0.002731337991639824,
+      "ci95": 0.00011977648790578524,
+      "p05": 0.9852869212962923,
+      "p50": 0.9910761959876508,
+      "p95": 0.9940604552469098,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9457645428726574,
+      "sd": 0.06384050735140535,
+      "ci95": 0.002799577269484683,
+      "p05": 0.8099495892306378,
+      "p50": 0.9729842313981427,
+      "p95": 0.9766710058187709,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.00911387013933323,
+      "save": 0.01622818347639014,
+      "slowdown": 0.00041438244750893483,
+      "rollback": 0.02573250397323751,
+      "terminalInvalid": 0.0026450416516490306,
+      "localLoss": 0.00010147543922419974
+     },
+     "counts": {
+      "hard": 237.98450000000082,
+      "slow": 4.92799999999996,
+      "sdc": 3.4134999999999525,
+      "manual": 0.8379999999999828,
+      "sdcRecoveries": 0.1530000000000001
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9910224431787843,
+      "sd": 0.002601654275050732,
+      "ci95": 0.00011408950952407094,
+      "p05": 0.9864687885802432,
+      "p50": 0.9911637731481437,
+      "p95": 0.9940291473765395,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9484002240771087,
+      "sd": 0.060546038746008626,
+      "ci95": 0.0026551059955969053,
+      "p05": 0.8103611223057468,
+      "p50": 0.9731131453957862,
+      "p95": 0.9766831256211748,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3333.333333333333,
+     "slow": 69.01311249137338,
+     "sdc": 48.30917874396136
+    }
+   },
+   "200000": {
+    "hacdClosedForm": {
+     "aOp": 0.9821585993321853,
+     "delivered": 0.9146437025395272,
+     "ledger": {
+      "downtime": 0.01816454452392317,
+      "save": 0.01666622866324716,
+      "rollback": 0.001805841429758374,
+      "slowdown": 0.000842807529961105,
+      "local": 0.00020271399912683344,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.0433609680881225,
+      "terminal": 0.004313193226333569,
+      "delivered": 0.9146437025395272
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.982206095188095,
+      "sd": 0.003753264827160397,
+      "ci95": 0.00016459071727980713,
+      "p05": 0.9750451967592513,
+      "p50": 0.9828549382715964,
+      "p95": 0.9874334104938198,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9130021652940393,
+      "sd": 0.08372354925650795,
+      "ci95": 0.0036715019216391163,
+      "p05": 0.7962659626696684,
+      "p50": 0.9612760525702317,
+      "p95": 0.9683216271653533,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.017793904811904605,
+      "save": 0.016070697335649177,
+      "slowdown": 0.0008496603556943163,
+      "rollback": 0.048200647091840104,
+      "terminalInvalid": 0.003881873308063422,
+      "localLoss": 0.00020105180280797136
+     },
+     "counts": {
+      "hard": 470.9710000000001,
+      "slow": 9.697499999999977,
+      "sdc": 6.7374999999999625,
+      "manual": 1.5879999999999552,
+      "sdcRecoveries": 0.2890000000000002
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9822350879891989,
+      "sd": 0.0035679875551637248,
+      "ci95": 0.00015646581256407733,
+      "p05": 0.9756097993827083,
+      "p50": 0.9827401620370285,
+      "p95": 0.9872791986398495,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9161775583586312,
+      "sd": 0.0812265688842357,
+      "ci95": 0.0035620026431624568,
+      "p05": 0.7978915185864142,
+      "p50": 0.9617636443910006,
+      "p95": 0.9683124385245425,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3333.333333333333,
+     "slow": 69.01311249137338,
+     "sdc": 48.30917874396136
+    }
+   },
+   "500000": {
+    "hacdClosedForm": {
+     "aOp": 0.9565632103726093,
+     "delivered": 0.8262771817505293,
+     "ledger": {
+      "downtime": 0.045403805981862964,
+      "save": 0.016665672353347333,
+      "rollback": 0.0045144528793159035,
+      "slowdown": 0.002014807253974563,
+      "local": 0.0004904000986087016,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.09522471410874239,
+      "terminal": 0.009408965573618823,
+      "delivered": 0.8262771817505293
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9565988851997623,
+      "sd": 0.005528389954853943,
+      "ci95": 0.00024243470950604604,
+      "p05": 0.9469574545689913,
+      "p50": 0.9569157710933378,
+      "p95": 0.9651633101851668,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8270966642548606,
+      "sd": 0.11148343939368244,
+      "ci95": 0.004888847470032772,
+      "p05": 0.6219713067955895,
+      "p50": 0.7871081486437038,
+      "p95": 0.9409429422527509,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.04340111480023636,
+      "save": 0.015606849449413967,
+      "slowdown": 0.0019557830829783256,
+      "rollback": 0.10200226871327749,
+      "terminalInvalid": 0.009452494029923725,
+      "localLoss": 0.00048482566931150106
+     },
+     "counts": {
+      "hard": 1148.2959999999994,
+      "slow": 23.687000000000115,
+      "sdc": 16.67149999999993,
+      "manual": 3.8949999999999414,
+      "sdcRecoveries": 0.6269999999999911
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9566904746924066,
+      "sd": 0.005480183605380762,
+      "ci95": 0.00024032073194181567,
+      "p05": 0.9467590164049872,
+      "p50": 0.9570856493360623,
+      "p95": 0.9648784949095168,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8307784000695152,
+      "sd": 0.1104254278416458,
+      "ci95": 0.004842450829172292,
+      "p05": 0.6218767392049794,
+      "p50": 0.7930452142963794,
+      "p95": 0.9409898860002578,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3333.333333333333,
+     "slow": 69.01311249137338,
+     "sdc": 48.30917874396136
+    }
+   }
+  },
+  "a3tpl": {
+   "10000": {
+    "hacdClosedForm": {
+     "aOp": 0.9990813895356668,
+     "delivered": 0.9796627183103016,
+     "ledger": {
+      "downtime": 0.0009194525010229418,
+      "save": 0.016666643225670803,
+      "rollback": 0.00009131336363474068,
+      "slowdown": 0.000044084396721212786,
+      "local": 0.000010343758299469902,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.0023686327326051205,
+      "terminal": 0.00023681171174402406,
+      "delivered": 0.9796627183103016
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9990710596908619,
+      "sd": 0.0008453080217346909,
+      "ci95": 0.000037069021245950515,
+      "p05": 0.9965584297839504,
+      "p50": 0.9992959104938268,
+      "p95": 0.9996346836419749,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.979857549475845,
+      "sd": 0.0203993639719781,
+      "ci95": 0.0008945667579604141,
+      "p05": 0.9799610636616745,
+      "p50": 0.9827923291433076,
+      "p95": 0.9831882147974013,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.000928940309137882,
+      "save": 0.01637641975529487,
+      "slowdown": 0.00004269139877202225,
+      "rollback": 0.0023049503698358417,
+      "terminalInvalid": 0.0004792714876860673,
+      "localLoss": 0.00001017720342663619
+     },
+     "counts": {
+      "hard": 24.144000000000126,
+      "slow": 0.5319999999999984,
+      "sdc": 0.32700000000000023,
+      "manual": 0.08500000000000006,
+      "sdcRecoveries": 0.013500000000000009
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9990908266072382,
+      "sd": 0.0008328130333055069,
+      "ci95": 0.000036521082530547315,
+      "p05": 0.9965598186728392,
+      "p50": 0.9992989969135797,
+      "p95": 0.9996342785493825,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9799375518588497,
+      "sd": 0.020162235505161656,
+      "ci95": 0.0008841680394478418,
+      "p05": 0.9799370703554282,
+      "p50": 0.9827939874237486,
+      "p95": 0.983192611410287,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3371.2761904761905,
+     "slow": 70.21366256999138,
+     "sdc": 48.399149015308666
+    }
+   },
+   "100000": {
+    "hacdClosedForm": {
+     "aOp": 0.9908531968895767,
+     "delivered": 0.9476481728567576,
+     "ledger": {
+      "downtime": 0.009230987969926073,
+      "save": 0.01666643948732013,
+      "rollback": 0.0009165243323026011,
+      "slowdown": 0.0004373867858389789,
+      "local": 0.00010243405483469587,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.022731123783611158,
+      "terminal": 0.0022669307294089537,
+      "delivered": 0.9476481728567576
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9907642247786166,
+      "sd": 0.0027455483747672103,
+      "ci95": 0.00012039965127406984,
+      "p05": 0.9852600308641934,
+      "p50": 0.9909409722222187,
+      "p95": 0.9939183641975259,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9474573176118648,
+      "sd": 0.06169266720916285,
+      "ci95": 0.002705388725405444,
+      "p05": 0.809949484527164,
+      "p50": 0.9728711917431732,
+      "p95": 0.9765493229503582,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.009235775221383493,
+      "save": 0.016226024207932236,
+      "slowdown": 0.00041820918867066157,
+      "rollback": 0.02395526232796113,
+      "terminalInvalid": 0.0026058051746162734,
+      "localLoss": 0.00010160626757265574
+     },
+     "counts": {
+      "hard": 241.25100000000083,
+      "slow": 5.048499999999964,
+      "sdc": 3.437999999999954,
+      "manual": 0.8494999999999824,
+      "sdcRecoveries": 0.1420000000000001
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.990727819182822,
+      "sd": 0.0027031015989520835,
+      "ci95": 0.00011853824644404816,
+      "p05": 0.9854900077160451,
+      "p50": 0.9908533950617242,
+      "p95": 0.993971412037033,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9481504843031144,
+      "sd": 0.06131567022674701,
+      "ci95": 0.002688856397790531,
+      "p05": 0.8102029114431595,
+      "p50": 0.9727734068141254,
+      "p95": 0.9766309282445976,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3383.9299047619043,
+     "slow": 70.60328388579397,
+     "sdc": 48.434922543984065
+    }
+   },
+   "200000": {
+    "hacdClosedForm": {
+     "aOp": 0.9818728700312997,
+     "delivered": 0.9142148553565173,
+     "ledger": {
+      "downtime": 0.018460817460944915,
+      "save": 0.016666227711882448,
+      "rollback": 0.00183302537260672,
+      "slowdown": 0.0008617628935540544,
+      "local": 0.0002026418847596557,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.04343969487643165,
+      "terminal": 0.004320974443303302,
+      "delivered": 0.9142148553565173
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9819112791000237,
+      "sd": 0.0037245300605693045,
+      "ci95": 0.0001633306207873158,
+      "p05": 0.9749845486111023,
+      "p50": 0.9825524691357954,
+      "p95": 0.9870296720516643,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9177883967386045,
+      "sd": 0.07963306683716619,
+      "ci95": 0.003492123309571056,
+      "p05": 0.7975374893988391,
+      "p50": 0.9615003626149932,
+      "p95": 0.9681632890300944,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.018088720899977092,
+      "save": 0.016065387515062722,
+      "slowdown": 0.0008606130245537431,
+      "rollback": 0.04283008745831403,
+      "terminalInvalid": 0.004165738193465844,
+      "localLoss": 0.00020105617002392177
+     },
+     "counts": {
+      "hard": 478.0765000000004,
+      "slow": 9.96849999999998,
+      "sdc": 6.786499999999949,
+      "manual": 1.6164999999999536,
+      "sdcRecoveries": 0.25550000000000017
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9817590129869405,
+      "sd": 0.0037019370094635803,
+      "ci95": 0.00016233985497187938,
+      "p05": 0.9748652006172746,
+      "p50": 0.9822312473332835,
+      "p95": 0.9870421097735506,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9151992306314493,
+      "sd": 0.08175528032629058,
+      "ci95": 0.0035851880562599095,
+      "p05": 0.7964730693575739,
+      "p50": 0.9611084469156055,
+      "p95": 0.96809937851682,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3383.9299047619043,
+     "slow": 70.60328388579397,
+     "sdc": 48.434922543984065
+    }
+   },
+   "500000": {
+    "hacdClosedForm": {
+     "aOp": 0.9558859607640934,
+     "delivered": 0.8253518849760761,
+     "ledger": {
+      "downtime": 0.046144385942671236,
+      "save": 0.016665670741098468,
+      "rollback": 0.004582406953112398,
+      "slowdown": 0.0020584067188666216,
+      "local": 0.0004899514353109443,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.09529187219473452,
+      "terminal": 0.009415421038129498,
+      "delivered": 0.8253518849760761
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9559328569678154,
+      "sd": 0.005579573465514683,
+      "ci95": 0.0002446792435638582,
+      "p05": 0.9460164930555355,
+      "p50": 0.9563740183798847,
+      "p95": 0.964249056762149,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8298383267959835,
+      "sd": 0.11165354751882464,
+      "ci95": 0.004896307167022356,
+      "p05": 0.6198260676279577,
+      "p50": 0.7890248090531629,
+      "p95": 0.9404618510011864,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.04406714303218456,
+      "save": 0.01559481768278413,
+      "slowdown": 0.0019884839119478667,
+      "rollback": 0.10002975684936281,
+      "terminalInvalid": 0.007996790725403775,
+      "localLoss": 0.0004846810023337374
+     },
+     "counts": {
+      "hard": 1165.2044999999966,
+      "slow": 24.235000000000156,
+      "sdc": 16.654999999999927,
+      "manual": 3.944999999999944,
+      "sdcRecoveries": 0.6144999999999924
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9558256377990686,
+      "sd": 0.005516833112973769,
+      "ci95": 0.00024192791103001463,
+      "p05": 0.9461056569828274,
+      "p50": 0.9561314216904608,
+      "p95": 0.9643189429012137,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8312782657326429,
+      "sd": 0.11049757660231257,
+      "ci95": 0.004845614745606608,
+      "p05": 0.6218578456653528,
+      "p50": 0.801597195572352,
+      "p95": 0.9401947249236562,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3383.9291047619045,
+     "slow": 70.60326954245018,
+     "sdc": 48.434914497239184
+    }
+   }
+  },
+  "a950tpl": {
+   "10000": {
+    "hacdClosedForm": {
+     "aOp": 0.9991966536575125,
+     "delivered": 0.9797987413238641,
+     "ledger": {
+      "downtime": 0.0008039899694631319,
+      "save": 0.016666643250036084,
+      "rollback": 0.00007913592056007849,
+      "slowdown": 0.00003890744817456001,
+      "local": 0.000009491596109626433,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.002366492670778643,
+      "terminal": 0.00023659782101365638,
+      "delivered": 0.9797987413238641
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9991792612735625,
+      "sd": 0.0008160570533159658,
+      "ci95": 0.000035786287920466155,
+      "p05": 0.9966372492283949,
+      "p50": 0.9993919753086414,
+      "p95": 0.9997148919753085,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9805116930822926,
+      "sd": 0.01839469294368679,
+      "ci95": 0.0008066565630632037,
+      "p05": 0.9801225255913063,
+      "p50": 0.982898316649935,
+      "p95": 0.983273583014661,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.0008207387264381974,
+      "save": 0.01637841182453433,
+      "slowdown": 0.000043906020885744485,
+      "rollback": 0.0019646677479150036,
+      "terminalInvalid": 0.0002710497393135072,
+      "localLoss": 0.000009532858620036923
+     },
+     "counts": {
+      "hard": 22.193000000000037,
+      "slow": 0.45400000000000035,
+      "sdc": 0.33250000000000024,
+      "manual": 0.07850000000000006,
+      "sdcRecoveries": 0.011500000000000007
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9992230609567906,
+      "sd": 0.0007261817508553484,
+      "ci95": 0.000031845015140915374,
+      "p05": 0.996723360339506,
+      "p50": 0.9993950617283947,
+      "p95": 0.9996925925925924,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.979815806675677,
+      "sd": 0.02166726339172348,
+      "ci95": 0.0009501675440878422,
+      "p05": 0.9801068629992683,
+      "p50": 0.9829107671252599,
+      "p95": 0.9832588255994722,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3092.051428571428,
+     "slow": 61.95696266034875,
+     "sdc": 48.34253441738888
+    }
+   },
+   "100000": {
+    "hacdClosedForm": {
+     "aOp": 0.9920313195430115,
+     "delivered": 0.9490144026636971,
+     "ledger": {
+      "downtime": 0.008032471744301875,
+      "save": 0.01666643963320214,
+      "rollback": 0.0007905874844326153,
+      "slowdown": 0.0003843868781362417,
+      "local": 0.00009411548315918261,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.02274888979243849,
+      "terminal": 0.0022687063206324205,
+      "delivered": 0.9490144026636971
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9919144342344226,
+      "sd": 0.0025027486769567237,
+      "ci95": 0.00010975223408976664,
+      "p05": 0.9873438657407371,
+      "p50": 0.992022569444441,
+      "p95": 0.9948149498456758,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9505413674250464,
+      "sd": 0.06000879800677595,
+      "ci95": 0.0026315465499690996,
+      "p05": 0.8111978654873707,
+      "p50": 0.9741544651367124,
+      "p95": 0.9775895241430834,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.008085565765577958,
+      "save": 0.016247020739133575,
+      "slowdown": 0.00040058847005919595,
+      "rollback": 0.022320163273764838,
+      "terminalInvalid": 0.0023117548131103825,
+      "localLoss": 0.00009353951330697504
+     },
+     "counts": {
+      "hard": 220.68250000000032,
+      "slow": 4.365499999999953,
+      "sdc": 3.409999999999948,
+      "manual": 0.7464999999999854,
+      "sdcRecoveries": 0.1325000000000001
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9919615689634117,
+      "sd": 0.0024901528289838384,
+      "ci95": 0.00010919987241317983,
+      "p05": 0.987606539351848,
+      "p50": 0.9921763117283913,
+      "p95": 0.9948071759259224,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9494510939522807,
+      "sd": 0.060521199353960865,
+      "ci95": 0.002654016721713445,
+      "p05": 0.8111521638026767,
+      "p50": 0.9741133763191498,
+      "p95": 0.9775212971637559,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3091.1369523809526,
+     "slow": 61.929361959687796,
+     "sdc": 48.33934445781066
+    }
+   },
+   "200000": {
+    "hacdClosedForm": {
+     "aOp": 0.9841902535295737,
+     "delivered": 0.9168176274848238,
+     "ledger": {
+      "downtime": 0.01606286369393771,
+      "save": 0.01666622744732751,
+      "rollback": 0.0015810461111180432,
+      "slowdown": 0.0007587864543493345,
+      "local": 0.00018645420368315616,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.04359098599835431,
+      "terminal": 0.004336008606406098,
+      "delivered": 0.9168176274848238
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9841201235818786,
+      "sd": 0.0035198972800345773,
+      "ci95": 0.00015435692517078406,
+      "p05": 0.9776676311728323,
+      "p50": 0.9848138503086341,
+      "p95": 0.9888274112654243,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9180665721353135,
+      "sd": 0.08194041938566451,
+      "ci95": 0.003593306899981875,
+      "p05": 0.799085606571617,
+      "p50": 0.9639405203320834,
+      "p95": 0.9703471681534589,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.015879876418121983,
+      "save": 0.01610580053120067,
+      "slowdown": 0.0007852283343604419,
+      "rollback": 0.04509187218969292,
+      "terminalInvalid": 0.0038854356651691637,
+      "localLoss": 0.00018521472614189805
+     },
+     "counts": {
+      "hard": 437.88350000000065,
+      "slow": 8.74749999999995,
+      "sdc": 6.766999999999945,
+      "manual": 1.4339999999999586,
+      "sdcRecoveries": 0.2705000000000002
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9840748975891136,
+      "sd": 0.0035178855087427572,
+      "ci95": 0.00015426870361031023,
+      "p05": 0.9771700231481412,
+      "p50": 0.9846929012345593,
+      "p95": 0.9887958912036972,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9154099791609137,
+      "sd": 0.08455152264809516,
+      "ci95": 0.0037078107729154168,
+      "p05": 0.7976837830340863,
+      "p50": 0.9639273481212358,
+      "p95": 0.9702831095441892,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3091.0717142857143,
+     "slow": 61.92739194467567,
+     "sdc": 48.33911742465149
+    }
+   },
+   "500000": {
+    "hacdClosedForm": {
+     "aOp": 0.9613949772682727,
+     "delivered": 0.8310580275181346,
+     "ledger": {
+      "downtime": 0.040150401662471386,
+      "save": 0.016665666831972042,
+      "rollback": 0.003952535729976304,
+      "slowdown": 0.0018233149909748707,
+      "local": 0.0004528397973777354,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.09637520180325829,
+      "terminal": 0.009522011665834666,
+      "delivered": 0.8310580275181346
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9613342980605304,
+      "sd": 0.005132942414699656,
+      "ci95": 0.0002250932755071635,
+      "p05": 0.9522494598765251,
+      "p50": 0.961768508153212,
+      "p95": 0.9689804573049676,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8335795232069545,
+      "sd": 0.1134128663117737,
+      "ci95": 0.00497345800912651,
+      "p05": 0.625130105403174,
+      "p50": 0.7994315445221511,
+      "p95": 0.945677738998151,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.03866570193946975,
+      "save": 0.01569326828868102,
+      "slowdown": 0.0017887750739503938,
+      "rollback": 0.0993869758688404,
+      "terminalInvalid": 0.010436989119898613,
+      "localLoss": 0.00044876650220651316
+     },
+     "counts": {
+      "hard": 1070.2565,
+      "slow": 21.3005000000001,
+      "sdc": 16.684499999999943,
+      "manual": 3.4654999999999476,
+      "sdcRecoveries": 0.609499999999993
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9612140764981086,
+      "sd": 0.005238990640893966,
+      "ci95": 0.00022974377431802897,
+      "p05": 0.9517559924547078,
+      "p50": 0.9617511574073885,
+      "p95": 0.9691943900378748,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8335112276430469,
+      "sd": 0.11163680177858093,
+      "ci95": 0.00489557282145256,
+      "p05": 0.6253324371868814,
+      "p50": 0.7909615137195141,
+      "p95": 0.9456724175860572,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3091.084533333333,
+     "slow": 61.927781849579866,
+     "sdc": 48.33916053221336
+    }
+   }
+  },
+  "a950main": {
+   "10000": {
+    "hacdClosedForm": {
+     "aOp": 0.9991981248930076,
+     "delivered": 0.9798023283490309,
+     "ledger": {
+      "downtime": 0.0008025163753778245,
+      "save": 0.01666664326849009,
+      "rollback": 0.00007889814320373728,
+      "slowdown": 0.00003907905788923038,
+      "local": 0.000009491610985901686,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.0023646314061658872,
+      "terminal": 0.00023641178885647709,
+      "delivered": 0.9798023283490309
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9991805522982379,
+      "sd": 0.0008078867565120498,
+      "ci95": 0.00003542799851823315,
+      "p05": 0.9966318479938266,
+      "p50": 0.9993879243827157,
+      "p95": 0.9997106674382715,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9804280405670679,
+      "sd": 0.018779852121893627,
+      "ci95": 0.0008235468248292316,
+      "p05": 0.9801187275740247,
+      "p50": 0.9829003532535457,
+      "p95": 0.9832741843651607,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.0008194477017619717,
+      "save": 0.01637844992187436,
+      "slowdown": 0.000042595356397072154,
+      "rollback": 0.0020459252968260764,
+      "terminalInvalid": 0.0002760217821392819,
+      "localLoss": 0.000009519373934299842
+     },
+     "counts": {
+      "hard": 22.25150000000006,
+      "slow": 0.45600000000000035,
+      "sdc": 0.33350000000000024,
+      "manual": 0.07800000000000006,
+      "sdcRecoveries": 0.012000000000000007
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9992180579750363,
+      "sd": 0.0007349091149880856,
+      "ci95": 0.000032227733437843026,
+      "p05": 0.9967089699074071,
+      "p50": 0.9993944830246908,
+      "p95": 0.9996983603395057,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9798439641768131,
+      "sd": 0.021475174256000214,
+      "ci95": 0.0009417439208994218,
+      "p05": 0.9801097748071999,
+      "p50": 0.9829120594505915,
+      "p95": 0.983258239844038,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3097.769523809523,
+     "slow": 62.23023751040532,
+     "sdc": 48.30425490245023
+    }
+   },
+   "100000": {
+    "hacdClosedForm": {
+     "aOp": 0.9920457373021923,
+     "delivered": 0.9490481645205637,
+     "ledger": {
+      "downtime": 0.008017822204308807,
+      "save": 0.01666643980418173,
+      "rollback": 0.0007882192708110101,
+      "slowdown": 0.0003860843283418497,
+      "local": 0.00009411696331831657,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.02273211478213709,
+      "terminal": 0.0022670381263375406,
+      "delivered": 0.9490481645205637
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9919135112413939,
+      "sd": 0.0025295824468042068,
+      "ci95": 0.00011092896678247671,
+      "p05": 0.9874528935185138,
+      "p50": 0.9920603780864166,
+      "p95": 0.9947901427469106,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9501374693138828,
+      "sd": 0.061095405624327755,
+      "ci95": 0.002679197204908326,
+      "p05": 0.8111174553519817,
+      "p50": 0.9741452298590061,
+      "p95": 0.9775891529591972,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.008086488758606267,
+      "save": 0.016247032959456308,
+      "slowdown": 0.0004119882728179355,
+      "rollback": 0.02287516842508993,
+      "terminalInvalid": 0.002148349133852518,
+      "localLoss": 0.00009350313629622496
+     },
+     "counts": {
+      "hard": 220.84950000000052,
+      "slow": 4.40849999999996,
+      "sdc": 3.427499999999954,
+      "manual": 0.7514999999999861,
+      "sdcRecoveries": 0.1360000000000001
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9919945837345556,
+      "sd": 0.002432146358870428,
+      "ci95": 0.00010665613330536444,
+      "p05": 0.987716840277775,
+      "p50": 0.9921884645061692,
+      "p95": 0.9947963734567864,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9488893983308777,
+      "sd": 0.06113631380521938,
+      "ci95": 0.0026809911382292156,
+      "p05": 0.8110783456615557,
+      "p50": 0.9741184777593599,
+      "p95": 0.977525671083882,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3096.866476190476,
+     "slow": 62.202841714655676,
+     "sdc": 48.30117989637032
+    }
+   },
+   "200000": {
+    "hacdClosedForm": {
+     "aOp": 0.9842186261269651,
+     "delivered": 0.9168812100531115,
+     "ledger": {
+      "downtime": 0.016033575231581245,
+      "save": 0.01666622776307776,
+      "rollback": 0.0015763107102233591,
+      "slowdown": 0.0007621377495686062,
+      "local": 0.00018646013050064068,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.04356103260172791,
+      "terminal": 0.00433304576020912,
+      "delivered": 0.9168812100531115
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9840663189933029,
+      "sd": 0.00358530238223131,
+      "ci95": 0.00015722511411562433,
+      "p05": 0.9770224922839433,
+      "p50": 0.9847442129629556,
+      "p95": 0.9889456404320911,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9182363079574425,
+      "sd": 0.08199184624494331,
+      "ci95": 0.0035955621055284944,
+      "p05": 0.7993527050014896,
+      "p50": 0.964051429185026,
+      "p95": 0.9704248185540293,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.015933681006696086,
+      "save": 0.016104990645788398,
+      "slowdown": 0.0008018780030401997,
+      "rollback": 0.04475755528898759,
+      "terminalInvalid": 0.003980250860301622,
+      "localLoss": 0.00018533623774384474
+     },
+     "counts": {
+      "hard": 438.90699999999987,
+      "slow": 8.803499999999957,
+      "sdc": 6.802999999999951,
+      "manual": 1.4574999999999587,
+      "sdcRecoveries": 0.2685000000000002
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.984155173766694,
+      "sd": 0.003382476628754029,
+      "ci95": 0.00014833066147640044,
+      "p05": 0.9778108070214654,
+      "p50": 0.9847506433317892,
+      "p95": 0.9887570794753017,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9181734979820868,
+      "sd": 0.08249774440017915,
+      "ci95": 0.003617747094884493,
+      "p05": 0.7982836359916962,
+      "p50": 0.9640593295605331,
+      "p95": 0.9702290908087581,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3096.8018095238094,
+     "slow": 62.20088194488911,
+     "sdc": 48.30095861088607
+    }
+   },
+   "500000": {
+    "hacdClosedForm": {
+     "aOp": 0.9614626855269741,
+     "delivered": 0.8311928022884887,
+     "ledger": {
+      "downtime": 0.04007716351341832,
+      "save": 0.01666566746034285,
+      "rollback": 0.0039406943667519055,
+      "slowdown": 0.0018313736424859126,
+      "local": 0.0004528770040406041,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.09632254173795435,
+      "terminal": 0.009516879986517419,
+      "delivered": 0.8311928022884887
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9613467451760813,
+      "sd": 0.005173715071300811,
+      "ci95": 0.00022688126572486004,
+      "p05": 0.9519360339506001,
+      "p50": 0.9618085493877531,
+      "p95": 0.9689606288580069,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8343316339218843,
+      "sd": 0.11219880844385326,
+      "ci95": 0.004920218319282563,
+      "p05": 0.6237451283108983,
+      "p50": 0.7929188243417948,
+      "p95": 0.9459282212202991,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.03865325482391803,
+      "save": 0.015693610168850826,
+      "slowdown": 0.0018064008069477759,
+      "rollback": 0.10099157346599419,
+      "terminalInvalid": 0.008074591238287009,
+      "localLoss": 0.0004489355741199379
+     },
+     "counts": {
+      "hard": 1072.9535,
+      "slow": 21.378000000000107,
+      "sdc": 16.635999999999896,
+      "manual": 3.46849999999995,
+      "sdcRecoveries": 0.6204999999999913
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9614149218574305,
+      "sd": 0.005185492564688682,
+      "ci95": 0.00022739774036060657,
+      "p05": 0.9522491794843843,
+      "p50": 0.96177276234566,
+      "p95": 0.9691899851040214,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8384450318955695,
+      "sd": 0.10996091868330356,
+      "ci95": 0.004822080858206926,
+      "p05": 0.6258856197989807,
+      "p50": 0.8164061536183398,
+      "p95": 0.9459475806971241,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3096.813828571428,
+     "slow": 62.20125750644952,
+     "sdc": 48.300993671703054
+    }
+   }
+  },
+  "ubl128main": {
+   "10000": {
+    "hacdClosedForm": {
+     "aOp": 0.9992442682162701,
+     "delivered": 0.979888418097498,
+     "ledger": {
+      "downtime": 0.0007563012525815964,
+      "save": 0.016666643576882342,
+      "rollback": 0.00007366894555890236,
+      "slowdown": 0.00003857849829892288,
+      "local": 0.000009492112849919678,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.0023335884603914283,
+      "terminal": 0.0002333090559388987,
+      "delivered": 0.979888418097498
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9992247231867273,
+      "sd": 0.000795595307114186,
+      "ci95": 0.000034888985534613386,
+      "p05": 0.9966590277777776,
+      "p50": 0.9994245756172834,
+      "p95": 0.9997334104938267,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9802154835467652,
+      "sd": 0.02054163391398571,
+      "ci95": 0.0009008056760439284,
+      "p05": 0.9801396390983309,
+      "p50": 0.9829430485989511,
+      "p95": 0.9833019246866809,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.0007752768132719748,
+      "save": 0.016379255497233302,
+      "slowdown": 0.0000393194912738334,
+      "rollback": 0.002204363291391608,
+      "terminalInvalid": 0.00037677217978419983,
+      "localLoss": 0.000009529180282340332
+     },
+     "counts": {
+      "hard": 21.879500000000064,
+      "slow": 0.45450000000000035,
+      "sdc": 0.33000000000000024,
+      "manual": 0.07350000000000005,
+      "sdcRecoveries": 0.013000000000000008
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9992517719907397,
+      "sd": 0.0007321621051494042,
+      "ci95": 0.000032107269697461205,
+      "p05": 0.9967642168209873,
+      "p50": 0.9994307484567897,
+      "p95": 0.999719907407407,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9797357296782183,
+      "sd": 0.021655326651383616,
+      "ci95": 0.0009496440860466447,
+      "p05": 0.9801461709757499,
+      "p50": 0.9829507854688757,
+      "p95": 0.9832863757812496,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3043.5904761904753,
+     "slow": 61.4296057202621,
+     "sdc": 47.663504102846474
+    }
+   },
+   "100000": {
+    "hacdClosedForm": {
+     "aOp": 0.992498639542136,
+     "delivered": 0.9498613301633986,
+     "ledger": {
+      "downtime": 0.007557853135437115,
+      "save": 0.016666442614195594,
+      "rollback": 0.0007361689923269364,
+      "slowdown": 0.00038136672277463046,
+      "local": 0.00009416688774064016,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.02246244958235444,
+      "terminal": 0.0022402219017720903,
+      "delivered": 0.9498613301633986
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9924431832369195,
+      "sd": 0.0024321814198144825,
+      "ci95": 0.00010665767082168587,
+      "p05": 0.987968229166663,
+      "p50": 0.9930808256172801,
+      "p95": 0.9951964891975271,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9499520092827402,
+      "sd": 0.062453100872966454,
+      "ci95": 0.0027387357786864772,
+      "p05": 0.8116120414030925,
+      "p50": 0.9747922317420639,
+      "p95": 0.9780196849373735,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.007556816763080259,
+      "save": 0.016256564094092485,
+      "slowdown": 0.0003843306089408076,
+      "rollback": 0.02373858095394211,
+      "terminalInvalid": 0.0020179880313471645,
+      "localLoss": 0.00009371026585876984
+     },
+     "counts": {
+      "hard": 217.1445000000005,
+      "slow": 4.3929999999999545,
+      "sdc": 3.3759999999999564,
+      "manual": 0.6794999999999897,
+      "sdcRecoveries": 0.1415000000000001
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9924451616919395,
+      "sd": 0.002426903567825731,
+      "ci95": 0.00010642622287315876,
+      "p05": 0.9880524691357984,
+      "p50": 0.9930850694444397,
+      "p95": 0.9951451195987623,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9499983478818625,
+      "sd": 0.06048570282430605,
+      "ci95": 0.002652460103796545,
+      "p05": 0.8117634796043239,
+      "p50": 0.9746600910842226,
+      "p95": 0.9779208126134769,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3042.9765714285713,
+     "slow": 61.40739401876872,
+     "sdc": 47.66333742027391
+    }
+   },
+   "200000": {
+    "hacdClosedForm": {
+     "aOp": 0.9851102750901405,
+     "delivered": 0.9184188636610745,
+     "ledger": {
+      "downtime": 0.01511399368508847,
+      "save": 0.016666232860517438,
+      "rollback": 0.0014722464407337743,
+      "slowdown": 0.0007532697416666753,
+      "local": 0.0001866596427737086,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.04310116599847294,
+      "terminal": 0.004287567969672585,
+      "delivered": 0.9184188636610745
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9851841995344326,
+      "sd": 0.00327630244091052,
+      "ci95": 0.00014367463890977932,
+      "p05": 0.9792759259259185,
+      "p50": 0.9856882716049308,
+      "p95": 0.9895984374999923,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.920232670005298,
+      "sd": 0.0816319465910128,
+      "ci95": 0.003579779541569641,
+      "p05": 0.800190568920036,
+      "p50": 0.9653346352673946,
+      "p95": 0.9713259109313607,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.014815800465568667,
+      "save": 0.016125020771164244,
+      "slowdown": 0.0007749013836659848,
+      "rollback": 0.04368572615130656,
+      "terminalInvalid": 0.004180395408536123,
+      "localLoss": 0.00018548581446063464
+     },
+     "counts": {
+      "hard": 431.1359999999995,
+      "slow": 8.692999999999955,
+      "sdc": 6.76399999999995,
+      "manual": 1.2934999999999615,
+      "sdcRecoveries": 0.2620000000000002
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9849858599236364,
+      "sd": 0.0034215568654049613,
+      "ci95": 0.0001500444345454615,
+      "p05": 0.9786571952160416,
+      "p50": 0.9855366512345609,
+      "p95": 0.9895747685185113,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.9193057683520302,
+      "sd": 0.08077382090996764,
+      "ci95": 0.0035421484316257405,
+      "p05": 0.8002985040149757,
+      "p50": 0.9650065138676118,
+      "p95": 0.9711758797371666,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3042.9327619047617,
+     "slow": 61.4058082004653,
+     "sdc": 47.66332592492408
+    }
+   },
+   "500000": {
+    "hacdClosedForm": {
+     "aOp": 0.9635927527696029,
+     "delivered": 0.8344922229899794,
+     "ledger": {
+      "downtime": 0.03777833220795839,
+      "save": 0.01666567702192028,
+      "rollback": 0.003680526045401043,
+      "slowdown": 0.0018133456746484366,
+      "local": 0.00045412190084473413,
+      "blocked": 0,
+      "overhead": 0,
+      "sdcRollback": 0.09566298450316911,
+      "terminal": 0.009452789656078679,
+      "delivered": 0.8344922229899794
+     }
+    },
+    "review": {
+     "engine": "ReMAP review engine (reference catalogs/review-2026-10-09, factory version review-retained-progress.v2)",
+     "trials": 2000,
+     "aOp": {
+      "mean": 0.9636873248117824,
+      "sd": 0.005157098888007881,
+      "ci95": 0.00022615260157442618,
+      "p05": 0.9543060051212486,
+      "p50": 0.9641488410913819,
+      "p95": 0.9713414234539723,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.8380986654712231,
+      "sd": 0.11279087478657245,
+      "ci95": 0.004946182014495381,
+      "p05": 0.6263632701614967,
+      "p50": 0.812599090713124,
+      "p95": 0.9484906521057859,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "ledger": {
+      "downtime": 0.03631267518821731,
+      "save": 0.015736046914930957,
+      "slowdown": 0.0017475818073269817,
+      "rollback": 0.09860854231129108,
+      "terminalInvalid": 0.009045853926057322,
+      "localLoss": 0.0004506343809567237
+     },
+     "counts": {
+      "hard": 1056.278,
+      "slow": 21.211500000000107,
+      "sdc": 16.620499999999875,
+      "manual": 3.193999999999949,
+      "sdcRecoveries": 0.6054999999999927
+     }
+    },
+    "hacdLedgerSim": {
+     "aOp": {
+      "mean": 0.9634955811389759,
+      "sd": 0.005125224414994234,
+      "ci95": 0.0002247548205443566,
+      "p05": 0.9544300521602288,
+      "p50": 0.9638261575386108,
+      "p95": 0.971113040123439,
+      "n": 2000,
+      "ciMethod": "student-t"
+     },
+     "delivered": {
+      "mean": 0.833471435738664,
+      "sd": 0.11277004698599748,
+      "ci95": 0.004945268659644642,
+      "p05": 0.6265224416090576,
+      "p50": 0.7922465500185636,
+      "p95": 0.9478235416968535,
+      "n": 2000,
+      "ciMethod": "student-t"
+     }
+    },
+    "classFitPerCardHour": {
+     "hard": 3042.940609523809,
+     "slow": 61.40610897173308,
+     "sdc": 47.66331902771418
+    }
+   }
+  }
+ },
+ "other": {
+  "file": "~/Documents/projects/output/HAC-D-950-910C-default-six.html (HAC-D v4.3 dd1fc99, 2026-10-20)",
+  "a950tpl": {
+   "10000": {
+    "aOp": 0.999197,
+    "mtbfHwH": 32.340989,
+    "mttrS": 88.6182,
+    "delivered": 0.979799,
+    "mtbiAllH": 31.282922,
+    "meanPauseAllS": 90.3861,
+    "mtbiUiH": 31.738909
+   },
+   "100000": {
+    "aOp": 0.992031,
+    "mtbfHwH": 3.235056,
+    "mttrS": 88.5662,
+    "delivered": 0.949014,
+    "mtbiAllH": 3.129216,
+    "meanPauseAllS": 90.335,
+    "mtbiUiH": 3.174839
+   },
+   "200000": {
+    "aOp": 0.98419,
+    "mtbfHwH": 1.617562,
+    "mttrS": 88.5625,
+    "delivered": 0.916818,
+    "mtbiAllH": 1.564641,
+    "meanPauseAllS": 90.3314,
+    "mtbiUiH": 1.587453
+   },
+   "500000": {
+    "aOp": 0.961395,
+    "mtbfHwH": 0.647022,
+    "mttrS": 88.5632,
+    "delivered": 0.831058,
+    "mtbiAllH": 0.625854,
+    "meanPauseAllS": 90.3321,
+    "mtbiUiH": 0.634979
+   }
+  },
+  "a3tpl": {
+   "10000": {
+    "aOp": 0.999081,
+    "mtbfHwH": 29.662358,
+    "mttrS": 93.0236,
+    "delivered": 0.979663,
+    "mtbiAllH": 28.704885,
+    "meanPauseAllS": 94.8688,
+    "mtbiUiH": 29.088807
+   },
+   "100000": {
+    "aOp": 0.990853,
+    "mtbfHwH": 2.955144,
+    "mttrS": 93.0419,
+    "delivered": 0.947648,
+    "mtbiAllH": 2.85977,
+    "meanPauseAllS": 94.8956,
+    "mtbiUiH": 2.897903
+   },
+   "200000": {
+    "aOp": 0.981873,
+    "mtbfHwH": 1.477572,
+    "mttrS": 93.0419,
+    "delivered": 0.914215,
+    "mtbiAllH": 1.429885,
+    "meanPauseAllS": 94.8956,
+    "mtbiUiH": 1.448952
+   },
+   "500000": {
+    "aOp": 0.955886,
+    "mtbfHwH": 0.591029,
+    "mttrS": 93.0419,
+    "delivered": 0.825352,
+    "mtbiAllH": 0.571954,
+    "meanPauseAllS": 94.8955,
+    "mtbiUiH": 0.579581
+   }
+  },
+  "hardware500k": {
+   "a950tpl": {
+    "scaleOutSwitches": 39066,
+    "scaleOutTiers": 3,
+    "scaleOutLinks": 3000000
+   },
+   "a3tpl": {
+    "scaleOutSwitches": 109375,
+    "scaleOutTiers": 4,
+    "scaleOutLinks": 4000000
+   }
+  }
+ },
+ "reproduction": {
+  "ok": true,
+  "rows": [
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "aOp",
+    "theirs": 0.999197,
+    "hacd": 0.9991966536575125,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "mtbfHwH",
+    "theirs": 32.340989,
+    "hacd": 32.34098859933951,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "mttrS",
+    "theirs": 88.6182,
+    "hacd": 88.61820477328355,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "delivered",
+    "theirs": 0.979799,
+    "hacd": 0.9797987413238641,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "mtbiAllH",
+    "theirs": 31.282922,
+    "hacd": 31.282922498974905,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "meanPauseAllS",
+    "theirs": 90.3861,
+    "hacd": 90.38605947085678,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 10000,
+    "key": "mtbiUiH",
+    "theirs": 31.738909,
+    "hacd": 31.73890936988364,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "aOp",
+    "theirs": 0.992031,
+    "hacd": 0.9920313195430115,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "mtbfHwH",
+    "theirs": 3.235056,
+    "hacd": 3.2350556297085085,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "mttrS",
+    "theirs": 88.5662,
+    "hacd": 88.56617223103427,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "delivered",
+    "theirs": 0.949014,
+    "hacd": 0.9490144026636971,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "mtbiAllH",
+    "theirs": 3.129216,
+    "hacd": 3.1292159853851125,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "meanPauseAllS",
+    "theirs": 90.335,
+    "hacd": 90.3349965507354,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 100000,
+    "key": "mtbiUiH",
+    "theirs": 3.174839,
+    "hacd": 3.174838747393842,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "aOp",
+    "theirs": 0.98419,
+    "hacd": 0.9841902535295737,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "mtbfHwH",
+    "theirs": 1.617562,
+    "hacd": 1.6175619533160532,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "mttrS",
+    "theirs": 88.5625,
+    "hacd": 88.56245908916229,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "delivered",
+    "theirs": 0.916818,
+    "hacd": 0.9168176274848238,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "mtbiAllH",
+    "theirs": 1.564641,
+    "hacd": 1.5646409526539735,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "meanPauseAllS",
+    "theirs": 90.3314,
+    "hacd": 90.33135254328703,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 200000,
+    "key": "mtbiUiH",
+    "theirs": 1.587453,
+    "hacd": 1.5874531930581315,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "aOp",
+    "theirs": 0.961395,
+    "hacd": 0.9613949772682727,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "mtbfHwH",
+    "theirs": 0.647022,
+    "hacd": 0.6470220980476584,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "mttrS",
+    "theirs": 88.5632,
+    "hacd": 88.5631887203615,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "delivered",
+    "theirs": 0.831058,
+    "hacd": 0.8310580275181346,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "mtbiAllH",
+    "theirs": 0.625854,
+    "hacd": 0.6258537901727275,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "meanPauseAllS",
+    "theirs": 90.3321,
+    "hacd": 90.33206876291142,
+    "ok": true
+   },
+   {
+    "design": "a950tpl",
+    "npus": 500000,
+    "key": "mtbiUiH",
+    "theirs": 0.634979,
+    "hacd": 0.6349786184901416,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "aOp",
+    "theirs": 0.999081,
+    "hacd": 0.9990813895356668,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "mtbfHwH",
+    "theirs": 29.662358,
+    "hacd": 29.662357620683427,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "mttrS",
+    "theirs": 93.0236,
+    "hacd": 93.02356066940881,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "delivered",
+    "theirs": 0.979663,
+    "hacd": 0.9796627183103016,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "mtbiAllH",
+    "theirs": 28.704885,
+    "hacd": 28.70488535688299,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "meanPauseAllS",
+    "theirs": 94.8688,
+    "hacd": 94.86879635044662,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 10000,
+    "key": "mtbiUiH",
+    "theirs": 29.088807,
+    "hacd": 29.08880741405919,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "aOp",
+    "theirs": 0.990853,
+    "hacd": 0.9908531968895767,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "mtbfHwH",
+    "theirs": 2.955144,
+    "hacd": 2.9551439543496123,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "mttrS",
+    "theirs": 93.0419,
+    "hacd": 93.04194013475009,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "delivered",
+    "theirs": 0.947648,
+    "hacd": 0.9476481728567576,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "mtbiAllH",
+    "theirs": 2.85977,
+    "hacd": 2.8597704871403766,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "meanPauseAllS",
+    "theirs": 94.8956,
+    "hacd": 94.89558751705472,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 100000,
+    "key": "mtbiUiH",
+    "theirs": 2.897903,
+    "hacd": 2.897903161385643,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "aOp",
+    "theirs": 0.981873,
+    "hacd": 0.9818728700312997,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "mtbfHwH",
+    "theirs": 1.477572,
+    "hacd": 1.4775719771748062,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "mttrS",
+    "theirs": 93.0419,
+    "hacd": 93.04194013475009,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "delivered",
+    "theirs": 0.914215,
+    "hacd": 0.9142148553565173,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "mtbiAllH",
+    "theirs": 1.429885,
+    "hacd": 1.4298852435701883,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "meanPauseAllS",
+    "theirs": 94.8956,
+    "hacd": 94.89558751705472,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 200000,
+    "key": "mtbiUiH",
+    "theirs": 1.448952,
+    "hacd": 1.4489515806928215,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "aOp",
+    "theirs": 0.955886,
+    "hacd": 0.9558859607640934,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "mtbfHwH",
+    "theirs": 0.591029,
+    "hacd": 0.5910289305959682,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "mttrS",
+    "theirs": 93.0419,
+    "hacd": 93.0418996000806,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "delivered",
+    "theirs": 0.825352,
+    "hacd": 0.8253518849760761,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "mtbiAllH",
+    "theirs": 0.571954,
+    "hacd": 0.5719542317521297,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "meanPauseAllS",
+    "theirs": 94.8955,
+    "hacd": 94.89554830548332,
+    "ok": true
+   },
+   {
+    "design": "a3tpl",
+    "npus": 500000,
+    "key": "mtbiUiH",
+    "theirs": 0.579581,
+    "hacd": 0.5795807689233353,
+    "ok": true
+   }
+  ]
+ }
+}
