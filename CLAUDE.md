@@ -3,9 +3,10 @@
 Plan: `docs/DEVELOPMENT_PLAN.md`. Evidence base: the survey chapter at `../survey/ai-cluster-reliability-modeling.html` (read-only; extract text with a script, it is too large to read whole).
 
 ## Layout
-- `packages/core` — pure TypeScript numerics (no DOM). Modules: units, math, rbd, ctmc, checkpoint, sparing, mttr, scale, allocation, sensitivity, cost, mc, scenario. Tests in `packages/core/test`, golden vectors in `packages/core/test/golden/golden.json` (computed independently in Python; do not edit expected values by hand).
+- `packages/core` — pure TypeScript numerics (no DOM). Modules: units, math, rbd, ctmc, checkpoint, sparing, mttr, scale, allocation, sensitivity, cost, mc, scenario; v5: records (topology record, failure-rate override, mechanism set — JSON in `packages/core/data/{records,fault-rates,mechanism-sets}`, every value with provenance and confidence), budget, layers, study/prune. Tests in `packages/core/test`, golden vectors in `packages/core/test/golden/golden*.json` (computed independently in Python; do not edit expected values by hand).
 - `apps/web` — Vite + React static app (bilingual zh/en, light/dark), compute in Web Workers.
-- `packages/cli` — Node CLI over the core.
+- `packages/cli` — Node CLI over the core; `hacd findings | bom | budget | methodology | prune | study` regenerate the Ascend report set from the records (`docs/markdown/USER_GUIDE.md` "v5 CLI").
+- `packages/reports` — the bilingual HTML report kit and the Findings / Methodology / BOM recipes as pure functions of the sidecar JSON; `node packages/reports/test/reproduce.mjs` must print six OK after any change to a recipe or to `docs/backup/ascend-allocation`.
 
 ## Rules
 - Every number shown to a user carries its formula and its 口径 (event, denominator, level). Never add quantities of different event classes.

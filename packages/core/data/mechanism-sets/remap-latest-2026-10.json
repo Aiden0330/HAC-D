@@ -1,0 +1,798 @@
+{
+  "id": "remap-latest-2026-10",
+  "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic)",
+  "remap": {
+    "repo": "https://github.com/lzq0927/remap",
+    "commit": "f53ab7e",
+    "note": "remap/remap-latest HEAD f53ab7e (2026-10-16, “feat: add bounded availability planning and decision comparisons”); packages/contracts/src/audit-extensions.ts unchanged since eaacb0578a30027c480046de6b91e6f434dfa15e (2026-10-15); reconciled field by field 2026-10-21"
+  },
+  "baseline": [
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST"
+  ],
+  "candidates": [
+    "D-HARD",
+    "D-RECOVERY-CLASSIFY",
+    "R-LINK-LOCAL",
+    "R-RUNTIME-SNAPSHOT",
+    "H-CONTROL-CONTINUITY",
+    "C-LOSSLESS",
+    "R-FABRIC-DEGRADE"
+  ],
+  "goodputOnly": [
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN"
+  ],
+  "pruned": [
+    "R-WARM-PROCESS",
+    "R-CANN-GRAPH",
+    "R-HCCL-ELASTIC",
+    "D-SLOW",
+    "C-ASYNC"
+  ],
+  "capability": [
+    "I-CONTAIN"
+  ],
+  "parameters": {
+    "R-LINK-LOCAL": {
+      "successSeconds": 2,
+      "eligibleShare": 1,
+      "success": 0.95,
+      "failureSeconds": 0,
+      "overhead": 0
+    },
+    "R-FABRIC-DEGRADE": {
+      "switchSeconds": 2,
+      "exposedCommunicationFraction": 0.3,
+      "remainingBandwidthRatio": 0.75,
+      "repairSeconds": 1800,
+      "eligibleShare": 1,
+      "success": 0.95,
+      "failureSeconds": 0,
+      "overhead": 0
+    },
+    "H-CONTROL-CONTINUITY": {
+      "pauseSeconds": 1,
+      "eligibleShare": 1,
+      "success": 0.95,
+      "failureSeconds": 0,
+      "overhead": 0
+    },
+    "R-WARM-PROCESS": {
+      "startupTargetSeconds": 20,
+      "eligibleShare": 0.95
+    },
+    "R-RUNTIME-SNAPSHOT": {
+      "startupTargetSeconds": 15,
+      "eligibleShare": 0.95
+    },
+    "R-CANN-GRAPH": {
+      "graphTargetSeconds": 7.5,
+      "eligibleShare": 0.95
+    },
+    "C-ASYNC": {
+      "blockingTargetSeconds": 1.15,
+      "durableLagSeconds": 10
+    },
+    "C-LOSSLESS": {
+      "compressionRatio": 2,
+      "decompressSeconds": 10,
+      "share": 0.95
+    },
+    "D-RECOVERY-CLASSIFY": {
+      "manualProbabilityTarget": 0.001,
+      "eligibleShare": 1,
+      "success": 0.95
+    },
+    "D-SDC-FP8": {
+      "detectionTarget": 0.95,
+      "detectSeconds": 1,
+      "riskShare": 0.475
+    },
+    "D-SDC-FP4": {
+      "detectionTarget": 0.95,
+      "detectSeconds": 1,
+      "riskShare": 0.475
+    },
+    "D-ABFT": {
+      "upstreamDetection": 0.95,
+      "conditionalMissDetection": 0.855,
+      "overhead": 0.001
+    },
+    "D-NET-SDC": {
+      "detectionTarget": 0.9025,
+      "detectSeconds": 1
+    },
+    "H-SDC-SCREEN": {
+      "occurrenceReduction": 0.25,
+      "eligibleShare": 0.95
+    },
+    "R-HCCL-ELASTIC": {
+      "communicationBeforeSeconds": 60,
+      "communicationTargetSeconds": 15,
+      "share": 0.95
+    }
+  },
+  "levers": [
+    {
+      "id": "auto",
+      "limit": 60,
+      "effort": 3
+    },
+    {
+      "id": "success",
+      "limit": 0.999,
+      "effort": 3
+    },
+    {
+      "id": "manual",
+      "limit": 1800,
+      "effort": 2
+    }
+  ],
+  "derate": {
+    "coverageDelta": 0.05,
+    "successDelta": 0.08,
+    "timeFactor": 1.5,
+    "reductionFactor": 0.5
+  },
+  "recovery": {
+    "detection": {
+      "coverage": 0.95,
+      "autoSeconds": 10,
+      "timeoutSeconds": 60
+    },
+    "automatic": {
+      "seconds": 180,
+      "successProbability": 0.99
+    },
+    "manual": {
+      "seconds": 7200
+    },
+    "provenance": {
+      "source": "ReMAP f53ab7e / ai-cluster-reliability review-2026-10-09 baseline policy (remap/remap-latest/references/expert-review-2026-10-09/config.json): detectProbability 0.95 in 10 s else 60 s timeout; recoveryAttemptSeconds 180 at recoverySuccess 0.99; manualAdditionalSeconds 7200 — the engineering baseline the audited catalog was reviewed against (scripts/remap-param-check.ts: SAME), not a measurement",
+      "confidence": "assumed",
+      "note": "the same file anchors the catalog: referenceCards 10,000 and referenceMtbfHours 30 for the hard-interruption class (3,333.3 FIT per card)"
+    }
+  },
+  "prune": {
+    "threshold": 0.0015,
+    "dominated": {
+      "R-WARM-PROCESS": "R-RUNTIME-SNAPSHOT",
+      "R-CANN-GRAPH": "R-RUNTIME-SNAPSHOT"
+    },
+    "rule": {
+      "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除（同阶段取最小值，不相加）；其余在判定规模（研究中最大的规模）上各拓扑的 A_op Shapley 均 ≥ 阈值 → A_op 候选，有效产出 Shapley 均 ≥ 阈值 → 只保有效产出，否则剪除",
+      "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned (minimum on a stage, never the sum); otherwise A_op Shapley ≥ threshold at the decision scale (the largest scale studied) on every architecture → A_op candidate, delivered Shapley ≥ threshold → goodput-only, else pruned"
+    }
+  },
+  "metadata": {
+    "D-HARD": {
+      "deploy": "cluster",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "detection",
+      "how": {
+        "zh": "集群管理：中断检测",
+        "en": "cluster management: interruption detection"
+      },
+      "changes": {
+        "zh": "检测延迟：95 % 在 10 s、其余 60 s → 99.9 % 在 1 s",
+        "en": "detection delay: 95 % in 10 s, rest 60 s → 99.9 % in 1 s"
+      }
+    },
+    "D-SLOW": {
+      "deploy": "cluster",
+      "acts": [
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "rate",
+      "how": {
+        "zh": "集群监控：亚健康检出",
+        "en": "cluster monitoring: sub-health detection"
+      },
+      "changes": {
+        "zh": "亚健康检出 95 % / 5 min → 99 % / 30 s（隔离暂停随之增加）",
+        "en": "sub-health detection 95 % / 5 min → 99 % / 30 s (more isolation pauses)"
+      }
+    },
+    "D-SDC": {
+      "deploy": "npu",
+      "acts": [
+        "npu",
+        "node",
+        "superpod"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "芯片与框架：step 级计算校验",
+        "en": "device and framework: step-level compute checks"
+      },
+      "changes": {
+        "zh": "静默损坏即时检出 0 → 95 %（1 s）",
+        "en": "immediate silent-corruption detection 0 → 95 % (1 s)"
+      }
+    },
+    "R-SDC": {
+      "deploy": "npu",
+      "acts": [
+        "npu"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "芯片：HBM 中的干净 step 状态",
+        "en": "device: clean step state kept in HBM"
+      },
+      "changes": {
+        "zh": "检出的静默从 1 s 干净状态恢复，不回滚全局 CKPT",
+        "en": "detected corruption recovers from the 1 s clean state, no global rollback"
+      }
+    },
+    "R-REPLAY": {
+      "deploy": "npu",
+      "acts": [
+        "npu",
+        "node",
+        "superpod",
+        "scaleout"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "芯片运行时：算子 / 集合通信重执行",
+        "en": "device runtime: operator / collective replay"
+      },
+      "changes": {
+        "zh": "瞬态中断的第一梯级：90 % 在 5 s",
+        "en": "first rung for transient interruptions: 90 % in 5 s"
+      }
+    },
+    "R-PROCESS": {
+      "deploy": "node",
+      "acts": [
+        "npu",
+        "node"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "节点：训练进程 / 容器重建",
+        "en": "node: training process / container rebuilt"
+      },
+      "changes": {
+        "zh": "进程级梯级：95 % 在 60 s（回滚）",
+        "en": "process rung: 95 % in 60 s (rollback)"
+      }
+    },
+    "R-ELASTIC": {
+      "deploy": "cluster",
+      "acts": [
+        "npu",
+        "node"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "集群：50 个 DP 域的局部恢复",
+        "en": "cluster: local recovery in 50 DP domains"
+      },
+      "changes": {
+        "zh": "弹性梯级：98 % 局部恢复，作业只停 1 s",
+        "en": "elastic rung: 98 % local, the job pauses 1 s"
+      }
+    },
+    "C-FAST": {
+      "deploy": "cluster",
+      "acts": [
+        "cluster"
+      ],
+      "stage": "checkpoint",
+      "how": {
+        "zh": "集群：检查点与共享存储",
+        "en": "cluster: checkpoints and shared storage"
+      },
+      "changes": {
+        "zh": "保存 4 s / 300 s → 1 s / 60 s（回滚损失）",
+        "en": "save 4 s / 300 s → 1 s / 60 s (rollback loss)"
+      }
+    },
+    "R-LINK-LOCAL": {
+      "deploy": "superpod",
+      "acts": [
+        "superpod",
+        "scaleout",
+        "npu"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "UB / RoCE 链路层：链路透明恢复",
+        "en": "UB / RoCE link layer: link-transparent recovery"
+      },
+      "changes": {
+        "zh": "新增透明梯级：瞬态链路异常 95 % 在 2 s，不检测延迟、不回滚",
+        "en": "new transparent rung: transient link faults 95 % in 2 s, no detection delay, no rollback"
+      }
+    },
+    "R-FABRIC-DEGRADE": {
+      "deploy": "superpod",
+      "acts": [
+        "superpod",
+        "scaleout"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "UB / RoCE 交换层：绕行与降级运行",
+        "en": "UB / RoCE switching: re-route and degraded running"
+      },
+      "changes": {
+        "zh": "新增透明梯级：交换 / 链路资源故障 95 % 在 2 s 绕行，修复期降级运行（只损失有效产出）",
+        "en": "new transparent rung: switch / link faults re-routed 95 % in 2 s, degraded running during repair (goodput only)"
+      }
+    },
+    "H-CONTROL-CONTINUITY": {
+      "deploy": "cabinet",
+      "acts": [
+        "node"
+      ],
+      "stage": "rung",
+      "how": {
+        "zh": "管理面：控制面故障下数据面继续运行",
+        "en": "management: data plane continues under control-plane faults"
+      },
+      "changes": {
+        "zh": "新增透明梯级：MGMT 事件 95 % 只停 1 s",
+        "en": "new transparent rung: MGMT events pause 1 s in 95 % of cases"
+      }
+    },
+    "R-WARM-PROCESS": {
+      "deploy": "node",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "automatic",
+      "how": {
+        "zh": "节点：预热进程与可信状态接替",
+        "en": "node: warm standby process"
+      },
+      "changes": {
+        "zh": "自动恢复的启动阶段 60 → 20 s",
+        "en": "startup stage of the automatic recovery 60 → 20 s"
+      }
+    },
+    "R-RUNTIME-SNAPSHOT": {
+      "deploy": "node",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "automatic",
+      "how": {
+        "zh": "节点：运行时初始化快照",
+        "en": "node: runtime initialisation snapshot"
+      },
+      "changes": {
+        "zh": "自动恢复的启动阶段 60 → 15 s",
+        "en": "startup stage of the automatic recovery 60 → 15 s"
+      }
+    },
+    "R-CANN-GRAPH": {
+      "deploy": "npu",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "automatic",
+      "how": {
+        "zh": "芯片运行时：CANN 图准备与启动缓存",
+        "en": "device runtime: CANN graph preparation caches"
+      },
+      "changes": {
+        "zh": "启动阶段中的图准备 30 → 7.5 s",
+        "en": "graph preparation within startup 30 → 7.5 s"
+      }
+    },
+    "C-ASYNC": {
+      "deploy": "cluster",
+      "acts": [
+        "cluster"
+      ],
+      "stage": "checkpoint",
+      "how": {
+        "zh": "集群：异步检查点保存",
+        "en": "cluster: asynchronous checkpoint saves"
+      },
+      "changes": {
+        "zh": "每次保存阻塞 4 → 1 s，回滚多 10 s 持久化滞后",
+        "en": "blocking per save 4 → 1 s, 10 s durable lag on every rollback"
+      }
+    },
+    "C-LOSSLESS": {
+      "deploy": "cluster",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "automatic",
+      "how": {
+        "zh": "集群：无损检查点压缩",
+        "en": "cluster: lossless checkpoint compression"
+      },
+      "changes": {
+        "zh": "自动恢复的检查点读取阶段 60 → 40 s",
+        "en": "checkpoint-read stage of the automatic recovery 60 → 40 s"
+      }
+    },
+    "D-RECOVERY-CLASSIFY": {
+      "deploy": "cluster",
+      "acts": [
+        "cluster",
+        "scaleout",
+        "superpod",
+        "cabinet",
+        "node",
+        "npu"
+      ],
+      "stage": "manual",
+      "how": {
+        "zh": "集群运维：故障分类与恢复动作匹配",
+        "en": "operations: fault classification and action matching"
+      },
+      "changes": {
+        "zh": "2 h 人工兜底的概率 1 % → 0.1 %",
+        "en": "probability of the 2 h manual fallback 1 % → 0.1 %"
+      }
+    },
+    "D-SDC-FP8": {
+      "deploy": "npu",
+      "acts": [
+        "npu"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "芯片：FP8 计算路径校验",
+        "en": "device: FP8 compute-path checks"
+      },
+      "changes": {
+        "zh": "FP8 路径的静默检出 95 %（CORE 风险的一半）",
+        "en": "silent detection 95 % on the FP8 path (half the CORE risk)"
+      }
+    },
+    "D-SDC-FP4": {
+      "deploy": "npu",
+      "acts": [
+        "npu"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "芯片：FP4 计算路径校验",
+        "en": "device: FP4 compute-path checks"
+      },
+      "changes": {
+        "zh": "FP4 路径的静默检出 95 %",
+        "en": "silent detection 95 % on the FP4 path"
+      }
+    },
+    "D-ABFT": {
+      "deploy": "npu",
+      "acts": [
+        "npu"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "芯片：算子 ABFT / 矩阵校验",
+        "en": "device: operator ABFT / matrix checks"
+      },
+      "changes": {
+        "zh": "上游漏检的 90 % 被补检（联合 99.5 %），0.1 % 吞吐",
+        "en": "90 % of the upstream misses caught (joint 99.5 %), 0.1 % throughput"
+      }
+    },
+    "D-NET-SDC": {
+      "deploy": "superpod",
+      "acts": [
+        "superpod",
+        "scaleout",
+        "node"
+      ],
+      "stage": "sdc",
+      "how": {
+        "zh": "网络：端到端静默检测",
+        "en": "network: end-to-end silent-corruption detection"
+      },
+      "changes": {
+        "zh": "网络残余静默的检出 95 %",
+        "en": "residual network silent corruption detected 95 %"
+      }
+    },
+    "H-SDC-SCREEN": {
+      "deploy": "npu",
+      "acts": [
+        "npu"
+      ],
+      "stage": "rate",
+      "how": {
+        "zh": "芯片：在线压测与异常资源筛除",
+        "en": "device: online stress screening and eviction"
+      },
+      "changes": {
+        "zh": "筛除子集的静默 FIT × 0.75",
+        "en": "silent FIT of the screened subset × 0.75"
+      }
+    },
+    "R-HCCL-ELASTIC": {
+      "deploy": "cluster",
+      "acts": [
+        "npu",
+        "node"
+      ],
+      "stage": "local",
+      "how": {
+        "zh": "集群：HCCL 通信域弹性重建",
+        "en": "cluster: HCCL communicator elastic rebuild"
+      },
+      "changes": {
+        "zh": "弹性局部恢复的通信重建 60 → 15 s（局部损失，不停作业）",
+        "en": "communication rebuild of a local recovery 60 → 15 s (local loss, no job pause)"
+      }
+    },
+    "I-CONTAIN": {
+      "deploy": "cluster",
+      "acts": [
+        "npu",
+        "node"
+      ],
+      "stage": "none",
+      "how": {
+        "zh": "集群：故障隔离与传播抑制",
+        "en": "cluster: fault containment"
+      },
+      "changes": {
+        "zh": "R-ELASTIC 的使能能力，不单独计收益",
+        "en": "enabling capability of R-ELASTIC, no separate credit"
+      }
+    }
+  },
+  "verdicts": {
+    "D-SDC": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；对 A_op −0.02 点（检出的静默变成暂停），对有效产出 +37 点",
+        "en": "reference set; −0.02 pt on A_op (detected corruption becomes pauses), +37 pt on delivered goodput"
+      }
+    },
+    "R-SDC": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；需 D-SDC；A_op +0.07 点",
+        "en": "reference set; needs D-SDC; +0.07 pt on A_op"
+      }
+    },
+    "R-REPLAY": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；A_op +1.1 点（50 万卡）",
+        "en": "reference set; +1.1 pt on A_op (500k)"
+      }
+    },
+    "R-PROCESS": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；A_op +1.4 点",
+        "en": "reference set; +1.4 pt on A_op"
+      }
+    },
+    "R-ELASTIC": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；最大的单项，A_op +2.9–3.1 点",
+        "en": "reference set; the largest single gain, +2.9–3.1 pt on A_op"
+      }
+    },
+    "C-FAST": {
+      "verdict": "reference",
+      "reason": {
+        "zh": "参考集；只影响回滚损失（有效产出 +0.5 点）",
+        "en": "reference set; rollback loss only (+0.5 pt delivered goodput)"
+      }
+    },
+    "D-HARD": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.30 点（50 万卡），每层都受益",
+        "en": "+0.30 pt on A_op (500k), every layer benefits"
+      }
+    },
+    "D-RECOVERY-CLASSIFY": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +1.1–1.2 点；降额后仍有效（人工概率 ×1.5），而“自动成功率”杠杆降额后无效",
+        "en": "+1.1–1.2 pt on A_op; survives derating (manual probability ×1.5) where the automatic-success lever does not"
+      }
+    },
+    "R-LINK-LOCAL": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.37–0.53 点；光链路、交换与 NIC 的瞬态事件不再走全局恢复",
+        "en": "+0.37–0.53 pt on A_op; transient optics, switch and NIC events skip the global recovery"
+      }
+    },
+    "R-RUNTIME-SNAPSHOT": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.42 点；启动阶段三个机制中最短（15 s），同阶段取最小值",
+        "en": "+0.42 pt on A_op; the shortest of the three startup-stage mechanisms (15 s), minimum rule on the stage"
+      }
+    },
+    "H-CONTROL-CONTINUITY": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.35 点；唯一作用于管理面事件的机制",
+        "en": "+0.35 pt on A_op; the only mechanism acting on management-plane events"
+      }
+    },
+    "C-LOSSLESS": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.34–0.38 点；缩短每次全局恢复的读取阶段",
+        "en": "+0.34–0.38 pt on A_op; shortens the read stage of every global recovery"
+      }
+    },
+    "R-FABRIC-DEGRADE": {
+      "verdict": "candidate",
+      "reason": {
+        "zh": "A_op +0.19–0.34 点；降级运行的损失只计入有效产出",
+        "en": "+0.19–0.34 pt on A_op; the degraded-running loss counts against goodput only"
+      }
+    },
+    "R-WARM-PROCESS": {
+      "verdict": "pruned",
+      "reason": {
+        "zh": "与 R-RUNTIME-SNAPSHOT 同为启动阶段，20 s > 15 s，被支配（同阶段取最小值）；单独 +0.075 点",
+        "en": "same startup stage as R-RUNTIME-SNAPSHOT, 20 s > 15 s: dominated (minimum rule); +0.075 pt alone"
+      }
+    },
+    "R-CANN-GRAPH": {
+      "verdict": "pruned",
+      "reason": {
+        "zh": "启动阶段内的图准备 30 → 7.5 s，启动 60 → 37.5 s，被 15 s 的快照支配；单独 +0.07 点",
+        "en": "graph share of startup 30 → 7.5 s (startup 60 → 37.5 s), dominated by the 15 s snapshot; +0.07 pt alone"
+      }
+    },
+    "R-HCCL-ELASTIC": {
+      "verdict": "pruned",
+      "reason": {
+        "zh": "只缩短弹性局部恢复（作业不停），A_op 0.000、有效产出 +0.01 点",
+        "en": "shortens only the local elastic recovery (no job pause): 0.000 pt A_op, +0.01 pt goodput"
+      }
+    },
+    "D-SLOW": {
+      "verdict": "pruned",
+      "reason": {
+        "zh": "A_op −0.007 点（更多隔离暂停），有效产出 +0.1 点：两项都在噪声内",
+        "en": "−0.007 pt A_op (more isolation pauses), +0.1 pt goodput: both within noise"
+      }
+    },
+    "D-SDC-FP8": {
+      "verdict": "goodput",
+      "reason": {
+        "zh": "A_op −0.008 点，有效产出 +4.1 点",
+        "en": "−0.008 pt A_op, +4.1 pt delivered goodput"
+      }
+    },
+    "D-SDC-FP4": {
+      "verdict": "goodput",
+      "reason": {
+        "zh": "A_op −0.009 点，有效产出 +4.6 点",
+        "en": "−0.009 pt A_op, +4.6 pt delivered goodput"
+      }
+    },
+    "D-ABFT": {
+      "verdict": "goodput",
+      "reason": {
+        "zh": "A_op −0.014 点，有效产出 +13 点",
+        "en": "−0.014 pt A_op, +13 pt delivered goodput"
+      }
+    },
+    "D-NET-SDC": {
+      "verdict": "goodput",
+      "reason": {
+        "zh": "A_op −0.001 点，有效产出 +0.9–1.3 点",
+        "en": "−0.001 pt A_op, +0.9–1.3 pt delivered goodput"
+      }
+    },
+    "H-SDC-SCREEN": {
+      "verdict": "goodput",
+      "reason": {
+        "zh": "A_op +0.009 点，有效产出 +3.2 点",
+        "en": "+0.009 pt A_op, +3.2 pt delivered goodput"
+      }
+    },
+    "C-ASYNC": {
+      "verdict": "pruned",
+      "reason": {
+        "zh": "A_op 0.000 点，有效产出 +0.1 点（50 万卡）：阻塞少 3 s，每次回滚多 10 s 滞后，低于 0.15 点阈值",
+        "en": "0.000 pt A_op, +0.1 pt goodput at 500k: 3 s less blocking against a 10 s lag on every rollback, below the 0.15-pt threshold"
+      }
+    },
+    "I-CONTAIN": {
+      "verdict": "capability",
+      "reason": {
+        "zh": "不可单独应用：R-ELASTIC 的使能能力",
+        "en": "not appliable on its own: the enabling capability of R-ELASTIC"
+      }
+    }
+  },
+  "provenance": {
+    "parameters": {
+      "source": "ReMAP f53ab7e packages/contracts/src/audit-extensions.ts: extensionScenario() generic fields (eligibleShare 1, or 0.5 of the CORE silent risk for D-SDC-FP8 / FP4; success 0.95; failureSeconds 0; overhead 0, D-ABFT 0.001) + parameterSets (R-LINK-LOCAL pause 2 s; R-FABRIC-DEGRADE pause 2 s, exposed communication 0.3, remaining bandwidth 0.75, repair 1,800 s; H-CONTROL-CONTINUITY pause 1 s; R-WARM-PROCESS / R-RUNTIME-SNAPSHOT startup 20 / 15 s; R-CANN-GRAPH graph 7.5 s; C-ASYNC block 1 s, lag 10 s; C-LOSSLESS ratio 2, decompress 10 s; D-RECOVERY-CLASSIFY manual 0.001; D-SDC-FP8 / FP4 coverage 0.95 in 1 s; D-ABFT conditional coverage 0.9; D-NET-SDC coverage 0.95 in 1 s; H-SDC-SCREEN reduction 0.25; R-HCCL-ELASTIC communication 15 s), eligibility × success folded by expectation where the transform is deterministic (riskShare 0.5 × 0.95, conditionalMissDetection 0.9 × 0.95, D-NET-SDC 0.95 × 0.95, C-ASYNC 4 × 0.05 + 1 × 0.95)",
+      "confidence": "assumed",
+      "note": "ReMAP labels them an explicit scenario (evidence “scenario”, “never a measured default”); reconciled against the file 2026-10-21, all 15 blocks agree"
+    },
+    "baseline": {
+      "source": "ReMAP reference set (mechanism-policy.json of the expert review 2026-10-09): D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST with the library’s parameters (scripts/remap-param-check.ts: SAME)",
+      "confidence": "assumed"
+    },
+    "candidates": {
+      "source": "pruning rule on the four built-in records’ Shapley studies at 500k (docs/backup/arch-mechanism-shapley, 300 permutations): A_op Shapley ≥ 0.15 pt on every architecture, not dominated on a shared stage (hacd prune reproduces the lists)",
+      "confidence": "derived"
+    },
+    "goodputOnly": {
+      "source": "pruning rule: delivered-goodput Shapley ≥ 0.15 pt on every architecture, A_op below the threshold",
+      "confidence": "derived"
+    },
+    "pruned": {
+      "source": "pruning rule: dominated on the startup stage (R-WARM-PROCESS, R-CANN-GRAPH by R-RUNTIME-SNAPSHOT) or below the threshold on both metrics",
+      "confidence": "derived"
+    },
+    "levers": {
+      "source": "HAC-D v4 allocation strategies (docs/markdown/PLAN_V4_NPU_TOPOLOGY_FIRST.md §8, packages/core/src/strategy DEFAULT_LEVERS): automatic attempt ≥ 60 s, automatic success ≤ 99.9 %, manual recovery ≥ 30 min; efforts 3 / 3 / 2 are engineering judgement",
+      "confidence": "assumed"
+    },
+    "derate": {
+      "source": "HAC-D derated yardstick (packages/core/src/mechanisms/plan.ts DERATE_DEFAULT): coverage, detection targets and shares −5 pt, success −8 pt, times and overheads × 1.5, rate reductions × 0.5 — engineering margins",
+      "confidence": "assumed"
+    },
+    "efforts": {
+      "source": "library efforts 1–5 per mechanism (MechanismDef.effort, the audit catalog’s integration effort), not overridden by this set",
+      "confidence": "assumed"
+    },
+    "prune.threshold": {
+      "source": "0.15 pt chosen above the sampled Shapley 95 % half-width at 500k (≤ 0.25 pt per the stored studies, ≤ 0.12 pt on most mechanisms); borderline verdicts (R-FABRIC-DEGRADE, min 0.19 pt) are re-checked by hacd prune when parameters change",
+      "confidence": "assumed"
+    },
+    "prune.dominated": {
+      "source": "audit library overlap rule: mechanisms on one recovery stage take the minimum time (R-WARM-PROCESS 20 s and R-CANN-GRAPH 37.5 s startup vs R-RUNTIME-SNAPSHOT 15 s)",
+      "confidence": "derived"
+    }
+  }
+}

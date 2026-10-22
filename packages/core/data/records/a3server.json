@@ -1,0 +1,176 @@
+{
+  "id": "a3server",
+  "name": {
+    "zh": "Atlas 800T A3 服务器集群（8 NPU / 台，跨机 RoCE）",
+    "en": "Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers)"
+  },
+  "short": {
+    "zh": "800T A3",
+    "en": "800T A3"
+  },
+  "family": "910C",
+  "template": "a3-ub384",
+  "superpod": {
+    "base": "cloudmatrix384",
+    "preset": "custom",
+    "computeRacks": 1,
+    "commRacks": 0,
+    "l2PerSubPlane": 0,
+    "linksPerL1": 0
+  },
+  "domainNpus": 8,
+  "scaleOut": {
+    "portsPerNpu": 2,
+    "planes": 1,
+    "radix": 64,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+  },
+  "variants": [
+    {
+      "id": "main",
+      "name": {
+        "zh": "每 NPU 2 × 200G、64 口交换机、无收敛折叠 Clos（HAC-D 模板默认，主算例）",
+        "en": "2 × 200G per NPU, 64-port switches, non-blocking folded Clos (HAC-D template default, main case)"
+      },
+      "basis": {
+        "zh": "论文：每 die 1 个 RDMA 口、每 NPU 400 Gb/s；端口数 64 与无收敛为假设；与另一份《950 与 910C》报告相同",
+        "en": "paper: one RDMA port per die, 400 Gb/s per NPU; radix 64 and non-blocking assumed; the same as in the other “950 and 910C” report"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 1,
+        "radix": 64,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "r256x200",
+      "name": {
+        "zh": "每 NPU 2 × 200G、51.2T 交换机按 256 × 200G",
+        "en": "2 × 200G per NPU, 51.2T switches as 256 × 200G"
+      },
+      "basis": {
+        "zh": "现行 51.2T 交换芯片按 200G 口使用（假设）",
+        "en": "a current 51.2T switch chip used with 200G ports (assumed)"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 1,
+        "radix": 256,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "r128x400",
+      "name": {
+        "zh": "每 NPU 1 × 400G、51.2T 交换机按 128 × 400G",
+        "en": "1 × 400G per NPU, 51.2T switches as 128 × 400G"
+      },
+      "basis": {
+        "zh": "第三方 800I A3 规格：每台 8 × 400GE；FiberMall 转述 SemiAnalysis：每 CM384 scale-out 1,536 只模块 = 384 网卡 + 768 叶 + 384 脊",
+        "en": "third-party 800I A3 listing: 8 × 400GE per server; FiberMall relaying SemiAnalysis: 1,536 scale-out modules per CM384 = 384 NIC + 768 leaf + 384 spine"
+      },
+      "scaleOut": {
+        "portsPerNpu": 1,
+        "planes": 1,
+        "radix": 128,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "oversub2",
+      "name": {
+        "zh": "主算例 + 叶层 2:1 收敛",
+        "en": "main case with 2:1 at the leaves"
+      },
+      "basis": {
+        "zh": "仅作对照",
+        "en": "for comparison only"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 1,
+        "radix": 64,
+        "oversubscription": 2,
+        "transceiversPerLink": 2
+      }
+    }
+  ],
+  "layers": {
+    "superpod": {
+      "unit": "nodes",
+      "npus": 8
+    },
+    "cabinet": {
+      "npus": 32
+    },
+    "node": {
+      "npus": 8
+    }
+  },
+  "scenarioId": "scaling-a3server",
+  "scenarioName": "{name} — {npus} NPUs",
+  "provenance": {
+    "superpod": {
+      "source": "Huawei Atlas 800T A3 product page: 10U, 8 × Ascend 910, 4 × Kunpeng 920, 784 GB/s interconnect at 1:1 — the CloudMatrix384 node used stand-alone",
+      "confidence": "vendor"
+    },
+    "domainNpus": {
+      "source": "by definition of this option (stand-alone Atlas 800T A3 servers, RoCE between them): the UB domain is one server’s 8 NPUs on its 7 on-board L1 UB chips (node internals: arXiv 2506.12708 v3 §3.3.2; server: Huawei Atlas 800T A3 product page)",
+      "confidence": "derived",
+      "note": "reconciled 2026-10-21: was vendor; the vendor states up to 384 cards per supernode, the single-server UB domain is the design choice of this record"
+    },
+    "superpod.computeRacks": {
+      "source": "4 servers (32 NPUs) per cabinet, as in the CM384 compute cabinet (air-cooled power density not public)",
+      "confidence": "assumed"
+    },
+    "superpod.commRacks": {
+      "source": "no L2 tier, no UB optics, no communication cabinets",
+      "confidence": "assumed"
+    },
+    "superpod.l2PerSubPlane": {
+      "source": "no L2 tier",
+      "confidence": "assumed"
+    },
+    "superpod.linksPerL1": {
+      "source": "the 7 on-board L1 UB chips remain the server’s internal UB fabric; their uplink ports stay unused",
+      "confidence": "assumed"
+    },
+    "scaleOut.portsPerNpu": {
+      "source": "as the CM384 RDMA plane (2 × 200G per NPU = 400 Gb/s; a third-party 800I A3 listing shows 8 × 400GE per server, the same bandwidth)",
+      "confidence": "assumed"
+    },
+    "scaleOut.radix": {
+      "source": "64-port switches, non-blocking folded Clos (radix not public)",
+      "confidence": "assumed"
+    }
+  },
+  "assumed": [
+    {
+      "zh": "每柜 4 台服务器（32 NPU），同 CM384 计算柜（4 × 10U；风冷功率密度未公开）",
+      "en": "4 servers (32 NPUs) per cabinet, as the CM384 compute cabinet (4 × 10U; air-cooled power density not public)"
+    },
+    {
+      "zh": "板上 7 片 L1 UB 芯片保留为服务器内 UB 网络，上联口不用；无 L2、无 UB 光、无通信柜",
+      "en": "the 7 on-board L1 UB chips stay as the in-server UB fabric, their uplink ports unused; no L2 tier, no UB optics, no communication cabinets"
+    },
+    {
+      "zh": "scale-out 口同 CM384 RDMA 平面（每 NPU 2 × 200G = 400 Gb/s；第三方 800I A3 规格为每台 8 × 400GE，带宽相同）接 64 口无收敛折叠 Clos（radix 未公开）",
+      "en": "scale-out ports as the CM384 RDMA plane (2 × 200G per NPU = 400 Gb/s; a third-party 800I A3 listing shows 8 × 400GE per server, the same bandwidth) into a non-blocking 64-port folded Clos (radix not public)"
+    }
+  ],
+  "schematic": {
+    "ubLabel": {
+      "zh": "服务器内 UB（7 片 L1 芯片），无光链路",
+      "en": "in-server UB (7 L1 chips), no optics"
+    },
+    "podLabel": {
+      "zh": "UB 域 = 一台 800T A3 服务器",
+      "en": "UB domain = one server"
+    }
+  }
+}

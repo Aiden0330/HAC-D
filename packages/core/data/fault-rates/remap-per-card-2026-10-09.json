@@ -1,0 +1,420 @@
+{
+  "id": "remap-per-card-2026-10-09",
+  "basis": "per-card",
+  "source": "ai-cluster-reliability audited catalog (expert review 2026-10-09; remap/remap-latest/references/expert-review-2026-10-09/inputs.json, revision event-budget-v3-sdc1.4-reviewed-85): 54 events = 18 hardware domains × {interruption, sub-health, silent}, business-impact FIT per card-hour (the ReMAP / reference basis). The per-domain values are expert priors pending audit (“PRIOR, keeping the USER class totals and the V4 coarse grouping”) under fixed class totals: hard 3,333.3 / slow 69.0 / silent 48.3 FIT per card, normalised so that 10,000 cards have a hard-interruption MTBF of 30 h; RoCE switches and links take the UB analogues. Reconciled 2026-10-21: all 54 values equal inputs.json to 1e-9.",
+  "catalog": {
+    "file": "catalogs/故障事件库.json",
+    "revision": "event-budget-v3-sdc1.4-reviewed-85",
+    "version": "event-budget-v3-sdc1.4",
+    "sha256": "6b0f6c209a8edb116f870d5e57022aaa0758a025d3c4561a875ac6e150e1d5dc",
+    "modifiedAt": "2026-10-09T09:45:17.162Z",
+    "rateBasis": {
+      "zh": "每十亿 NPU 等效运行暴露小时的业务影响事件；非物理器件 FIT",
+      "en": "business-impact events per 10⁹ NPU-equivalent running exposure hours; not physical device FIT"
+    },
+    "anchor": {
+      "referenceCards": 10000,
+      "hardMtbfHours": 30,
+      "shares": {
+        "hard": 0.9660000000000001,
+        "slow": 0.020000000000000007,
+        "sdc": 0.014000000000000005
+      },
+      "classFit": {
+        "hard": 3333.333333333333,
+        "slow": 69.01311249137338,
+        "sdc": 48.30917874396136
+      },
+      "note": "class totals fixed by the user (USER), split over domains by the expert review; CORE carries 85 % of the silent class, 12 silent ids are zero by the review"
+    },
+    "confidenceNote": "every event is tagged assumed: the catalog itself labels each value 待审计先验 / 经验先验 (prior pending audit) or 用户审计建模假设 (user modelling assumption), none is a vendor or fleet measurement"
+  },
+  "rates": {
+    "CORE-hard": {
+      "unit": "npu",
+      "fit": 466.6666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；非白皮书器件FIT"
+    },
+    "CORE-slow": {
+      "unit": "npu",
+      "fit": 14.163372859025031,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；非白皮书器件FIT"
+    },
+    "CORE-sdc": {
+      "unit": "npu",
+      "fit": 41.06280193236715,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；非白皮书器件FIT"
+    },
+    "SRAM-hard": {
+      "unit": "npu",
+      "fit": 166.6666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；不等同片上大容量内存"
+    },
+    "SRAM-slow": {
+      "unit": "npu",
+      "fit": 0.8430579082752995,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；不等同片上大容量内存"
+    },
+    "SRAM-sdc": {
+      "unit": "npu",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；芯片内细分假设；不等同片上大容量内存"
+    },
+    "IOD-hard": {
+      "unit": "npu",
+      "fit": 199.99999999999997,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；独立域与颗数待芯片白皮书核实"
+    },
+    "IOD-slow": {
+      "unit": "npu",
+      "fit": 4.046677959721438,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；独立域与颗数待芯片白皮书核实"
+    },
+    "IOD-sdc": {
+      "unit": "npu",
+      "fit": 1.0305969095676324,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；独立域与颗数待芯片白皮书核实"
+    },
+    "MODULE-hard": {
+      "unit": "npu",
+      "fit": 169.99999999999994,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.7/§8；排除已定位Core/内存/IO根因"
+    },
+    "MODULE-slow": {
+      "unit": "npu",
+      "fit": 1.719838132881611,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.7/§8；排除已定位Core/内存/IO根因"
+    },
+    "MODULE-sdc": {
+      "unit": "npu",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.7/§8；排除已定位Core/内存/IO根因"
+    },
+    "MEMT-hard": {
+      "unit": "npu",
+      "fit": 399.99999999999994,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §8.4称片上内存；HBM沿用旧分类，介质待核实"
+    },
+    "MEMT-slow": {
+      "unit": "npu",
+      "fit": 11.145779669968281,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §8.4称片上内存；HBM沿用旧分类，介质待核实"
+    },
+    "MEMT-sdc": {
+      "unit": "npu",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §8.4称片上内存；HBM沿用旧分类，介质待核实"
+    },
+    "MEMP-hard": {
+      "unit": "npu",
+      "fit": 173.33333333333331,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；持久/瞬态拆分为先验；HCE术语待确认"
+    },
+    "MEMP-slow": {
+      "unit": "npu",
+      "fit": 0.724475678547938,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；持久/瞬态拆分为先验；HCE术语待确认"
+    },
+    "MEMP-sdc": {
+      "unit": "npu",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；持久/瞬态拆分为先验；HCE术语待确认"
+    },
+    "NIC-hard": {
+      "unit": "npu",
+      "fit": 100.00000000000001,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；普通CRC丢包不是SDC"
+    },
+    "NIC-slow": {
+      "unit": "npu",
+      "fit": 1.7929179740026897,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；普通CRC丢包不是SDC"
+    },
+    "NIC-sdc": {
+      "unit": "npu",
+      "fit": 1.0058431102498928,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；普通CRC丢包不是SDC"
+    },
+    "OPT-hard": {
+      "unit": "ub-link",
+      "fit": 66.66666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §11.5；中断仅保护后残余，单链路通常降带宽"
+    },
+    "OPT-slow": {
+      "unit": "ub-link",
+      "fit": 2.3905572986702532,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §11.5；中断仅保护后残余，单链路通常降带宽"
+    },
+    "OPT-sdc": {
+      "unit": "ub-link",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §11.5；中断仅保护后残余，单链路通常降带宽；不单列该直接影响；非已测零故障"
+    },
+    "BOXIO-hard": {
+      "unit": "node",
+      "fit": 46.666666666666664,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；不把交换芯片当作芯片内IO Die"
+    },
+    "BOXIO-slow": {
+      "unit": "node",
+      "fit": 0.4183475272672943,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；不把交换芯片当作芯片内IO Die"
+    },
+    "BOXIO-sdc": {
+      "unit": "node",
+      "fit": 0.46939345144995,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.6；不把交换芯片当作芯片内IO Die"
+    },
+    "FABRIC-hard": {
+      "unit": "ub-switch",
+      "fit": 66.66666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.3/§10/§11；此版合并，后续拆设备数量"
+    },
+    "FABRIC-slow": {
+      "unit": "ub-switch",
+      "fit": 1.1952786493351266,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.3/§10/§11；此版合并，后续拆设备数量"
+    },
+    "FABRIC-sdc": {
+      "unit": "ub-switch",
+      "fit": 0.6705620734999285,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.3/§10/§11；此版合并，后续拆设备数量"
+    },
+    "CPU-hard": {
+      "unit": "cpu",
+      "fit": 166.66666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.5；不重复计入DDR和电源根因"
+    },
+    "CPU-slow": {
+      "unit": "cpu",
+      "fit": 2.445824706694272,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.5；不重复计入DDR和电源根因"
+    },
+    "CPU-sdc": {
+      "unit": "cpu",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.5；不重复计入DDR和电源根因"
+    },
+    "DDR-hard": {
+      "unit": "node",
+      "fit": 199.99999999999997,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §7.3；已纠正CE本身不算训练失败"
+    },
+    "DDR-slow": {
+      "unit": "node",
+      "fit": 2.9349896480331257,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §7.3；已纠正CE本身不算训练失败"
+    },
+    "DDR-sdc": {
+      "unit": "node",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §7.3；已纠正CE本身不算训练失败"
+    },
+    "SSD-hard": {
+      "unit": "node",
+      "fit": 166.66666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §6.3.7/§7；系统盘/本地缓存不等同共享CKPT"
+    },
+    "SSD-slow": {
+      "unit": "node",
+      "fit": 4.891649413388544,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §6.3.7/§7；系统盘/本地缓存不等同共享CKPT"
+    },
+    "SSD-sdc": {
+      "unit": "node",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §6.3.7/§7；系统盘/本地缓存不等同共享CKPT"
+    },
+    "POWER-hard": {
+      "unit": "cabinet",
+      "fit": 166.66666666666666,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.1；仅N+1/双路保护后的残余，根因计一次"
+    },
+    "POWER-slow": {
+      "unit": "cabinet",
+      "fit": 2.445824706694272,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.1；仅N+1/双路保护后的残余，根因计一次"
+    },
+    "POWER-sdc": {
+      "unit": "cabinet",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.1；仅N+1/双路保护后的残余，根因计一次；不单列该直接影响；非已测零故障"
+    },
+    "COOL-hard": {
+      "unit": "cabinet",
+      "fit": 99.99999999999999,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.2/§8.4；温控根因不再计Core降频"
+    },
+    "COOL-slow": {
+      "unit": "cabinet",
+      "fit": 7.337474120082815,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.2/§8.4；温控根因不再计Core降频"
+    },
+    "COOL-sdc": {
+      "unit": "cabinet",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §2.2/§8.4；温控根因不再计Core降频；不单列该直接影响；非已测零故障"
+    },
+    "MGMT-hard": {
+      "unit": "node",
+      "fit": 133.33333333333331,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.4；只有确实影响作业的管理故障入分母"
+    },
+    "MGMT-slow": {
+      "unit": "node",
+      "fit": 0.5869979296066252,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.4；只有确实影响作业的管理故障入分母"
+    },
+    "MGMT-sdc": {
+      "unit": "node",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；WP §4.3.4；只有确实影响作业的管理故障入分母"
+    },
+    "STORAGE-hard": {
+      "unit": "job",
+      "fit": 133.33333333333331,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；集群外部依赖；非950柜内BOM"
+    },
+    "STORAGE-slow": {
+      "unit": "job",
+      "fit": 3.913319530710835,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；集群外部依赖；非950柜内BOM"
+    },
+    "STORAGE-sdc": {
+      "unit": "job",
+      "fit": 0,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；集群外部依赖；非950柜内BOM"
+    },
+    "UNKNOWN-hard": {
+      "unit": "job",
+      "fit": 410.00000000000006,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；保留旧其他预算；不是器件FIT；未知不等于必需人工"
+    },
+    "UNKNOWN-slow": {
+      "unit": "job",
+      "fit": 6.016728778467909,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；保留旧其他预算；不是器件FIT；未知不等于必需人工"
+    },
+    "UNKNOWN-sdc": {
+      "unit": "job",
+      "fit": 4.0699812668268,
+      "source": "ai-cluster-reliability audited catalog (review-2026-10-09, revision event-budget-v3-sdc1.4-reviewed-85), legacy status 待审计先验 (prior pending audit)",
+      "confidence": "assumed",
+      "note": "PRIOR（保持USER总量及V4粗分组）；保留旧其他预算；不是器件FIT；未知不等于必需人工"
+    }
+  },
+  "analogues": {
+    "OPT-hard@roce": "OPT-hard",
+    "OPT-slow@roce": "OPT-slow",
+    "OPT-sdc@roce": "OPT-sdc",
+    "FABRIC-hard@roce": "FABRIC-hard",
+    "FABRIC-slow@roce": "FABRIC-slow",
+    "FABRIC-sdc@roce": "FABRIC-sdc"
+  }
+}

@@ -20,6 +20,20 @@
  *   hacd plan <scenario.json> [--target 0.9] [--players …] [--no-derate] [--trials 200] [--json]   cheapest mechanism set for the target, necessary mechanisms, scan, verification (v3.1)
  *   hacd audit <scenario.json> [--mechanisms R-LINK-LOCAL,…] [--provisional] [--html out.html] [--lang zh|en] [--json]   single-point benefit audit of mechanisms, standalone HTML report (v3.7)
  *   hacd study <scenario.json> [--sizes 10000,100000,200000,500000] [--target 0.985] [--metric aOp|delivered|effective] [--players …] [--provisional] [--trials 200] [--seed 1] [--no-derate] [--no-levers] [--no-curves] [--html out.html] [--lang zh|en] [--json]   cross-scale allocation study (v3.7)
+ *
+ * v5 report pipeline (src/pipeline.ts; records by built-in id, JSON path, or packages/core/data/records/<id>.json; sets and
+ * overrides by path or by id under packages/core/data/{mechanism-sets,fault-rates}):
+ *   hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology]
+ *        hierarchical budget + Shapley studies (stored in --study-dir when they fit, else computed) + mechanism hierarchy → sidecar JSON
+ *        (results.json, mechanisms.json, provenance.json, <record>.json) in --data-out and ASCEND_ALLOCATION_FINDINGS_<FILE>.html per record
+ *        (+ ASCEND_ALLOCATION_METHODOLOGY.html) in --out; the footer echoes the command, ids, options and engine version
+ *   hacd bom [--records <id|path>,…] [--npus 100000] [--sizes 10000,100000,200000,500000] [--out docs/ASCEND_BOM_100K.html] [--data-out <dir of out>/data]   bill of materials of every scale-out variant
+ *   hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--trials 400] [--seed 1] [--json]   one BudgetResult (today / required / recommended)
+ *   hacd methodology --data <dir> [--out docs/ASCEND_ALLOCATION_METHODOLOGY.html]   the Methodology page from the sidecar JSON of a findings run
+ *   hacd prune [--mechanisms m.json] --study-dir <dir> [--records <ids>] [--scale 500000] [--out pruned.json] [--json]   the set's verdict lists re-derived by the pruning rule
+ *   hacd study --record <id|path> [--mechanisms m.json] [--rates f.json] [--scales …] [--target 0.985] [--permutations 300] [--seed 1] [--out-dir docs/data]   the Shapley study of a record (what findings computes when no stored study fits)
+ *   hacd records                                    built-in and data-folder topology records, mechanism sets and failure-rate overrides
+ *   hacd schema --record | --mechanisms | --rates   JSON schema of the v5 input records (plain `hacd schema`: the scenario schema)
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
@@ -34,6 +48,7 @@ import {
   type TopologyTemplate, type StrategyId, type StrategyMetric, type HardwareSplit,
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
+import * as V5 from './pipeline.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -72,7 +87,25 @@ switch (cmd) {
     break;
   }
   case 'schema':
-    out(scenarioJsonSchema());
+    if (!V5.schemaV5(V5.argsOf(cmd, rest))) out(scenarioJsonSchema());
+    break;
+  case 'findings':
+    V5.findings(V5.argsOf(cmd, rest));
+    break;
+  case 'bom':
+    V5.bom(V5.argsOf(cmd, rest));
+    break;
+  case 'budget':
+    V5.budget(V5.argsOf(cmd, rest), json);
+    break;
+  case 'methodology':
+    V5.methodology(V5.argsOf(cmd, rest));
+    break;
+  case 'prune':
+    V5.prune(V5.argsOf(cmd, rest), json);
+    break;
+  case 'records':
+    V5.records();
     break;
   case 'topology': {
     const t = rest[0] as TopologyTemplate;
@@ -501,6 +534,7 @@ switch (cmd) {
     break;
   }
   case 'study': {
+    if (flag('record')) { V5.studyRecord(V5.argsOf(cmd, rest)); break; }
     const path = files[0];
     if (!path) {
       console.error('usage: hacd study <scenario.json> [--sizes 10000,100000,200000,500000] [--target 0.985] [--metric aOp|delivered|effective] [--players D-HARD,R-REPLAY,…] [--provisional] [--trials 200] [--seed 1] [--no-derate] [--no-levers] [--no-curves] [--html out.html] [--lang zh|en] [--json]');
@@ -572,5 +606,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]');
+    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]\n v5 report pipeline: hacd <findings --record ids | bom --records ids | budget --record id --scale N | methodology --data dir | prune --study-dir dir | study --record id | records | schema --record|--mechanisms|--rates> (see the header of packages/cli/src/main.ts)');
 }

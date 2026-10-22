@@ -1,0 +1,221 @@
+{
+  "id": "ubl128",
+  "name": {
+    "zh": "SuperPoD Flex / UBL128（128 NPU，单层 UB 交换）",
+    "en": "SuperPoD Flex / UBL128 (128 NPUs, single-layer UB switch)"
+  },
+  "short": {
+    "zh": "UBL128",
+    "en": "UBL128"
+  },
+  "family": "950",
+  "template": "a950-ub2",
+  "superpod": {
+    "base": "atlas950-1k",
+    "preset": "custom",
+    "computeRacks": 2,
+    "commRacks": 1,
+    "rackSwitches": 0,
+    "podUplinksPerNpu": 4,
+    "podSwitchRadix": 128
+  },
+  "countOverrides": {
+    "commCabinet": {
+      "count": 1,
+      "npus": 512
+    },
+    "ubMeshLink": {
+      "count": 28,
+      "npus": 8
+    }
+  },
+  "scaleOut": {
+    "portsPerNpu": 4,
+    "planes": 4,
+    "radix": 1024,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+  },
+  "variants": [
+    {
+      "id": "main",
+      "name": {
+        "zh": "4 平面 × 两层，radix 1,024，每 NPU 4 × 200G（主算例）",
+        "en": "4 planes × 2 tiers, radix 1,024, 4 × 200G per NPU (main case)"
+      },
+      "basis": {
+        "zh": "HC2026：昇腾 960 超节点集群两层 Clos、四平面；星河 UBG 交换机 radix 最高 1,024；附件把它用于 950；950 白皮书允许 2 × 400G UBoE 拆成 4 × 200G",
+        "en": "HC2026: Ascend 960 SuperPoD clusters use a two-tier, four-plane Clos; Xinghe UBG switches have radix up to 1,024; the attachments apply this to 950; the 950 white paper lets the 2 × 400G UBoE split into 4 × 200G"
+      },
+      "scaleOut": {
+        "portsPerNpu": 4,
+        "planes": 4,
+        "radix": 1024,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "twoPlane",
+      "name": {
+        "zh": "2 平面 × 两层，radix 1,024，每 NPU 2 × 400G",
+        "en": "2 planes × 2 tiers, radix 1,024, 2 × 400G per NPU"
+      },
+      "basis": {
+        "zh": "950 白皮书 2 × 400G UBoE，每口一个平面",
+        "en": "950 white paper 2 × 400G UBoE, one plane per port"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 2,
+        "radix": 1024,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "hacd",
+      "name": {
+        "zh": "2 平面 × 三层，radix 128（51.2T），每 NPU 2 × 400G（HAC-D 模板默认）",
+        "en": "2 planes × 3 tiers, radix 128 (51.2T), 2 × 400G per NPU (HAC-D template default)"
+      },
+      "basis": {
+        "zh": "HAC-D a950-ub2 模板默认（综述 2.6 节）；交换机数与券商 UBoE 约 39,000 台同量级",
+        "en": "HAC-D a950-ub2 template default (survey §2.6); switch count of the order of the broker figure for UBoE (≈ 39,000)"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 2,
+        "radix": 128,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "attach",
+      "name": {
+        "zh": "附件方案：每 NPU 1 × 800G，按轨分到 4 个平面，radix 128，按 Clos 自洽所需层数",
+        "en": "the attachments’ scheme: 1 × 800G per NPU, rails spread over 4 planes, radix 128, as many tiers as a Clos needs"
+      },
+      "basis": {
+        "zh": "附件写作“两层四平面”、64 口叶 + 128 口脊；每平面 12.8 万个端点时两层 radix 128 只能接 64 × 128 = 8,192 个，须三层",
+        "en": "the attachments call it “two tiers, four planes” with 64-port leaves and 128-port spines; with 128,000 endpoints per plane two tiers of radix 128 reach only 64 × 128 = 8,192, so three tiers are needed"
+      },
+      "scaleOut": {
+        "portsPerNpu": 1,
+        "planes": 4,
+        "radix": 128,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "oversub2",
+      "name": {
+        "zh": "主算例 + 叶层 2:1 收敛",
+        "en": "main case with 2:1 at the leaves"
+      },
+      "basis": {
+        "zh": "附件架构五（推理 PD 分离）的 2:1 收敛，仅作对照",
+        "en": "the 2:1 of the attachments’ architecture 5 (inference PD disaggregation), for comparison only"
+      },
+      "scaleOut": {
+        "portsPerNpu": 4,
+        "planes": 4,
+        "radix": 1024,
+        "oversubscription": 2,
+        "transceiversPerLink": 2
+      }
+    }
+  ],
+  "layers": {
+    "superpod": {
+      "unit": "supernodes",
+      "npus": 128
+    },
+    "cabinet": {
+      "npus": 64
+    },
+    "node": {
+      "npus": 8
+    }
+  },
+  "scenarioId": "scaling-ubl128",
+  "scenarioName": "{name} — {npus} NPUs",
+  "provenance": {
+    "superpod": {
+      "source": "Huawei Computing 2026-09-30 (SuperPoD Flex / UBL128, jointly defined with DeepSeek): 128 NPUs on a single layer of UB switching at 3.2 Tb/s per NPU, two-tier scale-out to 256K NPUs",
+      "confidence": "vendor"
+    },
+    "superpod.computeRacks": {
+      "source": "2 compute cabinets of 64 NPUs per pod (Atlas 950 cabinet)",
+      "confidence": "assumed"
+    },
+    "superpod.commRacks": {
+      "source": "one switch cabinet per pod in the geometry; counted as one per 4 pods through countOverrides.commCabinet",
+      "confidence": "assumed"
+    },
+    "superpod.rackSwitches": {
+      "source": "all NPUs on the single switch layer: no in-cabinet switches",
+      "confidence": "assumed"
+    },
+    "superpod.podUplinksPerNpu": {
+      "source": "Huawei Computing 2026-09-30: 3.2 Tb/s UB bandwidth per NPU on a single switching layer → 4 × 800G links",
+      "confidence": "derived"
+    },
+    "superpod.podSwitchRadix": {
+      "source": "the Atlas 950 pod-tier switch (128 × 800G, Hot Chips 2025) assumed for the UBL128 single layer; 128 NPUs × 4 uplinks / 128 ports = 4 switches per pod",
+      "confidence": "assumed",
+      "note": "reconciled 2026-10-21: was derived; the switch model of the UBL128 layer is not public, only the count follows from the assumed radix"
+    },
+    "countOverrides.commCabinet": {
+      "source": "one switch cabinet per 4 pods (the attached report's 1,000 cabinets for 4,000 pods)",
+      "confidence": "assumed"
+    },
+    "countOverrides.ubMeshLink": {
+      "source": "tray mesh only: 28 electrical links per 8-NPU tray, no cabinet-wide mesh",
+      "confidence": "assumed"
+    },
+    "scaleOut": {
+      "source": "bandwidth per NPU: Atlas 950 white paper 2 × 400G UBoE, splittable into 4 × 200G (vendor); planes / tiers / radix: by analogy with the Ascend 960 SuperPoD cluster (HC2026) as the attachments apply it; Huawei Computing 2026-09-30 states two-tier scale-out to 256K NPUs",
+      "confidence": "assumed",
+      "note": "reconciled 2026-10-21: was derived; the network design is an analogy, the two-tier statement and the per-NPU bandwidth are vendor values"
+    }
+  },
+  "assumed": [
+    {
+      "zh": "每超节点 2 个 64 卡计算柜（Atlas 950 柜）",
+      "en": "2 compute cabinets of 64 NPUs per pod (the Atlas 950 cabinet)"
+    },
+    {
+      "zh": "每 NPU 4 × 800G 上联 = 厂商的 3.2 Tb/s；交换 128 × 800G（沿用 950 的交换芯片）→ 每超节点 4 台",
+      "en": "4 × 800G uplinks per NPU = the vendor’s 3.2 Tb/s; 128 × 800G switches (the 950 pod switch assumed) → 4 per pod"
+    },
+    {
+      "zh": "无柜内 LRS：全部 NPU 接单层交换；每 8 卡托盘 28 条电链路，无柜级全互联",
+      "en": "no in-cabinet LRS: every NPU on the single switching layer; 28 electrical links per 8-NPU tray, no cabinet-wide mesh"
+    },
+    {
+      "zh": "每 4 个超节点 1 个交换柜（附件报告：4,000 超节点 1,000 柜）",
+      "en": "one switch cabinet per 4 pods (the attached report’s 1,000 cabinets for 4,000 pods)"
+    },
+    {
+      "zh": "每节点 2 CPU；每条光链路 2 只光模块",
+      "en": "2 CPUs per node; 2 transceivers per optical link"
+    },
+    {
+      "zh": "scale-out 主设计 4 平面 × 两层、radix 1,024、每 NPU 4 × 200G：按 960 超节点集群（HC2026）类比；950 白皮书的 2 × 400G UBoE 可拆为 4 × 200G，带宽为厂商值",
+      "en": "scale-out main design 4 planes × 2 tiers, radix 1,024, 4 × 200G per NPU: by analogy with the 960 SuperPoD cluster (HC2026); the 950 white paper’s 2 × 400G UBoE split into 4 × 200G, the bandwidth is the vendor value"
+    }
+  ],
+  "schematic": {
+    "ubLabel": {
+      "zh": "单层 UB 交换（每 NPU 4 × 800G）+ 光链路",
+      "en": "single-layer UB switching (4 × 800G per NPU) + optics"
+    },
+    "podLabel": {
+      "zh": "超节点 128 NPU：2 计算柜 + 共享交换柜",
+      "en": "SuperPoD 128 NPUs: 2 compute cabinets + shared switch cabinet"
+    }
+  }
+}

@@ -1,9 +1,9 @@
 {
- "generated": "2026-10-21T12:02:18.190Z",
+ "generated": "2026-10-22T03:15:09.449Z",
  "threshold": 0.0015,
  "rule": {
-  "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除；其余：50 万卡上四种拓扑的 A_op Shapley 均 ≥ 0.15 个百分点 → A_op 候选，有效产出 Shapley 均 ≥ 0.15 点 → 只保有效产出，否则剪除",
-  "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned; otherwise A_op Shapley ≥ 0.15 pt at 500k on every architecture → A_op candidate, delivered Shapley ≥ 0.15 pt → goodput-only, else pruned"
+  "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除（同阶段取最小值，不相加）；其余在判定规模（研究中最大的规模）上各拓扑的 A_op Shapley 均 ≥ 阈值 → A_op 候选，有效产出 Shapley 均 ≥ 阈值 → 只保有效产出，否则剪除",
+  "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned (minimum on a stage, never the sum); otherwise A_op Shapley ≥ threshold at the decision scale (the largest scale studied) on every architecture → A_op candidate, delivered Shapley ≥ threshold → goodput-only, else pruned"
  },
  "archs": [
   "native950",
@@ -309,7 +309,8 @@
   "dir": "docs/backup/arch-mechanism-shapley",
   "players": 23,
   "permutations": 300,
-  "basis": "bare architecture scenario, HAC-D per-unit FIT, REMAP_LATEST_PARAMS"
+  "basis": "bare architecture scenario, HAC-D per-unit FIT, remap-latest-2026-10",
+  "set": "remap-latest-2026-10"
  },
  "mechanisms": [
   {

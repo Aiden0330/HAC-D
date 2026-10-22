@@ -1,5 +1,71 @@
 # User guide
 
+## v5 CLI (2026-10-21): report pipeline from three input records
+
+`hacd` turns a **topology record**, an optional **failure-rate override** and a **mechanism set** (plus the scales and the target) into the bilingual Ascend allocation reports — Findings per topology, Methodology, 100k BOM — with no code change for a new topology. Run it as `node --import tsx packages/cli/src/main.ts <command>` (bin `hacd`). Every number comes from `@hac-d/core`; the HTML from `@hac-d/reports`; the footer of each report names the hacd command line, the record / set / override ids, the run options and the engine version (with the short git hash, `-dirty` when tracked files were modified).
+
+Inputs are resolved by id or path: a record is a built-in id (`native950`, `ubl128`, `cm384`, `a3server`), a JSON path, or `packages/core/data/records/<id>.json` (e.g. `a960e`); a mechanism set is the default `remap-latest-2026-10`, a path, or `packages/core/data/mechanism-sets/<id>.json`; an override a path or `packages/core/data/fault-rates/<id>.json`. `hacd records` lists them; `hacd schema --record | --mechanisms | --rates` prints the JSON Schema of each record.
+
+| Command | What it does |
+|---|---|
+| `hacd findings --record <id\|path>[,…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology]` | the hierarchical budget of every record at every scale (`budgetFromRecords`), the Shapley study per record (read from `--study-dir/<id>.json` when it was computed for the same record, players, set parameters, override and target and covers the scales; otherwise computed with `archStudy` — the time is printed — and written to the data folder), the mechanism hierarchy; writes `results.json`, `mechanisms.json`, `provenance.json` (and a computed `<id>.json` study; stored studies stay in `--study-dir`, which `mechanisms.source.dir` records) into `--data-out` (default `<out>/data`) and `ASCEND_ALLOCATION_FINDINGS_<FILE>.html` per record (`950`, `UBL128`, `CM384`, `A3SERVER` for the built-ins, the upper-cased id otherwise) plus `ASCEND_ALLOCATION_METHODOLOGY.html` into `--out` (default `docs`, which overwrites the committed reports — use another folder for trials). `--main` is the headline scale (default the largest). When the set's verdict lists differ from the pruning rule on the run's studies, a warning lists the mechanisms and the reports keep the set's lists (`--strict-prune` stops instead). `--lang` is accepted and ignored (both languages are in every file). |
+| `hacd study --record <id\|path> [--mechanisms] [--rates] [--scales …] [--target 0.985] [--permutations 300] [--seed 1] [--out-dir docs/data]` | the Shapley study alone (`<out-dir>/<id>.json`); tens of seconds (10k) to minutes (500k) per scale at 300 permutations, seconds at 10–20 |
+| `hacd methodology --data <dir> [--out docs/ASCEND_ALLOCATION_METHODOLOGY.html]` | the Methodology page from the sidecar JSON of a findings run |
+| `hacd bom [--records <ids>] [--npus 100000] [--sizes …] [--out docs/ASCEND_BOM_100K.html] [--data-out <dir of out>/data]` | bill of materials of every scale-out variant of the records, with `bom.json` (the BOM page is laid out for the four built-in architectures) |
+| `hacd budget --record <id\|path> --scale 500000 [--rates] [--mechanisms] [--target] [--trials] [--seed] [--json]` | one architecture × scale: a short table today / required / recommended, or the whole `BudgetResult` with `--json` |
+| `hacd prune [--mechanisms m.json] --study-dir <dir> [--records <ids>] [--scale N] [--out pruned.json] [--json]` | the pruning rule (threshold and dominated map of the set) on the stored studies; writes a copy of the set with the rule's candidates / goodputOnly / pruned lists (baseline and capability unchanged, the set's order kept) and a generated bilingual reason for every verdict that changed |
+
+`hacd study <scenario.json>` (no `--record`) and `hacd schema` (no flag) keep their earlier meaning.
+
+### Workflow: new topology → study → findings → methodology → bom
+
+1. Write `packages/core/data/records/<id>.json` (fields below; `hacd schema --record` validates the shape, `hacd records` shows whether it parses). A template the engine knows is enough; a new hardware unit kind (an NPO engine with its own fault classes) needs the two extension points named in the error message (unit-library entry and BOM row in `packages/core/src/topology/index.ts`).
+2. `hacd study --record <id> --scales 10000,100000,200000,500000 --out-dir docs/data` (or let `findings` compute it).
+3. `hacd findings --record <id> --study-dir docs/data --out <dir>` → the Findings page with the overlay figure and Tables 1–7. The sizes, the headline scale, the window count and the scale range follow the run; prose that states counts (reference mechanisms, candidates, levers) follows the data.
+4. `hacd methodology --data <dir>/data` (findings writes it too unless `--no-methodology`).
+5. `hacd bom --records native950,ubl128,cm384,a3server --out <dir>/ASCEND_BOM_100K.html`.
+
+Reading the Findings tables: **k** (Table 1, Table 3) is the uniform factor on every hardware interruption FIT (ARINC) that the window rule allows — ≥ 1 an acceptance ceiling, < 1 a delivery task; it is the engine's bisection root of A_op,derated(k) = A* with the undetected-silent-corruption loss φ evaluated at k, and the closed form k = B / Σcᵢ of Methodology formula (4) is its first-order check (agreement about 1e-5 relative). In Table 3 the first tag after a unit is the confidence of its count (template geometry); a second tag "FIT measured" (or another confidence) appears when a failure-rate override set that unit's FIT.
+
+### Topology record (`TopologyRecordSchema`, packages/core/src/records/topologyRecord.ts)
+
+Fields: `id`, `name {zh,en}`, `short {zh,en}`, `family`, `template` (`a2-roce` | `a3-ub384` | `a950-ub2` | `a960e-ub`), `superpod` (`base` = a SUPERPOD_PRESETS key — `cloudmatrix384`, `atlas950`, `atlas950-1k`, `atlas950-8k`, `atlas960e` — plus any SuperPoD field overriding it: `fabric`, `computeRacks`, `commRacks`, `nodesPerRack`, `npusPerNode`, `cpusPerNode`, `rackSwitches`, `podUplinksPerNpu`, `podSwitchRadix`, `l2PerSubPlane`, `linksPerL1`, …; without `base` a full custom geometry), `countOverrides` (BOM row → `{ count, npus }`), `domainNpus` (UB domain, default the pod), `faultUnits` (optional check), `scaleOut { portsPerNpu, planes, radix, oversubscription, transceiversPerLink }`, `variants[] { id, name, basis, scaleOut }` ('main' must equal `scaleOut`), `layers { superpod { unit: supernodes|nodes, npus }, cabinet { npus }, node { npus } }`, `scenarioId`, `scenarioName` (default `{name} — {npus} NPUs`), `provenance { <field path>: { source, confidence, note? } }`, `assumed[]`, `schematic { ubLabel {zh,en}, podLabel {zh,en} }` (optional labels of the overlay figure; generic defaults otherwise).
+
+```json
+{ "id": "a960e", "name": { "zh": "华为 Atlas 960E 超节点（4,032 NPU）", "en": "Huawei Atlas 960E SuperPoD (4,032 NPUs)" }, "short": { "zh": "960E", "en": "960E" },
+  "family": "960", "template": "a960e-ub", "superpod": { "base": "atlas960e" },
+  "scaleOut": { "portsPerNpu": 4, "planes": 4, "radix": 1024, "oversubscription": 1, "transceiversPerLink": 2 },
+  "variants": [ { "id": "main", "name": { "zh": "4 平面 × 两层", "en": "4 planes × 2 tiers" }, "basis": { "zh": "HC2026", "en": "HC2026" }, "scaleOut": { "portsPerNpu": 4, "planes": 4, "radix": 1024, "oversubscription": 1, "transceiversPerLink": 2 } } ],
+  "layers": { "superpod": { "unit": "supernodes", "npus": 4032 }, "cabinet": { "npus": 72 }, "node": { "npus": 8 } },
+  "scenarioId": "scaling-a960e", "provenance": { "superpod.computeRacks": { "source": "智东西 2026-09-19", "confidence": "scan-level" } }, "assumed": [ "superpod.rackSwitches = 5" ] }
+```
+
+### Failure-rate override (`FaultRateOverrideSchema`, packages/core/src/records/faultRates.ts)
+
+Fields: `id`, `basis` (`per-unit` = FIT per unit-hour, HAC-D's basis; `per-card` = FIT per card-hour, converted × cards per unit in the CloudMatrix384 geometry), `source?`, `rates { <class id>: { unit?, fit, source, confidence, derivation? } }` (class ids are the scenario's component ids: `POWER-hard`, `FABRIC-hard`, `OPT-hard@roce`, …; `confidence` one of measured / paper-reported / vendor / derived / assumed / scan-level), `analogues { <class>: <class with a rate> }`. Hard classes set the interruption rate, `-slow` the sub-health entry rate, `-sdc` the silent-corruption rate; the classes stay apart. Classes absent from the scenario are reported, never dropped silently.
+
+```json
+{ "id": "power-fleet-2026q4", "basis": "per-unit", "rates": { "POWER-hard": { "unit": "cabinet", "fit": 3200, "source": "fleet measurement 2026-Q4", "confidence": "measured" } } }
+```
+
+Use: `hacd findings --record native950 --rates power.json …`. Studies stored without this override are not reused (they are recomputed under it), because the Shapley values depend on the FIT.
+
+### Mechanism set (`MechanismSetSchema`, packages/core/src/records/mechanismSet.ts)
+
+Fields: `id`, `source`, `remap? { repo, commit, note? }`, the five lists `baseline`, `candidates`, `goodputOnly`, `pruned`, `capability` (every mechanism in exactly one), `parameters { <id>: { <param>: number } }` (merged over the library defaults), `efforts?`, `levers[] { id: auto|success|manual, limit, effort }`, `derate { coverageDelta, successDelta, timeFactor, reductionFactor }`, `recovery { detection { coverage, autoSeconds, timeoutSeconds }, automatic { seconds, successProbability }, manual { seconds }, provenance { source, confidence } }`, `stages? { startup, read, communication }` (sums to the automatic seconds), `prune { threshold, dominated { <pruned id>: <dominating id> }, rule? }`, `metadata { <id>: { deploy, acts[], stage, how, changes } }`, `verdicts? { <id>: { verdict, reason {zh,en} } }`.
+
+```json
+{ "id": "my-set", "source": "copy of remap-latest-2026-10 without R-FABRIC-DEGRADE",
+  "baseline": ["D-SDC", "R-SDC", "R-REPLAY", "R-PROCESS", "R-ELASTIC", "C-FAST"],
+  "candidates": ["D-HARD", "D-RECOVERY-CLASSIFY", "R-LINK-LOCAL", "R-RUNTIME-SNAPSHOT", "H-CONTROL-CONTINUITY", "C-LOSSLESS"],
+  "goodputOnly": ["D-SDC-FP8", "D-SDC-FP4", "D-ABFT", "D-NET-SDC", "H-SDC-SCREEN"], "pruned": ["R-WARM-PROCESS", "R-CANN-GRAPH", "R-HCCL-ELASTIC", "D-SLOW", "C-ASYNC", "R-FABRIC-DEGRADE"], "capability": ["I-CONTAIN"],
+  "parameters": { "R-LINK-LOCAL": { "successSeconds": 2, "eligibleShare": 1, "success": 0.95 } }, "levers": [ { "id": "auto", "limit": 60, "effort": 3 } ], "derate": { "coverageDelta": 0.05, "successDelta": 0.08, "timeFactor": 1.5, "reductionFactor": 0.5 },
+  "recovery": { "…": "…" }, "prune": { "threshold": 0.0015, "dominated": { "R-WARM-PROCESS": "R-RUNTIME-SNAPSHOT" } }, "metadata": { "…": "…" } }
+```
+
+Start from a copy of `packages/core/data/mechanism-sets/remap-latest-2026-10.json` (the full default with metadata and verdicts) and change ids, lists, parameters or verdicts. A set whose players and parameters are unchanged reuses the stored studies; changed parameters force a new study. `hacd prune --mechanisms my-set.json --study-dir docs/backup/arch-mechanism-shapley --out my-set.pruned.json` re-derives the lists from the Shapley values (pruning the default set with the stored studies returns its own lists).
+
+
 ## v4 (2026-10-18)
 
 The main flow has four pages (minimal mode); **All pages** adds the scenario editor, Compare, Simulate, Report, Inference, Spares & domains and Import. All pages read the **active scenario** chosen in the top bar. Since v4.1 the built-in examples are exactly the topology templates (`topology-a3-ub384`, `topology-a2-roce`, `topology-a950-ub2` and, since v4.2, `topology-a960e-ub`; 10,000 NPUs with the six default mechanisms); the scale is a parameter (built-in 10k / 100k / 200k / 500k or any N), so no per-size or per-design example exists. The reference fixtures `ref-catalog-100k` and `ref-three-classes-100k` stay reachable by id (`hacd example <id>`, MCP `get_example`) for the reference / ReMAP cross-checks.

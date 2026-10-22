@@ -1,0 +1,157 @@
+{
+  "id": "a960e",
+  "name": {
+    "zh": "华为 Atlas 960E 超节点（4,032 NPU，NPO 光互联）",
+    "en": "Huawei Atlas 960E SuperPoD (4,032 NPUs, NPO optical interconnect)"
+  },
+  "short": {
+    "zh": "960E",
+    "en": "960E"
+  },
+  "family": "960",
+  "template": "a960e-ub",
+  "superpod": {
+    "base": "atlas960e"
+  },
+  "scaleOut": {
+    "portsPerNpu": 4,
+    "planes": 4,
+    "radix": 1024,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+  },
+  "variants": [
+    {
+      "id": "main",
+      "name": {
+        "zh": "4 平面 × 两层，radix 1,024，每 NPU 4 个 scale-out 口（HAC-D a960e-ub 模板默认，主算例）",
+        "en": "4 planes × 2 tiers, radix 1,024, 4 scale-out ports per NPU (HAC-D a960e-ub template default, main case)"
+      },
+      "basis": {
+        "zh": "HC2026 发布：超节点之间两层四平面 Clos 至 51.2 万 NPU；UBG 交换机最大 1,024 口；每 NPU 4 口、每平面 1 口为假设",
+        "en": "HC2026 release: two-tier four-plane Clos between SuperPoDs to 512,000 NPUs; UBG switch radix up to 1,024; 4 ports per NPU, one per plane, assumed"
+      },
+      "scaleOut": {
+        "portsPerNpu": 4,
+        "planes": 4,
+        "radix": 1024,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    },
+    {
+      "id": "twoPlane",
+      "name": {
+        "zh": "2 平面 × 两层，radix 1,024，每 NPU 2 个 scale-out 口",
+        "en": "2 planes × 2 tiers, radix 1,024, 2 scale-out ports per NPU"
+      },
+      "basis": {
+        "zh": "对照：平面数减半（假设）",
+        "en": "comparison: half the planes (assumed)"
+      },
+      "scaleOut": {
+        "portsPerNpu": 2,
+        "planes": 2,
+        "radix": 1024,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    }
+  ],
+  "layers": {
+    "superpod": {
+      "unit": "supernodes",
+      "npus": 4032
+    },
+    "cabinet": {
+      "npus": 72
+    },
+    "node": {
+      "npus": 8
+    }
+  },
+  "scenarioId": "scaling-a960e",
+  "scenarioName": "{name} — {npus} NPUs",
+  "provenance": {
+    "superpod": {
+      "source": "Huawei HUAWEI CONNECT 2026 Atlas 960E release and UnifiedBus release 2026-09-17 (4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines at 7.2 Tb/s replacing 48,000 × 800G modules, LinkDevice 176 × 1.6 Tb/s, two-tier four-plane Clos to 512,000 NPUs); 智东西 2026-09-19 (56 + 14 cabinets, 72 Ascend + 18 Kunpeng per cabinet, 8-NPU compute blades; single media source)",
+      "confidence": "vendor",
+      "note": "vendor headline 4,096 NPUs; cabinet counts and NPUs per cabinet from a single media source (4,032)"
+    },
+    "superpod.computeRacks": {
+      "source": "智东西 2026-09-19: 56 compute + 14 interconnect cabinets; in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng (read per cabinet, an inference); 8-NPU compute blades (single media source; 56 × 72 = 4,032 ≠ 4,096; the same article puts the 196 km copper saving per cabinet instead of per SuperPoD)",
+      "confidence": "scan-level"
+    },
+    "superpod.commRacks": {
+      "source": "智东西 2026-09-19: 56 compute + 14 interconnect cabinets; in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng (read per cabinet, an inference); 8-NPU compute blades (single media source; 56 × 72 = 4,032 ≠ 4,096; the same article puts the 196 km copper saving per cabinet instead of per SuperPoD)",
+      "confidence": "scan-level"
+    },
+    "superpod.nodesPerRack": {
+      "source": "智东西 2026-09-19: 56 compute + 14 interconnect cabinets; in-cabinet switch blades interconnect 72 Ascend + 18 Kunpeng (read per cabinet, an inference); 8-NPU compute blades (single media source; 56 × 72 = 4,032 ≠ 4,096; the same article puts the 196 km copper saving per cabinet instead of per SuperPoD)",
+      "confidence": "scan-level"
+    },
+    "superpod.podSwitchRadix": {
+      "source": "Huawei UnifiedBus release (HUAWEI CONNECT 2026-09-17): in-cabinet LinkBlade (cableless), cross-cabinet LinkDevice 176 ports × 1.6 Tb/s (RTT ≤ 2 µs), UBG switch radix up to 1,024",
+      "confidence": "vendor"
+    },
+    "superpod.opticalEnginesPerNpu": {
+      "source": "Huawei, Atlas 960E SuperPoD release (HUAWEI CONNECT 2026-09-17): 4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines (7.2 Tb/s) replacing 48,000 × 800G modules; two-tier four-plane Clos to 512,000; 99.8 % system availability (definition not given)",
+      "confidence": "derived",
+      "note": "5,500 engines / 4,096 NPUs"
+    },
+    "superpod.rackSwitches": {
+      "source": "Fabric counts: 5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches",
+      "confidence": "assumed"
+    },
+    "superpod.podUplinksPerNpu": {
+      "source": "Fabric counts: 5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches",
+      "confidence": "assumed"
+    },
+    "scaleOut": {
+      "source": "Huawei, Atlas 960E SuperPoD release (HUAWEI CONNECT 2026-09-17): 4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines (7.2 Tb/s) replacing 48,000 × 800G modules; two-tier four-plane Clos to 512,000; 99.8 % system availability (definition not given)",
+      "confidence": "vendor",
+      "note": "two tiers, four planes; ports per NPU and radix assumed (Fabric counts: 5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches)"
+    },
+    "scaleOut.portsPerNpu": {
+      "source": "Fabric counts: 5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches",
+      "confidence": "assumed"
+    },
+    "scaleOut.radix": {
+      "source": "Huawei UnifiedBus release (HUAWEI CONNECT 2026-09-17): in-cabinet LinkBlade (cableless), cross-cabinet LinkDevice 176 ports × 1.6 Tb/s (RTT ≤ 2 µs), UBG switch radix up to 1,024",
+      "confidence": "assumed",
+      "note": "the UBG maximum radix used as the scale-out switch radix"
+    }
+  },
+  "assumed": [
+    {
+      "zh": "每柜 9 个 8 卡计算刀片（72 NPU）与 18 颗鲲鹏，56 计算柜 + 14 互联柜（智东西单一媒体来源；56 × 72 = 4,032 ≠ 厂商标称 4,096）",
+      "en": "9 compute blades of 8 NPUs (72 NPUs) and 18 Kunpeng per cabinet, 56 compute + 14 interconnect cabinets (single media source; 56 × 72 = 4,032 ≠ the vendor headline 4,096)"
+    },
+    {
+      "zh": "每节点 2 CPU（18 ÷ 9）",
+      "en": "2 CPUs per node (18 ÷ 9)"
+    },
+    {
+      "zh": "每柜 5 片 LinkBlade 交换芯片；每 NPU 5.5 个 LinkDevice 口（2.2 TB/s ÷ 2 ÷ 1.6 Tb/s）接 176 口 LinkDevice",
+      "en": "5 LinkBlade switch chips per cabinet; 5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) into 176-port LinkDevices"
+    },
+    {
+      "zh": "NPO 光：每 NPU 1.343 个 Hi-ONE 引擎（5,500 / 4,096）承载 5.86 条 800G 等效链路（48,000 / 2 / 4,096）",
+      "en": "NPO optics: 1.343 Hi-ONE engines per NPU (5,500 / 4,096) carrying 5.86 800G-equivalent links (48,000 / 2 / 4,096)"
+    },
+    {
+      "zh": "scale-out：每 NPU 4 口、4 平面各 1 口、两层 Clos、radix 1,024（UBG 最大 radix）、无收敛、每链路 2 只光模块",
+      "en": "scale-out: 4 ports per NPU, one per plane, two-tier Clos, radix 1,024 (the UBG maximum), non-blocking, 2 transceivers per link"
+    }
+  ],
+  "schematic": {
+    "ubLabel": {
+      "zh": "柜内 LinkBlade + 跨柜 LinkDevice + NPO 光",
+      "en": "in-cabinet LinkBlade + cross-cabinet LinkDevice + NPO optics"
+    },
+    "podLabel": {
+      "zh": "超节点 4,032 NPU：56 计算柜 + 14 互联柜",
+      "en": "SuperPoD 4,032 NPUs: 56 compute + 14 UB cabinets"
+    }
+  }
+}

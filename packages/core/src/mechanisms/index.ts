@@ -15,6 +15,21 @@ import type { AuditBaseline, AuditCatalogMechanism, SinglePoint } from './auditT
 export type MechanismKind = 'detect' | 'recover' | 'checkpoint' | 'physical';
 export type MechanismStatus = 'baseline' | 'candidate' | 'conditional' | 'informational';
 
+/** v5 the six layers of the per-unit basis, top-down (cluster = the job, scale-out network, SuperPoD / UB domain, cabinet, node, NPU) */
+type LayerId = 'cluster' | 'scaleout' | 'superpod' | 'cabinet' | 'node' | 'npu';
+/**
+ * v5 where a mechanism is deployed, the layers whose events it acts on (by the catalog's candidate event classes), the recovery
+ * stage or quantity it works on (mechanisms on the same stage take the minimum, never the sum) and, bilingual, how it is realised
+ * and what it changes. Carried by a mechanism set record (packages/core/src/records/mechanismSet.ts).
+ */
+export interface MechanismMetadata {
+  deploy: LayerId;
+  acts: LayerId[];
+  stage: 'detection' | 'rung' | 'automatic' | 'manual' | 'checkpoint' | 'sdc' | 'rate' | 'local' | 'none';
+  how: { zh: string; en: string };
+  changes: { zh: string; en: string };
+}
+
 export interface MechanismDef {
   id: string;
   name: { zh: string; en: string };
@@ -44,6 +59,8 @@ export interface MechanismDef {
   provisional?: Record<string, number>;
   /** v3.7 single-point quantification against the scenario's baseline (the audit's 口径) */
   singlePoint?: (b: AuditBaseline, p: Record<string, number>) => SinglePoint;
+  /** v5 deployment layer, acted-on layers, stage and bilingual description (from a mechanism set record; absent in the built-in library) */
+  metadata?: MechanismMetadata;
 }
 
 /** Mechanisms that only switch a block on, so that they can be removed exactly even without an applied record. */

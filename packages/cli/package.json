@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/cli",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "type": "module",
   "description": "Command-line interface for HAC-D scenario evaluation",
   "bin": {
@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hac-d/core": "0.1.0",
-    "@hac-d/importers": "0.1.0"
+    "@hac-d/core": "0.5.0",
+    "@hac-d/importers": "0.5.0",
+    "@hac-d/reports": "0.5.0"
   }
 }

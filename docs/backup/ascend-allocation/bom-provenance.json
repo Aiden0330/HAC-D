@@ -1,0 +1,50 @@
+{
+ "command": "hacd bom --records native950,ubl128,cm384,a3server --out docs/ASCEND_BOM_100K.html --data-out docs/backup/ascend-allocation",
+ "records": [
+  {
+   "id": "native950",
+   "name": {
+    "zh": "华为原生 Atlas 950 超节点（1,024 NPU）",
+    "en": "Huawei native Atlas 950 SuperPoD (1,024 NPUs)"
+   }
+  },
+  {
+   "id": "ubl128",
+   "name": {
+    "zh": "SuperPoD Flex / UBL128（128 NPU，单层 UB 交换）",
+    "en": "SuperPoD Flex / UBL128 (128 NPUs, single-layer UB switch)"
+   }
+  },
+  {
+   "id": "cm384",
+   "name": {
+    "zh": "Atlas 900 A3 超节点 / CloudMatrix384（384 NPU，两级 UB 交换）",
+    "en": "Atlas 900 A3 SuperPoD / CloudMatrix384 (384 NPUs, two-level UB switching)"
+   }
+  },
+  {
+   "id": "a3server",
+   "name": {
+    "zh": "Atlas 800T A3 服务器集群（8 NPU / 台，跨机 RoCE）",
+    "en": "Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers)"
+   }
+  }
+ ],
+ "set": {
+  "id": "remap-latest-2026-10",
+  "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic)"
+ },
+ "options": {
+  "npus": 100000,
+  "scales": [
+   10000,
+   100000,
+   200000,
+   500000
+  ]
+ },
+ "engine": {
+  "version": "0.5.0",
+  "commit": "571dbb1-dirty"
+ }
+}

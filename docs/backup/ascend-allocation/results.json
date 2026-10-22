@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-21T12:01:21.177Z",
+ "generated": "2026-10-22T03:12:34.482Z",
  "target": 0.985,
  "sizes": [
   10000,
@@ -9,6 +9,7 @@
  ],
  "main": 500000,
  "trials": 400,
+ "required": 0.9,
  "derate": {
   "coverageDelta": 0.05,
   "successDelta": 0.08,
@@ -150,11 +151,39 @@
    },
    "family": "950",
    "assumed": [
-    "cpusPerNode = 2 (16 per cabinet ÷ 8 trays)",
-    "rackSwitches = 72 LRS (UB-Mesh paper reference cabinet)",
-    "podSwitchRadix = 128 × 800G (16 switches per pod, from the Hot Chips 8K example scaled)",
-    "transceiversPerLink = 2"
+    {
+     "zh": "每节点 2 CPU：每柜 16 颗鲲鹏 ÷ 8 个 NPU 托盘（厂商数值的算术）；一颗 CPU 故障中断哪 8 张卡（影响域）为假设",
+     "en": "2 CPUs per node: 16 Kunpeng per cabinet ÷ 8 NPU trays (vendor arithmetic); which 8 NPUs one CPU failure interrupts (its blast radius) is assumed"
+    },
+    {
+     "zh": "每柜 72 片 LRS：UB-Mesh 论文的参考柜数值，套用于量产的 Atlas 950 柜",
+     "en": "72 LRS per cabinet: the UB-Mesh paper’s reference cabinet, applied to the shipped Atlas 950 cabinet"
+    },
+    {
+     "zh": "超节点层交换 128 × 800G、每超节点 16 台：由 Hot Chips 2025 的 128 台 100 Tb/s 交换机 / 8,192 NPU 推得",
+     "en": "pod-tier switches 128 × 800G, 16 per pod: derived from Hot Chips 2025’s 128 × 100 Tb/s switches for 8,192 NPUs"
+    },
+    {
+     "zh": "每条光链路 2 只光模块：LightCounting 含交换侧共 4,096 只 / 1,024 NPU",
+     "en": "2 transceivers per optical link: LightCounting’s 4,096 modules per 1,024 NPUs including the switch side"
+    },
+    {
+     "zh": "scale-out 主设计 4 平面 × 两层、radix 1,024、每 NPU 4 × 200G：按 960 超节点集群（HC2026）类比；950 白皮书的 2 × 400G UBoE 可拆为 4 × 200G，带宽为厂商值",
+     "en": "scale-out main design 4 planes × 2 tiers, radix 1,024, 4 × 200G per NPU: by analogy with the 960 SuperPoD cluster (HC2026); the 950 white paper’s 2 × 400G UBoE split into 4 × 200G, the bandwidth is the vendor value"
+    }
    ],
+   "layers": {
+    "superpod": {
+     "unit": "supernodes",
+     "npus": 1024
+    },
+    "cabinet": {
+     "npus": 64
+    },
+    "node": {
+     "npus": 8
+    }
+   },
    "sizes": {
     "10000": {
      "npus": 10000,
@@ -8192,15 +8221,43 @@
    },
    "family": "950",
    "assumed": [
-    "2 compute cabinets of 64 NPUs per pod (Atlas 950 cabinet)",
-    "podUplinksPerNpu = 4 × 800G = 3.2 Tb/s",
-    "podSwitchRadix = 128 × 800G → 4 switches per pod",
-    "rackSwitches = 0 (all NPUs on the single switch layer)",
-    "tray mesh only: 28 electrical links per 8-NPU tray",
-    "one switch cabinet per 4 pods",
-    "cpusPerNode = 2",
-    "transceiversPerLink = 2 (optical links)"
+    {
+     "zh": "每超节点 2 个 64 卡计算柜（Atlas 950 柜）",
+     "en": "2 compute cabinets of 64 NPUs per pod (the Atlas 950 cabinet)"
+    },
+    {
+     "zh": "每 NPU 4 × 800G 上联 = 厂商的 3.2 Tb/s；交换 128 × 800G（沿用 950 的交换芯片）→ 每超节点 4 台",
+     "en": "4 × 800G uplinks per NPU = the vendor’s 3.2 Tb/s; 128 × 800G switches (the 950 pod switch assumed) → 4 per pod"
+    },
+    {
+     "zh": "无柜内 LRS：全部 NPU 接单层交换；每 8 卡托盘 28 条电链路，无柜级全互联",
+     "en": "no in-cabinet LRS: every NPU on the single switching layer; 28 electrical links per 8-NPU tray, no cabinet-wide mesh"
+    },
+    {
+     "zh": "每 4 个超节点 1 个交换柜（附件报告：4,000 超节点 1,000 柜）",
+     "en": "one switch cabinet per 4 pods (the attached report’s 1,000 cabinets for 4,000 pods)"
+    },
+    {
+     "zh": "每节点 2 CPU；每条光链路 2 只光模块",
+     "en": "2 CPUs per node; 2 transceivers per optical link"
+    },
+    {
+     "zh": "scale-out 主设计 4 平面 × 两层、radix 1,024、每 NPU 4 × 200G：按 960 超节点集群（HC2026）类比；950 白皮书的 2 × 400G UBoE 可拆为 4 × 200G，带宽为厂商值",
+     "en": "scale-out main design 4 planes × 2 tiers, radix 1,024, 4 × 200G per NPU: by analogy with the 960 SuperPoD cluster (HC2026); the 950 white paper’s 2 × 400G UBoE split into 4 × 200G, the bandwidth is the vendor value"
+    }
    ],
+   "layers": {
+    "superpod": {
+     "unit": "supernodes",
+     "npus": 128
+    },
+    "cabinet": {
+     "npus": 64
+    },
+    "node": {
+     "npus": 8
+    }
+   },
    "sizes": {
     "10000": {
      "npus": 10000,
@@ -16235,10 +16292,31 @@
    },
    "family": "910C",
    "assumed": [
-    "transceiversPerLink = 2 (one module per L1–L2 link end; SemiAnalysis counts 6,912 × 400G LPO per system on another basis)",
-    "the 112 L2 chips spread evenly over the 4 communication cabinets (28 each; placement not public)",
-    "scale-out: one 200G RDMA port per die (paper: 400 Gb/s per NPU) into a non-blocking folded Clos of 64-port switches (radix not public)"
+    {
+     "zh": "每条 L1–L2 光链路 2 只光模块（SemiAnalysis 另一口径为每系统 6,912 只 400G LPO）",
+     "en": "2 transceivers per L1–L2 optical link (SemiAnalysis: 6,912 × 400G LPO per system on another basis)"
+    },
+    {
+     "zh": "112 片 L2 芯片均分到 4 个通信柜（每柜 28 片；布局未公开）",
+     "en": "the 112 L2 chips spread evenly over the 4 communication cabinets (28 each; placement not public)"
+    },
+    {
+     "zh": "scale-out：每 die 1 个 200G RDMA 口（论文：每 NPU 400 Gb/s）接 64 口无收敛折叠 Clos（radix 未公开）",
+     "en": "scale-out: one 200G RDMA port per die (paper: 400 Gb/s per NPU) into a non-blocking folded Clos of 64-port switches (radix not public)"
+    }
    ],
+   "layers": {
+    "superpod": {
+     "unit": "supernodes",
+     "npus": 384
+    },
+    "cabinet": {
+     "npus": 32
+    },
+    "node": {
+     "npus": 8
+    }
+   },
    "sizes": {
     "10000": {
      "npus": 10000,
@@ -24694,11 +24772,31 @@
    },
    "family": "910C",
    "assumed": [
-    "4 servers (32 NPUs) per cabinet, as in the CM384 compute cabinet (4 × 10U; air-cooled power density not public)",
-    "the 7 on-board L1 UB chips remain the server’s internal UB fabric; their uplink ports stay unused",
-    "scale-out ports as the CM384 RDMA plane (2 × 200G per NPU = 400 Gb/s; a third-party 800I A3 listing shows 8 × 400GE per server, the same bandwidth)",
-    "no L2 tier, no UB optics, no communication cabinets"
+    {
+     "zh": "每柜 4 台服务器（32 NPU），同 CM384 计算柜（4 × 10U；风冷功率密度未公开）",
+     "en": "4 servers (32 NPUs) per cabinet, as the CM384 compute cabinet (4 × 10U; air-cooled power density not public)"
+    },
+    {
+     "zh": "板上 7 片 L1 UB 芯片保留为服务器内 UB 网络，上联口不用；无 L2、无 UB 光、无通信柜",
+     "en": "the 7 on-board L1 UB chips stay as the in-server UB fabric, their uplink ports unused; no L2 tier, no UB optics, no communication cabinets"
+    },
+    {
+     "zh": "scale-out 口同 CM384 RDMA 平面（每 NPU 2 × 200G = 400 Gb/s；第三方 800I A3 规格为每台 8 × 400GE，带宽相同）接 64 口无收敛折叠 Clos（radix 未公开）",
+     "en": "scale-out ports as the CM384 RDMA plane (2 × 200G per NPU = 400 Gb/s; a third-party 800I A3 listing shows 8 × 400GE per server, the same bandwidth) into a non-blocking 64-port folded Clos (radix not public)"
+    }
    ],
+   "layers": {
+    "superpod": {
+     "unit": "nodes",
+     "npus": 8
+    },
+    "cabinet": {
+     "npus": 32
+    },
+    "node": {
+     "npus": 8
+    }
+   },
    "sizes": {
     "10000": {
      "npus": 10000,

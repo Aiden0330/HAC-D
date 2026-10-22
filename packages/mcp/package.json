@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/mcp",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "type": "module",
   "description": "MCP server exposing HAC-D scenario evaluation, comparison, allocation, sensitivity and simulation to agents",
   "bin": {
@@ -11,9 +11,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hac-d/core": "0.1.0",
+    "@hac-d/core": "0.5.0",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "zod": "^4.6.5",
-    "@hac-d/importers": "0.1.0"
+    "@hac-d/importers": "0.5.0"
   }
 }
