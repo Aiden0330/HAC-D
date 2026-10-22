@@ -136,11 +136,13 @@
 <h3>1.2 架构</h3>
 <div class="table-wrap"><table>
   <tr><th>包</th><th>作用</th><th>说明</th></tr>
-  <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付（两种期末规则）、机制链（可配置梯级顺序）与机制库、带检查点上界的规划器、备件、MTTR、带损失预算的分配、敏感性、成本、带 Student-t 与 Wilson 统计的蒙特卡洛、事件计数估计故障率（Garwood）、ReMAP 事件库导入、方案 schema 与示例、参数库（635 条）、v4 拓扑模板（A2 RoCE、A3 CloudMatrix384、Atlas 950）与各单元故障类型、分配策略（最优 / MTTR 降低优先 / MTTF 提升优先）</td></tr>
+  <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付（两种期末规则）、机制链（可配置梯级顺序）与机制库、带检查点上界的规划器、备件、MTTR、带损失预算的分配、敏感性、成本、带 Student-t 与 Wilson 统计的蒙特卡洛、事件计数估计故障率（Garwood）、ReMAP 事件库导入、方案 schema 与示例、参数库（635 条）、v4 拓扑模板（A2 RoCE、A3 CloudMatrix384、Atlas 950）与各单元故障类型、分配策略（最优 / MTTR 降低优先 / MTTF 提升优先）；v5 输入记录与预算原语；v6 <code>ingest</code>（词表、证据卡、口径归一、校验门、差异、扩展请求）</td></tr>
   <tr><td><code>apps/web</code></td><td>Vite + React 静态应用</td><td>中英双语、浅 / 深色，计算在 Web Worker 中；四个主页面（拓扑与硬件、机制、分配、故障库），另有七个页面在「全部页面」中</td></tr>
-  <tr><td><code>packages/cli</code></td><td>命令行 <code>hacd</code></td><td>与 Web 应用同一套函数，输出表格或 JSON</td></tr>
+  <tr><td><code>packages/cli</code></td><td>命令行 <code>hacd</code></td><td>与 Web 应用同一套函数，输出表格或 JSON；v5 报告流水线 <code>findings | bom | budget | methodology | prune | study</code>；v6 输入流水线 <code>ingest</code></td></tr>
   <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 22 个工具（评估、对比、含损失预算的分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器、审核、研究、事件计数估计故障率、v4 拓扑硬件清单与分配策略）</td></tr>
-  <tr><td><code>packages/importers</code></td><td>Excel 导入 / 导出</td><td>公式方法识别、拓扑提取、对账、含公式的工作簿导出</td></tr>
+  <tr><td><code>packages/importers</code></td><td>Excel 导入 / 导出；v6 工作表</td><td>公式方法识别、拓扑提取、对账、含公式的工作簿导出；v6：Markdown 工作表规范 <code>hacd-worksheet-1</code> 与输入记录的双向转换、模板、电子表格器件表导入</td></tr>
+  <tr><td><code>packages/reports</code></td><td>双语 HTML 报告套件</td><td>v5 结果 / 方法 / 元件清单报告与 v6 变更评审页，均为数据的纯函数，逐字节复现</td></tr>
+  <tr><td><code>packages/agent</code></td><td>v6 抽取工作器</td><td>OpenAI 兼容适配器（vLLM / SGLang / llama.cpp）、分块、两种提示变体、经原文落地与两遍一致才接受的证据卡、评审队列、草稿工作表</td></tr>
 </table></div>
 </section>
 
@@ -181,7 +183,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <li><b>静默错误（SDC）</b>：状态被污染而无中断；即时检测捕获一部分，漏检的污染在兜底时延后被发现并回退到最后一个干净 checkpoint；窗口结束时仍带错的状态判废。</li>
 </ul>
 <h3>3.3 置信与出处</h3>
-<p>每个故障率或时间可带 <code>provenance</code>（来源、机构、年份、URL、算式）与置信标签。参数库（§12.3）使用同样的标签；参考示例把借用的占比与目标值标为 <i>assumed</i>。规划器（§6.3）与分配策略（§7.1）对机制参数降额；经典分配方法按置信加权可行性。v4 各单元的故障类型（§4.3）是目录先验值换算到硬件单元，仍标为 <i>assumed</i>。</p>
+<p>每个故障率或时间可带 <code>provenance</code>（来源、机构、年份、URL、算式）与置信标签。参数库（§12.3）使用同样的标签；参考示例把借用的占比与目标值标为 <i>assumed</i>。规划器（§6.3）与分配策略（§7.1）对机制参数降额；经典分配方法按置信加权可行性。v4 各单元的故障类型（§4.3）是目录先验值换算到硬件单元，仍标为 <i>assumed</i>。v6 由内部器件表归一得到的失效率带映射表的算式与按政策给出的置信——任一影响因子或来源为假设即 <i>assumed</i>，否则 <i>derived</i>；模型自身的置信从不采用（§16.5）。</p>
 <h3>3.4 项目页</h3>
 <p><b>项目</b> = 方案 + 页面设置：分配页的页签、策略表单与经典方法的输入；机制库页的页签、参与归因的机制、价值函数、参数覆盖、临时假设开关、工作量与审核选择；拓扑页的页签与「切换时携带」复选框；对比页的项目集合与指标。重新打开项目即恢复全部设置；结果与报告重新计算，不保存。每次修改立即保存在浏览器中（v5.1；早期版本的方案列表会一次性迁移为项目，页面设置取默认值）。</p>
 <p><b>项目</b>页是第一个页签，精简模式下也显示，是唯一的载入与保存入口。表格列出每个项目的模板、NPU / 负载、来源（内置或用户）与最后修改时间，操作有<b>打开</b>（激活并转到拓扑页）、<b>重命名</b>（行内）、<b>复制</b>、<b>导出 JSON</b>、<b>重置为模板</b>（内置项目）与<b>删除</b>（最后一个项目不能删）。表格下方：从四种模板之一按内置规模<b>新建项目</b>，<b>导入 JSON</b>（项目包 <code>{"version": "hacd-project-1", "scenario", "settings"}</code> 或单独的方案 JSON；旧项目包缺少的设置取默认值），以及<b>恢复内置项目</b>。页眉显示当前项目名称，点击即打开本页。</p>
@@ -610,7 +612,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <section id="s14">
 <h2>14. 验证与精度</h2>
 <h3>14.1 黄金向量与测试</h3>
-<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 690 个核心测试与 29 个导入器测试（v4 新增 126 个拓扑黄金向量 <code>golden_v4.json</code>：Clos 数量、384 NPU 到 500k（含内置 10k / 100k / 200k / 500k）的模板数量、单元 FIT、CloudMatrix384 校准）；导出的工作簿用独立公式引擎重算；每个页面都在 1280 px 与 375 px、浅色与深色下截图检查。</p>
+<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 817 个核心测试、52 个导入器测试、30 个抽取工作器测试与 28 个报告测试（v4 新增 126 个拓扑黄金向量，v5 新增 G1–G6 的 29 个预算原语用例，v6 新增 G7 的 5 个口径归一用例——单位换算与各类求和到 1e-9）；<code>node packages/reports/test/reproduce.mjs</code> 逐字节复现六份昇腾报告。</p>
 <h3>14.2 与参考引擎的交叉校核</h3>
 <p>经审核的参考引擎（单训练作业、30 天离散事件仿真、每方案 4000 次）与 HAC-D 在同一基线上：万卡硬件 MTBF 30 h 并线性外推，τ 300 s，δ 4 s，检测 95 % 在 10 s 否则 60 s，恢复 180 s 成功率 99 % 否则加 2 h 人工。</p>
 <div class="table-wrap"><table>
@@ -652,6 +654,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <li><b>分配</b>：设定目标与约束（FIT 下限、每减半工作量、候选机制、恢复上限），对比三种策略，再跨规模运行；把各单元允许 FIT 交给硬件负责方，把机制组合与恢复上限交给平台团队。</li>
   <li><b>校核与报告</b>：账本校核（P(窗口 ≥ 目标) 及 Wilson 判定）、非指数或相关输入时用仿真页、报告页及其导出；然后在生产中实测并循环。</li>
 </ol>
+<p>内部输入（v6）：硬件 FIT 表、新拓扑与新机制通过工作表与 <code>hacd ingest</code>——暂存、校验、试算、差异、提升——在持有文档的内网中用离线包完成（§16.5；操作手册 <code>docs/markdown/INGEST_RUNBOOK.md</code>）。</p>
 </section>
 
 <section id="s16">
@@ -684,6 +687,13 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本</td></tr>
   <tr><td><code>hacd methodology --data docs/data</code>、<code>hacd bom --records … --npus 100000</code></td><td>由一次 findings 运行的旁路 JSON 生成方法报告；各 scale-out 变体的元件清单</td></tr>
   <tr><td><code>hacd budget --record cm384 --scale 200000</code>、<code>hacd prune --study-dir dir --out pruned.json</code></td><td>单个架构 × 规模的预算（今天 / 要求 / 推荐）；按剪除规则重新判定机制集的分类列表</td></tr>
+  <tr><td colspan="2"><b>v6 输入流水线</b>（工作表 → 暂存记录 → 校验门 → KPI 差异 → 提升；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v6 ingest” 一节与 §16.5）</td></tr>
+  <tr><td><code>hacd ingest template &lt;kind&gt;</code>、<code>hacd ingest fields &lt;kind&gt; | --vocab</code></td><td>某类工作表的示例（topology、fault-rates、device-fit、koujing-mapping、mechanisms、mechanism-proposal），原样即可解析；字段路径与封闭词表</td></tr>
+  <tr><td><code>hacd ingest worksheet ws.md… --out staging</code>、<code>hacd ingest import-fit book.xlsx --id x</code>、<code>hacd ingest normalize --devices d --mapping m --id x</code></td><td>工作表 → 暂存 JSON（引擎没有的模板、单元或机制变为扩展请求）；器件失效率电子表格 → 器件表；器件表 × 口径映射 → 带算式的失效率覆盖</td></tr>
+  <tr><td><code>hacd ingest validate staging</code>、<code>hacd ingest dry-run --record r [--rates f] [--mechanisms m] [--scales …]</code></td><td>模式之外的校验门（有错误时退出码 1）；各规模下预算的 KPI 行</td></tr>
+  <tr><td><code>hacd ingest diff --before-record native950 --after-record r [--after-rates f] --out staging/delta</code></td><td>带出处的输入变化、前后 KPI 行与 Δ → <code>delta.{json,md,zh.md,html}</code>，双语评审页</td></tr>
+  <tr><td><code>hacd ingest promote staging [--data dir] [--force]</code></td><td>通过校验的记录以自己的 id 进入数据目录（公开 id 被拒绝），每个文件一行 <code>CHANGELOG.md</code></td></tr>
+  <tr><td><code>hacd ingest extract doc.txt --kind topology --provider openai-compatible --base-url … --model … [--mode guided_json] --source-type vendor</code></td><td>模型步骤：证据卡、评审队列、运行日志、草稿工作表（§16.5）</td></tr>
 </table></div>
 <p>所有命令都接受 <code>--json</code>。</p>
 <h3>16.2 MCP 工具</h3>
@@ -712,7 +722,14 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   "mechanisms": { "order": ["replay", "hotswap", "elastic", "process"], "replay": { … }, "elastic": { … }, "process": { … }, "overheads": { } },
   "measures": { "subhealthThreshold": 0.7, "primary": "compensated", "commShare": 0.3 }, "targets": { "goodput": 0.9, "operational": 0.985 } }</pre>
 <p>v4 字段：<code>topology.template</code>、<code>cpusPerNode</code>、<code>fabricFill</code>、<code>scaleOut</code>；计数规则 <code>cpu</code>、<code>ub_switch</code>、<code>roce_port</code>、<code>roce_switch</code>、<code>roce_link</code>；RoCE 类比的单元故障类型写作 <code>&lt;事件&gt;@roce</code>；<code>component.allocation.effortPerHalving</code>；<code>targets.operational</code>（A_op 目标）。内部名称保留 <code>nGpus</code>、<code>gpusPerNode</code> 与计数规则 <code>gpu</code> 以保持兼容。</p>
-<p>完整 JSON Schema 见 <code>docs/scenario.schema.json</code>；工具规范见 <code>docs/SPEC.md</code>。</p>
+<p>完整 JSON Schema 由 <code>hacd schema</code> 输出（v5 输入记录加 <code>--record | --mechanisms | --rates</code>）；工具规范见 <code>docs/markdown/SPEC.md</code>。</p>
+<h3>16.5 v6 工作表、口径映射与离线包</h3>
+<p>内部输入以<b>工作表</b>进入：带 YAML 头、<code>## 小节</code>标题与固定表头竖线表格的 Markdown 文件（规范 <code>hacd-worksheet-1</code>）。一张工作表就是一条记录；解析器是严格的，出错时报出行号；值单元格留空表示“未声明”。<code>hacd ingest template &lt;kind&gt;</code> 打印一份原样可解析的示例。v5 流水线的 JSON 记录仍是契约；工作表是评审界面，每条公开记录经工作表往返后不变。</p>
+<p><b>硬件 FIT</b> 不直接手填到失效率工作表。<i>器件表</i>按来源原文记录各部件的失效率（FIT、每 10⁶ 小时、每小时、MTBF 小时或 AFR，附来源与来源类型）；经评审的<i>口径映射</i>按器件与故障类给出故障单元、每单元器件数与影响因子——该部件的失效在现有保护之后成为该类业务影响事件的比例。<code>hacd ingest normalize</code> 计算 FIT<sub>类,单元</sub> = Σ FIT<sub>器件</sub> × 每单元器件数 × 影响因子，把每一项写入条目的算式，并按政策给出置信（任一因子或来源为假设即 assumed，否则 derived，否则取来源类型自身的置信）。hard / slow / sdc 三类各自求和，从不跨类相加。</p>
+<p><b>校验门</b>（<code>hacd ingest validate</code>）：封闭词表——故障类 id、故障单元、模板、计数行、机制 id 与机制实际读取的参数键；出处完整性；合理性，即在单元库值的 ×0.1 … ×10 之内（是要读的警告，不是错误）；拓扑记录的结构一致性（节点、机柜、SuperPoD 的 NPU 数与几何一致）；以及 id 政策：内部记录用自己的 id，与公开的 <code>native950</code>、<code>ubl128</code>、<code>cm384</code>、<code>a3server</code>、<code>a960e</code>、<code>remap-latest-2026-10</code>、<code>remap-per-card-2026-10-09</code> 并列，后者从不被覆盖。引擎无法表达的设计或机制（新的硬件单元类型、新模板、新变换）不是数据更新：<code>worksheet</code> 转而写出面向 HAC-D 侧的<i>扩展请求</i>，只含结构。</p>
+<p><b>差异</b>（<code>hacd ingest diff</code>）：评审页列出每个变化的输入及新记录声明的来源与置信、按每单元口径比较的失效率类及其倍数，以及该次运行各规模下预算的前后 KPI 行——A_op 名义与降额、交付 goodput、MTBF<sub>hw</sub>、MTTR<sub>hw</sub>、P(窗口)、因子 k、推荐机制与杠杆——并带 Δ 行。它是 <code>promote</code> 之前评审人签字的对象；之后 §16.1 的报告集在新输入上运行（<code>hacd findings --record &lt;id&gt; --rates &lt;id&gt;</code>）。</p>
+<p><b>文档与内网模型</b>（<code>hacd ingest extract</code>，包 <code>packages/agent</code>）：文档被分块；OpenAI 兼容端点后的模型（vLLM、SGLang、llama.cpp；受约束 JSON 或代码块回退）只写<i>证据卡</i>——字段路径、原文的值与单位、逐字引文及位置。只有当引文在分块中找到、值在引文之内、且用不同提示的第二遍结果一致时才接受；其余进入 <code>review.md</code>。模型从不换算单位、计算速率、判定故障类或置信：草稿工作表的置信来自你声明的来源类型。PDF 先转为文本。</p>
+<p><b>离线包</b>：<code>node scripts/bundle-offline.mjs</code> 生成 <code>dist/offline/hacd-&lt;version&gt;.tgz</code>——一个打包的命令行，katex 置于其旁，记录目录作为 <code>HACD_DATA</code>，启动脚本 <code>bin/hacd</code> 与 <code>bin\hacd.cmd</code>，工作表模板与文档；只需 Node ≥ 20，除你指定的模型端点外不联网。内网团队的分步操作手册是 <code>docs/markdown/INGEST_RUNBOOK.md</code>；公式与校验门见 <code>docs/markdown/MODEL_REFERENCE.md</code> §26；在本侧，<code>update-inputs</code> 技能把一批输入过校验门并带黄金向量实现扩展请求。</p>
 </section>
 
 <section id="s17">
@@ -725,6 +742,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <li>未建模：参考工具 V4 引擎的拓扑特性（放置方式、维修并发数、最低可用容量）；ReMAP 桥接会注明引擎无法表示的梯级与开销。</li>
   <li>v4 拓扑模板：A2 的 Clos 端口数与收敛比，Atlas 950 的 LRS 数量、交换端口数与 scale-out 平面，Atlas 960E 的柜数拆分（单一媒体来源）、刀片芯片数与 scale-out 端口，以及所有光模块数量均为假设；新交换芯片与光链路沿用 CloudMatrix384 的单元 FIT；RoCE 交换机与链路使用 UB 类比值；机柜 FIT 不随密度变化；各单元故障类型是在 CloudMatrix384 几何下换算的目录先验值，并非实测。</li>
   <li>分配策略只通过候选机制的库参数与三项恢复杠杆改变机制参数，不对每个机制参数做连续优化。硬件工作量采用每减半的对数代价，是有成本曲线时应替换的假设。</li>
+  <li>v6 输入流水线只有命令行（无网页）；PDF 须先转文本；抽取质量取决于内网模型与电子表格导入器的表头词典，二者都要在内网的真实版式上调校；口径映射的影响因子在没有现网比例支撑时是评审人的假设；新机制以参数更新或扩展请求进入，从不在没有黄金向量时作为新变换加入。</li>
   <li>待办：上传拓扑图片的图像识别（目前模板是参数化示意图）、DP 弹性训练模板、Shapley 的蒙特卡洛置信区间。</li>
 </ul>
 </section>

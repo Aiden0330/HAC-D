@@ -1,6 +1,6 @@
 # Claude Code skills for HAC-D (2026-10-11)
 
-Skills live in `.claude/skills/<name>/SKILL.md` and are invoked with `/<name>` (or picked up automatically when the task matches). They encode the recurring parts of the workflows in `docs/WORKFLOW.md`.
+Skills live in `.claude/skills/<name>/SKILL.md` and are invoked with `/<name>` (or picked up automatically when the task matches). They encode the recurring parts of the workflows in `docs/markdown/WORKFLOW.md`.
 
 | Skill | Use it when | What it does |
 |---|---|---|
@@ -11,5 +11,6 @@ Skills live in `.claude/skills/<name>/SKILL.md` and are invoked with `/<name>` (
 | `reference-compare` | training / SDC / chain / ledger models changed | run the reference engine and the comparison scripts, compare with the published means and CI bands, record the table |
 | `add-parameter` | a new paper, blog or measurement gives a rate or time | add a library record with 口径, provenance and confidence, validate, test, report |
 | `build-manual` | UI or methods changed visibly | refresh English and Chinese screenshots, crop images, edit both manual sources, inline into `docs/USER_MANUAL.html` and `docs/USER_MANUAL.zh.html`, check at both viewports |
+| `update-inputs` | a staging folder, worksheets or extension requests arrive from the internal side (v6), or the ingest pipeline itself changes | stage → gates → dry run → delta review → promote under internal ids beside the public records; implement extension requests (unit kind, template, mechanism) with goldens through `model-check`; rebuild and check the offline bundle |
 
 Conventions shared by all skills: goldens are computed independently in Python and never edited by hand; every KPI is reported with its formula and 口径; the reference-tool drop (`ai-cluster-reliability-main/`) is never committed; screenshots are inspected as PNGs because the in-app browser pane renders 1280 px too small to judge.
