@@ -1,11 +1,10 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EXAMPLES, parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, COUNT_RULE_PERS, computeCounts, componentInstances, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow, unitRateFromCounts } from '@hac-d/core';
+import { parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, COUNT_RULE_PERS, computeCounts, componentInstances, ladderExpectation, mixtureLadder, type Scenario, type Component, type Superpod, type ComponentRow, unitRateFromCounts } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
 import { RbdDiagram } from '../diagrams/RbdDiagram.js';
-import { download, scenarioFilename } from '../lib/export.js';
 import { fmtHours } from '../lib/format.js';
 
 const RATE_UNITS = ['per_h', 'per_1e6_h', 'FIT', 'per_year', 'per_day', 'per_1000_node_day', 'per_month', 'per_week', 'mtbf_h', 'gpu_h_per_event', 'gpu_day_per_event'] as const;
@@ -25,8 +24,6 @@ export function ScenarioPage() {
   const active = useActive();
   const store = useStore();
   const [error, setError] = useState<string | null>(null);
-  const [exampleKey, setExampleKey] = useState(Object.keys(EXAMPLES)[0]);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const upd: Upd = (fn) => {
     try {
@@ -37,22 +34,10 @@ export function ScenarioPage() {
     }
   };
 
-  if (!active) return <div className="callout">No scenario. Load an example.</div>;
+  if (!active) return <div className="callout">No project.</div>;
   const { scenario: s, result } = active;
   const sp = s.topology.superpod;
   const supernodeSize = sp ? sp.npusPerNode * sp.nodesPerRack * sp.computeRacks : 0;
-
-  const importJson = (file: File) => {
-    file.text().then((txt) => {
-      try {
-        const parsed = parseScenario(JSON.parse(txt));
-        store.addScenario({ ...parsed, meta: { ...parsed.meta, id: undefined } }, true);
-        setError(null);
-      } catch (e) {
-        setError(`${t('scenario.jsonInvalid')}: ${(e as Error).message}`);
-      }
-    });
-  };
 
   return (
     <div className="grid" style={{ gap: 14 }}>
@@ -60,20 +45,8 @@ export function ScenarioPage() {
         <h1>{t('scenario.title')}</h1>
         <span className="sub">{t('scenario.sub')}</span>
       </div>
-      <Card>
-        <div className="btn-row">
-          <div className="select-fill"><Select value={exampleKey} onChange={setExampleKey} options={Object.keys(EXAMPLES).map((k) => ({ value: k, label: `${k} — ${EXAMPLES[k]().meta.name}` }))} /></div>
-          <button type="button" className="btn" onClick={() => store.loadExample(exampleKey)} title={t('scenario.examplesHint')}>{t('scenario.examples')}</button>
-          <button type="button" className="btn" onClick={() => store.restoreExample(exampleKey)} title={t('scenario.restoreHint')}>{t('scenario.restoreExample')}</button>
-          <button type="button" className="btn" onClick={() => fileRef.current?.click()}>{t('scenario.importJson')}</button>
-          <input ref={fileRef} type="file" accept="application/json" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) importJson(f); e.currentTarget.value = ''; }} />
-          <button type="button" className="btn" onClick={() => download(scenarioFilename(s, 'json'), JSON.stringify(s, null, 2))}>{t('scenario.exportJson')}</button>
-          <button type="button" className="btn" onClick={() => store.duplicateActive()}>{t('scenario.duplicate')}</button>
-          <button type="button" className="btn" onClick={() => { if (store.scenarios.length > 1) store.removeScenario(s.meta.id!); }} disabled={store.scenarios.length <= 1}>{t('scenario.deleteScenario')}</button>
-          <button type="button" className="btn" onClick={() => store.resetToExamples()}>{t('common.reset')}</button>
-        </div>
-        {error && <div className="callout crit" style={{ marginTop: 8 }}>{error}</div>}
-      </Card>
+      {/* v5.1 load / save / duplicate / delete / reset live on the Projects page; the editor only edits the active project */}
+      {error && <div className="callout crit">{error}</div>}
       <div className="callout" style={{ fontSize: 12 }}>{t('scenario.advancedNote')}</div>
       {active.error && <div className="callout crit">{active.error}</div>}
       <div className="grid cols-2">

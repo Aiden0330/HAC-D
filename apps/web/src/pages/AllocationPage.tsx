@@ -1,34 +1,34 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { allocateScenario, type AllocationMethod, type AllocationBasis, type LossBudgetMethod, type LedgerLossLine } from '@hac-d/core';
 import { useActive, useLang } from '../hooks.js';
-import { useStore } from '../state/store.js';
+import { useStore, useActiveSettings, type ProjectSettings } from '../state/store.js';
+import type { AllocationTab } from '../state/settings.js';
 import { Kpi, Card, DataTable, Field, NumberInput, Select, Badge } from '../components/ui.js';
-import { StrategyForm, StrategyPanel, CrossScalePanel, defaultSettings, type StrategySettings } from '../panels/StrategyPanel.js';
-import { StudyPanel } from '../panels/StudyPanel.js';
-import { PlannerPanel } from '../panels/PlannerPanel.js';
+import { StrategyForm, StrategyPanel, CrossScalePanel, resolveStrategySettings, type StrategySettings } from '../panels/StrategyPanel.js';
 import { fmtPct, fmtDuration, fmtNum, fmtRatePerMillion, fmtHours } from '../lib/format.js';
 
 const METHODS: AllocationMethod[] = ['arinc', 'agree', 'equal', 'feasibility', 'minimum-effort', 'cost-optimal'];
 
-type Tab = 'strategies' | 'cross' | 'classic' | 'planner';
+type Tab = AllocationTab;
 
 /**
  * v4 allocation page: the three strategies (optimal / MTTR-preferred / MTTF-preferred) with hardware FIT floors, mechanism candidates
- * and recovery limits; the same strategies across sizes (with the detailed allocation-study report); the classic budget methods
- * (ARINC, AGREE, equal, feasibility, minimum effort, cost optimal, loss and stage budgets); the mechanism-only planner.
+ * and recovery limits; the same strategies across sizes; the classic budget methods (ARINC, AGREE, equal, feasibility, minimum
+ * effort, cost optimal, loss and stage budgets). v5.1: the mechanism-only planner tab and the v3.7 allocation study panel are gone —
+ * the strategies tab covers the planner's search (with levers and hardware on top) and the v5 CLI (hacd findings) produces the study.
  */
 export function AllocationPage() {
   const { t } = useTranslation();
   const active = useActive();
-  const [tab, setTab] = useState<Tab>('strategies');
-  const [st, setSt] = useState<StrategySettings | null>(null);
-  const sid = active?.scenario.meta.id;
-  useEffect(() => { if (active) setSt(defaultSettings(active.scenario)); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sid]);
+  // v5.1 the tab and the strategy form are page settings of the active project; the form stays null (= defaultSettings of the
+  // current scenario) until the user changes something
+  const { tab, strategy: st } = useActiveSettings().allocation;
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  const setTab = (k: Tab) => updateSettings({ allocation: { tab: k } });
   if (!active || active.error) return <div className="callout crit">{active?.error ?? 'No scenario'}</div>;
-  const settings = st ?? defaultSettings(active.scenario);
-  const set = (f: (x: StrategySettings) => StrategySettings) => setSt((x) => f(x ?? defaultSettings(active.scenario)));
+  const settings = resolveStrategySettings(active.scenario, st);
+  const set = (f: (x: StrategySettings) => StrategySettings) => updateSettings((x) => ({ ...x, allocation: { ...x.allocation, strategy: f(resolveStrategySettings(active.scenario, x.allocation.strategy)) } }));
   return (
     <div className="grid" style={{ gap: 14 }}>
       <div className="page-title">
@@ -36,21 +36,12 @@ export function AllocationPage() {
         <span className="sub">{t('allocation.subV4')}</span>
       </div>
       <div className="tabs" role="tablist">
-        {(['strategies', 'cross', 'classic', 'planner'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`allocation.tab_${k}`)}</button>)}
+        {(['strategies', 'cross', 'classic'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`allocation.tab_${k}`)}</button>)}
       </div>
       {(tab === 'strategies' || tab === 'cross') && <StrategyForm s={active.scenario} st={settings} set={set} />}
       {tab === 'strategies' && <StrategyPanel s={active.scenario} st={settings} />}
-      {tab === 'cross' && (
-        <>
-          <CrossScalePanel s={active.scenario} st={settings} />
-          <details>
-            <summary className="muted" style={{ cursor: 'pointer', fontSize: 13 }}>{t('allocation.studyDetails')}</summary>
-            <div className="grid" style={{ gap: 12, marginTop: 8 }}><StudyPanel scenario={active.scenario} /></div>
-          </details>
-        </>
-      )}
+      {tab === 'cross' && <CrossScalePanel s={active.scenario} st={settings} />}
       {tab === 'classic' && <ClassicAllocation />}
-      {tab === 'planner' && <PlannerPanel scenario={active.scenario} />}
     </div>
   );
 }
@@ -61,15 +52,24 @@ function ClassicAllocation() {
   const lang = useLang();
   const active = useActive();
   const updateActive = useStore((st) => st.updateActive);
-  const [method, setMethod] = useState<AllocationMethod>('arinc');
-  const [goodputTarget, setGoodputTarget] = useState<number>(active?.scenario.targets.goodput ?? 0.97);
-  const [availabilityTarget, setAvailabilityTarget] = useState<number>(active?.scenario.targets.availability ?? 0.999);
-  const [restartShare, setRestartShare] = useState(0.5);
+  // v5.1 the classic inputs are page settings of the active project (null targets / basis = the scenario's defaults)
+  const cs = useActiveSettings().allocation.classic;
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  type C = ProjectSettings['allocation']['classic'];
+  const setC = <K extends keyof C>(k: K) => (v: C[K] | ((prev: C[K]) => C[K])) => updateSettings((x) => { const cur = x.allocation.classic; return { ...x, allocation: { ...x.allocation, classic: { ...cur, [k]: typeof v === 'function' ? (v as (p: C[K]) => C[K])(cur[k]) : v } } }; });
+  const { method, restartShare, lossMethod } = cs;
+  const lossWeights = cs.lossWeights as Partial<Record<LedgerLossLine, number>>;
+  const goodputTarget = cs.goodputTarget ?? active?.scenario.targets.goodput ?? 0.97;
+  const availabilityTarget = cs.availabilityTarget ?? active?.scenario.targets.availability ?? 0.999;
+  const setMethod = setC('method');
+  const setGoodputTarget = setC('goodputTarget');
+  const setAvailabilityTarget = setC('availabilityTarget');
+  const setRestartShare = setC('restartShare');
+  const setBasis = setC('basis');
+  const setLossMethod = setC('lossMethod');
+  const setLossWeights = setC('lossWeights');
   const hasSdc = !!active?.result?.training?.sdc;
-  const [basisChoice, setBasis] = useState<AllocationBasis | undefined>(undefined);
-  const [lossMethod, setLossMethod] = useState<LossBudgetMethod>('proportional');
-  const [lossWeights, setLossWeights] = useState<Partial<Record<LedgerLossLine, number>>>({});
-  const basis: AllocationBasis = basisChoice ?? (hasSdc ? 'delivered' : 'effective');
+  const basis: AllocationBasis = cs.basis ?? (hasSdc ? 'delivered' : 'effective');
   const alloc = useMemo(() => {
     if (!active || active.error) return undefined;
     try {

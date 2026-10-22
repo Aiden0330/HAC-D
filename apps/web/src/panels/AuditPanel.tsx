@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MECHANISM_LIBRARY, auditReportHtml, integrationStatus, type AuditReport, type Scenario } from '@hac-d/core';
-import { useStore } from '../state/store.js';
+import { useStore, useActiveSettings } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute, ComputeCancelled } from '../worker/client.js';
 import { Card, DataTable, Kpi } from '../components/ui.js';
@@ -9,7 +9,7 @@ import { download } from '../lib/export.js';
 import { fmtPct } from '../lib/format.js';
 
 
-/** v4 the single-point benefit audit of the former Audit page, now a tab of the Mechanisms page (on the scenario chosen there) */
+/** v4 the single-point benefit audit of the former Audit page, now a tab of the Mechanism library page (on the active project) */
 export function AuditPanel({ scenario }: { scenario: Scenario }) {
   const { t } = useTranslation();
   const lang = useLang();
@@ -17,8 +17,12 @@ export function AuditPanel({ scenario }: { scenario: Scenario }) {
   const builtin = useMemo(() => MECHANISM_LIBRARY.filter((m) => !m.audit), []);
   const audited = useMemo(() => MECHANISM_LIBRARY.filter((m) => !!m.audit), []);
   const name = (id: string) => { const m = MECHANISM_LIBRARY.find((x) => x.id === id); return m ? (lang === 'zh' ? m.name.zh : m.name.en) : id; };
-  const [ids, setIds] = useState<string[]>(() => audited.map((m) => m.id));
-  const [provisional, setProvisional] = useState(false);
+  // v5.1 the mechanisms audited and the provisional switch are page settings of the active project
+  const { ids, provisional } = useActiveSettings().mechanisms.audit;
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  const setAuditSettings = (patch: Partial<{ ids: string[]; provisional: boolean }>) => updateSettings((x) => ({ ...x, mechanisms: { ...x.mechanisms, audit: { ...x.mechanisms.audit, ...patch } } }));
+  const setIds = (f: string[] | ((p: string[]) => string[])) => updateSettings((x) => ({ ...x, mechanisms: { ...x.mechanisms, audit: { ...x.mechanisms.audit, ids: typeof f === 'function' ? f(x.mechanisms.audit.ids) : f } } }));
+  const setProvisional = (v: boolean) => setAuditSettings({ provisional: v });
   const [audit, setAudit] = useState<AuditReport | null>(null);
   const [auditHtml, setAuditHtml] = useState('');
   const [busy, setBusy] = useState(false);

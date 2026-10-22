@@ -25,6 +25,18 @@ export function defaultSettings(s: Scenario): StrategySettings {
   return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })) };
 }
 
+/** v5.1 the stored strategy form of a project over the scenario's defaults (null = the defaults; unknown keys dropped, mistyped ones defaulted) */
+export function resolveStrategySettings(s: Scenario, stored: StrategySettings | null | undefined): StrategySettings {
+  const d = defaultSettings(s);
+  if (!stored || typeof stored !== 'object') return d;
+  const out = { ...d } as Record<string, unknown>;
+  for (const k of Object.keys(d) as (keyof StrategySettings)[]) {
+    const v = (stored as unknown as Record<string, unknown>)[k];
+    if (v !== undefined && (Array.isArray(d[k]) ? Array.isArray(v) : typeof v === typeof d[k])) out[k] = v;
+  }
+  return out as unknown as StrategySettings;
+}
+
 export function optionsOf(st: StrategySettings, strategy: StrategyId): Omit<StrategyOptions, 'onProgress'> {
   return { strategy, target: st.target, metric: st.metric, hardwareSplit: st.split, derate: st.derate ? undefined : null, candidates: st.candidates, levers: st.levers.filter((l) => l.on).map(({ on: _on, ...l }) => l), verify: st.trials > 0 ? { trials: st.trials } : undefined };
 }

@@ -25,15 +25,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topbar .brand { display: flex; flex-direction: column; line-height: 1.15; }
 .topbar .brand .eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .topbar .spacer { flex: 1; }
-.topbar .scenario-select { max-width: 320px; min-width: 0; }
-.topbar .scenario-select select { max-width: 100%; min-width: 0; flex: 1 1 auto; width: 100%; }
+.topbar .project-link {
+  display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; max-width: 440px; padding: 4px 10px; background: var(--surface-2);
+  border: 1px solid var(--rule); border-radius: var(--radius-sm); cursor: pointer; color: var(--ink); text-align: left;
+}
+.topbar .project-link:hover { border-color: var(--accent); }
+.topbar .project-link .muted { flex: none; font-size: 12px; }
+.topbar .project-link .project-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.topbar .project-link > span[aria-hidden] { flex: none; color: var(--accent); }
 .topbar .brand { min-width: 0; }
 .topbar .brand h1 { white-space: nowrap; }
 @media (max-width: 760px) {
   .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 12px; }
   .topbar .brand { flex: 1 1 auto; }
-  .topbar .scenario-select { order: 3; flex: 1 1 100%; max-width: none; }
-  .topbar .scenario-select label { display: none; }
+  .topbar .project-link { order: 3; flex: 1 1 100%; max-width: none; }
   .topbar .spacer { display: none; }
 }
 .nav { display: flex; gap: 2px; overflow-x: auto; padding: 0 8px; background: var(--surface); border-bottom: 1px solid var(--rule); }
@@ -228,3 +233,23 @@ table.data.bom td:first-child { min-width: 170px; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 table.data td input[type="number"], table.data td select { width: 100%; max-width: 120px; background: var(--surface-3); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 6px; font-size: 12px; }
 @media (max-width: 640px) { table.data th { white-space: nowrap; } table.data td.num { white-space: nowrap; } }
+
+/* v5.1 Projects page */
+table.data.projects td { vertical-align: middle; }
+table.data.projects tr.active td { background: var(--accent-soft); }
+table.data.projects td.name { min-width: 180px; }
+table.data.projects td.name input { width: 100%; min-width: 0; max-width: 360px; padding: 2px 6px; background: var(--surface-3); border: 1px solid var(--accent); border-radius: 4px; }
+table.data.projects td.actions .btn-row { gap: 4px; }
+table.data.projects td.when, table.data.projects td.origin { white-space: nowrap; }
+@media (max-width: 760px) {
+  /* each project becomes a block: name on top, the facts and the actions wrap below */
+  table.data.projects thead { display: none; }
+  table.data.projects, table.data.projects tbody, table.data.projects tr, table.data.projects td { display: block; width: 100%; }
+  table.data.projects tr { border-bottom: 1px solid var(--rule); padding: 6px 0; }
+  table.data.projects td { border-bottom: 0; padding: 2px 4px; }
+  table.data.projects td.name { min-width: 0; }
+  table.data.projects td[data-label]::before { content: attr(data-label) " · "; color: var(--ink-3); font-size: 12px; }
+  table.data.projects td.when { white-space: normal; }
+}
+.new-project { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.new-project .field { min-width: 0; flex: 1 1 200px; max-width: 360px; }

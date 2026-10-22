@@ -4,6 +4,7 @@ src, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 # v4: (image name, capture name, crop box (left, top, right, bottom) at 1280 px width; bottom None = full height)
 crops = [
+    ('projects', 'projects', (0, 0, 1280, 1000)),
     ('topology', 'topology', (0, 0, 1280, 1700)),
     ('topology-picture', 'topology-picture', (380, 300, 1280, None)),
     ('reliability', 'reliability', (380, 300, 1280, 2300)),

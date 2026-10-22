@@ -14,9 +14,10 @@ import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
 import { ImportPage } from './pages/ImportPage.js';
 import { MechanismsPage } from './pages/MechanismsPage.js';
+import { ProjectsPage } from './pages/ProjectsPage.js';
 
-/** v4 main flow: topology & hardware → mechanisms → allocation → fault library; the rest is behind "All pages" (and in the CLI / MCP) */
-const PAGES: Page[] = ['topology', 'mechanisms', 'allocation', 'library', 'scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
+/** v5.1 main flow: projects → topology & hardware → allocation → mechanism library → fault library; the rest is behind "All pages" (and in the CLI / MCP) */
+const PAGES: Page[] = ['projects', 'topology', 'allocation', 'mechanisms', 'library', 'scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
 const MINIMAL_HIDDEN: Page[] = ['scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
 type UiMode = 'minimal' | 'full';
 const UI_MODE_KEY = 'hacd-ui-mode';
@@ -35,9 +36,7 @@ export function App() {
   const setPage = useStore((s) => s.setPage);
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
-  const scenarios = useStore((s) => s.scenarios);
-  const activeId = useStore((s) => s.activeId);
-  const setActive = useStore((s) => s.setActive);
+  const activeName = useStore((s) => s.scenarios.find((x) => x.meta.id === s.activeId)?.meta.name ?? '');
   const [uiMode, setUiModeState] = useState<UiMode>(readUiMode);
   const setUiMode = (m: UiMode) => {
     setUiModeState(m);
@@ -48,9 +47,11 @@ export function App() {
     }
   };
   const visiblePages = uiMode === 'minimal' ? PAGES.filter((p) => !MINIMAL_HIDDEN.includes(p)) : PAGES;
+  // switching to Minimal leaves a hidden page; a link to a hidden page (the scenario editor from the Topology page) still opens it
   useEffect(() => {
-    if (!visiblePages.includes(page)) setPage('topology');
-  }, [uiMode, page, visiblePages, setPage]);
+    if (!visiblePages.includes(page)) setPage('projects');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uiMode]);
 
   return (
     <div className="app">
@@ -60,14 +61,11 @@ export function App() {
             <span className="eyebrow">{t('app.eyebrow')}</span>
             <h1>{t('app.title')}</h1>
           </div>
-          <div className="field scenario-select" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <label htmlFor="scenario-select" className="muted">{t('app.scenarioLabel')}</label>
-            <select id="scenario-select" value={activeId} onChange={(e) => setActive(e.target.value)}>
-              {scenarios.map((s) => (
-                <option key={s.meta.id} value={s.meta.id}>{scenarios.filter((x) => x.meta.name === s.meta.name).length > 1 ? `${s.meta.name} [${s.meta.id}]` : s.meta.name}</option>
-              ))}
-            </select>
-          </div>
+          <button type="button" className="project-link" onClick={() => setPage('projects')} title={t('app.projectHint')} aria-label={`${t('app.projectLabel')}: ${activeName}`}>
+            <span className="muted">{t('app.projectLabel')}</span>
+            <span className="project-name">{activeName}</span>
+            <span aria-hidden="true">›</span>
+          </button>
           <div className="spacer" />
           <div className="btn-row" role="group" aria-label="theme">
             {(['auto', 'light', 'dark'] as Theme[]).map((th) => (
@@ -90,6 +88,7 @@ export function App() {
         </nav>
       </div>
       <main>
+        {page === 'projects' && <ProjectsPage />}
         {page === 'topology' && <TopologyPage />}
         {page === 'scenario' && <ScenarioPage />}
         {page === 'mechanisms' && <MechanismsPage />}

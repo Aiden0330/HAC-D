@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MECHANISM_LIBRARY, DEFAULT_PLAYERS, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, provisionalParameters, integrationStatus, type MechanismReport, type AttributionMetric, type Scenario } from '@hac-d/core';
-import { useStore } from '../state/store.js';
+import { MECHANISM_LIBRARY, activeMechanisms, applyMechanisms, stripMechanisms, isStrippable, evaluateScenario, provisionalParameters, integrationStatus, type MechanismReport, type AttributionMetric, type Scenario } from '@hac-d/core';
+import { useStore, useActiveScenario, useActiveSettings, type ProjectSettings } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
 import { Kpi, Card, DataTable, Field, Select, Badge, NumberInput } from '../components/ui.js';
@@ -15,15 +15,20 @@ const METRICS: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
 export function MechanismsPage() {
   const { t } = useTranslation();
   const lang = useLang();
-  const scenarios = useStore((s) => s.scenarios);
-  const activeId = useStore((s) => s.activeId);
-  const replaceScenario = useStore((s) => s.replaceScenario);
-  // v4 the page works on the active scenario by default (topology scenarios carry per-event mechanism flags like the catalog);
-  // another scenario can be chosen here for the attribution and the audit
-  const [chosenId, setChosenId] = useState<string | undefined>(undefined);
-  const [tab, setTab] = useState<'selection' | 'chain' | 'audit'>('selection');
-  const targetId = chosenId && scenarios.some((x) => x.meta.id === chosenId) ? chosenId : activeId;
-  const scenario: Scenario | undefined = scenarios.find((x) => x.meta.id === targetId);
+  // v5.1 the page works on the active project (chosen on the Projects page): its edits go to the active project and its inputs
+  // (tab, players, value function, overrides, provisional switch, efforts) are page settings of that project
+  const scenario: Scenario | undefined = useActiveScenario();
+  const updateActive = useStore((s) => s.updateActive);
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  const { tab, players, metric, overrides, provisional, efforts } = useActiveSettings().mechanisms;
+  type M = ProjectSettings['mechanisms'];
+  const setM = <K extends keyof M>(k: K, v: M[K] | ((prev: M[K]) => M[K])) => updateSettings((x) => ({ ...x, mechanisms: { ...x.mechanisms, [k]: typeof v === 'function' ? (v as (p: M[K]) => M[K])(x.mechanisms[k]) : v } }));
+  const setTab = (k: M['tab']) => setM('tab', k);
+  const setPlayers = (v: M['players'] | ((p: M['players']) => M['players'])) => setM('players', v);
+  const setMetric = (v: M['metric']) => setM('metric', v);
+  const setOverrides = (v: M['overrides'] | ((p: M['overrides']) => M['overrides'])) => setM('overrides', v);
+  const setProvisional = (v: boolean) => setM('provisional', v);
+  const setEfforts = (v: M['efforts'] | ((p: M['efforts']) => M['efforts'])) => setM('efforts', v);
   const scenarioKey = scenario ? JSON.stringify(scenario) : '';
   const active = useMemo(() => {
     if (!scenario) return undefined;
@@ -34,18 +39,10 @@ export function MechanismsPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scenarioKey]);
-  const updateActive = (fn: (s: Scenario) => Scenario) => {
-    if (scenario?.meta.id) replaceScenario(scenario.meta.id, fn(scenario));
-  };
-  const [players, setPlayers] = useState<string[]>(DEFAULT_PLAYERS);
-  const [metric, setMetric] = useState<AttributionMetric>('delivered');
-  const [overrides, setOverrides] = useState<Record<string, Record<string, number>>>({});
-  // v3.7 audited mechanisms carry null integration fields: with the switch on, the provisional assumptions (tagged assumed) are merged below the user's overrides
-  const [provisional, setProvisional] = useState(false);
+  // v3.7 audited mechanisms carry null integration fields: with the switch on (`provisional`), the provisional assumptions (tagged assumed) are merged below the user's overrides
   // provisional assumptions < the parameters recorded in the scenario (applied mechanisms own theirs) < the overrides typed below for mechanisms not applied
   const paramsFor = (ids: string[]) => { const base = provisional ? provisionalParameters(ids) : {}; const out: Record<string, Record<string, number>> = { ...base }; for (const [id, rec] of Object.entries(scenario?.mechanisms.applied ?? {})) out[id] = { ...(out[id] ?? {}), ...rec.parameters }; for (const [id, p] of Object.entries(overrides)) if (!scenario?.mechanisms.applied?.[id]) out[id] = { ...(out[id] ?? {}), ...p }; return out; };
   const [report, setReport] = useState<MechanismReport | null>(null);
-  const [efforts, setEfforts] = useState<Record<string, number>>({});
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number; phase?: string } | null>(null);
   const [err, setErr] = useState<{ text: string; tone: 'crit' | 'info' } | null>(null);
@@ -95,14 +92,7 @@ export function MechanismsPage() {
         <h1>{t('mechanisms.title')}</h1>
         <span className="sub">{t('mechanisms.sub')}</span>
       </div>
-      <Card>
-        <div className="form-grid">
-          <Field label={t('mechanisms.scenarioFor')} hint={t('mechanisms.defaultActive')}>
-            <Select value={targetId ?? ''} onChange={setChosenId} options={scenarios.map((x) => ({ value: x.meta.id!, label: `${x.meta.name}${x.meta.id === activeId ? ` (${t('mechanisms.activeTag')})` : ''}` }))} />
-          </Field>
-        </div>
-        {fractional && <div className="callout warn" style={{ marginTop: 8 }}>{t('mechanisms.fractionWarn')}</div>}
-      </Card>
+      {fractional && <div className="callout warn">{t('mechanisms.fractionWarn')}</div>}
       {tabs}
       {tab === 'chain' && <SdcChainEditor s={active.scenario} upd={updateActive} />}
       {tab === 'audit' && <AuditPanel scenario={active.scenario} />}

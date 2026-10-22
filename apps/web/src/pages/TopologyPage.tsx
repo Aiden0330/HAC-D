@@ -1,20 +1,18 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, STRATEGY_IDS, LEVER_SHORT, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
-  type Scenario, type TopologyTemplate, type FaultUnit, type BomRow, type StrategyResult, type StrategyId,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
+  type Scenario, type TopologyTemplate, type FaultUnit, type BomRow,
 } from '@hac-d/core';
-import { useStore } from '../state/store.js';
+import { useStore, useActiveSettings } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Kpi, Card, NumberInput, Select, Badge } from '../components/ui.js';
 import { TopologyPicture } from '../components/TopologyPicture.js';
 import { ReliabilityPanel } from '../panels/ReliabilityPanel.js';
-import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
-import { download } from '../lib/export.js';
 import { fmtPct, fmtDuration, fmtNum, fmtInt, type Lang } from '../lib/format.js';
 
-type Tab = 'picture' | 'hardware' | 'reliability' | 'allocation';
+type Tab = 'picture' | 'hardware' | 'reliability';
 const LIB = unitFaultLibrary();
 const L = (x: { zh: string; en: string }, lang: Lang) => (lang === 'zh' ? x.zh : x.en);
 const fmtCount = (n: number) => (n >= 1 ? fmtInt(n) : '—');
@@ -74,8 +72,11 @@ export function TopologyPage() {
   const addScenario = useStore((s) => s.addScenario);
   const setActive = useStore((s) => s.setActive);
   const setPage = useStore((s) => s.setPage);
-  const [tab, setTab] = useState<Tab>('hardware');
-  const [carry, setCarry] = useState(true);
+  // v5.1 the tab and the carry choice are page settings of the active project
+  const { tab, carry } = useActiveSettings().topology;
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  const setTab = (k: Tab) => updateSettings({ topology: { tab: k } });
+  const setCarry = (v: boolean) => updateSettings({ topology: { carry: v } });
   const [nText, setNText] = useState('');
   if (!active) return <div className="callout crit">No scenario</div>;
   const s = active.scenario;
@@ -95,7 +96,6 @@ export function TopologyPage() {
     }
     if (exists) { replaceScenario(id, next); setActive(id); } else addScenario(next, true);
   };
-  const resetTemplate = () => { if (tpl) replaceScenario(s.meta.id!, { ...TOPOLOGY_EXAMPLES[`topology-${tpl}`](), meta: { ...TOPOLOGY_EXAMPLES[`topology-${tpl}`]().meta, id: s.meta.id } }); };
   /** change the design under the applied mechanisms (they are re-applied with their parameters) */
   const upBase = (fn: (b: Scenario) => Scenario) => updateActive((x) => editBase(x, fn));
 
@@ -131,14 +131,9 @@ export function TopologyPage() {
           <MechanismGroup s={s} lang={lang} onEdit={() => setPage('mechanisms')} />
           <WorkloadGroup s={s} upBase={upBase} />
           <RecoveryGroup s={s} upBase={upBase} />
-          <Group title={t('topology.file')}>
-            <div className="btn-row">
-              <button type="button" className="btn small" onClick={() => download(`${s.meta.id ?? 'scenario'}.json`, JSON.stringify(s, null, 2))}>{t('topology.exportJson')}</button>
-              {tpl && <button type="button" className="btn small" onClick={resetTemplate}>{t('topology.resetTemplate')}</button>}
-              <button type="button" className="btn small" onClick={() => setPage('scenario')}>{t('topology.advancedEditor')} ›</button>
-            </div>
-            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('topology.fileNote')}</div>
-          </Group>
+          <div className="muted" style={{ fontSize: 12, textAlign: 'right' }}>
+            <button type="button" className="btn small" onClick={() => setPage('scenario')} title={t('scenario.sub')}>{t('topology.advancedEditor')} ›</button>
+          </div>
         </aside>
         <section className="pane-out">
           {active.error ? <div className="callout crit">{active.error}</div> : <Outputs s={s} tab={tab} setTab={setTab} lang={lang} upBase={upBase} onAllocation={() => setPage('allocation')} />}
@@ -362,12 +357,13 @@ function Outputs({ s, tab, setTab, lang, upBase, onAllocation }: { s: Scenario; 
         <Kpi label={t('topology.kpiFit')} value={fmtNum(bom.hardFitPerNpuTotal, 1)} note={`Σ n·FIT / N · ${t('topology.kpiFitNote')}`} />
       </div>
       <div className="tabs" role="tablist">
-        {(['picture', 'hardware', 'reliability', 'allocation'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`topology.tab_${k}`)}</button>)}
+        {(['picture', 'hardware', 'reliability'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`topology.tab_${k}`)}</button>)}
+        {/* v5.1 the allocation lives on the Allocation page only (the former overview tab duplicated its strategies tab) */}
+        <button type="button" className="btn small" style={{ marginLeft: 'auto' }} onClick={onAllocation}>{t('topology.toAllocation')} ›</button>
       </div>
       {tab === 'picture' && <PictureTab s={s} lang={lang} />}
       {tab === 'hardware' && <HardwareTab s={s} lang={lang} upBase={upBase} />}
       {tab === 'reliability' && <ReliabilityPanel />}
-      {tab === 'allocation' && <AllocationTab s={s} onAllocation={onAllocation} />}
     </div>
   );
 }
@@ -558,62 +554,6 @@ function FaultTypesCard({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: 
         </table>
       </div>
       <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('topology.flagsLegend')}</div>
-    </Card>
-  );
-}
-
-function AllocationTab({ s, onAllocation }: { s: Scenario; onAllocation: () => void }) {
-  const { t } = useTranslation();
-  const lang = useLang();
-  const key = JSON.stringify(s);
-  const [res, setRes] = useState<Partial<Record<StrategyId, StrategyResult>>>({});
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [progress, setProgress] = useState('');
-  useEffect(() => { setRes({}); setErr(null); }, [key]);
-  if (s.workload.type !== 'training') return <div className="callout">{t('inference.notTraining')}</div>;
-  const target = s.targets.operational ?? 0.985;
-  const run = async () => {
-    setBusy(true); setErr(null); setRes({});
-    try {
-      for (const st of STRATEGY_IDS) {
-        setProgress(t(`strategy.name_${st}`));
-        const r = await compute().strategy(s, { strategy: st, target, metric: 'aOp' }, progressCallback(() => {}));
-        setRes((o) => ({ ...o, [st]: r }));
-      }
-    } catch (e) {
-      setErr(e instanceof ComputeCancelled ? t('mechanisms.cancelled') : (e as Error).message);
-    } finally { setBusy(false); setProgress(''); }
-  };
-  const rows = STRATEGY_IDS.filter((st) => res[st]).map((st) => res[st]!);
-  return (
-    <Card title={t('topology.allocTitle')} sub={t('topology.allocSub', { target: fmtPct(target, 2) })}>
-      <div className="btn-row">
-        <button type="button" className="btn primary" disabled={busy} onClick={run}>{busy ? `${t('common.running')} ${progress}` : t('topology.allocRun')}</button>
-        {busy && <button type="button" className="btn" onClick={cancelCompute}>{t('mechanisms.cancel')}</button>}
-        <button type="button" className="btn" onClick={onAllocation}>{t('topology.allocOpen')} ›</button>
-      </div>
-      {err && <div className="callout crit" style={{ marginTop: 8 }}>{err}</div>}
-      {rows.length > 0 && (
-        <div className="table-wrap" style={{ marginTop: 10 }}>
-          <table className="data">
-            <thead><tr><th>{t('strategy.strategy')}</th><th className="num">{t('strategy.final')}</th><th>{t('strategy.added')}</th><th className="num">{t('strategy.hwEffort')}</th><th className="num">{t('strategy.totalEffort')}</th><th>{t('strategy.hwTop')}</th></tr></thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.strategy}>
-                  <td>{t(`strategy.name_${r.strategy}`)} {r.feasible ? <Badge status="pass">✓</Badge> : <Badge status="fail">{t('strategy.infeasible')}</Badge>}</td>
-                  <td className="num">{fmtPct(r.final.value, 3)} / {fmtPct(r.final.derated, 3)}</td>
-                  <td style={{ fontSize: 12 }}>{[...r.mechanisms, ...r.levers.map((l) => (lang === 'zh' ? LEVER_SHORT[l].zh : LEVER_SHORT[l].en))].join(' + ') || '—'}</td>
-                  <td className="num">{fmtNum(r.effort.hardware, 2)}</td>
-                  <td className="num"><b>{fmtNum(r.effort.total, 2)}</b></td>
-                  <td style={{ fontSize: 12 }}>{r.hardware.needed ? r.hardware.rows.filter((h) => h.factor < 1).sort((a, b) => a.factor - b.factor).slice(0, 3).map((h) => `${h.id} ×${h.factor.toFixed(2)}`).join(', ') : r.hardware.slackFactor !== undefined ? `${t('strategy.slack')} ×${Number.isFinite(r.hardware.slackFactor) ? r.hardware.slackFactor.toFixed(2) : '∞'}` : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('topology.allocNote')}</div>
     </Card>
   );
 }

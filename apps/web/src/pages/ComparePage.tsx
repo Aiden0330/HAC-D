@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { compareScenarios, tornadoForScenario, type TornadoMetric } from '@hac-d/core';
-import { useStore } from '../state/store.js';
+import { useStore, useActiveSettings, compareIdsOf } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, DataTable, Field, Select } from '../components/ui.js';
 import { Tornado } from '../charts/Tornado.js';
@@ -13,11 +13,15 @@ export function ComparePage() {
   const { t } = useTranslation();
   const lang = useLang();
   const scenarios = useStore((s) => s.scenarios);
-  const compareIds = useStore((s) => s.compareIds);
+  // v5.1 the comparison set and the tornado metric are page settings of the active project
+  const cmpSettings = useActiveSettings();
+  const compareIds = useMemo(() => compareIdsOf({ scenarios }, cmpSettings), [scenarios, cmpSettings]);
   const toggle = useStore((s) => s.toggleCompare);
+  const updateSettings = useStore((s) => s.updateActiveSettings);
   const active = useActive();
-  const [metric, setMetric] = useState<TornadoMetric>('goodput');
-  const selected = scenarios.filter((s) => compareIds.includes(s.meta.id!));
+  const metric = cmpSettings.compare.metric;
+  const setMetric = (m: TornadoMetric) => updateSettings({ compare: { metric: m } });
+  const selected = useMemo(() => scenarios.filter((s) => compareIds.includes(s.meta.id!)), [scenarios, compareIds]);
   const cmp = useMemo(() => {
     try {
       return compareScenarios(selected);
