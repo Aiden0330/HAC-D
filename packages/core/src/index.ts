@@ -46,3 +46,5 @@ export * from './records/index.js';
 export * from "./budget/bom.js";
 export * from "./study/hierarchy.js";
 export * from "./study/archStudy.js";
+/* v6 ingest: vocabularies, evidence cards, 口径 normaliser, validation gates, delta, extension requests */
+export * from './ingest/index.js';

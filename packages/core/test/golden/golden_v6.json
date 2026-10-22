@@ -1,0 +1,302 @@
+{
+ "generated_by": "compute_golden_v6.py (pure Python, independent of the TypeScript)",
+ "hours_per_year": 8760.0,
+ "cases": [
+  {
+   "id": "G7a-pass-through",
+   "note": "one device, one per unit, impact 1, stated in FIT: the value passes through unchanged",
+   "inputs": {
+    "devices": [
+     {
+      "device": "DDR5 DIMM",
+      "value": 30.0,
+      "unit": "FIT",
+      "source": "FIT-DB",
+      "sourceType": "vendor"
+     }
+    ],
+    "mapping": [
+     {
+      "device": "DDR5 DIMM",
+      "unit": "node",
+      "class": "DDR-hard",
+      "devicesPerUnit": 1,
+      "impactFactor": 1.0,
+      "impactBasis": "none",
+      "impactConfidence": "measured"
+     }
+    ]
+   },
+   "expected": {
+    "deviceFit": {
+     "DDR5 DIMM": 29.999999999999996
+    },
+    "classFit": {
+     "DDR-hard": 29.999999999999996
+    },
+    "afrFirstOrderFit": {}
+   }
+  },
+  {
+   "id": "G7b-two-devices-one-class",
+   "note": "FIT and per-10^6-h devices summed into one class with devices per unit and impact factors",
+   "inputs": {
+    "devices": [
+     {
+      "device": "DDR5 DIMM",
+      "value": 30.0,
+      "unit": "FIT",
+      "source": "FIT-DB",
+      "sourceType": "vendor"
+     },
+     {
+      "device": "VRM",
+      "value": 0.02,
+      "unit": "per_1e6_h",
+      "source": "FIT-DB",
+      "sourceType": "prediction"
+     }
+    ],
+    "mapping": [
+     {
+      "device": "DDR5 DIMM",
+      "unit": "node",
+      "class": "DDR-hard",
+      "devicesPerUnit": 8,
+      "impactFactor": 0.5,
+      "impactBasis": "field ratio",
+      "impactConfidence": "derived"
+     },
+     {
+      "device": "VRM",
+      "unit": "node",
+      "class": "DDR-hard",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.25,
+      "impactBasis": "FMEA",
+      "impactConfidence": "assumed"
+     }
+    ]
+   },
+   "expected": {
+    "deviceFit": {
+     "DDR5 DIMM": 29.999999999999996,
+     "VRM": 20.0
+    },
+    "classFit": {
+     "DDR-hard": 130.0
+    },
+    "afrFirstOrderFit": {}
+   }
+  },
+  {
+   "id": "G7c-afr-and-mtbf",
+   "note": "annual failure fraction (exponential conversion) and MTBF hours, two classes on two units",
+   "inputs": {
+    "devices": [
+     {
+      "device": "NVMe SSD",
+      "value": 0.0144,
+      "unit": "afr",
+      "source": "field returns",
+      "sourceType": "field"
+     },
+     {
+      "device": "PSU 3kW",
+      "value": 2000000.0,
+      "unit": "mtbf_h",
+      "source": "PSU datasheet",
+      "sourceType": "vendor"
+     }
+    ],
+    "mapping": [
+     {
+      "device": "NVMe SSD",
+      "unit": "node",
+      "class": "SSD-hard",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.9,
+      "impactBasis": "field ratio",
+      "impactConfidence": "measured"
+     },
+     {
+      "device": "PSU 3kW",
+      "unit": "cabinet",
+      "class": "POWER-hard",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.1,
+      "impactBasis": "N+1, double fault",
+      "impactConfidence": "derived"
+     }
+    ]
+   },
+   "expected": {
+    "deviceFit": {
+     "NVMe SSD": 1655.7860962193708,
+     "PSU 3kW": 500.0
+    },
+    "classFit": {
+     "SSD-hard": 2980.414973194868,
+     "POWER-hard": 100.0
+    },
+    "afrFirstOrderFit": {
+     "NVMe SSD": 1643.835616438356
+    }
+   }
+  },
+  {
+   "id": "G7d-one-device-two-classes",
+   "note": "one device feeding a hard and a slow class (classes stay apart, each its own sum); per-hour unit",
+   "inputs": {
+    "devices": [
+     {
+      "device": "UB optical module",
+      "value": 1.2e-07,
+      "unit": "per_h",
+      "source": "optics vendor",
+      "sourceType": "vendor"
+     }
+    ],
+    "mapping": [
+     {
+      "device": "UB optical module",
+      "unit": "ub-link",
+      "class": "OPT-hard",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.3,
+      "impactBasis": "link-level retry absorbs 70 %",
+      "impactConfidence": "derived"
+     },
+     {
+      "device": "UB optical module",
+      "unit": "ub-link",
+      "class": "OPT-slow",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.6,
+      "impactBasis": "degraded links from field",
+      "impactConfidence": "derived"
+     }
+    ]
+   },
+   "expected": {
+    "deviceFit": {
+     "UB optical module": 119.99999999999999
+    },
+    "classFit": {
+     "OPT-hard": 71.99999999999999,
+     "OPT-slow": 143.99999999999997
+    },
+    "afrFirstOrderFit": {}
+   }
+  },
+  {
+   "id": "G7e-many-devices",
+   "note": "five devices of mixed units into three classes",
+   "inputs": {
+    "devices": [
+     {
+      "device": "HBM stack",
+      "value": 12.5,
+      "unit": "FIT",
+      "source": "vendor",
+      "sourceType": "vendor"
+     },
+     {
+      "device": "NPU die",
+      "value": 0.35,
+      "unit": "per_1e6_h",
+      "source": "prediction",
+      "sourceType": "prediction"
+     },
+     {
+      "device": "CPU",
+      "value": 1500000.0,
+      "unit": "mtbf_h",
+      "source": "vendor",
+      "sourceType": "vendor"
+     },
+     {
+      "device": "Fan",
+      "value": 0.03,
+      "unit": "afr",
+      "source": "field",
+      "sourceType": "field"
+     },
+     {
+      "device": "Rack PDU",
+      "value": 4e-07,
+      "unit": "per_h",
+      "source": "field",
+      "sourceType": "field"
+     }
+    ],
+    "mapping": [
+     {
+      "device": "HBM stack",
+      "unit": "npu",
+      "class": "MEMP-hard",
+      "devicesPerUnit": 8,
+      "impactFactor": 0.2,
+      "impactBasis": "ECC",
+      "impactConfidence": "derived"
+     },
+     {
+      "device": "NPU die",
+      "unit": "npu",
+      "class": "CORE-hard",
+      "devicesPerUnit": 1,
+      "impactFactor": 1.0,
+      "impactBasis": "none",
+      "impactConfidence": "measured"
+     },
+     {
+      "device": "CPU",
+      "unit": "cpu",
+      "class": "CPU-hard",
+      "devicesPerUnit": 1,
+      "impactFactor": 0.8,
+      "impactBasis": "field",
+      "impactConfidence": "derived"
+     },
+     {
+      "device": "Fan",
+      "unit": "cabinet",
+      "class": "COOL-hard",
+      "devicesPerUnit": 12,
+      "impactFactor": 0.05,
+      "impactBasis": "N+2 fans",
+      "impactConfidence": "derived"
+     },
+     {
+      "device": "Rack PDU",
+      "unit": "cabinet",
+      "class": "POWER-hard",
+      "devicesPerUnit": 2,
+      "impactFactor": 0.5,
+      "impactBasis": "dual feed",
+      "impactConfidence": "derived"
+     }
+    ]
+   },
+   "expected": {
+    "deviceFit": {
+     "HBM stack": 12.5,
+     "NPU die": 350.0,
+     "CPU": 666.6666666666667,
+     "Fan": 3477.078479989563,
+     "Rack PDU": 400.0
+    },
+    "classFit": {
+     "MEMP-hard": 20.0,
+     "CORE-hard": 350.0,
+     "CPU-hard": 533.3333333333334,
+     "COOL-hard": 2086.247087993738,
+     "POWER-hard": 400.0
+    },
+    "afrFirstOrderFit": {
+     "Fan": 3424.657534246575
+    }
+   }
+  }
+ ]
+}

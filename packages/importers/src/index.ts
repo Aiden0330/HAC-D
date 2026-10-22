@@ -29,3 +29,4 @@ export function importSpreadsheet(data: ArrayBuffer | Uint8Array, fileName: stri
   const reconciliation = reconcile(draft, result, conversion.blockIds, hits);
   return { workbook: wb, report, sheet: sheet.name, draft, conversion, result, reconciliation };
 }
+export * from './worksheet/index.js';

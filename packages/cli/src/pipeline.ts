@@ -23,7 +23,8 @@ import {
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 
 const CORE = fileURLToPath(new URL('../../core/', import.meta.url));
-const DATA = join(CORE, 'data');
+/** the data folder of the records (HACD_DATA overrides it: the offline bundle ships the folder beside the executable) */
+export const DATA = process.env.HACD_DATA ? resolve(process.env.HACD_DATA) : join(CORE, 'data');
 const DEFAULT_SCALES = [10000, 100000, 200000, 500000];
 
 /* ---------------- arguments ---------------- */
@@ -48,7 +49,7 @@ const t0 = Date.now();
 const log = (m: string) => console.error(`[${((Date.now() - t0) / 1000).toFixed(1)} s] ${m}`);
 
 /* ---------------- inputs by id or path ---------------- */
-const dataIds = (dir: string) => (existsSync(join(DATA, dir)) ? readdirSync(join(DATA, dir)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : []);
+export const dataIds = (dir: string) => (existsSync(join(DATA, dir)) ? readdirSync(join(DATA, dir)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : []);
 export function resolveRecord(spec: string): TopologyRecord {
   const b = (BUILTIN_TOPOLOGY_RECORDS as Record<string, TopologyRecord>)[spec];
   if (b) return b;
@@ -72,8 +73,9 @@ export function resolveRates(spec: string | undefined): FaultRateOverride | unde
 const resolvedRecord = (r: TopologyRecord) => asFile({ ...r, superpod: recordSuperpod(r) });
 
 /** engine version (packages/core/package.json) and the short git hash, '-dirty' when tracked files are modified */
-function engine(): ReportProvenance['engine'] {
-  const version = (readJson(join(CORE, 'package.json')) as { version: string }).version;
+export function engine(): ReportProvenance['engine'] {
+  let version = process.env.HACD_VERSION ?? '';
+  if (!version) { try { version = (readJson(join(CORE, 'package.json')) as { version: string }).version; } catch { version = '?'; } }
   try {
     const git = (a: string[]) => execFileSync('git', a, { cwd: CORE, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     const hash = git(['rev-parse', '--short', 'HEAD']);

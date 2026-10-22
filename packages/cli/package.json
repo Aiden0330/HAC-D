@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@hac-d/agent": "0.5.0",
     "@hac-d/core": "0.5.0",
     "@hac-d/importers": "0.5.0",
     "@hac-d/reports": "0.5.0"

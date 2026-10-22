@@ -28,6 +28,10 @@ export declare function findingsHtml(arch: string, data: { results: ReportData; 
 export declare function methodologyHtml(data: { results: ReportData; mechanisms: ReportData; provenance?: ReportProvenance }): string;
 /** 100k BOM page; `bom` = docs/backup/ascend-allocation/bom.json (the four built-in architectures) */
 export declare function bomHtml(data: { bom: ReportData; provenance?: ReportProvenance }): string;
+/** v6 review page of an ingest run; `delta` = the delta.json of `hacd ingest diff` (@hac-d/core deltaDocument), `provenance` fills the footer */
+export declare function deltaHtml(data: { delta: ReportData; provenance?: Pick<ReportProvenance, 'command' | 'engine'> }): string;
+/** the same content as Markdown, for review queues and pull requests */
+export declare function deltaMarkdown(delta: ReportData, lang?: 'zh' | 'en'): string;
 
 /* ---------------- methodology prose ---------------- */
 export interface Bilingual { zh: string; en: string }

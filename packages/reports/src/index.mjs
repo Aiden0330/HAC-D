@@ -12,3 +12,5 @@ export * from './content.mjs';
 export { findingsHtml, FINDINGS_FILES } from './findings.mjs';
 export { methodologyHtml } from './methodology.mjs';
 export { bomHtml } from './bom.mjs';
+/* v6: the review page of an ingest run (hacd ingest diff) */
+export { deltaHtml, deltaMarkdown } from './delta.mjs';

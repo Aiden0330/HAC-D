@@ -34,6 +34,9 @@
  *   hacd study --record <id|path> [--mechanisms m.json] [--rates f.json] [--scales …] [--target 0.985] [--permutations 300] [--seed 1] [--out-dir docs/data]   the Shapley study of a record (what findings computes when no stored study fits)
  *   hacd records                                    built-in and data-folder topology records, mechanism sets and failure-rate overrides
  *   hacd schema --record | --mechanisms | --rates   JSON schema of the v5 input records (plain `hacd schema`: the scenario schema)
+ *
+ * v6 ingest (src/ingest.ts; docs/markdown/PLAN_V6_INPUT_MIGRATION.md): hacd ingest <template | fields | worksheet | normalize | import-fit |
+ *   validate | dry-run | diff | promote | extract> — worksheets (Markdown) → staged records → gates → KPI delta → promote; `hacd ingest help`.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
@@ -49,6 +52,7 @@ import {
 } from '@hac-d/core';
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 import * as V5 from './pipeline.js';
+import { ingest } from './ingest.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -86,6 +90,9 @@ switch (cmd) {
     out(npus !== undefined ? resizeTopology(f(), Number(npus)) : f());
     break;
   }
+  case 'ingest':
+    await ingest(rest);
+    break;
   case 'schema':
     if (!V5.schemaV5(V5.argsOf(cmd, rest))) out(scenarioJsonSchema());
     break;
@@ -606,5 +613,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]\n v5 report pipeline: hacd <findings --record ids | bom --records ids | budget --record id --scale N | methodology --data dir | prune --study-dir dir | study --record id | records | schema --record|--mechanisms|--rates> (see the header of packages/cli/src/main.ts)');
+    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]\n v6 ingest: hacd ingest <template|fields|worksheet|normalize|import-fit|validate|dry-run|diff|promote|extract> … (hacd ingest help)\n v5 report pipeline: hacd <findings --record ids | bom --records ids | budget --record id --scale N | methodology --data dir | prune --study-dir dir | study --record id | records | schema --record|--mechanisms|--rates> (see the header of packages/cli/src/main.ts)');
 }

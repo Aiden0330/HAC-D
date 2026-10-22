@@ -339,3 +339,31 @@ The order matters and must follow the engine: `applyMechanisms(s, mechanisms, pa
 - `packages/core/test/records.test.ts`: records ≡ the v4.4 scenario builders; the per-card override ≡ the reference catalog; the default set ≡ the former script constant.
 - `packages/reports/test/reproduce.test.mjs` (and `node packages/reports/test/reproduce.mjs`): the six `docs/*.html` regenerate byte-for-byte from `docs/backup/ascend-allocation/{results,mechanisms,bom}.json`, the stored `provenance.json` / `bom-provenance.json` (the footer of the hacd run; the engine commit stays in the JSON, the page shows the version only) and `docs/backup/arch-mechanism-shapley/*.json`; `geometry.test.mjs`: `topoGeomFromRecord` of the four built-ins equals `TOPO_GEOM`.
 - CLI acceptance (2026-10-21): `hacd findings --record native950,ubl128,cm384,a3server --study-dir docs/backup/arch-mechanism-shapley` reproduces `results.json` and `bom.json` to 1e-9 (only `generated` differs) and the six HTML files differ from the committed ones only in the footer sentence.
+
+## 26. v6 input migration: 口径 normaliser, evidence checks, gates (2026-10-22)
+
+Plan: `docs/markdown/PLAN_V6_INPUT_MIGRATION.md`. Internal inputs (device failure rates, new topologies, new mechanisms) enter HAC-D through Markdown worksheets (`@hac-d/importers`, profile `hacd-worksheet-1`) that parse to the v5 records of §25.4; the primitives below live in `packages/core/src/ingest/` and the commands in `hacd ingest …` (USER_GUIDE "v6 ingest").
+
+### 26.1 Device FIT → business-impact FIT per unit (`normalizeFaultRates`, `ingest/koujing.ts`)
+
+Two quantities of different kind. A device table states **device FIT**: all failure modes of one part per device-hour, no protection considered. HAC-D's catalog classes state **business-impact FIT**: events that interrupt (hard), degrade (slow) or silently corrupt (sdc) the job, per fault-unit-hour, after the protection already in place (§25.4, the unit library). The bridge is the reviewed 口径 mapping table, one row per (device, class): the fault unit, devices per unit and the impact factor.
+
+| Step | Formula | 口径 |
+|---|---|---|
+| device rate | λ_d = v (per_h) · v/10⁶ (per_1e6_h) · v/10⁹ (FIT) · 1/v (mtbf_h) · −ln(1 − v)/8760 (afr, annual failure fraction; v/8760 is the first-order value, ~0.7 % low at v = 1.4 %) | per device-hour, all failure modes |
+| device FIT | FIT_d = λ_d × 10⁹ | per device-hour |
+| class FIT | FIT_{c,u} = Σ_{d→c} FIT_d × n_{d,u} × f_{d,c} with n = devices per unit u, f ∈ [0, 1] = share of d's failures that become a business-impact event of class c | per unit-hour, class c alone; hard / slow / sdc never added |
+
+Confidence policy (never the model's): `assumed` when any term's impact factor or source is an assumption; otherwise `derived` whenever arithmetic was applied; otherwise (one device, n = 1, f = 1, stated in FIT) the source type's own confidence — field → measured, vendor → vendor, prediction / paper → paper-reported. Every entry carries the derivation string with each term, the sources and the mapping id. Goldens G7a–G7e (`test/golden/golden_v6.json`, Python `compute_golden_v6.py`) pin the conversions and the sums to 1e-9.
+
+### 26.2 Evidence cards: grounding and agreement (`ingest/evidence.ts`)
+
+An extraction model writes only cards `{ doc, loc, field, value_text, unit_text, quote, model_confidence }`. **Grounding**: the quote (NFKC, whitespace-collapsed, case-folded) must occur in the chunk, the value inside the quote, and the quote must be ≤ 400 characters. **Agreement**: two passes over the same chunk must give the same normalised value and unit for a field; otherwise the field goes to the review queue. `model_confidence` is advisory; HAC-D confidence comes from the source type (26.1). Numbers are parsed as written (`parseNumberText`: thousands separators, full-width digits, 万 / 千 / k) by the normaliser, never by the model.
+
+### 26.3 Gates beyond the schemas (`ingest/validate.ts`)
+
+Vocabulary (class ids of the unit library, fault units, templates, count rows, mechanism ids and the **parameter keys a mechanism reads** — defaults ∪ `provisional` ∪ `integrationNeeds` ∪ `reads`, so a misspelt key is an error instead of a silent no-op), provenance completeness (every stated geometry / scale-out / count / set field has a provenance entry; `derived` needs a derivation), plausibility (per-card values converted × cards per unit, then compared with the unit library's FIT within ×0.1 … ×10 as a warning), structural consistency (node NPUs = npusPerNode, cabinet = npusPerNode × nodesPerRack, SuperPoD instance = domainNpus ?? pod for `supernodes` or npusPerNode for `nodes`), and id policy (an internal record may not take a public id; an existing id is overwritten only with `--force`).
+
+### 26.4 Delta (`ingest/diff.ts`)
+
+Field changes of the three records with the provenance the new record states (longest matching key), rate changes per class on the per-unit basis, and the KPI rows of `hierarchicalBudget` before and after at the run's scales: A_op nominal and derated, delivered goodput, MTBF_hw and MTTR_hw (formula 1), P(window) and verdict, B (formula 2), k and the recommended mechanisms and levers (formula 6), effort. Δ rows are differences (percentage points) and ratios (MTBF, MTTR). Rendered by `@hac-d/reports` `deltaHtml` / `deltaMarkdown`.

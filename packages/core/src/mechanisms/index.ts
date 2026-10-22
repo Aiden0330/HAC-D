@@ -57,6 +57,8 @@ export interface MechanismDef {
   integrationNeeds?: string[];
   /** v3.7 provisional values of those parameters (tagged assumed, derated by the planner) */
   provisional?: Record<string, number>;
+  /** v6 parameter keys the transform reads optionally (implicit default when absent) beyond parameters / provisional / integrationNeeds; declared so that a set's keys can be validated */
+  reads?: string[];
   /** v3.7 single-point quantification against the scenario's baseline (the audit's 口径) */
   singlePoint?: (b: AuditBaseline, p: Record<string, number>) => SinglePoint;
   /** v5 deployment layer, acted-on layers, stage and bilingual description (from a mechanism set record; absent in the built-in library) */

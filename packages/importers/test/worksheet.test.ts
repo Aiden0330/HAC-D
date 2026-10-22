@@ -1,0 +1,145 @@
+/**
+ * v6 worksheets: the Markdown profile round-trips the public records (record → worksheet → record), the strict parser rejects what
+ * it must, the templates parse as they are, the device table and mapping worksheets feed the normaliser, and a spreadsheet device
+ * table is read with guessed and explicit columns.
+ */
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import {
+  parseWorksheetMarkdown, writeWorksheetMarkdown, splitRow, WorksheetError, parseWorksheet, worksheetKind, worksheetTemplate,
+  topologyRecordToWorksheet, worksheetToTopologyRecord, faultRateOverrideToWorksheet, worksheetToFaultRateOverride,
+  mechanismSetToWorksheet, worksheetToMechanismSet, deviceTableToWorksheet, worksheetToDeviceTable, mappingToWorksheet, worksheetToMapping,
+  proposalToWorksheet, worksheetToProposal, proposalIntoSet, deviceTableFromSheet, EXAMPLE_DEVICE_TABLE, EXAMPLE_MAPPING, EXAMPLE_PROPOSAL,
+} from '../src/index.js';
+import type { SheetInfo } from '../src/index.js';
+import { BUILTIN_TOPOLOGY_RECORDS, DEFAULT_MECHANISM_SET, parseTopologyRecord, parseFaultRateOverride, normalizeFaultRates, WORKSHEET_KINDS, validateMechanismSet, type TopologyRecord, type MechanismSet } from '@hac-d/core';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const data = join(here, '..', '..', 'core', 'data');
+const a960e = parseTopologyRecord(JSON.parse(readFileSync(join(data, 'records', 'a960e.json'), 'utf8')));
+const remap = parseFaultRateOverride(JSON.parse(readFileSync(join(data, 'fault-rates', 'remap-per-card-2026-10-09.json'), 'utf8')));
+const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T;
+
+describe('markdown profile', () => {
+  it('splits rows with escaped pipes and parses front matter, sections, tables and items', () => {
+    expect(splitRow('| a | b \\| c | d |')).toEqual(['a', 'b | c', 'd']);
+    const doc = parseWorksheetMarkdown('---\nworksheet: topology\nname: { zh: 甲, en: A }\n---\n# Title\n\n## geometry — SuperPoD\n\n| field | value |\n|---|---|\n| base | atlas950-1k |\n| npusPerNode | 8 |\n\n- an item\nsome prose\n');
+    expect(doc.front).toEqual({ worksheet: 'topology', name: { zh: '甲', en: 'A' } });
+    expect(doc.sections.map((s) => s.name)).toEqual(['geometry']);
+    expect(doc.sections[0].tables[0].rows).toEqual([{ field: 'base', value: 'atlas950-1k' }, { field: 'npusPerNode', value: '8' }]);
+    expect(doc.sections[0].items).toEqual(['an item']);
+    expect(doc.sections[0].text).toEqual(['some prose']);
+  });
+  it('rejects a missing front matter, a ragged row, a bad separator and content before the first section', () => {
+    expect(() => parseWorksheetMarkdown('## x\n')).toThrow(/front matter/);
+    expect(() => parseWorksheetMarkdown('---\na: 1\n---\n## x\n| a | b |\n|---|---|\n| 1 |\n')).toThrow(/line 7: row has 1 cells/);
+    expect(() => parseWorksheetMarkdown('---\na: 1\n---\n## x\n| a | b |\n| 1 | 2 |\n')).toThrow(/separator/);
+    expect(() => parseWorksheetMarkdown('---\na: 1\n---\n| a |\n|---|\n')).toThrow(/before the first/);
+    expect(() => parseWorksheetMarkdown('---\n- a\n---\n## x\n')).toThrow(/mapping/);
+  });
+  it('the writer escapes pipes and the parser reads them back', () => {
+    const text = writeWorksheetMarkdown({ worksheet: 'x' }, [{ name: 's', tables: [{ headers: ['a', 'b'], rows: [['p|q', 1]] }], items: ['i'] }]);
+    const doc = parseWorksheetMarkdown(text);
+    expect(doc.sections[0].tables[0].rows[0]).toEqual({ a: 'p|q', b: '1' });
+  });
+});
+
+describe('record round trips', () => {
+  const records: Record<string, TopologyRecord> = { ...BUILTIN_TOPOLOGY_RECORDS, a960e };
+  for (const [id, r] of Object.entries(records)) {
+    it(`topology ${id}`, () => {
+      const text = topologyRecordToWorksheet(r);
+      const back = worksheetToTopologyRecord(parseWorksheetMarkdown(text));
+      expect(back).toEqual(r);
+      expect(worksheetKind(text)).toBe('topology');
+    });
+  }
+  it('fault-rate override (54 classes, analogues, catalog block)', () => {
+    const back = worksheetToFaultRateOverride(parseWorksheetMarkdown(faultRateOverrideToWorksheet(remap)));
+    expect(back).toEqual(remap);
+  });
+  it('mechanism set, complete form (no base)', () => {
+    const text = mechanismSetToWorksheet(DEFAULT_MECHANISM_SET);
+    const back = worksheetToMechanismSet(parseWorksheetMarkdown(text));
+    expect(back).toEqual(DEFAULT_MECHANISM_SET);
+  });
+  it('mechanism set, delta form over the default set', () => {
+    const s = clone(DEFAULT_MECHANISM_SET) as MechanismSet;
+    s.id = 'internal-mech-1'; s.source = 'internal review 2026-10';
+    s.parameters['R-LINK-LOCAL'] = { ...s.parameters['R-LINK-LOCAL'], success: 0.97 };
+    s.provenance = { ...s.provenance, 'parameters.R-LINK-LOCAL.success': { source: 'DR-2026-031 table 4', confidence: 'assumed' } };
+    s.efforts = { ...(s.efforts ?? {}), 'R-LINK-LOCAL': 2 };
+    // move a pruned mechanism to the candidates
+    const moved = s.pruned[0];
+    s.pruned = s.pruned.filter((x) => x !== moved); s.candidates.push(moved);
+    if (s.verdicts) s.verdicts[moved] = { verdict: 'candidate', reason: { zh: '内部测得收益', en: 'internal measurement shows a gain' } };
+    for (const [a, b] of Object.entries(s.prune.dominated)) if (a === moved || b === moved) delete s.prune.dominated[a];
+    const text = mechanismSetToWorksheet(s, DEFAULT_MECHANISM_SET);
+    expect(text).toContain('| R-LINK-LOCAL | success');
+    expect(text).not.toContain('| D-SDC | reference'); // unchanged verdicts are not listed in a delta
+    const back = worksheetToMechanismSet(parseWorksheetMarkdown(text), DEFAULT_MECHANISM_SET);
+    expect(back).toEqual(s);
+    expect(validateMechanismSet(back).filter((i) => i.level === 'error')).toEqual([]);
+  });
+  it('device table, mapping and proposal', () => {
+    expect(worksheetToDeviceTable(parseWorksheetMarkdown(deviceTableToWorksheet(EXAMPLE_DEVICE_TABLE)))).toEqual(EXAMPLE_DEVICE_TABLE);
+    expect(worksheetToMapping(parseWorksheetMarkdown(mappingToWorksheet(EXAMPLE_MAPPING)))).toEqual(EXAMPLE_MAPPING);
+    expect(worksheetToProposal(parseWorksheetMarkdown(proposalToWorksheet(EXAMPLE_PROPOSAL)))).toEqual(EXAMPLE_PROPOSAL);
+  });
+});
+
+describe('templates and dispatch', () => {
+  for (const kind of WORKSHEET_KINDS) {
+    it(`template ${kind} parses as it is`, () => {
+      const text = worksheetTemplate(kind);
+      const parsed = parseWorksheet(text, { baseSet: DEFAULT_MECHANISM_SET });
+      expect(parsed.kind).toBe(kind);
+      expect(text).toContain('## notes');
+    });
+  }
+  it('the device and mapping templates normalise to the fault-rate template\'s classes', () => {
+    const dt = parseWorksheet(worksheetTemplate('device-fit')); const mp = parseWorksheet(worksheetTemplate('koujing-mapping'));
+    if (dt.kind !== 'device-fit' || mp.kind !== 'koujing-mapping') throw new Error('kind');
+    const { override } = normalizeFaultRates(dt.value, mp.value, { id: 'x' });
+    expect(override.rates['DDR-hard'].fit).toBeCloseTo(130, 9);
+    expect(override.rates['POWER-hard'].fit).toBeCloseTo(100, 9);
+    const text = faultRateOverrideToWorksheet(override);
+    expect(worksheetToFaultRateOverride(parseWorksheetMarkdown(text))).toEqual(override);
+  });
+  it('a proposal with mapsTo lands in the set; without it the parser still accepts it', () => {
+    const s = proposalIntoSet(EXAMPLE_PROPOSAL, DEFAULT_MECHANISM_SET);
+    expect(s.parameters['R-LINK-LOCAL'].success).toBe(0.95);
+    expect(s.provenance?.['parameters.R-LINK-LOCAL.success']?.confidence).toBe('assumed');
+    expect(() => proposalIntoSet({ ...EXAMPLE_PROPOSAL, mapsTo: undefined }, DEFAULT_MECHANISM_SET)).toThrow(/extension request/);
+  });
+  it('strict worksheet errors name the problem', () => {
+    const t = topologyRecordToWorksheet(BUILTIN_TOPOLOGY_RECORDS.cm384);
+    expect(t).toContain('| base ');
+    expect(() => worksheetToTopologyRecord(parseWorksheetMarkdown(t.replace('| base ', '| bass ')))).toThrow(/unknown geometry field/);
+    expect(() => worksheetToTopologyRecord(parseWorksheetMarkdown(t.replace('worksheet: topology', 'worksheet: fault-rates')))).toThrow(/must be 'topology'/);
+    expect(() => parseWorksheet(t.replace('worksheet: topology', 'worksheet: nope'))).toThrow(/one of/);
+    const r = faultRateOverrideToWorksheet(remap);
+    expect(() => worksheetToFaultRateOverride(parseWorksheetMarkdown(r.replace('| class ', '| klass ')))).toThrow(/lacks the column 'class'/);
+    const bad = r.replace(/\| assumed /, '| guessed ');
+    expect(() => worksheetToFaultRateOverride(parseWorksheetMarkdown(bad))).toThrow(/not one of measured/);
+  });
+});
+
+describe('device table from a sheet', () => {
+  const cells = (rows: (string | number | null)[][]): SheetInfo => ({ name: 'FIT', rows: rows.length, cols: Math.max(...rows.map((r) => r.length)), merges: [], outline: rows.map(() => 0), cells: rows.flatMap((r, i) => r.map((v, j) => ({ sheet: 'FIT', addr: `${String.fromCharCode(65 + j)}${i + 1}`, row: i, col: j, value: v }))) });
+  it('guesses the header row and the columns from a zh/en lexicon and keeps values as written', () => {
+    const sheet = cells([['FIT 清单', null, null, null], ['器件', 'FIT', '来源', '来源类型'], ['DDR5 DIMM', 30, 'FIT-DB', '厂商手册'], ['PSU', 500, 'datasheet', 'vendor'], ['', null, null, null], ['SSD', 'n/a', 'x', 'field']]);
+    const r = deviceTableFromSheet(sheet, { id: 't' });
+    expect(r.headerRow).toBe(1);
+    expect(r.table.rows.map((x) => [x.device, x.value, x.unit, x.sourceType])).toEqual([['DDR5 DIMM', 30, 'FIT', 'vendor'], ['PSU', 500, 'FIT', 'vendor']]);
+    expect(r.skipped).toEqual([{ row: 6, reason: "rate 'n/a' is not a number" }]);
+  });
+  it('explicit columns, a unit column and defaults for missing columns', () => {
+    const sheet = cells([['Part', 'Rate', 'Unit'], ['Fan', 0.03, 'AFR'], ['CPU', 1500000, 'MTBF'], ['NIC', 2, 'ppm/h']]);
+    const r = deviceTableFromSheet(sheet, { id: 't', columns: { device: 'Part', value: 1, unit: 'Unit' }, sourceType: 'vendor', rowSource: 'vendor sheet' });
+    expect(r.table.rows.map((x) => [x.device, x.unit, x.source])).toEqual([['Fan', 'afr', 'vendor sheet'], ['CPU', 'mtbf_h', 'vendor sheet'], ['NIC', 'per_1e6_h', 'vendor sheet']]);
+    expect(() => deviceTableFromSheet(sheet, { id: 't', columns: { device: 'Nope' } })).toThrow(/no column headed 'Nope'/);
+  });
+});

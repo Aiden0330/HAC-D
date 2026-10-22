@@ -1,0 +1,18 @@
+{
+  "name": "@hac-d/agent",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "description": "HAC-D v6 extraction worker: model adapters (OpenAI-compatible, mock, none), chunking, evidence cards with grounding and two-pass agreement, review queue and run log",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hac-d/core": "0.5.0",
+    "@hac-d/importers": "0.5.0"
+  }
+}

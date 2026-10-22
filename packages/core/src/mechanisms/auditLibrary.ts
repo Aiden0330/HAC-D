@@ -191,7 +191,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     prerequisite: { zh: catalog('C-LOSSLESS').prerequisite, en: 'Same state and effective bandwidth; read and decompression are serial' },
     failure: { zh: catalog('C-LOSSLESS').failure, en: 'Checksum failure: read another trusted copy' },
     confidence: 'public (nvCOMP); 2× ratio, 60 s read and 10 s decompression are budgets', effort: 2,
-    parameters: { compressionRatio: 2, decompressSeconds: 10 },
+    parameters: { compressionRatio: 2, decompressSeconds: 10 }, reads: ['share'],
     singlePoint: (b, p) => {
       const after = (r: number) => b.stages.read / r + p.decompressSeconds;
       return decrease(seconds('读取加解压阶段耗时', 'read + decompression stage'), b.stages.read, after(p.compressionRatio), { zh: `T′ = ${r3(b.stages.read)}/r + ${p.decompressSeconds}；r = ${p.compressionRatio} 时 ${r3(b.stages.read)} → ${r3(after(p.compressionRatio))} s，恢复 ${r3(b.autoS)} → ${r3(b.autoS - b.stages.read + after(p.compressionRatio))} s`, en: `T′ = read/r + decompression; recovery ${r3(b.autoS)} → ${r3(b.autoS - b.stages.read + after(p.compressionRatio))} s` }, 'seconds', [{ label: 'r = 1.1', value: r3(after(1.1)) }, { label: 'r = 1.5', value: r3(after(1.5)) }, { label: 'r = 3', value: r3(after(3)) }], { breakEvenCompressionRatio: r3(b.stages.read / Math.max(1e-9, b.stages.read - p.decompressSeconds)), recoveryAfterSeconds: r3(b.autoS - b.stages.read + after(p.compressionRatio)) });
@@ -214,7 +214,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     prerequisite: { zh: catalog('D-RECOVERY-CLASSIFY').prerequisite, en: 'Accurate classification before the recovery action; wrong actions are escalated quickly' },
     failure: { zh: catalog('D-RECOVERY-CLASSIFY').failure, en: 'Misclassification: the normal escalation' },
     confidence: 'GPU error-recovery action interface is public; the 0.1 % target is a candidate', effort: 3,
-    parameters: { manualProbabilityTarget: 0.001 },
+    parameters: { manualProbabilityTarget: 0.001 }, reads: ['eligibleShare', 'success'],
     singlePoint: (b, p) => decrease(seconds('每次恢复的期望耗时', 'expected recovery time'), b.expectedRecoveryS, b.autoS + p.manualProbabilityTarget * b.manualS, { zh: `E[T] = ${r3(b.autoS)} + p_manual × ${r3(b.manualS)}：${r3(b.expectedRecoveryS)} → ${r3(b.autoS + p.manualProbabilityTarget * b.manualS)} s`, en: `E[T] = T_auto + p_manual·T_manual` }, 'seconds', [{ label: 'p 0.5 %', value: r3(b.autoS + 0.005 * b.manualS) }, { label: 'p 0.1 %', value: r3(b.autoS + 0.001 * b.manualS) }]),
     apply: (s, p) => {
       if (s.recovery.mode !== 'mixture') return s;
@@ -298,7 +298,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     prerequisite: { zh: catalog('R-HCCL-ELASTIC').prerequisite, en: 'Communicator shrink / rebuild supported by the collective library; only with DP-domain elasticity' },
     failure: { zh: catalog('R-HCCL-ELASTIC').failure, en: 'Rebuild failure: the elastic failure path' },
     confidence: 'NCCL / HCCL communicator management APIs are public; 15 s is a candidate', effort: 3,
-    events: catalog('R-HCCL-ELASTIC').eventCandidates, parameters: { communicationBeforeSeconds: 60, communicationTargetSeconds: 15 },
+    events: catalog('R-HCCL-ELASTIC').eventCandidates, parameters: { communicationBeforeSeconds: 60, communicationTargetSeconds: 15 }, reads: ['share'],
     singlePoint: (_b, p) => decrease(seconds('通信重建阶段耗时', 'communication-rebuild stage'), p.communicationBeforeSeconds, p.communicationTargetSeconds, { zh: `单次局部恢复少 ${r3(p.communicationBeforeSeconds - p.communicationTargetSeconds)} s；若只有 1/50 域损失产出，全系统等效 ${r3((p.communicationBeforeSeconds - p.communicationTargetSeconds) / 50)} s`, en: `${r3(p.communicationBeforeSeconds - p.communicationTargetSeconds)} s less per local recovery` }, 'seconds', [{ label: '10 s', value: 10 }, { label: '20 s', value: 20 }], { recoveryAfterSeconds: r3(180 - (p.communicationBeforeSeconds - p.communicationTargetSeconds)) }),
     apply: (s, p) => {
       if (!s.mechanisms.elastic) return s;
