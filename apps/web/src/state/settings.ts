@@ -5,10 +5,15 @@ import type { StrategySettings } from '../panels/StrategyPanel.js';
  * v5.1 page settings of a project (persisted with its scenario; results, reports, plans and busy / progress / error stay local).
  * `null` means "the scenario's default" and is resolved against the current scenario when the page reads it (targets, the
  * strategy form, the comparison set), so a default follows the scenario until the user changes the value.
+ * v5.2 the Projects page tab (list / new / import / compare) and the Review page tab (checklist / simulation / sensitivity) are
+ * settings too; `compare` keeps the comparison set (Projects › Compare) and the tornado metric (Review › Sensitivity). Older
+ * bundles without the two new groups normalise to their defaults.
  */
 export type AllocationTab = 'strategies' | 'cross' | 'classic';
 export type MechanismsTab = 'selection' | 'chain' | 'audit';
 export type TopologyTab = 'picture' | 'hardware' | 'reliability';
+export type ProjectsTab = 'list' | 'new' | 'import' | 'compare';
+export type ReviewTab = 'checklist' | 'simulation' | 'sensitivity';
 
 export interface ProjectSettings {
   allocation: {
@@ -38,7 +43,11 @@ export interface ProjectSettings {
     audit: { ids: string[]; provisional: boolean };
   };
   topology: { tab: TopologyTab; carry: boolean };
-  /** Compare page: null = the first three projects */
+  /** Projects page tab */
+  projects: { tab: ProjectsTab };
+  /** Review page tab */
+  review: { tab: ReviewTab };
+  /** Projects › Compare: the comparison set (null = the first three projects); Review › Sensitivity: the tornado metric */
   compare: { ids: string[] | null; metric: TornadoMetric };
 }
 
@@ -59,6 +68,8 @@ export function defaultProjectSettings(): ProjectSettings {
       audit: { ids: MECHANISM_LIBRARY.filter((m) => !!m.audit).map((m) => m.id), provisional: false },
     },
     topology: { tab: 'hardware', carry: true },
+    projects: { tab: 'list' },
+    review: { tab: 'checklist' },
     compare: { ids: null, metric: 'goodput' },
   };
 }
@@ -71,6 +82,8 @@ const ENUMS: Record<string, readonly string[]> = {
   'mechanisms.tab': ['selection', 'chain', 'audit'],
   'mechanisms.metric': ['delivered', 'effective', 'aOp'],
   'topology.tab': ['picture', 'hardware', 'reliability'],
+  'projects.tab': ['list', 'new', 'import', 'compare'],
+  'review.tab': ['checklist', 'simulation', 'sensitivity'],
   'compare.metric': ['goodput', 'delivered', 'availability', 'lostDollarsPerDay', 'mtbiHours'],
 };
 const NULLABLE_ENUMS: Record<string, readonly string[]> = { 'allocation.classic.basis': ['effective', 'delivered'] };
@@ -106,7 +119,7 @@ export function normalizeSettings(v: unknown): ProjectSettings {
   return mergeOver(defaultProjectSettings(), v, '') as ProjectSettings;
 }
 
-/** a settings patch applied one level deep per page group (allocation / mechanisms / topology / compare) */
+/** a settings patch applied one level deep per page group (allocation / mechanisms / topology / projects / review / compare) */
 export type SettingsPatch = { [K in keyof ProjectSettings]?: Partial<ProjectSettings[K]> };
 export function applySettingsPatch(s: ProjectSettings, patch: SettingsPatch): ProjectSettings {
   const out = { ...s } as Record<string, unknown>;

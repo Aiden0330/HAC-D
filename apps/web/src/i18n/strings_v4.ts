@@ -1,11 +1,12 @@
 /** v4 UI strings (topology page, strategies, page merges), merged over strings.ts in i18n/index.ts. */
 export const stringsV4 = {
   en: {
-    app: { eyebrow: 'NPU cluster availability modeling', projectLabel: 'Project', projectHint: 'The current project (scenario + page settings, saved automatically). Click to open the Projects page: switch, rename, duplicate, import, export or reset.' },
-    nav: { projects: 'Projects', topology: 'Topology & hardware', mechanisms: 'Mechanism library', allocation: 'Allocation', library: 'Fault library', scenario: 'Scenario editor', compare: 'Compare', simulate: 'Simulate', report: 'Report', inference: 'Inference', spares: 'Spares & domains', import: 'Import' },
-    ui: { hint: 'Minimal shows the main flow (Projects → Topology & hardware → Allocation → Mechanism library → Fault library); "All pages" adds the scenario editor, comparison, simulation, report, inference, spares and import. Every function stays in the CLI / MCP.' },
+    app: { eyebrow: 'NPU cluster availability modeling', projectLabel: 'Project', projectHint: 'The current project (scenario + page settings, saved automatically). Click to open the Projects page: switch, rename, duplicate, export or reset; import a JSON bundle or a spreadsheet; compare projects.' },
+    nav: { projects: 'Projects', topology: 'Topology & hardware', mechanisms: 'Mechanism library', allocation: 'Allocation', library: 'Fault library', review: 'Review', scenario: 'Scenario editor', inference: 'Inference & spares' },
+    ui: { hint: 'Minimal shows the main flow (Projects → Topology & hardware → Allocation → Mechanism library → Fault library → Review); "All pages" adds the scenario editor and inference & spares. Spreadsheet import and project comparison are tabs of Projects; the checklist, Monte Carlo and sensitivity are tabs of Review. Every function stays in the CLI / MCP.' },
     projects: {
-      title: 'Projects', sub: 'A project is a scenario together with its page settings (allocation, mechanism library, topology and comparison inputs); every edit is saved automatically. Switch, name, duplicate, import, export and reset here.',
+      title: 'Projects', sub: 'A project is a scenario together with its page settings (allocation, mechanism library, topology and comparison inputs); every edit is saved automatically. Switch, name, duplicate, import, export and reset here; the page also imports spreadsheets (Excel availability workbooks) and compares projects side by side.',
+      tab_list: 'List', tab_new: 'New', tab_import: 'Import', tab_compare: 'Compare',
       listTitle: 'Projects ({{n}})', listSub: 'Open activates a project and goes to the Topology page; the header shows the active project.',
       colName: 'Name', colTemplate: 'Template', colSize: 'NPUs / workload', colOrigin: 'Origin', colModified: 'Last modified', colActions: 'Actions',
       builtIn: 'built-in', user: 'user', activeTag: 'active', customTopology: 'custom topology',
@@ -61,17 +62,23 @@ export const stringsV4 = {
     training: { top15: 'top 15 by share', interruptionsWord: 'interruptions', noInterruption24h: 'no interruption in 24 h' },
     scenario: { title: 'Scenario editor', sub: 'Every field of the active scenario: topology, component classes with 口径-typed rates, workload, recovery, spares, costs, structure, JSON.', advancedNote: 'Advanced editor. The topology page shows the KPIs and the hardware; silent-corruption and chain settings are owned by the Mechanism library page.', sdcMoved: 'Silent-corruption policy and the recovery chain: Mechanism library → Silent corruption & chain.' },
     library: {
-      title: 'Fault library', sub: 'Fault types per hardware unit for the topology templates, and the survey parameter library with 口径 and provenance.',
-      unitTitle: 'Fault types per hardware unit ({{n}})', unitSub: 'The 54 events of the audited catalog (18 domains × interruption / sub-health / silent) attached to their units, plus the RoCE analogues of the UB fabric.', unit: 'Unit', faultClass: 'Fault class', hard: 'interruption', slow: 'sub-health', sdc: 'silent corruption', event: 'Domain · event', fitCard: 'FIT / card', cardsPerUnit: 'cards / unit', fitUnit: 'FIT / unit', flags: 'flags · persistence',
-      unitNote: 'All values are the catalog priors (assumed): no public Ascend failure data exists. Hover a row for its derivation.', paramTitle: 'Parameter library', paramSub: 'Survey-sourced parameters with 口径 and provenance. Records measured on GPU fleets are kept as analogues (tagged), since the NPU rates are anchored on them.', hardware: 'Hardware', hwAll: 'all', hwNonGpu: 'NPU / general', hwGpu: 'GPU analogues only', gpuAnalogue: 'GPU analogue',
+      title: 'Fault library', sub: 'The survey parameter library with 口径 and provenance: filter, inspect and use a record as a component rate.',
+      unitLink: 'Fault types per hardware unit: Topology & hardware › Hardware',
+      paramTitle: 'Parameter library', paramSub: 'Survey-sourced parameters with 口径 and provenance. Records measured on GPU fleets are kept as analogues (tagged), since the NPU rates are anchored on them.', hardware: 'Hardware', hwAll: 'all', hwNonGpu: 'NPU / general', hwGpu: 'GPU analogues only', gpuAnalogue: 'GPU analogue',
     },
+    review: {
+      title: 'Review', sub: 'Design review of the active project: the 11-item checklist, original vs compensated, importance and cut sets, Monte Carlo verification, sensitivity, exports.',
+      tab_checklist: 'Checklist', tab_simulation: 'Simulation', tab_sensitivity: 'Sensitivity',
+    },
+    inference: { pageSub: 'N+k inference replicas and quantile-based spares, both read from the active scenario.' },
   },
   zh: {
-    app: { eyebrow: 'NPU 集群可用性建模', projectLabel: '项目', projectHint: '当前项目（方案 + 页面设置，自动保存）。点击打开项目页：切换、重命名、复制、导入、导出或重置。' },
-    nav: { projects: '项目', topology: '拓扑与硬件', mechanisms: '机制库', allocation: '分配', library: '故障库', scenario: '方案编辑器', compare: '对比', simulate: '仿真', report: '报告', inference: '推理', spares: '备件与故障域', import: '导入' },
-    ui: { hint: '精简模式显示主流程（项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库）；「全部页面」另含方案编辑器、对比、仿真、报告、推理、备件与导入。所有功能在 CLI / MCP 中仍可用。' },
+    app: { eyebrow: 'NPU 集群可用性建模', projectLabel: '项目', projectHint: '当前项目（方案 + 页面设置，自动保存）。点击打开项目页：切换、重命名、复制、导出或重置；导入 JSON 项目包或表格；对比项目。' },
+    nav: { projects: '项目', topology: '拓扑与硬件', mechanisms: '机制库', allocation: '分配', library: '故障库', review: '评审', scenario: '方案编辑器', inference: '推理与备件' },
+    ui: { hint: '精简模式显示主流程（项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审）；「全部页面」另含方案编辑器与推理与备件。表格导入与项目对比是项目页的页签；评审清单、蒙特卡洛与敏感性是评审页的页签。所有功能在 CLI / MCP 中仍可用。' },
     projects: {
-      title: '项目', sub: '项目 = 方案 + 页面设置（分配、机制库、拓扑与对比的输入）；每次修改自动保存。在此切换、命名、复制、导入、导出与重置。',
+      title: '项目', sub: '项目 = 方案 + 页面设置（分配、机制库、拓扑与对比的输入）；每次修改自动保存。在此切换、命名、复制、导入、导出与重置；本页还可导入表格（Excel 可用性计算表）并并排对比项目。',
+      tab_list: '列表', tab_new: '新建', tab_import: '导入', tab_compare: '对比',
       listTitle: '项目（{{n}}）', listSub: '「打开」激活项目并转到拓扑页；顶栏显示当前项目。',
       colName: '名称', colTemplate: '模板', colSize: 'NPU / 负载', colOrigin: '来源', colModified: '最后修改', colActions: '操作',
       builtIn: '内置', user: '用户', activeTag: '当前', customTopology: '自定义拓扑',
@@ -127,9 +134,14 @@ export const stringsV4 = {
     training: { top15: '占比前 15', interruptionsWord: '次中断', noInterruption24h: '24 小时无中断' },
     scenario: { title: '方案编辑器', sub: '当前方案的全部字段：拓扑、带口径的部件故障参数、负载、恢复、备件、成本、结构与 JSON。', advancedNote: '高级编辑器。指标与硬件见拓扑页；静默错误与恢复链设置统一在机制库页。', sdcMoved: '静默错误策略与恢复链：机制库 → 静默错误与恢复链。' },
     library: {
-      title: '故障库', sub: '拓扑模板各硬件单元的故障类型，以及带口径与来源的调研参数库。',
-      unitTitle: '各硬件单元的故障类型（{{n}}）', unitSub: '审核目录的 54 个事件（18 个故障域 × 中断 / 亚健康 / 静默）挂到对应单元，另加 UB 交换在 RoCE 上的类比项。', unit: '单元', faultClass: '故障类别', hard: '中断', slow: '亚健康', sdc: '静默错误', event: '故障域 · 事件', fitCard: 'FIT / 卡', cardsPerUnit: '卡 / 单元', fitUnit: 'FIT / 单元', flags: '标记 · 持续性',
-      unitNote: '全部为目录先验值（假设）：昇腾没有公开的故障数据。鼠标悬停可看推导。', paramTitle: '参数库', paramSub: '来自调研的参数，带口径与来源。GPU 集群实测记录作为类比保留（已标注），因为 NPU 故障率以其为锚。', hardware: '硬件', hwAll: '全部', hwNonGpu: 'NPU / 通用', hwGpu: '仅 GPU 类比', gpuAnalogue: 'GPU 类比',
+      title: '故障库', sub: '带口径与来源的调研参数库：筛选、查看，并把记录用作部件故障率。',
+      unitLink: '各硬件单元的故障类型见 拓扑与硬件 › 硬件',
+      paramTitle: '参数库', paramSub: '来自调研的参数，带口径与来源。GPU 集群实测记录作为类比保留（已标注），因为 NPU 故障率以其为锚。', hardware: '硬件', hwAll: '全部', hwNonGpu: 'NPU / 通用', hwGpu: '仅 GPU 类比', gpuAnalogue: 'GPU 类比',
     },
+    review: {
+      title: '评审', sub: '当前项目的设计评审：11 条清单、原始 vs 补偿后、重要度与割集、蒙特卡洛校核、敏感性、导出。',
+      tab_checklist: '评审清单', tab_simulation: '仿真校核', tab_sensitivity: '敏感性',
+    },
+    inference: { pageSub: 'N+k 推理副本与按分位数的备件：两者都从当前方案读取。' },
   },
 };

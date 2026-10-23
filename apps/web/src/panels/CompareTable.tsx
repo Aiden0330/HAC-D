@@ -1,26 +1,26 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { compareScenarios, tornadoForScenario, type TornadoMetric } from '@hac-d/core';
+import { compareScenarios } from '@hac-d/core';
 import { useStore, useActiveSettings, compareIdsOf } from '../state/store.js';
-import { useActive, useLang } from '../hooks.js';
-import { Card, DataTable, Field, Select } from '../components/ui.js';
-import { Tornado } from '../charts/Tornado.js';
+import { useLang } from '../hooks.js';
+import { Card, DataTable } from '../components/ui.js';
 import { BarChart } from '../charts/BarChart.js';
 import { fmtPct, fmtDuration, fmtMoney, fmtHours, fmtInt } from '../lib/format.js';
 import { SERIES } from '../charts/common.js';
 
-export function ComparePage() {
+/**
+ * v5.2 the project comparison (formerly the Compare page, without its tornado) as Projects › Compare: the picker of up to four
+ * projects (the active project's `compare.ids` setting) and the side-by-side KPI table with the goodput and lost-dollars bars. The
+ * one-at-a-time sensitivity of the active project is on Review › Sensitivity.
+ */
+export function CompareTable() {
   const { t } = useTranslation();
   const lang = useLang();
   const scenarios = useStore((s) => s.scenarios);
-  // v5.1 the comparison set and the tornado metric are page settings of the active project
+  // v5.1 the comparison set is a page setting of the active project
   const cmpSettings = useActiveSettings();
   const compareIds = useMemo(() => compareIdsOf({ scenarios }, cmpSettings), [scenarios, cmpSettings]);
   const toggle = useStore((s) => s.toggleCompare);
-  const updateSettings = useStore((s) => s.updateActiveSettings);
-  const active = useActive();
-  const metric = cmpSettings.compare.metric;
-  const setMetric = (m: TornadoMetric) => updateSettings({ compare: { metric: m } });
   const selected = useMemo(() => scenarios.filter((s) => compareIds.includes(s.meta.id!)), [scenarios, compareIds]);
   const cmp = useMemo(() => {
     try {
@@ -29,22 +29,8 @@ export function ComparePage() {
       return undefined;
     }
   }, [selected]);
-  const torn = useMemo(() => {
-    if (!active || active.error) return [];
-    try {
-      return tornadoForScenario(active.scenario, metric);
-    } catch {
-      return [];
-    }
-  }, [active, metric]);
-  const fmtMetric = (v: number) => (metric === 'goodput' || metric === 'delivered' || metric === 'availability' ? fmtPct(v, 2) : metric === 'lostDollarsPerDay' ? fmtMoney(v) : fmtHours(v, lang));
-  const base = torn[0]?.base ?? 0;
   return (
     <div className="grid" style={{ gap: 14 }}>
-      <div className="page-title">
-        <h1>{t('compare.title')}</h1>
-        <span className="sub">{t('compare.sub')}</span>
-      </div>
       <Card title={t('compare.select')}>
         <div className="btn-row">
           {scenarios.map((s) => (
@@ -87,18 +73,6 @@ export function ComparePage() {
             <BarChart title={t('common.lost_per_day')} data={cmp.rows.filter((r) => r.lostDollarsPerDay !== undefined).map((r, i) => ({ label: r.name, value: r.lostDollarsPerDay!, color: SERIES[i % SERIES.length] }))} format={(v) => fmtMoney(v)} unitLabel={t('common.lost_per_day')} />
           </Card>
         </div>
-      )}
-      {active && !active.error && torn.length > 0 && (
-        <Card
-          title={`${t('compare.tornado')} — ${active.scenario.meta.name}`}
-          actions={
-            <Field label={t('compare.metric')}>
-              <Select value={metric} onChange={setMetric} options={[{ value: 'goodput', label: t('common.goodput') }, { value: 'delivered', label: t('compare.delivered') }, { value: 'availability', label: t('common.availability') }, { value: 'lostDollarsPerDay', label: t('common.lost_per_day') }, { value: 'mtbiHours', label: t('common.mtbi') }]} />
-            </Field>
-          }
-        >
-          <Tornado title="" base={base} items={torn.map((r) => ({ name: r.name, low: r.low, high: r.high, lowLabel: r.lowLabel, highLabel: r.highLabel }))} format={fmtMetric} metricLabel={metric === 'delivered' ? t('compare.delivered') : t(`common.${metric === 'lostDollarsPerDay' ? 'lost_per_day' : metric === 'mtbiHours' ? 'mtbi' : metric}`)} />
-        </Card>
       )}
     </div>
   );

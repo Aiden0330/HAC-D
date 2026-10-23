@@ -6,10 +6,15 @@ export type { ProjectSettings, SettingsPatch } from './settings.js';
 export { defaultProjectSettings } from './settings.js';
 
 /**
- * v5.1 pages: Projects (load / save / switch) first, then the main flow topology → allocation → mechanism library → fault library;
- * `scenario` is the advanced editor
+ * v5.2 pages: Projects (list / new / import / compare) first, then the main flow topology → allocation → mechanism library →
+ * fault library → review; `scenario` (the advanced editor) and `inference` (inference & spares) are behind "All pages"
  */
-export type Page = 'projects' | 'topology' | 'mechanisms' | 'allocation' | 'library' | 'scenario' | 'inference' | 'spares' | 'compare' | 'simulate' | 'report' | 'import';
+export type Page = 'projects' | 'topology' | 'allocation' | 'mechanisms' | 'library' | 'review' | 'scenario' | 'inference';
+export const PAGE_IDS: readonly Page[] = ['projects', 'topology', 'allocation', 'mechanisms', 'library', 'review', 'scenario', 'inference'];
+/** a page id from outside the type system (a link, a script, a v5.1 id such as 'report' or 'compare'): unknown ids open Projects */
+export function asPage(p: unknown): Page {
+  return typeof p === 'string' && (PAGE_IDS as readonly string[]).includes(p) ? (p as Page) : 'projects';
+}
 export type Theme = 'auto' | 'light' | 'dark';
 
 /** v5.1 a project = a scenario + its page settings; the list, the active id and the built-ins already offered are stored under one key */
@@ -235,7 +240,7 @@ interface AppState extends ProjectsState {
   /** the built-in project back to its template definition and default settings (the active project stays) */
   resetProject: (id: string) => void;
   updateActiveSettings: (patch: SettingsPatch | ((s: ProjectSettings) => ProjectSettings)) => void;
-  /** Compare page: add or remove a project from the active project's comparison set (at most four) */
+  /** Projects › Compare: add or remove a project from the active project's comparison set (at most four) */
   toggleCompare: (id: string) => void;
   /** import a project bundle or a bare scenario JSON as a new project (activated); throws on invalid input */
   importProject: (text: string) => string;
@@ -267,7 +272,8 @@ export const useStore = create<AppState>((set, get) => {
     ...initial,
     page: 'projects',
     theme: initialTheme(),
-    setPage: (page) => set({ page }),
+    // the current page is not persisted (every load opens Projects); a removed v5.1 id from a caller falls back to Projects
+    setPage: (page) => set({ page: asPage(page) }),
     setTheme: (theme) => {
       try {
         if (theme === 'auto') {

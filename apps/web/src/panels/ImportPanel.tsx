@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { evaluateScenario, type EvaluationResult } from '@hac-d/core';
 import { readWorkbook, methodReport, extractTopology, draftToScenario, reconcile, flattenDraft, exportWorkbook, type WorkbookInfo, type MethodReport, type ColumnRole, type MethodHit, type DraftConversion, type TopologyDraft } from '@hac-d/importers';
-import { useStore } from '../state/store.js';
+import { useStore, defaultProjectSettings } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, DataTable, Field, Select, Badge, Kpi } from '../components/ui.js';
 import { downloadBytes, scenarioFilename } from '../lib/export.js';
@@ -15,7 +15,12 @@ interface Loaded {
   report: MethodReport;
 }
 
-export function ImportPage() {
+/**
+ * v5.2 the Excel import flow (formerly the Import page) as a panel of Projects › Import: workbook and sheet, the methods detected in
+ * the formulas, the column roles, the extracted topology with its evidence, the reconciliation of the engine against the cached Excel
+ * values, import as a new project, and the export of the active scenario as a workbook with live formulas.
+ */
+export function ImportPanel() {
   const { t } = useTranslation();
   const lang = useLang();
   const store = useStore();
@@ -64,16 +69,13 @@ export function ImportPage() {
 
   const doImport = () => {
     if (!conversion.conv) return;
-    const id = store.addScenario({ ...conversion.conv.scenario, meta: { ...conversion.conv.scenario.meta, id: undefined } }, true);
+    // the new project opens on Projects › Import, so this panel (and its workbook) stays on screen
+    const id = store.addScenario({ ...conversion.conv.scenario, meta: { ...conversion.conv.scenario.meta, id: undefined } }, true, { ...defaultProjectSettings(), projects: { tab: 'import' } });
     setImportedId(id);
   };
 
   return (
     <div className="grid" style={{ gap: 14 }}>
-      <div className="page-title">
-        <h1>{t('import.title')}</h1>
-        <span className="sub">{t('import.sub')}</span>
-      </div>
       <Card>
         <div className="btn-row" style={{ alignItems: 'center' }}>
           <label className="btn primary" style={{ cursor: 'pointer' }}>

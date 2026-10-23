@@ -103,6 +103,22 @@ Switching template carries the NPU count, job settings, mechanisms and FIT edits
 
 A **project** is a scenario together with its page settings, so reopening a project restores the whole setup: the Allocation page's tab, strategy form (target, metric, strategy, hardware split, candidates, recovery limits, trials), classic-method inputs; the Mechanism library page's tab, players, value function, parameter overrides, provisional switch, efforts and the audit tab's selection; the Topology page's tab and the "carry" checkbox; the Compare page's project set and metric. Results, reports, plans and progress are not saved. Every edit is saved immediately in the browser (localStorage key `hacd-projects-v1`, with the last active project); the list of v4 / v5 scenarios (`hacd-scenarios-v1`) is migrated once into projects with default settings. **Export JSON** on the Projects page writes a bundle `{ "version": "hacd-project-1", "scenario": …, "settings": … }`; **Import JSON** accepts a bundle or a bare scenario JSON (default settings), and settings missing from an older bundle take their defaults. Loading, saving, duplicating and deleting happen only on the Projects page: the Topology page's file group, the scenario editor's file buttons and the Mechanism library page's own scenario selector were removed in v5.1 (the Topology page keeps a link to the scenario editor).
 
+### Pages merged (v5.2, 2026-10-22)
+
+Twelve pages became eight, one place per function (review of 2026-10-22, "merge the pages"):
+
+| Before | Now |
+|---|---|
+| Compare page | Projects page › **Compare** tab (the scenario picker and the KPI table); its tornado → Review page › **Sensitivity** tab |
+| Import page | Projects page › **Import** tab (JSON import, reset to built-ins, and the whole Excel flow: methods detected, column roles, extracted topology, reconciliation, export xlsx) |
+| Report page | Review page › **Checklist** tab (the 11-item checklist with the exports, original vs compensated, RBD, importance, cut sets, assumptions, warnings) |
+| Simulate page | Review page › **Simulation** tab (window ledger / job Monte Carlo) |
+| Inference page + Spares & domains page | one **Inference & spares** page behind All pages |
+| Fault library page's unit catalog | gone from the page: the fault types per hardware unit are shown once, on the Topology page's Hardware tab; the Fault library page is the parameter library |
+| Scenario editor's RBD card | on the Review page's Checklist tab (the editor keeps the editable JSON) |
+
+Navigation: 项目 Projects (列表 / 新建 / 导入 / 对比) → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审 Review (评审清单 / 仿真校核 / 敏感性); behind All pages: 方案编辑器, 推理与备件. The tab of the Projects and Review pages is a project setting like the other tabs. The headings below keep the pages' former names where they describe history.
+
 ## v3 pages
 
 The app had nine pages; all of them read the **active scenario** (since v5.1 the active project, chosen on the Projects page; the top-bar selector is gone). Scenarios are stored in the browser (localStorage) and can be exported/imported as JSON (since v5.1 as project bundles on the Projects page). Theme (auto/light/dark) and language (中文/EN) toggles are in the top bar.
@@ -123,11 +139,11 @@ Every chart has a **Table** toggle (the accessible twin), hover tooltips, and sh
 
 ## Typical workflows
 
-1. **Evaluate a design**: load `nvl72-16k`, adjust counts and rates, read Training; check the Report checklist; export the HTML report.
-2. **Size spares**: Spares page gives P99 hot spares and the MTBF–MTTR map; set `hotSpareNodes` in Scenario to see the blocked probability and effective goodput.
+1. **Evaluate a design**: load `nvl72-16k`, adjust counts and rates, read the Reliability tab; check the Review page's checklist; export the HTML report.
+2. **Size spares**: the Inference & spares page gives P99 hot spares and the MTBF–MTTR map; set `hotSpareNodes` in Scenario to see the blocked probability and effective goodput.
 3. **Allocate a target**: set the goodput target (e.g. 0.97) in Scenario → Allocation; choose ARINC for proportional tightening or minimum effort to see which subsystems must improve.
-4. **Compare options**: duplicate the scenario, change one thing (dual ToR, replica recovery, more spares), then Compare.
-5. **Validate with simulation**: Simulate with 100–200 replications; if the badge says the Monte Carlo disagrees, trust the simulation (non-exponential inputs, correlated failures or a too-small spare pool are the usual causes).
+4. **Compare options**: duplicate the scenario, change one thing (dual ToR, replica recovery, more spares), then Projects › Compare.
+5. **Validate with simulation**: Review › Simulation with 100–200 replications; if the badge says the Monte Carlo disagrees, trust the simulation (non-exponential inputs, correlated failures or a too-small spare pool are the usual causes).
 
 
 ## v2 additions (2026-10-09)
@@ -144,13 +160,13 @@ The Scenario page's KPI row shows both the compensated availability (after redun
 ### Training page
 When any class has sub-health, a card shows P(job slowed), the job performance factor φ_job and the isolation-induced interruption rate (straggler law). With a ladder, the recovery card lists the rungs instead of the pipeline stages and the KPI note shows P(person needed).
 
-### Import page
+### Import (since v5.2 the Projects page's Import tab)
 1. Choose an `.xlsx`, `.xls` or `.csv` workbook; pick the sheet.
 2. **Methods detected**: the formula fingerprints (A = MTBF/(MTBF+MTTR), λ = FIT·1e-9, series product vs 1 − ΣU, parallel complement, k-of-n via COMBIN / BINOM.DIST / explicit sums, switchover weighting, MTTR auto/manual mixture, Markov MMULT/MINVERSE, percent conversions) with notes on approximations.
 3. **Column roles**: guessed from zh/en headers; change any role from the dropdown.
 4. **Extracted topology**: the tree (series / parallel / k-of-n / standby, counts, n/k, parameters, switchover success) with the evidence for each node (level column, indentation, outline level, formula references, redundancy text). `Import as scenario` creates a scenario with a custom structure and cell-level provenance.
 5. **Reconciliation**: HAC-D's availability per block next to the sheet's cached value and the method it used; files saved without calculation carry no cached values, in which case only the structure is compared.
-6. `Export the active scenario to Excel` (also on the Report page) writes a workbook whose Structure sheet holds the combination formula of every block next to HAC-D's value, plus Inputs (E[R], unit availability formulas), Results (measures, waterfall) and Formulas.
+6. `Export the active scenario to Excel` (also on the Review page's Checklist tab) writes a workbook whose Structure sheet holds the combination formula of every block next to HAC-D's value, plus Inputs (E[R], unit availability formulas), Results (measures, waterfall) and Formulas.
 
 Diagram / image import is not built; it will produce the same topology draft and reuse steps 3–5.
 
@@ -163,7 +179,7 @@ Do not model such a cluster as one synchronous training job (the 1/N law makes t
 1. Pick the A3 · CloudMatrix384 or Atlas 950 template at the pool size on the Topology page and set the workload type to inference in the scenario editor.
 2. Press `= supernode` next to "GPUs per replica" so one replica unit is one supernode (384 NPUs for CloudMatrix384, 1,024 for the shipping Atlas 950 or 8,192 for its roadmap pod, 4,032 for Atlas 960E).
 3. Enter either the cluster size (100,000 / 200,000 / 500,000) into "Cluster size" or the number of supernodes directly into "Supernodes required (N)" and "Spare supernodes (k)" (the fields take these names as soon as one replica is one supernode); 261 / 521 / 1,303 CloudMatrix384 supernodes correspond to the three sizes, and the Scenario KPI shows the supernode, node, L1/L2 chip and link counts. For a training job the field "Supernodes used by the job" sets Job NPUs = supernodes × supernode size.
-4. The Inference page then reports the supernode MTBF and MTTR (every class at or below supernode scope, including the UB fabric, racks' power and the scale-out leaf/spine switches, folded into one unit), the expected number of supernodes out of service, the capacity availability for the configured spares, and `k*`, the spare supernodes needed for the capacity target.
+4. The Inference & spares page then reports the supernode MTBF and MTTR (every class at or below supernode scope, including the UB fabric, racks' power and the scale-out leaf/spine switches, folded into one unit), the expected number of supernodes out of service, the capacity availability for the configured spares, and `k*`, the spare supernodes needed for the capacity target.
 
 With the example's analogue rates a CloudMatrix384 supernode has an MTBF of about 138 h and a repair time of 1.5 h, so about 1.1 % of supernodes are down at any time: 100k NPUs need 9 spare supernodes for 99.9 % capacity availability, 200k need 14 and 500k need 27.
 
@@ -183,10 +199,10 @@ When any component class carries a silent-corruption rate, the Training page hea
 ### Mechanisms page
 Pick the mechanisms to attribute (default: the reference's six candidates D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, C-FAST), choose the value function (delivered goodput, effective goodput or A_op) and press Attribute: the page strips the selected mechanisms from the scenario (baseline), evaluates all 2^n combinations with the closed forms and shows single gains, last-added gains and exact Shapley values (they sum to the combined gain). The value function evaluates only the training block of each coalition (`evaluateScenario(s, { structure: false })`: no block structure, importance measures or cut sets), so ten players on the 54-event catalog take about a second; the button counts the coalitions evaluated, the compute worker runs one job at a time (an attribution and a plan queue) and Cancel restarts it. The library table lists all twelve reference mechanisms with change, prerequisite, failure path, confidence and editable target parameters; Apply writes a mechanism's parameters into the active scenario, Remove takes it out again.
 
-### Simulate page
+### Simulation (since v5.2 the Review page's Simulation tab)
 The default mode is now the **window ledger**: a finite-window simulation with the same semantics as the reference engine (three fault classes, mechanism chain, sub-health isolation, silent corruption with clean-checkpoint rollback and terminal discard). It reports the delivered goodput with its confidence interval and quantiles, A_op, P(delivered ≥ target), the probability of ending dirty, the mean ledger and the attribution by class, and compares with the closed form (delta badge). The previous unit-level job simulation (Weibull lifetimes, spares, common cause) is still available as the second mode.
 
-### Compare / Report
+### Compare / Review
 The Compare table and the tornado carry a Delivered column / metric; the HTML report and the Excel export list the delivered goodput and A_op.
 
 ### Allocation page with silent corruption (v3.1)

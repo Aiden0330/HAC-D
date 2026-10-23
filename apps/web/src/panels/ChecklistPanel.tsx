@@ -8,7 +8,12 @@ import { download, downloadBytes, scenarioFilename, componentsCsv, htmlReport } 
 import { fmtPct, fmtNum, fmtHours } from '../lib/format.js';
 import { SERIES } from '../charts/common.js';
 
-export function ReportPage() {
+/**
+ * v5.2 the design review of the active project (formerly the Report page) as Review › Checklist: the survey's 11-item checklist with
+ * the HTML / CSV / JSON / xlsx exports, original vs compensated with the waterfall, the reliability block diagram (moved here from
+ * the scenario editor, with its structure notes), importance measures, minimal cut sets, assumptions and warnings.
+ */
+export function ChecklistPanel() {
   const { t } = useTranslation();
   const lang = useLang();
   const active = useActive();
@@ -19,10 +24,6 @@ export function ReportPage() {
   const stepLabel = (id: string) => t(`measures.step_${id}`);
   return (
     <div className="grid" style={{ gap: 14 }}>
-      <div className="page-title">
-        <h1>{t('report.title')}</h1>
-        <span className="sub">{t('report.sub')}</span>
-      </div>
       <Card
         title={t('report.checklist')}
         actions={
@@ -77,6 +78,7 @@ export function ReportPage() {
       </Card>
       <Card title={t('rbd.title')} sub={t('rbd.sub')}>
         <RbdDiagram root={result.structure.root} result={result.structure.result} lang={lang} weakestId={result.system.weakestBlock?.id} />
+        {result.structure.notes.length > 0 && <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{result.structure.notes.join(' · ')}</div>}
       </Card>
       <div className="grid cols-2">
         <Card title={t('report.importanceTitle')} formula="Birnbaum = A(A_i=1) − A(A_i=0); FV = (U − U(A_i=1))/U; RAW = U(A_i=0)/U; RRW = U/U(A_i=1)">

@@ -6,19 +6,20 @@ import { useLang } from './hooks.js';
 import { TopologyPage } from './pages/TopologyPage.js';
 import { ScenarioPage } from './pages/ScenarioPage.js';
 import { InferencePage } from './pages/InferencePage.js';
-import { SparesPage } from './pages/SparesPage.js';
 import { AllocationPage } from './pages/AllocationPage.js';
-import { ComparePage } from './pages/ComparePage.js';
-import { SimulatePage } from './pages/SimulatePage.js';
-import { ReportPage } from './pages/ReportPage.js';
 import { LibraryPage } from './pages/LibraryPage.js';
-import { ImportPage } from './pages/ImportPage.js';
+import { ReviewPage } from './pages/ReviewPage.js';
 import { MechanismsPage } from './pages/MechanismsPage.js';
 import { ProjectsPage } from './pages/ProjectsPage.js';
 
-/** v5.1 main flow: projects → topology & hardware → allocation → mechanism library → fault library; the rest is behind "All pages" (and in the CLI / MCP) */
-const PAGES: Page[] = ['projects', 'topology', 'allocation', 'mechanisms', 'library', 'scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
-const MINIMAL_HIDDEN: Page[] = ['scenario', 'compare', 'simulate', 'report', 'inference', 'spares', 'import'];
+/**
+ * v5.2 one place per function, 12 pages → 8. Main flow: projects (list / new / import / compare) → topology & hardware → allocation →
+ * mechanism library → fault library → review (checklist / simulation / sensitivity); behind "All pages": the scenario editor and
+ * inference & spares (every function also stays in the CLI / MCP). The former Compare, Simulate, Report, Spares and Import pages are
+ * tabs or sections now: Projects › Import and › Compare, Review › Checklist, › Simulation and › Sensitivity, Inference & spares.
+ */
+const PAGES: Page[] = ['projects', 'topology', 'allocation', 'mechanisms', 'library', 'review', 'scenario', 'inference'];
+const MINIMAL_HIDDEN: Page[] = ['scenario', 'inference'];
 type UiMode = 'minimal' | 'full';
 const UI_MODE_KEY = 'hacd-ui-mode';
 function readUiMode(): UiMode {
@@ -93,13 +94,9 @@ export function App() {
         {page === 'scenario' && <ScenarioPage />}
         {page === 'mechanisms' && <MechanismsPage />}
         {page === 'inference' && <InferencePage />}
-        {page === 'spares' && <SparesPage />}
         {page === 'allocation' && <AllocationPage />}
-        {page === 'compare' && <ComparePage />}
-        {page === 'simulate' && <SimulatePage />}
-        {page === 'report' && <ReportPage />}
         {page === 'library' && <LibraryPage />}
-        {page === 'import' && <ImportPage />}
+        {page === 'review' && <ReviewPage />}
         <footer className="site">{t('app.footer')}</footer>
       </main>
     </div>

@@ -18,6 +18,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 
 - **v5**：昇腾分配报告集（方法、各拓扑结果、10 万卡元件清单）由三种输入记录——拓扑记录、失效率覆盖、机制集（`packages/core/src/records`，JSON 在 `packages/core/data/{records,fault-rates,mechanism-sets}`，每个值带出处与置信）——经核心原语（KPI 形式、MTTR 分解、分层预算、要求、窗口规则、Shapley 剪除、分层预算汇总）、双语报告套件 `packages/reports`（报告配方是旁路 JSON 的纯函数；`node packages/reports/test/reproduce.mjs` 逐字节复现六份报告）与命令行 `hacd findings | bom | budget | methodology | prune | study --record | records | schema --record|--mechanisms|--rates` 生成；黄金向量 G1–G6；参数复核 `docs/markdown/V5_PARAMETER_RECONCILIATION.md`；计划 `docs/markdown/PLAN_V5_REPORT_PIPELINE.md`。
 - **v5.1**：唯一的**项目页**（项目 = 方案 + 各页设置）作为载入 / 保存的单一入口；导航 项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库；删除重复的分配视图（拓扑页的分配页签、分配页的规划器页签与 v3.7 研究面板）。
+- **v5.2**（2026-10-22）：十二个页面合并为八个，一个功能只在一处——项目页新增导入与对比页签；新增**评审**页，容纳带导出的评审清单、蒙特卡洛校核与敏感性龙卷风；推理与备件合为「全部页面」中的一页；各硬件单元的故障类型只在拓扑页的硬件页签显示一次，故障库页即参数库。导航：项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审；「全部页面」另有方案编辑器与推理与备件。
 
 ## v4.3（2026-10-19）：用户设定硬件数量
 
@@ -102,7 +103,7 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 ## 目录结构
 
 - `packages/core` — 纯 TypeScript 数值核心（units、math、rbd、ctmc、checkpoint、sparing、mttr、scale、allocation、sensitivity、cost、mc、sdc、mechanisms、scenario、library；v5 records、budget、layers、study；v6 ingest：词表、证据卡、口径归一、校验门、差异、扩展请求）；测试与黄金向量在 `packages/core/test`（`compute_golden*.py`，v6 为 G7）。
-- `apps/web` — Vite + React 静态应用（中英双语、浅 / 深色），计算在 Web Worker 中；v5.1 以项目页为唯一载入 / 保存入口。
+- `apps/web` — Vite + React 静态应用（中英双语、浅 / 深色），计算在 Web Worker 中；v5.1 以项目页为唯一载入 / 保存入口；v5.2 八个页面：项目（列表、新建、导入含 Excel、对比）、拓扑与硬件、分配、机制库、故障库（参数库）、评审（评审清单与导出、仿真校核、敏感性），「全部页面」中另有方案编辑器与推理与备件。
 - `packages/cli` — 命令行（v5 `findings | bom | budget | methodology | prune | study`，v6 `ingest …`）；`packages/mcp` — MCP 服务；`packages/importers` — Excel 导入 / 导出与 v6 工作表；`packages/reports` — 双语报告套件与配方（v6 新增差异评审页）；`packages/agent` — v6 抽取工作器。
 - `scripts` — 截图检查、参考引擎对比、手册构建、`bundle-offline.mjs`（v6 离线包）。
 - `docs/markdown` — 开发计划、各阶段计划、模型参考、用户指南、规范、工作流、技能、内网操作手册；`docs/*.html` — 报告集与两份用户手册。

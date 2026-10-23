@@ -9,7 +9,12 @@ import { Histogram } from '../charts/Histogram.js';
 import { BarChart } from '../charts/BarChart.js';
 import { fmtPct, fmtHours, fmtNum, fmtInt } from '../lib/format.js';
 
-export function SimulatePage() {
+/**
+ * v5.2 the Monte Carlo verification (formerly the Simulate page) as Review › Simulation: the ledger mode (delivered goodput, A_op,
+ * probability of the target, attribution by class) and the job mode (goodput, MTBI, blocking, spares), each against the closed form
+ * with an agree / disagree badge. Results stay local to the panel.
+ */
+export function SimulatePanel() {
   const { t } = useTranslation();
   const lang = useLang();
   const active = useActive();
@@ -48,10 +53,6 @@ export function SimulatePage() {
   const s = res?.summary;
   return (
     <div className="grid" style={{ gap: 14 }}>
-      <div className="page-title">
-        <h1>{t('simulate.title')}</h1>
-        <span className="sub">{t('simulate.sub')}</span>
-      </div>
       <Card>
         <div className="form-grid">
           <Field label={t('simulate.mode')}><Select value={mode} onChange={setMode} options={[{ value: 'ledger', label: t('simulate.modeLedger') }, { value: 'job', label: t('simulate.modeJob') }]} /></Field>

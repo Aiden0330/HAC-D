@@ -13,7 +13,8 @@ crops = [
     ('library', 'library', (0, 0, 1280, 1300)),
     ('compare', 'compare', (0, 0, 1280, 1250)),
     ('simulate', 'simulate', (0, 0, 1280, 1500)),
-    ('report', 'report', (0, 0, 1280, 1900)),
+    ('review', 'review', (0, 0, 1280, 1900)),
+    ('sensitivity', 'sensitivity', (0, 0, 1280, 1300)),
     ('import', 'import', (0, 0, 1280, 1500)),
 ]
 for name, cap, (l, t, r, b) in crops:

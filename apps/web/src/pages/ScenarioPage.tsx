@@ -4,7 +4,6 @@ import { parseScenario, PIPELINE_PRESETS, LADDER_PRESETS, SUPERPOD_PRESETS, COUN
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, Field, NumberInput, Select, Badge } from '../components/ui.js';
-import { RbdDiagram } from '../diagrams/RbdDiagram.js';
 import { fmtHours } from '../lib/format.js';
 
 const RATE_UNITS = ['per_h', 'per_1e6_h', 'FIT', 'per_year', 'per_day', 'per_1000_node_day', 'per_month', 'per_week', 'mtbf_h', 'gpu_h_per_event', 'gpu_day_per_event'] as const;
@@ -18,9 +17,9 @@ const STAGES = ['detect', 'localize', 'remediate', 'restart', 'load', 'warmup'] 
 
 type Upd = (fn: (s: Scenario) => Scenario) => void;
 
+/** The advanced editor of the active scenario (every field and the JSON). v5.2: the block diagram is on Review › Checklist. */
 export function ScenarioPage() {
   const { t } = useTranslation();
-  const lang = useLang();
   const active = useActive();
   const store = useStore();
   const [error, setError] = useState<string | null>(null);
@@ -176,12 +175,6 @@ export function ScenarioPage() {
         <RecoveryEditor s={s} upd={upd} />
       </div>
       <ComponentsEditor s={s} upd={upd} rows={!active.error && result ? result.components : undefined} />
-      {!active.error && result && (
-        <Card title={t('rbd.title')} sub={t('rbd.sub')}>
-          <RbdDiagram root={result.structure.root} result={result.structure.result} lang={lang} weakestId={result.system.weakestBlock?.id} />
-          {result.structure.notes.length > 0 && <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{result.structure.notes.join(' · ')}</div>}
-        </Card>
-      )}
       <JsonEditor s={s} onApply={(next) => { try { store.replaceScenario(s.meta.id!, parseScenario(next)); setError(null); } catch (e) { setError(`${t('scenario.jsonInvalid')}: ${(e as Error).message}`); } }} />
     </div>
   );

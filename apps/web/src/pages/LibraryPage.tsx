@@ -1,56 +1,25 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { filterLibrary, recordToFailureRate, isGpuRecord, LIBRARY_CLASSES, unitFaultLibrary, FAULT_UNITS, FAULT_UNIT_NAMES, type Library, type LibraryRecord, type FaultUnit } from '@hac-d/core';
+import { filterLibrary, recordToFailureRate, isGpuRecord, LIBRARY_CLASSES, type Library, type LibraryRecord } from '@hac-d/core';
 import { useStore } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
 import { Card, Field, Select, Badge } from '../components/ui.js';
-import { fmtNum } from '../lib/format.js';
 
 let cached: Library | null = null;
-const UNIT_LIB = unitFaultLibrary();
 
-/** v4 the fault types of the topology templates: the 54 catalog events attached to their hardware units (+ 6 RoCE analogues) */
-function UnitFaultTypes() {
-  const { t } = useTranslation();
-  const lang = useLang();
-  const [unit, setUnit] = useState<FaultUnit | ''>('');
-  const [type, setType] = useState<'' | 'hard' | 'slow' | 'sdc'>('hard');
-  const rows = UNIT_LIB.filter((f) => (!unit || f.unit === unit) && (!type || f.type === type));
-  return (
-    <Card title={t('library.unitTitle', { n: UNIT_LIB.length })} sub={t('library.unitSub')} formula="FIT_unit = FIT_card (catalog, business impact after protection) × 384 / units per CloudMatrix384 pod (48 nodes, 192 CPUs, 12 compute cabinets, 448 UB chips, 5,376 L1–L2 links)">
-      <div className="form-grid">
-        <Field label={t('library.unit')}><Select value={unit} onChange={setUnit} options={[{ value: '', label: '—' }, ...FAULT_UNITS.map((u) => ({ value: u, label: lang === 'zh' ? FAULT_UNIT_NAMES[u].zh : FAULT_UNIT_NAMES[u].en }))]} /></Field>
-        <Field label={t('library.faultClass')}><Select value={type} onChange={setType} options={[{ value: '', label: '—' }, { value: 'hard', label: t('library.hard') }, { value: 'slow', label: t('library.slow') }, { value: 'sdc', label: t('library.sdc') }]} /></Field>
-      </div>
-      <div className="table-wrap" style={{ marginTop: 8 }}>
-        <table className="data">
-          <thead><tr><th>ID</th><th>{t('library.unit')}</th><th>{t('library.event')}</th><th className="num">{t('library.fitCard')}</th><th className="num">{t('library.cardsPerUnit')}</th><th className="num">{t('library.fitUnit')}</th><th>{t('library.flags')}</th><th>{t('library.confidence')}</th></tr></thead>
-          <tbody>
-            {rows.map((f) => (
-              <tr key={f.id} title={f.derivation}>
-                <td className="mono" style={{ whiteSpace: 'nowrap' }}>{f.id}</td>
-                <td style={{ fontSize: 12 }}>{lang === 'zh' ? FAULT_UNIT_NAMES[f.unit].zh : FAULT_UNIT_NAMES[f.unit].en}</td>
-                <td style={{ fontSize: 12 }}>{lang === 'zh' ? f.domain.zh : f.domain.en} · {lang === 'zh' ? f.description.zh : f.description.en}{f.analogue && <span className="tag-assumed"> · {t('topology.analogue')}</span>}</td>
-                <td className="num">{fmtNum(f.fitPerCard, 3)}</td>
-                <td className="num">{fmtNum(f.cardsPerUnit, 4)}</td>
-                <td className="num"><b>{fmtNum(f.fitPerUnit, f.fitPerUnit >= 100 ? 1 : 3)}</b></td>
-                <td style={{ fontSize: 11 }}>{f.type === 'hard' ? `${f.flags.replay ? 'R ' : ''}${f.flags.process ? 'P ' : ''}${f.flags.elastic ? 'E' : ''}` || '—' : '—'} · {f.persistence}</td>
-                <td><Badge status="assumed">{f.confidence}</Badge></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('library.unitNote')}</div>
-    </Card>
-  );
-}
-
+/**
+ * The survey parameter library (records with 口径 and provenance): filters, the record detail, and "use as rate" on a component of
+ * the active scenario. v5.2: the per-unit fault-type catalog moved out (it is the Topology page's Hardware tab, which shows the
+ * scenario's fault types per unit), so the table exists in one place; a link at the top opens it.
+ */
 export function LibraryPage() {
   const { t } = useTranslation();
   const lang = useLang();
   const active = useActive();
   const updateActive = useStore((s) => s.updateActive);
+  const setPage = useStore((s) => s.setPage);
+  const updateSettings = useStore((s) => s.updateActiveSettings);
+  const openHardware = () => { updateSettings({ topology: { tab: 'hardware' } }); setPage('topology'); };
   const [lib, setLib] = useState<Library | null>(cached);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
@@ -109,7 +78,9 @@ export function LibraryPage() {
         <h1>{t('library.title')}</h1>
         <span className="sub">{t('library.sub')}</span>
       </div>
-      <UnitFaultTypes />
+      <div className="muted" style={{ fontSize: 12 }}>
+        <button type="button" className="btn small" onClick={openHardware}>{t('library.unitLink')}</button>
+      </div>
       <h2 style={{ margin: '6px 0 0' }}>{t('library.paramTitle')}</h2>
       <div className="muted" style={{ fontSize: 12 }}>{t('library.paramSub')}</div>
       <Card>
