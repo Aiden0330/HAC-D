@@ -1,6 +1,6 @@
 # HAC-D workflows (2026-10-11)
 
-Two workflows: the **analysis workflow** a reliability engineer follows with the tool, and the **development workflow** for changing the tool. Both are summarised in the user manual (`docs/USER_MANUAL.html` §15) and detailed here.
+Two workflows: the **analysis workflow** a reliability engineer follows with the tool, and the **development workflow** for changing the tool. Both are summarised in the user manual (`docs/USER_MANUAL.html` §14) and detailed here.
 
 ## A. Analysis workflow: from question to decision
 

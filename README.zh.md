@@ -14,7 +14,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 - **抽取工作器**（`packages/agent`，新工作区）：OpenAI 兼容适配器（json_schema / guided_json / fenced），适用于 vLLM / SGLang / llama.cpp 部署的任何模型；分块、两种提示变体与封闭词表、证据卡（字段路径、原文的值与单位、逐字引文、位置），只有引文在分块中找到、值在引文内且两遍一致才接受；评审 Markdown、带提示哈希的 jsonl 日志、草稿工作表的置信来自声明的来源类型而非模型。
 - **命令行** `hacd ingest template | fields | worksheet | import-fit | normalize | validate | dry-run | diff | promote | extract`；**离线包** `node scripts/bundle-offline.mjs` → `dist/offline/hacd-<version>.tgz`（esbuild 打包、katex 置于其旁、`data/` 目录作为 `HACD_DATA`、启动脚本、模板、文档；只需 Node ≥ 20，除指定的模型端点外不联网）。公式与校验门：`docs/markdown/MODEL_REFERENCE.md` §26；维护侧技能 `update-inputs`。
 
-## v5 / v5.1（2026-10-21 / 22）：由输入记录生成报告流水线；项目页
+## v5 / v5.1 / v5.2（2026-10-21 / 22）：由输入记录生成报告流水线；项目页；页面合并
 
 - **v5**：昇腾分配报告集（方法、各拓扑结果、10 万卡元件清单）由三种输入记录——拓扑记录、失效率覆盖、机制集（`packages/core/src/records`，JSON 在 `packages/core/data/{records,fault-rates,mechanism-sets}`，每个值带出处与置信）——经核心原语（KPI 形式、MTTR 分解、分层预算、要求、窗口规则、Shapley 剪除、分层预算汇总）、双语报告套件 `packages/reports`（报告配方是旁路 JSON 的纯函数；`node packages/reports/test/reproduce.mjs` 逐字节复现六份报告）与命令行 `hacd findings | bom | budget | methodology | prune | study --record | records | schema --record|--mechanisms|--rates` 生成；黄金向量 G1–G6；参数复核 `docs/markdown/V5_PARAMETER_RECONCILIATION.md`；计划 `docs/markdown/PLAN_V5_REPORT_PIPELINE.md`。
 - **v5.1**：唯一的**项目页**（项目 = 方案 + 各页设置）作为载入 / 保存的单一入口；导航 项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库；删除重复的分配视图（拓扑页的分配页签、分配页的规划器页签与 v3.7 研究面板）。
@@ -92,7 +92,7 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 
 ## 文档
 
-- 用户手册：`docs/USER_MANUAL.zh.html`（中文）、`docs/USER_MANUAL.html`（英文），自包含、含截图与方法参考；源文件在 `docs/manual/`，`npm run manual` 重建。§16.5 介绍 v6 的工作表、校验门、差异评审与离线包。
+- 用户手册：`docs/USER_MANUAL.zh.html`（中文）、`docs/USER_MANUAL.html`（英文），自包含、含截图与方法参考；源文件在 `docs/manual/`，`npm run manual` 重建。§15.5 介绍 v6 的工作表、校验门、差异评审与离线包；§8–§11 是 v5.2 合并后的各页面。
 - 用户指南与计划：`docs/markdown/USER_GUIDE.md`（各页面、“v5 CLI”、“v6 ingest”）、`docs/markdown/DEVELOPMENT_PLAN.md`、各阶段计划 `docs/markdown/PLAN_V*.md`（v6：`PLAN_V6_INPUT_MIGRATION.md`）、内网操作手册 `docs/markdown/INGEST_RUNBOOK.md`。
 - 规范：`docs/markdown/SPEC.md`；输入记录的 JSON Schema 由 `hacd schema --record|--mechanisms|--rates` 输出。
 - 工作流：`docs/markdown/WORKFLOW.md`（分析工作流 A1–A10 含 v6 内部输入步骤、开发工作流 B1–B8）；分配实践 `docs/markdown/ALLOCATION_PRACTICE.md`。
