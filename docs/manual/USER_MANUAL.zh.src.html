@@ -152,7 +152,7 @@ npm run dev                      # Web 应用 http://localhost:5173
 npm test                         # 672 个核心测试 + 29 个导入器测试（含黄金向量）
 node --import tsx packages/cli/src/main.ts examples        # 命令行
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务</pre>
-<p>Web 应用的主页面是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950、Atlas 960E）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。应用打开时显示<b>项目</b>页（§3.4）：列出全部项目——项目 = 方案 + 页面设置；内置四种拓扑模板，见 §15.3；规模是参数，不另设示例——页眉显示当前项目名称，点击即打开项目页。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。每次修改都自动保存在浏览器本地存储；<b>导出 JSON</b>、<b>导入 JSON</b> 与<b>重置为模板</b>都在项目页。</p>
+<p>Web 应用的主页面是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950、Atlas 960E）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。应用打开时显示<b>项目</b>页（§3.4）：列出全部项目——项目 = 方案 + 页面设置；内置六个项目——四种拓扑模板，加上来自报告记录的 SuperPoD Flex / UBL128 与 Atlas 800T A3 服务器集群（v5.3），见 §15.3；规模是参数，不另设示例——页眉显示当前项目名称，点击即打开项目页。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。每次修改都自动保存在浏览器本地存储；<b>导出 JSON</b>、<b>导入 JSON</b> 与<b>重置为模板</b>都在项目页。</p>
 <figure class="narrow"><img src="img-zh/topology-mobile.jpg" alt="375 px 宽度下的拓扑与硬件页"><figcaption>每个页面都按 1280 px 与 375 px 两种宽度排版；窄屏下输入分组堆叠在指标条与页签之上，图表都有「表格」按钮可读取精确数值。</figcaption></figure>
 <p><b>精简模式。</b>应用默认只显示主流程（项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审）；页眉的<b>全部页面</b>开关可加回方案编辑器与推理与备件页。所有功能在命令行与 MCP 中保持可用。<b>ReMAP。</b><code>scripts/remap-bridge.ts</code> 在 HAC-D 方案上运行 ReMAP 内嵌的专家引擎并与解析式对比，<code>hacd import-remap</code> 把 ReMAP 或参考工具的事件库转为方案（见 <code>docs/REMAP_INTEGRATION.md</code>）。</p>
 </section>
@@ -166,9 +166,11 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>原始可用率</td><td>同一结构，但每个单元故障都算停机、仅人工修复、不计冗余；补偿瀑布逐步加入各机制</td><td>设计评审</td></tr>
   <tr><td>严格 / 宽松 / 性能加权</td><td>亚健康计为不可用 / 计为可用 / 按性能因子加权</td><td>设计评审</td></tr>
   <tr><td>MTBF、等效 MTTR</td><td>由稳态故障频率得 A / ν_sys 与 (1 − A) / ν_sys</td><td>设计评审、方案编辑器</td></tr>
-  <tr><td>MTBI</td><td>作业平均中断间隔 1 / Σ nᵢλᵢ（加上已检出亚健康单元的隔离）</td><td>指标条</td></tr>
+  <tr><td>MTBI</td><td>作业平均中断间隔 1 / Σ nᵢλᵢ（加上已检出亚健康单元的隔离）</td><td>指标条（MTBF_hw 的注释）</td></tr>
+  <tr><td>MTBF_hw、MTTR_hw（公式 1）</td><td>A_op = (1 − φ) / (1 + (Σλᵢt̄ᵢ + F)/3600) 的硬件侧：MTBF_hw = 1 / Σλᵢ，只计硬中断类；MTTR_hw = Σλᵢt̄ᵢ / Σλᵢ，经机制链按速率加权的平均暂停；隔离、已检出静默错误与误报（F）另计，不加入 λ——即结果报告表 1 的口径</td><td>指标条、分配 › 策略（报告预算）、结果报告</td></tr>
+  <tr><td>名义 / 降额</td><td>名义 = 每个已应用机制的参数按机制库给出的值（厂商 / 论文目标值，标注 assumed）；降额 = 同一设计，但每个已应用机制的参数与恢复杠杆按覆盖率 −5 pt、成功率 −8 pt、时间 ×1.5、发生率改善 ×0.5 变差——这是对参数不确定性的约定，不是实测。目标须两者都满足，起决定作用的是降额值。方案自身的 FIT 与恢复基线不降额，所以没有机制库机制的设计两值相等</td><td>指标条、分配、结果报告</td></tr>
   <tr><td>恢复时间 R(N)</td><td>从中断到恢复有效训练的平均时间，不含重算；流水线、分级或混合</td><td>可靠性页签</td></tr>
-  <tr><td>运行可用率 A_op</td><td>运行时间占比 1 / (1 + λ_rb R_rb + λ_p R_p)（保存与重算计为运行）</td><td>指标条、分配、方案对比</td></tr>
+  <tr><td>运行可用率 A_op</td><td>运行时间占比 1 / (1 + λ_rb R_rb + λ_p R_p)（保存与重算计为运行）；以名义 / 降额两值显示</td><td>指标条、分配、方案对比</td></tr>
   <tr><td>goodput（一阶、精确更新、乘积、Daly）</td><td>周期 checkpoint 下单位墙钟时间的有效计算，§12.5</td><td>可靠性页签</td></tr>
   <tr><td>有效 goodput</td><td>首要 goodput × (1 − P_blocked) × φ_job × (1 − ℓ_local)：计入备机、亚健康与弹性域损失</td><td>可靠性页签、方案对比</td></tr>
   <tr><td>正确有效产出（交付 goodput）</td><td>作业窗口结束时保留的正确进度 ÷ 窗口长度，扣除静默错误回滚与期末判废</td><td>指标条、分配、机制</td></tr>
@@ -192,7 +194,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s4">
 <h2>4. 拓扑与硬件页</h2>
-<figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，其后是各单元的故障类型）。</figcaption></figure>
+<figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条（A_op 名义 / 降额、正确有效产出、MTBF_hw、MTTR_hw 名义 / 降额、每 NPU 中断 FIT）与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，其后是各单元的故障类型）。</figcaption></figure>
 <p>首页回答：在这个拓扑、这个规模下，有哪些硬件单元、各有多少、各带哪些故障类型，以及在默认机制下得到什么结果。输入位于左侧可折叠分组，输出位于右侧指标条下的四个页签（拓扑图、硬件、可靠性、分配）。每次编辑即时重算。</p>
 <h3>4.1 四种拓扑模板</h3>
 <div class="table-wrap"><table>
@@ -246,14 +248,17 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </ul>
 <p>在已应用机制之下的每次编辑都作用于“裸”设计：先精确移除这些机制，修改后再按原顺序与参数重新应用。因此修改 FIT 不会丢失机制，被机制接管的设置仍由该机制决定。</p>
 <h3>4.5 指标条与页签</h3>
-<p>指标条显示 A_op = A_run·(1 − φ_sdc)（A_run = 1/(1 + Σλp̄)）及其目标、30 天窗口的正确有效产出及其目标、MTBI = 1/λ_job 与每日中断次数、恢复链每次事件的平均暂停，以及硬件的每 NPU 中断 FIT（Σ 数量 × 单元 FIT ÷ N，未计机制）。在默认六项机制下：</p>
+<p>v5.3：指标条采用结果报告表 1 的口径（公式 1，§12.9）：<b>A_op 名义 / 降额</b> = (1 − φ) / (1 + (Σλᵢt̄ᵢ + F)/3600) 及其目标（告警色按降额值判断，因为起决定作用的是它；两值的定义见 §3.1）、30 天窗口的<b>正确有效产出</b>及其目标、<b>MTBF_hw</b> = 硬中断类的 1/Σλ（注释保留 MTBI = 1/λ_job——它还计入已检出亚健康单元的隔离——与每日中断次数）、<b>MTTR_hw 名义 / 降额</b> = 硬中断类经机制链按速率加权的平均暂停（注释保留含隔离与已检出静默错误的全部事件平均暂停），以及硬件的<b>每 NPU 中断 FIT</b>（Σ 数量 × 单元 FIT ÷ N，未计机制）。指标条下方一行说明名义与降额的含义。因此基于记录的项目显示的就是其结果报告「今天」一行的数字。在默认六项机制下：</p>
 <div class="table-wrap"><table>
-  <tr><th>10,000 NPU</th><th class="num">A_op</th><th class="num">正确有效产出</th><th class="num">MTBI</th><th class="num">平均暂停</th><th class="num">每 NPU FIT</th></tr>
-  <tr><td>A2 · RoCE</td><td class="num">99.925 %</td><td class="num">97.99 %</td><td class="num">31.8 h</td><td class="num">85 s</td><td class="num">3,086.1</td></tr>
-  <tr><td>A3 · CloudMatrix384</td><td class="num">99.908 %</td><td class="num">97.97 %</td><td class="num">29.1 h</td><td class="num">95 s</td><td class="num">3,371.3</td></tr>
-  <tr><td>Atlas 950</td><td class="num">99.920 %</td><td class="num">97.98 %</td><td class="num">31.7 h</td><td class="num">90 s</td><td class="num">3,092.1</td></tr>
-  <tr><td>Atlas 960E</td><td class="num">99.925 %</td><td class="num">97.99 %</td><td class="num">32.3 h</td><td class="num">86 s</td><td class="num">3,041.1</td></tr>
+  <tr><th>10,000 NPU</th><th class="num">A_op 名义 / 降额</th><th class="num">正确有效产出</th><th class="num">MTBF_hw（MTBI）</th><th class="num">MTTR_hw 名义 / 降额（全部事件）</th><th class="num">每 NPU FIT</th></tr>
+  <tr><td>A3 · CloudMatrix384（= 记录 cm384）</td><td class="num">99.908 / 99.897 %</td><td class="num">97.97 %</td><td class="num">29.7 h（29.1 h）</td><td class="num">93.0 / 104.4 s（94.9 s）</td><td class="num">3,371.3</td></tr>
+  <tr><td>A2 · RoCE</td><td class="num">99.925 / 99.914 %</td><td class="num">97.99 %</td><td class="num">32.4 h（31.8 h）</td><td class="num">83.0 / 94.7 s（84.9 s）</td><td class="num">3,086.1</td></tr>
+  <tr><td>Atlas 950（= 记录 native950）</td><td class="num">99.920 / 99.910 %</td><td class="num">97.98 %</td><td class="num">32.3 h（31.7 h）</td><td class="num">88.3 / 99.5 s（90.1 s）</td><td class="num">3,097.8</td></tr>
+  <tr><td>Atlas 960E</td><td class="num">99.925 / 99.915 %</td><td class="num">97.99 %</td><td class="num">32.9 h（32.3 h）</td><td class="num">83.6 / 95.2 s（85.6 s）</td><td class="num">3,041.1</td></tr>
+  <tr><td>SuperPoD Flex / UBL128（记录 ubl128）</td><td class="num">99.924 / 99.915 %</td><td class="num">97.99 %</td><td class="num">32.9 h（32.2 h）</td><td class="num">84.4 / 95.9 s（86.4 s）</td><td class="num">3,043.6</td></tr>
+  <tr><td>Atlas 800T A3 服务器集群（记录 a3server）</td><td class="num">99.910 / 99.900 %</td><td class="num">97.97 %</td><td class="num">30.4 h（29.8 h）</td><td class="num">93.2 / 104.3 s（94.9 s）</td><td class="num">3,287.9</td></tr>
 </table></div>
+<p>六个内置项目中四个就是昇腾报告集的架构：Atlas 950 项目采用 native950 记录的几何（跨超节点网络每 NPU 4 端口、4 平面、radix 1024，assumed）而不是模板默认值，所以其指标条等于 ASCEND_ALLOCATION_FINDINGS_950 在 10,000 卡的「今天」一行（A_op 99.920 / 99.910 %、MTBF_hw 32.3 h、MTTR_hw 88.3 / 99.5 s）；UBL128 与 A3 服务器集群出于同一目的加入（v5.3）。A2 · RoCE 与 Atlas 960E 没有记录，也没有结果报告。</p>
 <figure><img src="img-zh/topology-picture.jpg" alt="拓扑图页签"><figcaption>拓扑图页签：scale-out 各层、一个超节点及其计算柜、通信柜（或灵衢互联柜）与 UB 交换——两级拓扑画子平面，全互联与刀片拓扑画超节点层交换（其余超节点叠在其后）、放大的一个节点；下方是模板的来源与假设字段。</figcaption></figure>
 <p>页签：<b>拓扑图</b>（按数量实时绘制的示意图）、<b>硬件</b>（硬件清单——单元、每 NPU 数量、10k / 100k / 200k / 500k 数量且当前 N 高亮、每单元中断 FIT、占作业硬件中断率的比例、一次故障的影响、置信——其后是可编辑 FIT 的各单元故障类型及每 NPU 贡献）与<b>可靠性</b>（§5）；页签栏右侧的「<b>分配 ›</b>」链接转到分配页（§7），策略只在那里运行。</p>
 <h3>4.6 方案编辑器（高级）</h3>
@@ -371,8 +376,8 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s7">
 <h2>7. 分配页</h2>
-<figure><img src="img-zh/allocation.jpg" alt="分配页「策略」页签"><figcaption>分配页「策略」页签（A3 · CloudMatrix384、500,000 NPU、A_op ≥ 98.5 %，默认目标）：目标与策略、候选机制与恢复上限、硬件约束、三种策略的对比以及所选方案的明细（步骤、各类允许 FIT、其他方案、说明）。</figcaption></figure>
-<p>v5.1：三个页签。<b>策略</b>（§7.1）与<b>跨规模</b>（§7.2）在约束下用机制、恢复上限与硬件 FIT 达到目标；<b>经典方法</b>（§7.3–7.11）保留 v3 的预算方法。原来的纯机制规划页签与 v3.7 分配研究面板已去掉：最优策略覆盖了规划器的搜索，跨规模研究由 v5 命令行生成（<code>hacd findings</code>，§15）。</p>
+<figure><img src="img-zh/allocation.jpg" alt="分配页「策略」页签"><figcaption>分配页「策略」页签（A3 · CloudMatrix384、500,000 NPU、A_op ≥ 98.5 %，默认目标）：目标与策略（含「报告设置」/「页面默认」按钮）、候选机制与恢复上限、硬件约束、三种策略的对比以及所选方案的明细（步骤、各类允许 FIT、其他方案、说明），其后是「报告预算（窗口规则）」卡与跨规模卡。</figcaption></figure>
+<p>v5.3：两个页签。<b>策略</b>（§7.1）在约束下用机制、恢复上限与硬件 FIT 达到目标——在项目自身规模上，并在页签末尾的卡片中跨规模运行（§7.2；v5.2 之前是单独的「跨规模」页签，重复了整个表单）；<b>经典方法</b>（§7.3–7.11）保留 v3 的预算方法。原来的纯机制规划页签与 v3.7 分配研究面板已去掉：最优策略覆盖了规划器的搜索，跨规模研究由 v5 命令行生成（<code>hacd findings</code>，§15）。</p>
 <h3>7.1 「策略」页签</h3>
 <p>三种策略求解同一问题：在方案自身机制之上，使目标（作业窗口内的 A_op 或正确有效产出）在名义参数下<em>且</em>在所有机制参数与杠杆降额后（覆盖率 −5 pt、成功率 −8 pt、时间 ×1.5）都得到满足，可用三类手段：</p>
 <ul>
@@ -387,7 +392,8 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>MTTF 提升优先</td><td>先硬件，降到下限为止；只有下限仍不够时才加入机制（先物理类，再恢复侧，均在硬件处于下限时评估），之后再把硬件放宽回去</td></tr>
 </table></div>
 <p><b>硬件分配方式。</b>对由引擎二分求出的水平 L，xᵢ·cᵢ = clamp(wᵢ·L, 下限ᵢ·cᵢ, cᵢ)，其中 cᵢ = λᵢ·p̄ᵢ 是该类的暂停贡献（故障率 × 其机制链每次事件平均暂停）。<i>最小工作量</i>（默认）取 wᵢ = eᵢ，对 A_op 预算使 Σ eᵢ log₂(1/xᵢ) 最小；<i>AGREE</i> 取 wᵢ = 单元数 × 重要度，并把低于预算的类的余量再分配；<i>ARINC</i> 取 wᵢ = cᵢ（统一比例）。对 A_op，运行占比精确为 1/(1 + (Σ xᵢcᵢ + F)/3600)（F：隔离、误报与已检出静默错误的暂停），由此可闭式求出水平。目标已满足时结果给出<b>硬件余量</b>：所有中断 FIT 同比放大多少倍目标仍成立。</p>
-<p><b>输出</b>：三种策略并列（名义 / 降额结果、新增手段、工作量、是否达到）；所选策略的步骤、各类允许的中断 FIT（当前、允许、倍数、下限、单元允许 MTBF、不可用点数前 → 后、工作量）、备选方案（最优）、可选的窗口账本校核（P(窗口 ≥ 目标) 及 Wilson 区间），以及<b>将该设计另存为新项目</b>。</p>
+<p><b>输出</b>：三种策略并列（名义 / 降额结果、新增手段、工作量、是否达到；所选策略的说明首行给出名义与降额的定义，§3.1）；所选策略的步骤、各类允许的中断 FIT（当前、允许、倍数、下限、单元允许 MTBF、不可用点数前 → 后、工作量）、备选方案（最优）、可选的窗口账本校核（P(窗口 ≥ 目标) 及 Wilson 区间），以及<b>将该设计另存为新项目</b>。</p>
+<p><b>报告设置（v5.3）。</b>页面默认在机制库的候选机制上搜索，使用机制库的工作量分数（或在机制库表中修改过的分数）、最小工作量硬件分配且无逐窗口规则，所以其最优方案不是结果报告的方案——报告使用机制集的候选、工作量与杠杆、ARINC 分配与逐窗口规则：native950 记录 500,000 卡时，页面默认得到 D-HARD + R-NETFAIL + 两项杠杆（工作量 16.0），报告推荐 D-HARD + D-RECOVERY-CLASSIFY + R-LINK-LOCAL + H-CONTROL-CONTINUITY + 两项杠杆、k = 0.863（工作量 24.5）。「<b>报告设置（hacd findings）</b>」按钮把表单设为报告的输入（默认机制集的候选、工作量、参数与杠杆、ARINC、降额开、A_op 目标、400 个窗口），此时结果的最优行与报告一致；「<b>页面默认</b>」恢复机制库默认。下方的「<b>报告预算（窗口规则）</b>」卡在当前项目及其规模上运行与 <code>hacd findings</code> / <code>hacd budget</code> 相同的函数，打印报告的三行——今天、要求、推荐——含 A_op 名义与降额、MTBF_hw 与 MTTR_hw（降额）、P(窗口) 及判定、方案与硬件系数 k 及其约束侧（降额均值或逐窗口）；500,000 卡 400 个窗口需数分钟，可随时取消；少于 35 个窗口时窗口校核永远不能判定为「支持」（Wilson 下界达不到 90 %），卡片会给出说明。表上方的口径行就是报告的口径。该卡只对 A_op 运行。</p>
 <div class="table-wrap"><table>
   <tr><th>A3 · CloudMatrix384，500,000 NPU，A_op ≥ 98.5 %</th><th>最优</th><th>MTTR 降低优先</th><th>MTTF 提升优先</th></tr>
   <tr><td>结果（名义 / 降额）</td><td class="num">99.308 / 98.500 %</td><td class="num">99.304 / 98.500 %</td><td class="num">98.916 / 98.500 %</td></tr>
@@ -396,8 +402,8 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>工作量 机制 + 杠杆 + 硬件 = 合计</td><td class="num">5 + 5 + 10.90 = <b>20.90</b></td><td class="num">8 + 5 + 10.88 = 23.88</td><td class="num">0 + 0 + 44.67 = 44.67</td></tr>
 </table></div>
 <p>解读：500,000 NPU 时默认设计为 95.59 %（降额 95.10 %）；1 s 检测、网络切换与两项恢复上限把降额值提到 97.60 %，再压低五个没有恢复梯级覆盖的类（未归因 ×0.19 … 冷却 ×0.77）即可补足。只靠硬件则需改进十五类，未归因中断降到下限 0.05。<code>docs/ALLOCATION_STRATEGY_V4.zh.html</code> 详细讲解这一算例，并在 16 个内置算例（四种模板 × 四个规模）上与 v3.0、v3.7 的方法对比。</p>
-<h3>7.2 「跨规模」页签</h3>
-<p>在多个规模下使用相同的目标、策略与约束（默认为内置的 10k / 100k / 200k / 500k；模板的硬件数量随 N 变化）：每个规模给出基线、结果、新增手段、硬件工作量、总工作量以及最大的硬件任务或余量。</p>
+<h3>7.2 跨规模（「策略」页签末尾的卡片）</h3>
+<p>「策略」页签的最后一张卡在多个规模下运行相同的目标、策略与约束（默认为内置的 10k / 100k / 200k / 500k；模板的硬件数量随 N 变化）：每个规模给出基线、名义 / 降额结果、新增手段、硬件工作量、总工作量以及最大的硬件任务或余量。带窗口规则的分规模预算由 <code>hacd findings</code> 生成（§15.1）；单个规模在「报告预算」卡中运行（§7.1）。</p>
 <div class="table-wrap"><table>
   <tr><th>最优，A_op ≥ 98.5 %</th><th class="num">10,000</th><th class="num">100,000</th><th class="num">200,000</th><th class="num">500,000</th></tr>
   <tr><td>A2 · RoCE</td><td class="num">余量 ×18.7</td><td class="num">余量 ×1.82</td><td class="num">硬件 1.11</td><td class="num">D-HARD + 杠杆 + 硬件 8.27；合计 15.27</td></tr>
@@ -504,6 +510,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 <p>「设计对不对、交付什么」集中在一处：11 条评审清单与导出、蒙特卡洛校核、当前项目的敏感性，分三个页签；页签是项目设置。</p>
 <h3>9.1 评审清单页签</h3>
 <figure><img src="img-zh/review.jpg" alt="评审页·评审清单页签"><figcaption>评审页的评审清单页签：11 条设计评审清单、原始 vs 补偿后度量与补偿瀑布、可靠性框图、重要度与最小割集、假设与警告；导出 HTML、CSV、JSON 与 Excel。</figcaption></figure>
+<p>HTML 导出的关键指标采用指标条的口径（v5.3）：A_op 名义 / 降额、MTBF_hw、MTTR_hw 名义 / 降额与每 NPU 中断 FIT 与拓扑页数值相同，首要 goodput 模型加星号，每行标出公式；其后是 RBD 度量（可用率、容量可用率、MTBF、等效 MTTR、年故障次数）、部件表、清单、假设与方案 JSON。</p>
 <div class="table-wrap"><table>
   <tr><th>#</th><th>清单项（综述设计评审）</th></tr>
   <tr><td>1</td><td>先定口径</td></tr>
@@ -687,7 +694,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td colspan="2"><b>v5 报告流水线</b>（记录按内置 id、JSON 路径或 <code>packages/core/data/records/&lt;id&gt;.json</code> 解析；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v5 CLI” 一节）</td></tr>
   <tr><td><code>hacd records</code>、<code>hacd schema --record|--mechanisms|--rates</code></td><td>列出拓扑记录、机制集与失效率覆盖文件；输出三种输入记录的 JSON Schema</td></tr>
   <tr><td><code>hacd study --record a960e --scales 10000,100000 --permutations 300 --out-dir docs/data</code></td><td>机制集在该记录裸场景上的 Shapley 研究（结果报告表 7、机制分层）</td></tr>
-  <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本</td></tr>
+  <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本。<code>hacd findings --data docs/backup/ascend-allocation [--record ids] [--out docs]</code> 在配方改动后由已存旁路 JSON 重新渲染页面，沿用其中的出处（不运行引擎；即 <code>node packages/reports/test/reproduce.mjs</code> 所比较的内容）</td></tr>
   <tr><td><code>hacd methodology --data docs/data</code>、<code>hacd bom --records … --npus 100000</code></td><td>由一次 findings 运行的旁路 JSON 生成方法报告；各 scale-out 变体的元件清单</td></tr>
   <tr><td><code>hacd budget --record cm384 --scale 200000</code>、<code>hacd prune --study-dir dir --out pruned.json</code></td><td>单个架构 × 规模的预算（今天 / 要求 / 推荐）；按剪除规则重新判定机制集的分类列表</td></tr>
   <tr><td colspan="2"><b>v6 输入流水线</b>（工作表 → 暂存记录 → 校验门 → KPI 差异 → 提升；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v6 ingest” 一节与 §15.5）</td></tr>
@@ -702,12 +709,14 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <h3>15.2 MCP 工具</h3>
 <p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>、<code>audit_mechanisms</code>、<code>allocation_study</code>、<code>estimate_rate</code>，v4 新增 <code>topology_bom</code> 与 <code>allocation_strategy</code>。</p>
 <h3>15.3 内置示例</h3>
-<p>自 v4.1 起，内置示例就是各拓扑模板（v4.2 起为四种）；规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
+<p>自 v4.1 起，内置示例就是各拓扑模板（v4.2 起为四种）；v5.3 加入报告集中没有独立模板的两个架构，并由记录构建 Atlas 950 示例（<code>records/topologyRecord.ts</code> 的 <code>RECORD_EXAMPLES</code>），使昇腾报告集的每个架构都能以报告的数字在页面上打开。规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>方案（10,000 NPU，各单元故障类型，默认六项机制）</th></tr>
   <tr><td><code>topology-a3-ub384</code></td><td>A3 · CloudMatrix384 UB 超节点（论文几何）</td></tr>
   <tr><td><code>topology-a2-roce</code></td><td>A2 · Atlas 800T A2 服务器（8 NPU）+ RoCE Clos</td></tr>
-  <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD（产品页现行规格的 1,024 卡形态，柜内全互联 + 光交换 Clos；可选 8,192 / UB-Mesh 4D / 两级拷贝）</td></tr>
+  <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD（产品页现行规格的 1,024 卡形态，柜内全互联 + 光交换 Clos；可选 8,192 / UB-Mesh 4D / 两级拷贝）；v5.3：采用 native950 记录的几何（跨超节点网络每 NPU 4 端口、4 平面、radix 1024，assumed）</td></tr>
+  <tr><td><code>topology-ubl128</code></td><td>SuperPoD Flex / UBL128（128 NPU，单层 UB 交换）——ubl128 记录（v5.3）</td></tr>
+  <tr><td><code>topology-a3server</code></td><td>Atlas 800T A3 服务器集群（每台 8 NPU，跨机 RoCE）——a3server 记录（v5.3）</td></tr>
   <tr><td><code>topology-a960e-ub</code></td><td>Atlas 960E · NPO 超节点（56 + 14 柜、每柜 72 NPU，LinkBlade + LinkDevice，四平面 scale-out）</td></tr>
 </table></div>
 <p>不列出的参考夹具：<code>ref-catalog-100k</code>（按卡计的 54 事件目录，100,000 卡，逐事件重执行 / 进程 / 弹性标志）与 <code>ref-three-classes-100k</code>（参考工具已确认的三类故障基线）仍可按 ID 取得，用于与参考工具及 ReMAP 的交叉核对（<code>hacd example</code>、<code>get_example</code>、<code>scripts/remap-bridge.ts</code>）。v2 的昇腾示例 <code>ascend-cm384</code>、<code>ascend-atlas950</code>、<code>ascend-supercluster-100k</code> 已移除——A3 与 Atlas 950 模板加规模即可覆盖（推理池可在方案编辑器中把模板的负载改为推理）；浏览器中这些示例未修改的副本会自动移出列表。v3.7 的 GPU 示例（<code>ref-baseline-100k</code>、<code>survey-ex1</code>、<code>survey-ex3</code>、<code>survey-ex4</code>、<code>nvl72-16k</code>）同样不列出；<code>hacd example &lt;id&gt;</code> 与 <code>get_example</code> 仍可返回它们，GPU 工具可从 git 标签 <code>v3.7-gpu</code> 分出。</p>
@@ -759,6 +768,8 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <dt>静默错误（SDC）</dt><dd>无中断的状态污染</dd>
   <dt>正确有效产出</dt><dd>交付 goodput：窗口结束时保留的正确进度 ÷ 窗口长度</dd>
   <dt>MTBI / MTBF / MTTR</dt><dd>作业平均中断间隔 / 系统平均故障间隔 / 平均修复时间</dd>
+  <dt>名义 / 降额</dt><dd>按机制库给出的机制参数评估的设计，或把每个已应用机制的参数与恢复杠杆按固定裕量变差（覆盖率 −5 pt、成功率 −8 pt、时间 ×1.5、发生率改善 ×0.5）后评估的同一设计；目标须两者都满足，起决定作用的是降额值（§3.1）</dd>
+  <dt>MTBF_hw / MTTR_hw</dt><dd>公式 1 中 A_op 的硬件侧：硬中断类的 1/Σλ 及其经机制链按速率加权的平均暂停；隔离与静默错误另计（§3.1、§12.9）</dd>
   <dt>A_op</dt><dd>运行可用率：作业处于运行态的时间占比</dd>
   <dt>τ、δ、W、R</dt><dd>checkpoint 间隔、暴露保存时间、每次回滚丢失的计算量、恢复时间</dd>
   <dt>Shapley 贡献</dt><dd>按所有加入顺序平均后分配给某一机制的组合收益份额</dd>

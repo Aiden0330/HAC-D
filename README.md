@@ -14,11 +14,12 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 - **Extraction worker** (`packages/agent`, new workspace): an OpenAI-compatible adapter (json_schema / guided_json / fenced) for any vLLM / SGLang / llama.cpp-served model, chunking, prompts in two variants with the closed vocabularies, evidence cards (field path, value and unit as written, verbatim quote, location) accepted only when the quote is found in the chunk, the value inside the quote and the two passes agree; review Markdown, jsonl log with prompt hashes, a draft worksheet whose confidence comes from the declared source type, never from the model.
 - **CLI** `hacd ingest template | fields | worksheet | import-fit | normalize | validate | dry-run | diff | promote | extract`; **offline bundle** `node scripts/bundle-offline.mjs` → `dist/offline/hacd-<version>.tgz` (esbuild bundle with katex beside it, the `data/` folder as `HACD_DATA`, launchers, templates, docs; Node ≥ 20, no network except the model endpoint you name). Formulas and gates: `docs/markdown/MODEL_REFERENCE.md` §26; maintainer skill `update-inputs`.
 
-## v5 / v5.1 / v5.2 (2026-10-21 / 22): report pipeline from input records; projects; pages merged
+## v5 / v5.1 / v5.2 / v5.3 (2026-10-21 / 22): report pipeline from input records; projects; pages merged; one 口径 for pages and reports
 
 - **v5**: the Ascend allocation report set (Methodology, Findings per topology, 100k BOM) is produced from three input records — topology record, failure-rate override, mechanism set (`packages/core/src/records`, JSON in `packages/core/data/{records,fault-rates,mechanism-sets}`, every value with provenance and confidence) — by core primitives (KPI form, MTTR decomposition, layer budget, requirement, window rule, Shapley pruning, hierarchical budget), the bilingual report kit `packages/reports` (recipes as pure functions of the sidecar JSON; `node packages/reports/test/reproduce.mjs` regenerates the six reports byte for byte) and the CLI `hacd findings | bom | budget | methodology | prune | study --record | records | schema --record|--mechanisms|--rates`; goldens G1–G6; parameter reconciliation `docs/markdown/V5_PARAMETER_RECONCILIATION.md`; plan `docs/markdown/PLAN_V5_REPORT_PIPELINE.md`.
 - **v5.1**: one **Projects page** (a project = the scenario + the page settings) as the single place to load and save; navigation Projects → Topology & hardware → Allocation → Mechanism library → Fault library; the duplicate allocation views removed (the Topology page's allocation tab, the planner tab and the v3.7 study panel of the Allocation page).
 - **v5.2** (2026-10-22): twelve pages merged into eight, one place per function — Projects gains Import and Compare tabs; a new **Review** page holds the checklist with the exports, the Monte Carlo verification and the sensitivity tornado; Inference and Spares are one page behind All pages; the fault types per unit are shown once, on the Topology page's Hardware tab, and the Fault library page is the parameter library. Navigation: Projects → Topology & hardware → Allocation → Mechanism library → Fault library → Review; All pages adds Scenario editor and Inference & spares.
+- **v5.3** (2026-10-22): pages and reports in one 口径. The Topology KPI strip shows formula (1): A_op nominal / derated, delivered goodput, MTBF_hw (1/Σλ of hard interruptions; MTBI in the note), MTTR_hw nominal / derated (rate-weighted hard-class pause; the all-event mean in the note), interruption FIT per NPU — the "today" row of the Findings report. Allocation › Strategies gains **Report settings** (the mechanism set's candidates, efforts, parameters and levers, ARINC, derating, 400 windows, so the optimal row equals the report's) and a **Report budget (window rule)** card running `hierarchicalBudget` on the active project (today / required / recommended, as `hacd budget`); nominal and derated are defined wherever they appear (nominal = library parameters as specified; derated = coverage −5 pt, success −8 pt, times ×1.5, rate reductions ×0.5; both must meet the target, the derated value decides). Built-ins: the Atlas 950 example is the native950 record's geometry (scale-out 4 ports / 4 planes / radix 1024), UBL128 and the Atlas 800T A3 server cluster added, so every report architecture opens on a page with the report's numbers. `hacd findings --data <dir>` re-renders the pages from a stored sidecar. The Review page's HTML export carries the strip's figures. The Cross-scale tab, which repeated the Strategies form, is now the across-sizes card at the end of the Strategies tab (two Allocation tabs).
 
 ## v4.3 (2026-10-19): user hardware counts
 
@@ -54,7 +55,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 
 ```bash
 npm install            # Node 20+, workspaces (core, importers, reports, agent, cli, mcp, web)
-npm test               # 817 core + 52 importer + 30 agent + 28 report tests incl. the independently computed golden vectors (v1–v6)
+npm test               # 819 core + 52 importer + 30 agent + 28 report tests incl. the independently computed golden vectors (v1–v6)
 npm run dev            # web app at http://localhost:5173 (bilingual zh/en, light/dark)
 npm run build -w @hac-d/web   # static bundle in apps/web/dist
 ```
@@ -62,7 +63,7 @@ npm run build -w @hac-d/web   # static bundle in apps/web/dist
 CLI (no build step):
 
 ```bash
-node --import tsx packages/cli/src/main.ts examples                                   # the four topology templates (the built-in examples since v4.1)
+node --import tsx packages/cli/src/main.ts examples                                   # six built-in examples: the four topology templates plus UBL128 and the A3 server cluster from the report records (v5.3)
 node --import tsx packages/cli/src/main.ts example topology-a3-ub384 --npus 200000 > a3.json   # any template at any scale
 node --import tsx packages/cli/src/main.ts topology a3-ub384 --npus 10000 --out a3.json   # v4 bill of materials at 10k / 100k / 200k / 500k
 node --import tsx packages/cli/src/main.ts strategy --template a3-ub384 --npus 500000 --target 0.985   # v4 allocation strategies
@@ -127,7 +128,7 @@ MCP server for agents (Claude Code: `claude mcp add hacd -- node --import tsx $P
 | `packages/agent` | v6 extraction worker: OpenAI-compatible / mock / none adapters, chunking, two prompt variants, evidence cards with grounding and two-pass agreement, review Markdown, draft worksheets |
 | `packages/cli` | `hacd` command line (v5 `findings | bom | budget | methodology | prune | study --record | records | schema`, v6 `ingest …`) |
 | `packages/mcp` | MCP server over the same core |
-| `apps/web` | Vite + React app (v5.2): Projects (list, new, import incl. Excel, compare), Topology & hardware (picture, hardware, reliability), Allocation (strategies, cross-scale, classic methods), Mechanism library, Fault library (parameter library), Review (checklist and exports, simulation, sensitivity); behind All pages: Scenario editor, Inference & spares |
+| `apps/web` | Vite + React app (v5.2): Projects (list, new, import incl. Excel, compare), Topology & hardware (picture, hardware, reliability), Allocation (strategies with the across-sizes card, classic methods), Mechanism library, Fault library (parameter library), Review (checklist and exports, simulation, sensitivity); behind All pages: Scenario editor, Inference & spares |
 | `docs/markdown` | Development plan, the phase plans v2–v6, model reference (§10–17 v2, §25 v5, §26 v6), user guide, specification, workflows, skills, the ingest runbook, Ascend source notes; `docs/*.html` the report set and the two manuals |
 | `scripts` | report builders, screenshots and the manual build, `bundle-offline.mjs` (the v6 offline bundle) |
 | `.claude/skills` | `model-check`, `add-parameter`, `scenario-review`, `release-check`, `allocate-to-target`, `reference-compare`, `build-manual`, `update-inputs` |

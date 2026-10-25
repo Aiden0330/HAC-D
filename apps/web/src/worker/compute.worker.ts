@@ -4,6 +4,7 @@ import {
   evaluateScenario, compareScenarios, tornadoForScenario, allocateScenario, buildMcRun, finishMcRun, simulateReplications, summarize,
   mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, auditMechanisms,
   allocateStrategy, strategyAcrossSizes, type StrategyOptions,
+  hierarchicalBudget, type BudgetOptions, type BudgetResult,
   type AuditOptions,
   type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication,
 } from '@hac-d/core';
@@ -22,6 +23,12 @@ export interface ComputeApi {
   strategy(s: Scenario, opts: Omit<StrategyOptions, 'onProgress'>, onProgress?: (done: number, total: number) => void): ReturnType<typeof allocateStrategy>;
   /** v4 the strategy at several sizes */
   strategySizes(s: Scenario, sizes: number[], opts: Omit<StrategyOptions, 'onProgress'>, onProgress?: (done: number, total: number) => void): ReturnType<typeof strategyAcrossSizes>;
+  /**
+   * v5.3 the report budget of one scenario at its own size (hierarchicalBudget: today / required / hardware alone / optimal /
+   * window rule, the rows of `hacd budget`); `onProgress(step)` gets the step names. BudgetResult is plain data (no Scenario, no
+   * functions: the window rule's nom / der designs are summarised in `recommended.final`), so it crosses the worker boundary as is.
+   */
+  budget(s: Scenario, opts: Omit<BudgetOptions, 'onProgress'>, onProgress?: (step: string) => void): BudgetResult;
 }
 
 const api: ComputeApi = {
@@ -46,6 +53,7 @@ const api: ComputeApi = {
   audit: (s, opts) => auditMechanisms(s, opts),
   strategy: (s, opts, onProgress) => allocateStrategy(s, { ...opts, onProgress }),
   strategySizes: (s, sizes, opts, onProgress) => strategyAcrossSizes(s, sizes, { ...opts, onProgress }),
+  budget: (s, opts, onProgress) => hierarchicalBudget(s, { ...opts, onProgress: onProgress ? (step) => { void onProgress(step); } : undefined }),
   ledger: (s, opts, onProgress) => {
     const run = buildLedgerRun(s, opts);
     const rows: LedgerReplication[] = [];

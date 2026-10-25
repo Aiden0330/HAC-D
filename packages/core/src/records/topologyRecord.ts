@@ -15,7 +15,8 @@ import {
   ConfidenceSchema, SuperpodSchema, ScaleOutSchema, TopologySchema, SUPERPOD_PRESETS,
   type Scenario, type Superpod, type ScaleOut, type Topology,
 } from '../scenario/schema.js';
-import { topologyScenario, templateUnits, TOPOLOGY_TEMPLATE_IDS, FAULT_UNITS, type TopologyTemplate, type FaultUnit } from '../topology/index.js';
+import { topologyScenario, templateUnits, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, FAULT_UNITS, type TopologyTemplate, type FaultUnit } from '../topology/index.js';
+import { EXAMPLES } from '../scenario/examples.js';
 import native950 from '../../data/records/native950.json';
 import ubl128 from '../../data/records/ubl128.json';
 import cm384 from '../../data/records/cm384.json';
@@ -150,6 +151,9 @@ export interface ScenarioFromRecordOptions {
   /** mechanisms applied on top (default: the six ReMAP defaults, as topologyScenario) */
   mechanisms?: string[];
   mechanismParameters?: Record<string, Record<string, number>>;
+  /** scenario id and name replacing the record's scenarioId / scenarioName (the built-in examples keep their page ids) */
+  id?: string;
+  name?: string;
 }
 
 /**
@@ -176,9 +180,9 @@ export function scenarioFromRecord(record: TopologyRecord, npus: number, variant
     nvlinkDomainGpus: record.domainNpus ?? pod,
     ...(Object.keys(ov).length ? { countOverrides: ov } : {}),
   };
-  const name = record.scenarioName.replaceAll('{name}', record.name.en).replaceAll('{npus}', npus.toLocaleString('en-US'));
+  const name = opts.name ?? record.scenarioName.replaceAll('{name}', record.name.en).replaceAll('{npus}', npus.toLocaleString('en-US'));
   return topologyScenario(record.template, npus, {
-    topology, id: record.scenarioId, name,
+    topology, id: opts.id ?? record.scenarioId, name,
     ...(opts.mechanisms ? { mechanisms: opts.mechanisms } : {}),
     ...(opts.mechanismParameters ? { mechanismParameters: opts.mechanismParameters } : {}),
   });
@@ -191,3 +195,17 @@ export const BUILTIN_TOPOLOGY_RECORDS: Record<'native950' | 'ubl128' | 'cm384' |
   cm384: parseTopologyRecord(cm384),
   a3server: parseTopologyRecord(a3server),
 };
+
+/**
+ * v5.3 built-in examples from the report records, so that a page and the Findings report of the same architecture show the same
+ * numbers: the Atlas 950 example is the native950 record's geometry (its scale-out design — 4 ports per NPU, 4 planes, radix 1024 —
+ * differs from the template default), under its page id and template name; SuperPoD Flex / UBL128 and the Atlas 800T A3 server
+ * cluster are added so that every architecture of the report set opens on a page. The A3 · CloudMatrix384 template example already
+ * equals the cm384 record. Registered over the template registry (this module loads after the topology module).
+ */
+export const RECORD_EXAMPLES: Record<string, () => Scenario> = {
+  'topology-a950-ub2': () => scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.native950, TOPOLOGY_SCALES[0], undefined, { id: 'topology-a950-ub2', name: `${TOPOLOGY_TEMPLATES['a950-ub2'].name.en} — ${TOPOLOGY_SCALES[0].toLocaleString('en-US')} NPUs` }),
+  'topology-ubl128': () => scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.ubl128, TOPOLOGY_SCALES[0], undefined, { id: 'topology-ubl128' }),
+  'topology-a3server': () => scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.a3server, TOPOLOGY_SCALES[0], undefined, { id: 'topology-a3server' }),
+};
+Object.assign(EXAMPLES, RECORD_EXAMPLES);

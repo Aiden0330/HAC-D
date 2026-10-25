@@ -24,6 +24,7 @@
  * v5 report pipeline (src/pipeline.ts; records by built-in id, JSON path, or packages/core/data/records/<id>.json; sets and
  * overrides by path or by id under packages/core/data/{mechanism-sets,fault-rates}):
  *   hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology]
+ *   hacd findings --data <dir> [--record a,b] [--out docs] [--study-dir <dir>] [--no-methodology]   re-render the Findings / Methodology pages from a stored sidecar after a recipe change (no engine run)
  *        hierarchical budget + Shapley studies (stored in --study-dir when they fit, else computed) + mechanism hierarchy → sidecar JSON
  *        (results.json, mechanisms.json, provenance.json, <record>.json) in --data-out and ASCEND_ALLOCATION_FINDINGS_<FILE>.html per record
  *        (+ ASCEND_ALLOCATION_METHODOLOGY.html) in --out; the footer echoes the command, ids, options and engine version

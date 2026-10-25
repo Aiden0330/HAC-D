@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import * as Comlink from 'comlink';
 import {
   MECHANISM_LIBRARY, TOPOLOGY_SCALES, DEFAULT_STRATEGY_CANDIDATES, DEFAULT_LEVERS, DEFAULT_FLOOR, DEFAULT_EFFORT_PER_HALVING, LEVER_NAMES, LEVER_SHORT, STRATEGY_IDS, computeCounts, componentInstances, integrationStatus,
-  type Scenario, type StrategyId, type StrategyMetric, type HardwareSplit, type RecoveryLever, type StrategyResult, type StrategyOptions,
+  DEFAULT_MECHANISM_SET, resolveMechanismSet, DERATE_DEFAULT,
+  type Scenario, type StrategyId, type StrategyMetric, type HardwareSplit, type RecoveryLever, type StrategyResult, type StrategyOptions, type BudgetResult, type DerateSpec, type MechanismDef,
 } from '@hac-d/core';
-import { useStore } from '../state/store.js';
+import { useStore, useActiveSettings } from '../state/store.js';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, progressCallback, ComputeCancelled } from '../worker/client.js';
 import { Kpi, Card, Field, NumberInput, Select, Badge, DataTable } from '../components/ui.js';
@@ -19,33 +21,75 @@ export interface StrategySettings {
   trials: number;
   candidates: string[];
   levers: (RecoveryLever & { on: boolean })[];
+  /**
+   * v5.3 effort per mechanism id for the search; empty / absent = the Mechanism library page's effort edits (project settings
+   * mechanisms.efforts), else the library value — so both pages agree unless the form carries its own (Report settings)
+   */
+  efforts?: Record<string, number>;
+  /** v5.3 parameter overrides of the candidate mechanisms (merged over the library defaults; Report settings: the mechanism set's) */
+  parameters?: Record<string, Record<string, number>>;
 }
 
 export function defaultSettings(s: Scenario): StrategySettings {
-  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })) };
+  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })), efforts: {}, parameters: {} };
 }
 
-/** v5.1 the stored strategy form of a project over the scenario's defaults (null = the defaults; unknown keys dropped, mistyped ones defaulted) */
+/** v5.3 a candidate mechanism is ready when its integration parameters are present (library defaults merged with the form's) */
+export const mechanismReady = (m: MechanismDef, parameters?: Record<string, number>) => !m.integrationNeeds?.length || integrationStatus(m, { ...m.parameters, ...(parameters ?? {}) }).ready;
+
+/**
+ * v5.3 the settings of the Findings report (hacd findings / hacd budget over DEFAULT_MECHANISM_SET): A_op target, the optimal
+ * strategy with the ARINC split, derating on, 400 windows, the set's candidates (appliable, not applied in the scenario, ready with
+ * the set's parameters), the set's parameters, efforts and levers (all on). The strategy run then reproduces the report's
+ * "optimal" row; its "recommended" row adds the window rule (Report budget card).
+ */
+export function reportSettings(s: Scenario): StrategySettings {
+  const r = resolveMechanismSet(DEFAULT_MECHANISM_SET);
+  const candidates = r.candidates.filter((id) => {
+    const m = MECHANISM_LIBRARY.find((x) => x.id === id);
+    return !!m && !!m.apply && m.status !== 'informational' && !s.mechanisms.applied?.[id] && mechanismReady(m, r.parameters[id]);
+  });
+  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'optimal', split: 'arinc', derate: true, trials: 400, candidates, efforts: { ...r.efforts }, parameters: Object.fromEntries(Object.entries(r.parameters).map(([id, p]) => [id, { ...p }])), levers: r.levers.map((l) => ({ ...l, on: true })) };
+}
+
+const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+const isNumRecord = (v: unknown): v is Record<string, number> => isPlain(v) && Object.values(v).every((x) => typeof x === 'number' && Number.isFinite(x));
+
+/**
+ * v5.1 the stored strategy form of a project over the scenario's defaults (null = the defaults; unknown keys dropped, mistyped ones
+ * defaulted). v5.3 objects stored before `efforts` / `parameters` existed resolve to empty records (= the page's efforts, library parameters).
+ */
 export function resolveStrategySettings(s: Scenario, stored: StrategySettings | null | undefined): StrategySettings {
   const d = defaultSettings(s);
   if (!stored || typeof stored !== 'object') return d;
   const out = { ...d } as Record<string, unknown>;
   for (const k of Object.keys(d) as (keyof StrategySettings)[]) {
     const v = (stored as unknown as Record<string, unknown>)[k];
-    if (v !== undefined && (Array.isArray(d[k]) ? Array.isArray(v) : typeof v === typeof d[k])) out[k] = v;
+    if (k === 'efforts') { if (isNumRecord(v)) out[k] = v; continue; }
+    if (k === 'parameters') { if (isPlain(v) && Object.values(v).every(isNumRecord)) out[k] = v; continue; }
+    if (v !== undefined && v !== null && (Array.isArray(d[k]) ? Array.isArray(v) : typeof v === typeof d[k])) out[k] = v;
   }
   return out as unknown as StrategySettings;
 }
 
-export function optionsOf(st: StrategySettings, strategy: StrategyId): Omit<StrategyOptions, 'onProgress'> {
-  return { strategy, target: st.target, metric: st.metric, hardwareSplit: st.split, derate: st.derate ? undefined : null, candidates: st.candidates, levers: st.levers.filter((l) => l.on).map(({ on: _on, ...l }) => l), verify: st.trials > 0 ? { trials: st.trials } : undefined };
+const hasKeys = (o: object | undefined): o is object => !!o && Object.keys(o).length > 0;
+/** the efforts the search uses: the form's when it has any, else the Mechanism library page's edits (library values for the rest) */
+export const effortsOf = (st: StrategySettings, pageEfforts?: Record<string, number>): Record<string, number> | undefined => (hasKeys(st.efforts) ? st.efforts : hasKeys(pageEfforts) ? pageEfforts : undefined);
+
+export function optionsOf(st: StrategySettings, strategy: StrategyId, pageEfforts?: Record<string, number>): Omit<StrategyOptions, 'onProgress'> {
+  return { strategy, target: st.target, metric: st.metric, hardwareSplit: st.split, derate: st.derate ? undefined : null, candidates: st.candidates, levers: st.levers.filter((l) => l.on).map(({ on: _on, ...l }) => l), verify: st.trials > 0 ? { trials: st.trials } : undefined, efforts: effortsOf(st, pageEfforts), parameters: hasKeys(st.parameters) ? st.parameters : undefined };
 }
 
-/** v4 target, strategy and constraints form (shared by the strategies and cross-scale tabs) */
+/** v5.3 no derating for the budget when the form's derate switch is off (hierarchicalBudget always derates; this spec is the identity) */
+const NO_DERATE: DerateSpec = { coverageDelta: 0, successDelta: 0, timeFactor: 1, reductionFactor: 1 };
+
+/** v4 target, strategy and constraints form (the Strategies tab; v5.3: the across-sizes card reads the same form) */
 export function StrategyForm({ s, st, set }: { s: Scenario; st: StrategySettings; set: (f: (x: StrategySettings) => StrategySettings) => void }) {
   const { t } = useTranslation();
   const lang = useLang();
   const updateActive = useStore((x) => x.updateActive);
+  const pageEfforts = useActiveSettings().mechanisms.efforts;
+  const efforts = effortsOf(st, pageEfforts) ?? {};
   const pool = MECHANISM_LIBRARY.filter((m) => m.apply && m.status !== 'informational' && !s.mechanisms.applied?.[m.id]);
   const name = (id: string) => { const m = MECHANISM_LIBRARY.find((x) => x.id === id)!; return lang === 'zh' ? m.name.zh : m.name.en; };
   const classes = useMemo(() => {
@@ -67,13 +111,18 @@ export function StrategyForm({ s, st, set }: { s: Scenario; st: StrategySettings
           <Field label={t('strategy.trials')} hint={t('strategy.trialsHint')}><NumberInput value={st.trials} min={0} max={2000} step={50} onChange={(v) => set((x) => ({ ...x, trials: Math.max(0, Math.round(v)) }))} /></Field>
         </div>
         <label className="check" title={t('mechanisms.planDerateHint')}><input type="checkbox" checked={st.derate} onChange={(e) => set((x) => ({ ...x, derate: e.target.checked }))} />{t('strategy.derate')}</label>
+        <div className="btn-row" style={{ marginTop: 8 }}>
+          <button type="button" className="btn small" onClick={() => set(() => reportSettings(s))}>{t('strategy.presetReport')}</button>
+          <button type="button" className="btn small" onClick={() => set(() => defaultSettings(s))}>{t('strategy.presetDefaults')}</button>
+        </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{t('strategy.presetNote', { id: DEFAULT_MECHANISM_SET.id })}</div>
       </Card>
       <Card title={t('strategy.movesTitle')} sub={t('strategy.movesSub')}>
         <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>{t('strategy.candidates')} ({st.candidates.length})</div>
         <div className="btn-row">
           {pool.map((m) => {
-            const ready = !m.integrationNeeds?.length || integrationStatus(m, m.parameters).ready;
-            return <button key={m.id} type="button" className="btn small" aria-pressed={st.candidates.includes(m.id)} disabled={!ready} title={`${lang === 'zh' ? m.change.zh : m.change.en}${ready ? '' : ` · ${t('audit.needs')}: ${m.integrationNeeds!.join(', ')}`}`} onClick={() => set((x) => ({ ...x, candidates: x.candidates.includes(m.id) ? x.candidates.filter((q) => q !== m.id) : [...x.candidates, m.id] }))}>{m.id} · {name(m.id)}{m.kind === 'physical' ? ' ⚙' : ''} · {m.effort}</button>;
+            const ready = mechanismReady(m, st.parameters?.[m.id]);
+            return <button key={m.id} type="button" className="btn small" aria-pressed={st.candidates.includes(m.id)} disabled={!ready} title={`${lang === 'zh' ? m.change.zh : m.change.en}${ready ? '' : ` · ${t('audit.needs')}: ${m.integrationNeeds!.join(', ')}`}`} onClick={() => set((x) => ({ ...x, candidates: x.candidates.includes(m.id) ? x.candidates.filter((q) => q !== m.id) : [...x.candidates, m.id] }))}>{m.id} · {name(m.id)}{m.kind === 'physical' ? ' ⚙' : ''} · {efforts[m.id] ?? m.effort}</button>;
           })}
         </div>
         <div className="muted" style={{ fontSize: 12, margin: '4px 0 10px' }}>{t('strategy.candidatesNote')}</div>
@@ -129,6 +178,7 @@ export function StrategyPanel({ s, st }: { s: Scenario; st: StrategySettings }) 
   const { t } = useTranslation();
   const lang = useLang();
   const addScenario = useStore((x) => x.addScenario);
+  const pageEfforts = useActiveSettings().mechanisms.efforts;
   const [results, setResults] = useState<Partial<Record<StrategyId, StrategyResult>>>({});
   const [shown, setShown] = useState<StrategyId>('optimal');
   const [busy, setBusy] = useState(false);
@@ -143,7 +193,7 @@ export function StrategyPanel({ s, st }: { s: Scenario; st: StrategySettings }) 
     try {
       for (const id of ids) {
         setProgress(t(`strategy.name_${id}`));
-        const r = await compute().strategy(s, optionsOf(st, id), progressCallback((done: number, total: number) => setProgress(`${t(`strategy.name_${id}`)} ${done} / ${total}`)));
+        const r = await compute().strategy(s, optionsOf(st, id, pageEfforts), progressCallback((done: number, total: number) => setProgress(`${t(`strategy.name_${id}`)} ${done} / ${total}`)));
         setResults((o) => ({ ...o, [id]: r }));
       }
       setShown(ids[0]);
@@ -173,6 +223,7 @@ export function StrategyPanel({ s, st }: { s: Scenario; st: StrategySettings }) 
         </Card>
       )}
       {r && <StrategyDetail r={r} metric={st.metric} onSave={() => addScenario({ ...r.scenario, meta: { ...r.scenario.meta, id: undefined, name: `${s.meta.name} · ${t(`strategy.name_${r.strategy}`)} ${fmtPct(r.target, 2)}` } }, false)} />}
+      <BudgetCard s={s} st={st} pageEfforts={pageEfforts} />
     </div>
   );
 }
@@ -213,7 +264,7 @@ function StrategyDetail({ r, metric, onSave }: { r: StrategyResult; metric: Stra
           <DataTable columns={[t('strategy.added'), t('strategy.mechEffort'), t('strategy.hwEffort'), t('strategy.totalEffort'), t('strategy.final')]} numericFrom={1} rows={r.alternatives.map((p) => [[...p.mechanisms, ...p.levers.map(leverLabel)].join(' + ') || '∅', fmtNum(p.effort.mechanisms + p.effort.levers, 1), fmtNum(p.effort.hardware, 2), fmtNum(p.effort.total, 2), `${v(p.value)} / ${v(p.derated)}${p.feasible ? '' : ' ✕'}`])} />
         </details>
       )}
-      <ul className="plain muted" style={{ fontSize: 12, marginTop: 8 }}>{r.notes.map((n) => <li key={n}>{n}</li>)}<li>{t('strategy.evaluations', { n: r.evaluations })}</li></ul>
+      <ul className="plain muted" style={{ fontSize: 12, marginTop: 8 }}><li>{t('strategy.nomDerDef')}</li>{r.notes.map((n) => <li key={n}>{n}</li>)}<li>{t('strategy.evaluations', { n: r.evaluations })}</li></ul>
       <div className="btn-row" style={{ marginTop: 8 }}>
         <button type="button" className="btn" disabled={saved} onClick={() => { onSave(); setSaved(true); }}>{saved ? t('strategy.saved') : t('strategy.save')}</button>
       </div>
@@ -221,10 +272,11 @@ function StrategyDetail({ r, metric, onSave }: { r: StrategyResult; metric: Stra
   );
 }
 
-/** v4 cross-scale tab: the strategies at the built-in 10k / 100k / 200k / 500k (or any sizes) */
+/** v4 the strategies at the built-in 10k / 100k / 200k / 500k (or any sizes); v5.3 a card at the end of the Strategies tab (formerly the Cross-scale tab, which duplicated the form) */
 export function CrossScalePanel({ s, st }: { s: Scenario; st: StrategySettings }) {
   const { t } = useTranslation();
   const lang = useLang();
+  const pageEfforts = useActiveSettings().mechanisms.efforts;
   const [sizesText, setSizesText] = useState(TOPOLOGY_SCALES.join(', '));
   const [rows, setRows] = useState<(Omit<StrategyResult, 'scenario'> & { npus: number })[]>([]);
   const [busy, setBusy] = useState(false);
@@ -237,7 +289,7 @@ export function CrossScalePanel({ s, st }: { s: Scenario; st: StrategySettings }
     try {
       for (const id of st.strategy === 'all' ? STRATEGY_IDS : [st.strategy]) {
         setProgress(t(`strategy.name_${id}`));
-        const r = await compute().strategySizes(s, sizes, optionsOf(st, id), progressCallback((done: number, total: number) => setProgress(`${t(`strategy.name_${id}`)} ${done} / ${total}`)));
+        const r = await compute().strategySizes(s, sizes, optionsOf(st, id, pageEfforts), progressCallback((done: number, total: number) => setProgress(`${t(`strategy.name_${id}`)} ${done} / ${total}`)));
         setRows((o) => [...o, ...r]);
       }
     } catch (e) {
@@ -268,6 +320,77 @@ export function CrossScalePanel({ s, st }: { s: Scenario; st: StrategySettings }
         </div>
       )}
       <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('strategy.crossNote')}</div>
+    </Card>
+  );
+}
+
+/**
+ * v5.3 the report budget of the active scenario at its own size: hierarchicalBudget (packages/core/src/budget) with the form's
+ * target, candidates, parameters, efforts and levers, the ARINC split, the window rule and seed 1 — the rows today / required /
+ * recommended of `hacd budget` and of Table 1 of the Findings report. The reference set is the scenario's applied mechanisms.
+ * Results stay local and reset when the scenario changes.
+ */
+function BudgetCard({ s, st, pageEfforts }: { s: Scenario; st: StrategySettings; pageEfforts: Record<string, number> }) {
+  const { t } = useTranslation();
+  const lang = useLang();
+  const [trials, setTrials] = useState(400);
+  const [res, setRes] = useState<BudgetResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [steps, setSteps] = useState<string[]>([]);
+  const [err, setErr] = useState<{ text: string; tone: 'crit' | 'info' } | null>(null);
+  const key = JSON.stringify(s);
+  useEffect(() => { setRes(null); setErr(null); }, [key]);
+  const run = async () => {
+    setBusy(true); setErr(null); setRes(null); setSteps([]);
+    const n = Math.max(1, Math.round(trials));
+    try {
+      const r = await compute().budget(s, {
+        target: st.target, candidates: st.candidates, parameters: st.parameters ?? {}, efforts: effortsOf(st, pageEfforts),
+        levers: st.levers.filter((l) => l.on).map(({ on: _on, ...l }) => l), derate: st.derate ? DERATE_DEFAULT : NO_DERATE,
+        reference: Object.keys(s.mechanisms.applied ?? {}), trials: n, seed: 1,
+      }, Comlink.proxy((step: string) => setSteps((x) => [...x, step])));
+      setRes(r);
+    } catch (e) {
+      const m = (e as Error).message;
+      setErr(e instanceof ComputeCancelled ? { text: t('mechanisms.cancelled'), tone: 'info' } : { text: /supported window check/.test(m) ? `${t('strategy.budgetNoWindow', { n })} (${m})` : m, tone: 'crit' });
+    } finally { setBusy(false); }
+  };
+  const p = (x: number, k = 3) => fmtPct(x, k), h = (x: number | null) => (x === null || !Number.isFinite(x) ? '—' : `${x.toFixed(3)} h`), sec = (x: number) => `${x.toFixed(1)} s`;
+  const verdict = (v: string) => t(`mechanisms.verdict_${v}`);
+  const leverLabel = (id: string) => (lang === 'zh' ? LEVER_SHORT[id as keyof typeof LEVER_SHORT].zh : LEVER_SHORT[id as keyof typeof LEVER_SHORT].en);
+  const rec = res?.recommended;
+  return (
+    <Card title={t('strategy.budgetTitle')} sub={t('strategy.budgetSub')} formula={t('strategy.budgetFormula')}>
+      {s.workload.type !== 'training' ? <div className="callout">{t('inference.notTraining')}</div> : (
+        <>
+          <div className="form-grid">
+            <Field label={t('strategy.budgetTrials')} hint={t('strategy.budgetTrialsHint')}><NumberInput value={trials} min={1} max={5000} step={50} onChange={(v) => setTrials(Math.max(1, Math.round(v)))} /></Field>
+            <div className="field" style={{ justifyContent: 'end' }}>
+              <div className="btn-row">
+                <button type="button" className="btn primary" disabled={busy || st.metric !== 'aOp'} onClick={run}>{busy ? t('common.running') : t('strategy.budgetRun')}</button>
+                {busy && <button type="button" className="btn" onClick={cancelCompute}>{t('mechanisms.cancel')}</button>}
+              </div>
+            </div>
+          </div>
+          {st.metric !== 'aOp' && <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{t('strategy.budgetAopOnly')}</div>}
+          {(busy || steps.length > 0) && <div className="muted mono" style={{ fontSize: 12, marginTop: 6, overflowWrap: 'anywhere' }}>{t('strategy.budgetSteps')}: {steps.length ? steps.join(' → ') : '…'}</div>}
+          {err && <div className={`callout ${err.tone === 'crit' ? 'crit' : ''}`} style={{ marginTop: 8 }}>{err.text}</div>}
+          {res && rec && (
+            <div style={{ marginTop: 10 }}>
+              <DataTable
+                columns={['', t('strategy.colAopNom'), t('strategy.colAopDer'), t('strategy.colMtbfDer'), t('strategy.colMttrDer'), t('strategy.colWindow'), t('strategy.colPlan')]}
+                numericFrom={1}
+                rows={[
+                  [t('strategy.rowToday'), p(res.today.aOp), p(res.today.aOpDerated), h(res.today.kpiDerated.mtbfHwH), sec(res.today.kpiDerated.mttrS), `${p(res.today.window.pAtLeastTarget, 1)} · ${verdict(res.today.window.verdict)}`, '—'],
+                  [t('strategy.rowRequired'), '', p(st.target, 1), `≥ ${h(res.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayMttr')}`, `≤ ${sec(res.required.mttrAtTodayMtbfS)} ${t('strategy.atTodayMtbf')}`, '', `B = ${res.required.B.toFixed(1)} s/h (${t('strategy.formula2')})`],
+                  [<b key="r">{t('strategy.rowRecommended')}</b>, p(rec.final.kpi.aOp), <b key="d">{p(rec.final.kpiDerated.aOp)}</b>, h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.mttrS), `${p(rec.window.pAtLeastTarget, 1)} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map(leverLabel).join(' + ') || '—'} · ${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`],
+                ]}
+              />
+              <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('strategy.budgetNote', { n: fmtInt(res.npus), trials: res.today.window.trials, effort: fmtNum(rec.effort.total, 1) })}</div>
+            </div>
+          )}
+        </>
+      )}
     </Card>
   );
 }

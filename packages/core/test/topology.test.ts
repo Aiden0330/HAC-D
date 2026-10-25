@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { topologyScenario, calibrationScenario, topologyBom, bomAtSizes, unitFaultLibrary, templateUnits, fitOverrides, switchTopologyTemplate, resizeTopology, scaleLabel, bomRowsAcross, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_TEMPLATES, TOPOLOGY_SCALES, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName } from '../src/topology/index.js';
 import { referenceCatalog, EXAMPLES, REFERENCE_FIXTURES, RETIRED_EXAMPLES } from '../src/scenario/examples.js';
+import { RECORD_EXAMPLES, BUILTIN_TOPOLOGY_RECORDS, scenarioFromRecord } from '../src/records/topologyRecord.js';
 import { evaluateScenario } from '../src/scenario/evaluate.js';
 import { computeCounts, closCounts, scaleOutCounts, componentInstances } from '../src/scenario/build.js';
 import { activeMechanisms, stripMechanisms, applyMechanisms, DEFAULT_PLAYERS, mechanismValues, editBase, mechanismOwner } from '../src/mechanisms/index.js';
@@ -86,8 +87,17 @@ describe('v4 topology templates', () => {
     expect(at.map((z) => z.bom.rows.find((r) => r.id === 'roceTier4')?.count ?? null)).toEqual([null, 1563, 3125, 7813]);
   });
 
-  it('v4.2 example registry = the four topology templates at the first built-in scale; resizing keeps a generated name in step', () => {
-    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a950-ub2', 'topology-a960e-ub']);
+  it('v4.2 example registry = the four topology templates at the first built-in scale (v5.3: the Atlas 950 example is the native950 record, UBL128 and the A3 server cluster added); resizing keeps a generated name in step', () => {
+    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a3server', 'topology-a950-ub2', 'topology-a960e-ub', 'topology-ubl128']);
+    expect(Object.keys(RECORD_EXAMPLES).sort()).toEqual(['topology-a3server', 'topology-a950-ub2', 'topology-ubl128']);
+    // the page's Atlas 950 = the record's geometry (scale-out 4 ports / 4 planes / radix 1024), under the page id and the template name
+    const a950 = EXAMPLES['topology-a950-ub2']();
+    expect(a950.meta.id).toBe('topology-a950-ub2');
+    expect(a950.meta.name).toBe('Atlas 950 · UB 2.0 SuperPoD — 10,000 NPUs');
+    expect(a950.topology.scaleOut).toEqual(scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.native950, 10000).topology.scaleOut);
+    expect(a950.topology.scaleOut?.portsPerNpu).toBe(4);
+    expect(EXAMPLES['topology-ubl128']().meta.id).toBe('topology-ubl128');
+    expect(EXAMPLES['topology-a3server']().meta.name).toBe('Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers) — 10,000 NPUs');
     for (const make of Object.values(EXAMPLES)) {
       const s = make();
       expect(s.topology.template).toBeDefined();

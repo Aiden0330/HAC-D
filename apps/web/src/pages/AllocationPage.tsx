@@ -14,7 +14,8 @@ type Tab = AllocationTab;
 
 /**
  * v4 allocation page: the three strategies (optimal / MTTR-preferred / MTTF-preferred) with hardware FIT floors, mechanism candidates
- * and recovery limits; the same strategies across sizes; the classic budget methods (ARINC, AGREE, equal, feasibility, minimum
+ * and recovery limits, then the same strategies across sizes (v5.3: a card at the end of the Strategies tab, formerly the Cross-scale
+ * tab, which shared the whole form); the classic budget methods (ARINC, AGREE, equal, feasibility, minimum
  * effort, cost optimal, loss and stage budgets). v5.1: the mechanism-only planner tab and the v3.7 allocation study panel are gone —
  * the strategies tab covers the planner's search (with levers and hardware on top) and the v5 CLI (hacd findings) produces the study.
  */
@@ -36,11 +37,11 @@ export function AllocationPage() {
         <span className="sub">{t('allocation.subV4')}</span>
       </div>
       <div className="tabs" role="tablist">
-        {(['strategies', 'cross', 'classic'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`allocation.tab_${k}`)}</button>)}
+        {(['strategies', 'classic'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`allocation.tab_${k}`)}</button>)}
       </div>
-      {(tab === 'strategies' || tab === 'cross') && <StrategyForm s={active.scenario} st={settings} set={set} />}
+      {tab === 'strategies' && <StrategyForm s={active.scenario} st={settings} set={set} />}
       {tab === 'strategies' && <StrategyPanel s={active.scenario} st={settings} />}
-      {tab === 'cross' && <CrossScalePanel s={active.scenario} st={settings} />}
+      {tab === 'strategies' && <CrossScalePanel s={active.scenario} st={settings} />}
       {tab === 'classic' && <ClassicAllocation />}
     </div>
   );

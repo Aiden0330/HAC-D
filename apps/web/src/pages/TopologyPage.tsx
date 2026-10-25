@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, kpiForm, deratedOf, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
   type Scenario, type TopologyTemplate, type FaultUnit, type BomRow,
 } from '@hac-d/core';
 import { useStore, useActiveSettings } from '../state/store.js';
@@ -341,10 +341,32 @@ function Outputs({ s, tab, setTab, lang, upBase, onAllocation }: { s: Scenario; 
   const tr = active.result.training;
   const bom = useMemo(() => topologyBom(s), [s]);
   const target = s.targets.operational ?? 0.985;
+  /*
+   * v5.3 the strip in the 口径 of the Findings report (hacd findings, Table 1; formula (1) of the methodology):
+   * A_op = (1 − φ) / (1 + (Σλ_i t̄_i + F) / 3600) nominal and derated (deratedOf: every applied mechanism's parameters worsened by
+   * DERATE_DEFAULT; the scenario's own FIT and recovery baseline are not derated), MTBF_hw = 1 / Σλ_i of the hard interruption
+   * classes only, MTTR_hw = Σλ_i t̄_i / Σλ_i through the mechanism chain. Isolation, detected silent corruption and false alarms
+   * (F) stay apart: the former MTBI (1/λ_job incl. isolation) and the mean pause over all events are kept in the notes.
+   * When the form does not close on a scenario (kpiForm throws) the previous five KPIs are shown unchanged.
+   */
+  const form = useMemo(() => {
+    if (!tr || s.workload.type !== 'training') return null;
+    try { return { nom: kpiForm(s, tr), der: kpiForm(deratedOf(s)) }; } catch { return null; }
+  }, [s, tr]);
+  const hrs = (h: number) => `${h.toFixed(h < 100 ? 3 : 1)} h`;
+  const sec = (x: number) => `${x.toFixed(1)} s`;
+  const pct3 = (x: number) => (x * 100).toFixed(3);
   return (
     <div className="grid" style={{ gap: 12 }}>
       <div className="kpi-row kpi5">
-        {tr ? (
+        {tr && form ? (
+          <>
+            <Kpi label={t('topology.kpiAopNomDer')} value={`${pct3(form.nom.aOp)} / ${pct3(form.der.aOp)} %`} note={`${t('topology.target')} ${fmtPct(target, 1)} · 1/(1 + (Σλp̄ + F)/3600)·(1 − φ)`} tone={form.der.aOp < target ? 'warn' : undefined} />
+            <Kpi label={t('topology.kpiDelivered')} value={fmtPct(tr.deliveredGoodput, 2)} note={`${t('topology.target')} ${fmtPct(s.targets.goodput ?? 0.9, 1)} · ${t('topology.deliveredNote')}`} tone={tr.deliveredGoodput < (s.targets.goodput ?? 0.9) ? 'warn' : undefined} />
+            <Kpi label={t('topology.kpiMtbfHw')} value={hrs(form.nom.mtbfHwH)} note={t('topology.kpiMtbfHwNote', { mtbi: hrs(tr.mtbiS / 3600), perDay: fmtNum(tr.interruptionsPerDay, 1), day: lang === 'zh' ? '天' : 'day' })} />
+            <Kpi label={t('topology.kpiMttrHw')} value={`${form.nom.mttrS.toFixed(1)} / ${sec(form.der.mttrS)}`} note={t('topology.kpiMttrHwNote', { all: sec(tr.meanPauseS) })} />
+          </>
+        ) : tr ? (
           <>
             <Kpi label={t('topology.kpiAop')} value={fmtPct(tr.operationalAvailability, 3)} note={`${t('topology.target')} ${fmtPct(target, 2)} · 1/(1 + Σλp̄)·(1 − φ_sdc)`} tone={tr.operationalAvailability < target ? 'warn' : undefined} />
             <Kpi label={t('topology.kpiDelivered')} value={fmtPct(tr.deliveredGoodput, 2)} note={`${t('topology.target')} ${fmtPct(s.targets.goodput ?? 0.9, 1)} · ${t('topology.deliveredNote')}`} tone={tr.deliveredGoodput < (s.targets.goodput ?? 0.9) ? 'warn' : undefined} />
@@ -356,6 +378,7 @@ function Outputs({ s, tab, setTab, lang, upBase, onAllocation }: { s: Scenario; 
         )}
         <Kpi label={t('topology.kpiFit')} value={fmtNum(bom.hardFitPerNpuTotal, 1)} note={`Σ n·FIT / N · ${t('topology.kpiFitNote')}`} />
       </div>
+      {tr && form && <div className="muted" style={{ fontSize: 12, marginTop: -4 }}>{t('strategy.nomDerDef')}</div>}
       <div className="tabs" role="tablist">
         {(['picture', 'hardware', 'reliability'] as Tab[]).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{t(`topology.tab_${k}`)}</button>)}
         {/* v5.1 the allocation lives on the Allocation page only (the former overview tab duplicated its strategies tab) */}

@@ -125,10 +125,14 @@ const pt = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(3)} pt` : '
 
 /* ---------------- commands ---------------- */
 
-/** hacd findings --record a,b [--rates] [--mechanisms] [--scales] [--main] [--target] [--trials] [--seed] [--study-dir] [--permutations] [--reuse-studies] [--strict-prune] [--out] [--data-out] [--no-methodology] */
+/**
+ * hacd findings --record a,b [--rates] [--mechanisms] [--scales] [--main] [--target] [--trials] [--seed] [--study-dir] [--permutations] [--reuse-studies] [--strict-prune] [--out] [--data-out] [--no-methodology]
+ * hacd findings --data <dir> [--record a,b] [--out docs] [--study-dir <dir>] [--no-methodology]   re-render the reports from a stored sidecar (no engine run)
+ */
 export function findings(a: Args): void {
+  if (a.flag('data')) { renderFindings(a); return; }
   const specs = list(a.flag('record') ?? a.flag('records'));
-  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology]');
+  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
   const records = specs.map(resolveRecord);
   const set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const sizes = nums(a.flag('scales'), DEFAULT_SCALES);
@@ -190,6 +194,40 @@ export function findings(a: Args): void {
     log(`written ${file}`);
   }
   log(`sidecar JSON in ${dataOut}: results.json, mechanisms.json, provenance.json; studies in ${studyDir}`);
+}
+
+/**
+ * Render-only: the Findings pages (and the Methodology unless --no-methodology) from a stored sidecar folder (results.json,
+ * mechanisms.json, provenance.json, the <record>.json studies there or in --study-dir / mechanisms.source.dir), after a change to a
+ * recipe in @hac-d/reports. The stored provenance is used unchanged, so the output equals what `node packages/reports/test/reproduce.mjs`
+ * renders and compares with the committed docs/*.html. --record restricts the architectures (default: every one in results.json).
+ */
+function renderFindings(a: Args): void {
+  const dir = a.flag('data')!;
+  const results = readJson(join(dir, 'results.json')) as BudgetDocument;
+  const mechanisms = readJson(join(dir, 'mechanisms.json')) as { source?: { dir?: string; set?: string } } & Record<string, unknown>;
+  const outDir = a.flag('out') ?? 'docs';
+  const studyDir = a.flag('study-dir') ?? mechanisms.source?.dir ?? dir;
+  const pp = join(dir, 'provenance.json');
+  if (!existsSync(pp)) fail(`${pp} not found: a render-only run needs the provenance the hacd run stored next to the data`);
+  const prov = readJson(pp) as ReportProvenance;
+  const ids = a.flag('record') || a.flag('records') ? list(a.flag('record') ?? a.flag('records')) : Object.keys(results.archs);
+  const R = asFile(results), MX = asFile(mechanisms);
+  for (const id of ids) {
+    if (!results.archs[id]) fail(`results.json has no architecture '${id}' (${Object.keys(results.archs).join(', ')})`);
+    const sp = existsSync(join(dir, `${id}.json`)) ? join(dir, `${id}.json`) : join(studyDir, `${id}.json`);
+    if (!existsSync(sp)) fail(`no Shapley study for '${id}' in ${dir} or ${studyDir}`);
+    const st = readJson(sp) as ArchStudy;
+    const rec = (BUILTIN_TOPOLOGY_RECORDS as Record<string, TopologyRecord>)[id] ?? (existsSync(join(DATA, 'records', `${id}.json`)) ? parseTopologyRecord(readJson(join(DATA, 'records', `${id}.json`))) : undefined);
+    const file = join(outDir, `ASCEND_ALLOCATION_FINDINGS_${(FINDINGS_FILES as Record<string, string>)[id] ?? id.toUpperCase()}.html`);
+    writeText(file, findingsHtml(id, { results: R, mechanisms: MX, shapley: asFile(studyAt(st, results.sizes)), ...(rec ? { record: resolvedRecord(rec) } : {}), provenance: prov }));
+    log(`written ${file} (from ${dir})`);
+  }
+  if (!a.has('no-methodology')) {
+    const file = join(outDir, 'ASCEND_ALLOCATION_METHODOLOGY.html');
+    writeText(file, methodologyHtml({ results: R, mechanisms: MX, provenance: prov }));
+    log(`written ${file} (from ${dir})`);
+  }
 }
 
 /** hacd methodology --data <dir> [--out docs/ASCEND_ALLOCATION_METHODOLOGY.html] */
