@@ -299,9 +299,9 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP serv
 <ul>
   <li><b>Tiles</b>: effective goodput (performance) with the delivery factor, recovery R(N), stopping events per hour with the rollback / pause-only split, the checkpoint interval, lost $ per day and the wall-clock; the delivered goodput itself is in the KPI strip.</li>
   <li><b>Regime line</b>: (τ + δ)/M and R/M with the validity badge; the headline model (first order while ok, otherwise exact renewal).</li>
-  <li><b>Models table</b>: A_op, first order ★, product form, exact renewal (with the implied rollback W), Daly full model, with the assumption of each.</li>
+  <li><b>Models table</b> (v5.3 simplified): A_op and the headline goodput model ★ with its assumption; the other three models (product form, the non-headline of first order / exact renewal with the implied rollback W, Daly full) sit in a collapsed "Other models" row.</li>
   <li><b>Window ledger</b>: delivered + downtime + saves + rollback + slow-down + elastic domain loss + spares + SDC rollback + terminal discard = 1 (closed form, decomposed with the headline model).</li>
-  <li><b>Mechanism chain per class</b>: applicable fractions, P(replay / elastic / process / global), P(rollback), mean pause, domain loss per event.</li>
+  <li><b>Mechanism chain per class</b> (v5.3 simplified to six columns): λ, where the class's interruptions end (the rungs with a non-zero share in one cell: predicted, network failover, replay, hot swap, elastic, process, global), P(rollback), mean pause, domain loss per event; the applicable fractions are the tooltip of the class name.</li>
   <li><b>Scale extrapolation</b>: 1/N law with the chain, pause-only events and the SDC window applied per row; caution / invalid badges where the first-order flags fire; a supernodes column under a supernode geometry; the component-share chart shows the 15 largest classes.</li>
 </ul>
 <h3>5.2 The window ledger</h3>

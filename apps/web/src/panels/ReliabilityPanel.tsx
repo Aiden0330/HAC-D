@@ -80,18 +80,24 @@ function ReliabilityBody({ scenario, result }: { scenario: Scenario; result: Eva
         )}
       </div>
       <Card title={t('training.modelsTitle')} formula={result.formulas.goodput}>
-        <DataTable
-          columns={[t('training.model'), t('common.goodput'), t('training.assumption')]}
-          numericFrom={1}
-          rows={[
-            [t('training.operational'), fmtPct(tr.operationalAvailability, 4), 'A_op = M/(M + R)'],
-            [`${t('training.modelFirst')}${tr.headlineModel === 'first-order' ? ' ★' : ''}`, fmtPct(tr.firstOrder.goodput, 4), `W = ${fmtDuration(tr.recomputePerInterruptionS, lang)} (${tr.recomputeSource}) · (τ+δ)/M, R/M ≪ 1`],
-            [t('training.modelProduct'), fmtPct(tr.productGoodput, 4), 'A_op · τ/(τ+δ) · (1 − W/M)'],
-            [`${t('training.modelExact')}${tr.headlineModel === 'exact-renewal' ? ' ★' : ''}`, fmtPct(tr.renewalGoodput, 4), `${t('training.impliedW')} ${fmtDuration(tr.impliedRecomputeS, lang)} · ${t('training.noRecoveryFailures')}`],
-            [t('training.dalyFull'), fmtPct(tr.dalyGoodput, 4), t('training.dalyAssumption')],
-          ]}
-        />
-        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('training.headlineRule')}{result.formulas.mttr ? ` · MTTR: ${result.formulas.mttr}` : ''}</div>
+        {/* v5.3 simplified: A_op and the headline model stay visible, the other three models are collapsed */}
+        {(() => {
+          const first = tr.headlineModel === 'first-order';
+          const cols = [t('training.model'), t('common.goodput'), t('training.assumption')];
+          const rowFirst = [`${t('training.modelFirst')}${first ? ' ★' : ''}`, fmtPct(tr.firstOrder.goodput, 4), `W = ${fmtDuration(tr.recomputePerInterruptionS, lang)} (${tr.recomputeSource}) · (τ+δ)/M, R/M ≪ 1`];
+          const rowExact = [`${t('training.modelExact')}${first ? '' : ' ★'}`, fmtPct(tr.renewalGoodput, 4), `${t('training.impliedW')} ${fmtDuration(tr.impliedRecomputeS, lang)} · ${t('training.noRecoveryFailures')}`];
+          const others = [first ? rowExact : rowFirst, [t('training.modelProduct'), fmtPct(tr.productGoodput, 4), 'A_op · τ/(τ+δ) · (1 − W/M)'], [t('training.dalyFull'), fmtPct(tr.dalyGoodput, 4), t('training.dalyAssumption')]];
+          return (
+            <>
+              <DataTable columns={cols} numericFrom={1} rows={[[t('training.operational'), fmtPct(tr.operationalAvailability, 4), 'A_op = M/(M + R)'], first ? rowFirst : rowExact]} />
+              <details style={{ marginTop: 6 }}>
+                <summary className="muted" style={{ cursor: 'pointer', fontSize: 12 }}>{t('training.otherModels', { n: others.length })}</summary>
+                <DataTable columns={cols} numericFrom={1} rows={others} />
+              </details>
+              <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>{t('training.headlineRule')}{result.formulas.mttr ? ` · MTTR: ${result.formulas.mttr}` : ''}</div>
+            </>
+          );
+        })()}
       </Card>
       <div className="grid cols-2">
         <Card formula={result.formulas.goodput}>
@@ -147,9 +153,14 @@ function ReliabilityBody({ scenario, result }: { scenario: Scenario; result: Eva
         </Card>
       )}
       <Card title={t('training.chainTitle')} sub={tr.chain.active ? `${t('training.detectGlobal')}: ${fmtDuration(tr.detectS, lang)} · ${fmtDuration(tr.globalRecoveryS, lang)}` : t('training.chainInactive')} formula={result.formulas.chain}>
+        {/* v5.3 simplified from 13 columns: where the class's interruptions end (rungs with a non-zero share) in one cell */}
         <DataTable
-          columns={[t('common.component'), t('training.chainRate'), t('training.applicable'), t('training.pPredict'), t('training.pNetfail'), t('training.pReplay'), t('training.pHotswap'), t('training.pElastic'), t('training.pProcess'), t('training.pGlobal'), t('training.pRollback'), t('training.meanPause'), t('training.localLoss')]}
-          rows={tr.chain.rows.map((r) => [r.name, r.ratePerHour.toExponential(2), `${fmtNum(r.applicable.replay, 2)} / ${fmtNum(r.applicable.process, 2)} / ${fmtNum(r.applicable.elastic, 2)}`, fmtPct(r.pPredict, 1), fmtPct(r.pNetfail, 1), fmtPct(r.pReplay, 1), fmtPct(r.pHotswap, 1), fmtPct(r.pElastic, 1), fmtPct(r.pProcess, 1), fmtPct(r.pGlobal, 1), fmtPct(r.pRollback, 1), fmtDuration(r.meanPauseS, lang), `${fmtNum(r.localLossS, 2)} s`])}
+          columns={[t('common.component'), t('training.chainRate'), t('training.endsAt'), t('training.pRollback'), t('training.meanPause'), t('training.localLoss')]}
+          numericFrom={3}
+          rows={tr.chain.rows.map((r) => {
+            const ends = ([['pPredict', r.pPredict], ['pNetfail', r.pNetfail], ['pReplay', r.pReplay], ['pHotswap', r.pHotswap], ['pElastic', r.pElastic], ['pProcess', r.pProcess], ['pGlobal', r.pGlobal]] as const).filter(([, p]) => p >= 0.005).map(([k, p]) => `${t(`training.${k}`)} ${fmtPct(p, 0)}`).join(' · ') || '—';
+            return [<span key="n" title={`${t('training.applicable')}: ${fmtNum(r.applicable.replay, 2)} / ${fmtNum(r.applicable.process, 2)} / ${fmtNum(r.applicable.elastic, 2)}`}>{r.name}</span>, r.ratePerHour.toExponential(2), <span key="e" style={{ fontSize: 12 }}>{ends}</span>, fmtPct(r.pRollback, 1), fmtDuration(r.meanPauseS, lang), `${fmtNum(r.localLossS, 2)} s`];
+          })}
         />
       </Card>
       {tr.subhealth && (
@@ -164,8 +175,8 @@ function ReliabilityBody({ scenario, result }: { scenario: Scenario; result: Eva
       <Card formula={result.formulas.scale} sub={t('training.scaleNote')}>
         <LineChart title={t('training.scale')} series={scaleSeries} xLog xLabel={t('training.nLabel')} yLabel={t('common.goodput')} yDomain={[0, 1]} formatX={(v) => fmtInt(v)} formatY={(v) => fmtPct(v, 0)} bands={bands} />
         <DataTable
-          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', `${t('common.goodput')} (${t('training.modelFirst')})`, `${t('common.goodput')} (${t('training.modelExact')})`, ...(tr.sdc ? [t('training.scaleDelivered')] : []), t('common.interruptions_per_day'), '']}
-          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), r.headlineModel === 'first-order' ? <b key="f">{fmtPct(r.goodput.goodput, 1)}</b> : fmtPct(r.goodput.goodput, 1), r.headlineModel === 'exact-renewal' ? <b key="e">{fmtPct(r.renewalGoodput, 1)}</b> : fmtPct(r.renewalGoodput, 1), ...(tr.sdc ? [fmtPct(r.delivered ?? r.headline, 1)] : []), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
+          columns={[t('training.nLabel'), ...(supernodeSize ? [t('training.supernodes')] : []), t('common.mtbi'), 'τ', t('training.goodputHeadline'), ...(tr.sdc ? [t('training.scaleDelivered')] : []), t('common.interruptions_per_day'), '']}
+          rows={tr.scale.map((r) => [fmtInt(r.nGpus), ...(supernodeSize ? [fmtInt(Math.ceil(r.nGpus / supernodeSize))] : []), fmtDuration(r.mtbiS, lang), fmtDuration(r.tauS, lang), fmtPct(r.headlineModel === 'first-order' ? r.goodput.goodput : r.renewalGoodput, 1), ...(tr.sdc ? [fmtPct(r.delivered ?? r.headline, 1)] : []), fmtNum(r.interruptionsPerDay, 1), r.goodput.validity === 'ok' ? '' : <Badge key="b" status={r.goodput.validity === 'caution' ? 'warn' : 'fail'}>{r.goodput.validity}</Badge>])}
         />
       </Card>
       <div className="grid cols-2">
