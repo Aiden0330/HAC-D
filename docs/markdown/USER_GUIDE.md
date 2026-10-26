@@ -41,7 +41,7 @@ Inputs are resolved by id or path: a record is a built-in id (`native950`, `ubl1
 
 1. Write `packages/core/data/records/<id>.json` (fields below; `hacd schema --record` validates the shape, `hacd records` shows whether it parses). A template the engine knows is enough; a new hardware unit kind (an NPO engine with its own fault classes) needs the two extension points named in the error message (unit-library entry and BOM row in `packages/core/src/topology/index.ts`).
 2. `hacd study --record <id> --scales 10000,100000,200000,500000 --out-dir docs/data` (or let `findings` compute it).
-3. `hacd findings --record <id> --study-dir docs/data --out <dir>` → the Findings page with the overlay figure and Tables 1–7. The sizes, the headline scale, the window count and the scale range follow the run; prose that states counts (reference mechanisms, candidates, levers) follows the data.
+3. `hacd findings --record <id> --study-dir docs/data --out <dir>` → the Findings page: goal and key points, one conclusion (the MTBF / MTTR requirement), the overlay figure and Tables 1–6 (system-level targets and plans, layer decomposition, hardware units, mechanism parameters, MTTR composition, the mechanism set with its verdicts and Shapley values by scale; since 2026-10-25 the Methodology no longer repeats that table). The sizes, the headline scale, the window count and the scale range follow the run; prose that states counts (reference mechanisms, candidates, levers) follows the data.
 4. `hacd methodology --data <dir>/data` (findings writes it too unless `--no-methodology`).
 5. `hacd bom --records native950,ubl128,cm384,a3server --out <dir>/ASCEND_BOM_100K.html`.
 

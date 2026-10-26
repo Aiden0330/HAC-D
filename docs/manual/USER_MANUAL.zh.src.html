@@ -693,7 +693,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td><code>hacd schema</code></td><td>方案文件的 JSON Schema</td></tr>
   <tr><td colspan="2"><b>v5 报告流水线</b>（记录按内置 id、JSON 路径或 <code>packages/core/data/records/&lt;id&gt;.json</code> 解析；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v5 CLI” 一节）</td></tr>
   <tr><td><code>hacd records</code>、<code>hacd schema --record|--mechanisms|--rates</code></td><td>列出拓扑记录、机制集与失效率覆盖文件；输出三种输入记录的 JSON Schema</td></tr>
-  <tr><td><code>hacd study --record a960e --scales 10000,100000 --permutations 300 --out-dir docs/data</code></td><td>机制集在该记录裸场景上的 Shapley 研究（结果报告表 7、机制分层）</td></tr>
+  <tr><td><code>hacd study --record a960e --scales 10000,100000 --permutations 300 --out-dir docs/data</code></td><td>机制集在该记录裸场景上的 Shapley 研究（结果报告表 6、机制分层）</td></tr>
   <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本。<code>hacd findings --data docs/backup/ascend-allocation [--record ids] [--out docs]</code> 在配方改动后由已存旁路 JSON 重新渲染页面，沿用其中的出处（不运行引擎；即 <code>node packages/reports/test/reproduce.mjs</code> 所比较的内容）</td></tr>
   <tr><td><code>hacd methodology --data docs/data</code>、<code>hacd bom --records … --npus 100000</code></td><td>由一次 findings 运行的旁路 JSON 生成方法报告；各 scale-out 变体的元件清单</td></tr>
   <tr><td><code>hacd budget --record cm384 --scale 200000</code>、<code>hacd prune --study-dir dir --out pruned.json</code></td><td>单个架构 × 规模的预算（今天 / 要求 / 推荐）；按剪除规则重新判定机制集的分类列表</td></tr>

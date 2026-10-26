@@ -1,7 +1,7 @@
 /**
  * Methodology recipe of the Ascend allocation report set — docs/ASCEND_ALLOCATION_METHODOLOGY.html (bilingual zh / en, zh default,
  * print shows the active language): scope and 口径, the six formulas, the allocation procedure (Figure 1), the layer model (Table 1),
- * the ReMAP mechanism hierarchy (Figure 2) with the 23 mechanisms + I-CONTAIN and their Shapley values (Table 2), the hierarchical
+ * the ReMAP mechanism hierarchy (Figure 2) with the 23 mechanisms + I-CONTAIN and the set's table with the Shapley values per scale being Table 6 of each Findings page since 2026-10-25, the hierarchical
  * MTBF / MTTR budgets, and the HAC-D tooling requirements (Table 3). Prose: content.mjs.
  * Pure function of its data: `results` = docs/backup/ascend-allocation/results.json, `mechanisms` = …/mechanisms.json (parsed).
  * No file access; the date comes from `results.generated`.
@@ -137,10 +137,7 @@ function sections(lang, ctx) {
   /* ---------------- tables ---------------- */
   const th = (s, num = false) => `<th${num ? ' class="num"' : ''}>${esc(s)}</th>`;
   const table1 = `<div class="table-wrap"><table class="s1"><thead><tr>${th(T('层级', 'Layer'))}${th(T('故障单元', 'Fault units'))}${th(T('事件类', 'Event classes'))}${th(T('实例（验收对象）', 'Instance (accepted unit)'))}${ARCHS.map((a) => th(T(`${L(R.archs[a].short)}：${kN(Number(MAIN), 'zh')}卡实例数`, `${L(R.archs[a].short)}: instances at ${kN(Number(MAIN), 'en')}`), true)).join('')}${th(T('交付方', 'Delivered by'))}</tr></thead><tbody>${LAYERS.map((l) => `<tr><td><b>${esc(LN[l])}</b></td><td><code>${esc(LROW[l].units)}</code></td><td>${esc(LROW[l].classes)}</td><td>${esc(L(LROW[l].instance))}</td>${ARCHS.map((a) => `<td class="num">${fmt(R.archs[a].sizes[MAIN].instances[l])}</td>`).join('')}<td>${esc(L(LROW[l].delivered))}</td></tr>`).join('')}</tbody></table></div>`;
-  const origin = (m) => (m.origin === 'original' ? T('原始', 'original') : T(`扩展 · ${m.remapCategory}`, `extension · ${CAT_EN[m.remapCategory]}`));
-  const table2 = `<div class="table-wrap"><table class="s2"><thead><tr>${th(T('机制', 'Mechanism'))}${th(T('来源 / 类别', 'Origin / category'))}${th(T('部署层', 'Deployed at'))}${th(T('作用层', 'Acts on'))}${th(T('所改变的量', 'Quantity changed'))}${th(T('努力', 'Effort'), true)}${th(T(`A_op Shapley（${kN(DEC, 'zh')}卡，点）`, `A_op Shapley (${kN(DEC, 'en')}, pt)`), true)}${th(T('有效产出 Shapley（点）', 'Goodput Shapley (pt)'), true)}${th(T('结论', 'Verdict'))}${th(T('理由', 'Reason'))}</tr></thead><tbody>${VERDICTS.map((v) => { const ms = MECHS.filter((m) => m.verdict === v); return `<tr class="sec"><td colspan="10">${esc(`${VG[v]} · ${ms.length}`)}</td></tr>` + ms.map((m) => `<tr><td><b>${esc(m.id)}</b></td><td>${esc(origin(m))}</td><td>${esc(LN[m.deploy])}</td><td>${esc((m.acts ?? []).map((a) => LS[a]).join(' · '))}</td><td>${esc(L(m.changes))}</td><td class="num">${m.effort}</td><td class="num">${range(m.aOp500, 2)}</td><td class="num">${range(m.delivered500, 1)}</td><td>${esc(VN[m.verdict])}</td><td>${esc(L(m.reason))}</td></tr>`).join(''); }).join('')}</tbody></table></div>`;
   const table3 = `<div class="table-wrap"><table class="s3"><thead><tr>${TOOLING.columns.map((c) => th(L(c))).join('')}</tr></thead><tbody>${TOOLING.rows.map((r) => `<tr><td>${H(L(r.cap))}</td><td class="${r.status === 'script' || r.status === 'external' ? 'warn' : 'ok'}">${esc(L(TOOLING.statusLabel[r.status]))}</td><td>${H(L(r.used))}</td><td>${H(L(r.todo))}</td></tr>`).join('')}</tbody></table></div>`;
-  const maxHw = Math.max(0, ...MX.mechanisms.flatMap((m) => ARCHS.flatMap((a) => Object.values(m.shapley[a] ?? {}).filter(Boolean).map((s) => s.halfWidth ?? 0))));
 
   return [
     `<h1>${esc(L(TITLE))}</h1>
@@ -160,16 +157,14 @@ function sections(lang, ctx) {
   <p class="note">${H(L(MECH_TEXT.rule))}</p>
   <figure class="chart"><div class="scroll">${figHierarchy()}</div></figure>
   <p class="note">${outcome()}</p>
+  <p class="note">${esc(T(`机制集的表格——每项机制的部署层、作用层、所改变的量、努力、结论与理由，以及在该拓扑各规模上的 A_op Shapley 与 ${kN(DEC, 'zh')}卡的有效产出 Shapley（裸架构场景、${MX.source.permutations} 次置换）——是各拓扑 Findings 文件的表 6；结论对${NA.zh}相同。`, `The set’s table — each mechanism’s deployment layer, layers acted on, quantity changed, effort, verdict and reason, with the A_op Shapley values per scale and the goodput Shapley at ${kN(DEC, 'en')} on that architecture (bare scenario, ${MX.source.permutations} permutations) — is Table 6 of each Findings page; the verdicts are the same for ${NA.en}.`))}</p>
   <p class="note">${H(L(MECH_TEXT.overlapNote))}</p>`,
-    `<h3 class="first">${esc(T(`表 2：${MX.mechanisms.length - CAPS.length} 个 ReMAP 机制${CAPS.length ? ` + ${CAPS.join('、')}` : ''}`, `Table 2: the ${MX.mechanisms.length - CAPS.length} ReMAP mechanisms${CAPS.length ? ` + ${CAPS.join(', ')}` : ''}`))}</h3>
-  ${table2}
-  <p class="note">${esc(T(`口径：Shapley 值在裸架构场景上计算（HAC-D 单元口径 FIT、ReMAP 最新参数），${MX.source.players} 个参与者全部参与，${MX.source.permutations} 次抽样排列，95 % 半宽 ≤ ${fmt(maxHw * 100, 2)} 点；列出${NA.zh}在 ${kN(DEC, 'zh')}卡上的最小–最大值（百分点）。A_op 按公式 (1)；有效产出（delivered）另含回滚、保存与局部恢复损失，因此静默检测类对有效产出贡献大、对 A_op 略负。I-CONTAIN 不单独计收益（—）。取舍阈值 ${fmt(MX.threshold * 100, 2)} 点。`, `口径: Shapley values on the bare architecture scenario (HAC-D per-unit FIT, latest ReMAP parameters), all ${MX.source.players} players, ${MX.source.permutations} sampled permutations, 95 % half-width ≤ ${fmt(maxHw * 100, 2)} pt; min–max over ${NA.en} at ${kN(DEC, 'en')}, in percentage points. A_op per formula (1); delivered goodput also counts rollback, save and local-recovery losses, which is why the silent-corruption detectors add much to goodput and slightly lower A_op. I-CONTAIN takes no separate credit (—). Pruning threshold ${fmt(MX.threshold * 100, 2)} pt.`))}</p>
-  <h2>${esc(L(BUDGET_TEXT.heading))}</h2>
+    `<h2 class="first">${esc(L(BUDGET_TEXT.heading))}</h2>
   <ul class="scale">${BUDGET_TEXT.steps.map((s) => `<li>${H(L(s))}</li>`).join('')}</ul>
   <p class="note">${H(L(BUDGET_TEXT.procedure))}</p>`,
     `<h2 class="first">${esc(L(TOOLING.heading))}</h2>
   <p>${H(L(TOOLING.intro))}</p>
-  <h3>${esc(T('表 3：能力、实现方式与 v5 的实现', 'Table 3: capabilities, how they are implemented and the v5 implementation'))}</h3>
+  <h3>${esc(T('表 2：能力、实现方式与 v5 的实现', 'Table 2: capabilities, how they are implemented and the v5 implementation'))}</h3>
   ${table3}
   <h3>${esc(L(TOOLING.agent.heading))}</h3>
   <p>${H(L(TOOLING.agent.verdict))}</p>
