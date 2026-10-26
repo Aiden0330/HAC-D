@@ -93,7 +93,7 @@ export function contentFor(c = DEFAULT_CTX) {
       { id: 'node', units: 'node · cpu', classes: 'BOXIO · DDR · SSD · MGMT · CPU', instance: L(`一个节点（${or(nodes, true)} 卡 + ${or(cpus, true)} CPU）`, `one node (${or(nodes, false)} NPUs + ${or(cpus, false)} CPUs)`), delivered: L('节点板、内存、本地盘、管理控制器、CPU', 'node board, memory, local disks, management controller, CPUs') },
       { id: 'npu', units: 'npu', classes: 'CORE · SRAM · IOD · MODULE · MEMT · MEMP · NIC', instance: L('一张卡', 'one card'), delivered: L('NPU 模组（含片上网卡）', 'the NPU module (NIC on the die)') },
     ],
-    note: L('NIC 在单元库中属于 NPU 单元（片上），MGMT 属于节点单元（节点管理控制器）；柜级管理与框内 IO 在本口径下归节点。跨超节点网络对 A_op 的贡献来自交换机与光链路的类比 FIT，置信度 assumed。', 'NIC belongs to the NPU unit in the unit library (on the die) and MGMT to the node unit (the node’s management controller); cabinet-level management and in-chassis IO count under the node on this basis. The scale-out network’s contribution to A_op comes from the switches’ and links’ analogue FIT, confidence assumed.'),
+    note: L('NIC 在单元库中属于 NPU 单元（片上），MGMT 属于节点单元，柜级管理与框内 IO 归节点；跨超节点网络的贡献来自交换机与光链路的类比 FIT（assumed）。', 'NIC belongs to the NPU unit in the unit library (on the die), MGMT to the node unit, cabinet-level management and in-chassis IO to the node; the scale-out network’s contribution comes from the switches’ and links’ analogue FIT (assumed).'),
   };
 
   /* ---------------- 4. mechanism hierarchy ---------------- */
