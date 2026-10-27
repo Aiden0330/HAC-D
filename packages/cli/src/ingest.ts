@@ -30,6 +30,7 @@ import { deltaHtml, deltaMarkdown } from '@hac-d/reports';
 import { argsOf, resolveRecord, resolveSet, resolveRates, DATA, dataIds, engine } from './pipeline.js';
 import { runPipeline } from './run.js';
 import { protocol } from './protocol.js';
+import { operate } from './operate.js';
 
 type Args = ReturnType<typeof argsOf>;
 function fail(msg: string): never { console.error(`hacd ingest: ${msg}`); process.exit(1); }
@@ -198,7 +199,7 @@ function validateCmd(a: Args, rest: string[]): void {
   for (const p of st.others) issues.push({ level: 'info', code: 'not-a-record', path: p, message: { zh: '不是记录文件', en: 'not a record file (skipped)' } });
   if (a.has('json')) console.log(JSON.stringify({ files: { records: st.records.length, rates: st.rates.length, sets: st.sets.length, proposals: st.proposals.length, requests: st.requests.length }, issues }, null, 1));
   else { console.log(`${st.records.length} records, ${st.rates.length} overrides, ${st.sets.length} sets, ${st.proposals.length} proposals, ${st.requests.length} extension requests\n`); printIssues(issues); }
-  if (hasErrors(issues)) process.exit(1);
+  if (hasErrors(issues)) process.exitCode = 1; // not process.exit(): the JSON printed above may still be in flight to a pipe
 }
 const resolveRecordArg = (spec: string): TopologyRecord => (existsSync(spec) ? parseTopologyRecord(readJson(spec)) : resolveRecord(spec));
 /**
@@ -344,6 +345,7 @@ const HELP = `hacd ingest — worksheets → staged records → gates → KPI de
   extract <docs>… --kind k --provider p …           model step (@hac-d/agent): evidence cards, review queue, draft worksheet
   run --staging dir [--worksheets dir] [--before-record r] [--promote] [--out dir] …   v6.1 one call: worksheets → validate → dry-run → diff → promote → findings; run.json + SUMMARY.md (docs/markdown/AGENT_OPERATOR.md)
   protocol [--lang zh|en] [--tools] [--fix-table]   the operator protocol for an on-prem model: system prompt, tool manifest, fix table
+  operate --base-url u --model m --work dir --docs f… [--brief f] [--before-record r] [--scales] [--trials] [--permutations] [--lang] [--api-key-env N]   v6.1 reference host: the on-prem model drives the pipeline through the tool manifest; final message on stdout, operator-log.jsonl + operator-result.json in the work folder
 Data folder: ${DATA}${process.env.HACD_DATA ? ' (HACD_DATA)' : ''}`;
 
 export async function ingest(rest: string[]): Promise<void> {
@@ -363,6 +365,7 @@ export async function ingest(rest: string[]): Promise<void> {
     case 'extract': return extract(a, args);
     case 'run': return runPipeline(a, args);
     case 'protocol': return protocol(a);
+    case 'operate': return operate(a, args);
     case 'help': case undefined: case '--help': console.log(HELP); return;
     default: fail(`unknown subcommand '${sub}'\n${HELP}`);
   }

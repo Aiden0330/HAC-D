@@ -11,7 +11,7 @@
  * nothing — hand the manifest to a person.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync, writeSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { DATA } from './pipeline.js';
 
@@ -41,6 +41,18 @@ function cli(args: string[], o: { json?: boolean } = {}): { code: number | null;
   if (!o.json && r.stdout) for (const line of r.stdout.split('\n').filter(Boolean)) console.error(`  │ ${line}`);
   return { code: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '', seconds };
 }
+/** write everything to a file descriptor before process.exit: on macOS a pipe is asynchronous and a single writeSync may be partial */
+function writeAllSync(fd: number, text: string): void {
+  const buf = Buffer.from(text);
+  let off = 0;
+  while (off < buf.length) {
+    try { off += writeSync(fd, buf, off, buf.length - off); }
+    catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== 'EAGAIN') throw e;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 5); // the pipe is full: give the reader 5 ms
+    }
+  }
+}
 const parseJsonOut = (s: string): unknown => { const i = s.indexOf('{'); const j = s.lastIndexOf('}'); return i >= 0 && j > i ? JSON.parse(s.slice(i, j + 1)) : null; };
 const tail = (s: string, n = 12) => s.trim().split('\n').slice(-n).join('\n');
 
@@ -64,26 +76,36 @@ export function runPipeline(a: Args, rest: string[]): void {
     writeJson(join(out, 'run.json'), m);
     writeText(join(out, 'SUMMARY.md'), summary(m));
     log(`${status} · run.json and SUMMARY.md in ${out}`);
-    if (rest.includes('--json')) console.log(JSON.stringify(m, null, 1));
+    // synchronous: console.log to a pipe is asynchronous and process.exit would cut a manifest of this size short
+    if (rest.includes('--json')) writeAllSync(1, JSON.stringify(m, null, 1) + '\n');
     process.exit(exitCode);
   };
-  const step = (name: string, args: string[], o: { json?: boolean } = {}): Step & { stdout: string } => {
+  const step = (name: string, args: string[], o: { json?: boolean } = {}): Step & { stdout: string; stderr: string } => {
     log(`step ${name}: hacd ${args.join(' ')}`);
     const r = cli(args, o);
-    const s: Step & { stdout: string } = { name, ok: r.code === 0, exitCode: r.code, seconds: Number(r.seconds.toFixed(1)), command: ['hacd', ...args], stdout: r.stdout };
+    const s: Step & { stdout: string; stderr: string } = { name, ok: r.code === 0, exitCode: r.code, seconds: Number(r.seconds.toFixed(1)), command: ['hacd', ...args], stdout: r.stdout, stderr: r.stderr };
     if (!s.ok) s.stderrTail = tail(r.stderr + (o.json ? '' : '\n' + r.stdout));
     m.steps.push(s);
     return s;
   };
-  const stripStdout = () => { for (const s of m.steps) delete (s as { stdout?: string }).stdout; };
+  const stripStdout = () => { for (const s of m.steps) { delete (s as { stdout?: string }).stdout; delete (s as { stderr?: string }).stderr; } };
 
   // 1. worksheets → staged JSON (optional)
   const ws = a.flag('worksheets');
   if (ws) {
     const files = existsSync(ws) && readdirSync(ws, { withFileTypes: true }).length >= 0 && !ws.endsWith('.md') ? readdirSync(ws).filter((f) => f.endsWith('.md')).map((f) => join(ws, f)) : [ws];
     if (!files.length) { stripStdout(); finish('needs-input', 2, { zh: `工作表目录 ${ws} 中没有 .md 文件`, en: `no .md worksheet in ${ws}` }); }
+    // the staged files of the previous conversion go first, so a renamed id or a removed worksheet leaves no stale record behind
+    const ledger = join(staging, 'worksheets', '.outputs.ledger'); // not .json: validate scans every *.json under staging
+    if (existsSync(ledger)) {
+      let previous: string[] = [];
+      try { previous = (readJson(ledger) as { files?: string[] }).files ?? []; } catch { previous = []; }
+      for (const p of previous) if (p.startsWith(resolve(staging)) && existsSync(p)) unlinkSync(p);
+    }
     const s = step('worksheets', ['ingest', 'worksheet', ...files, '--out', staging]);
-    s.outputs = { files };
+    const produced = [...s.stderr.matchAll(/→ (\S+\.json)/g)].map((x) => resolve(x[1]));
+    if (s.ok || produced.length) writeJson(ledger, { files: produced });
+    s.outputs = { files, produced };
     if (!s.ok) { stripStdout(); finish('needs-input', 2, { zh: '工作表无法解析：改正 stderr 中点名的行后重跑', en: 'a worksheet did not parse: fix the row named in the step’s stderr and run again' }); }
   }
 

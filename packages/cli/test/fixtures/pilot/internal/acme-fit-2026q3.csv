@@ -1,0 +1,13 @@
+Part,Failure rate,Unit,Source,Location,Source type,Note
+Ascend 910C module,900,FIT,ACME field returns 2026Q3,tbl_npu row 3,field,module-level return rate; all failure modes (synthetic)
+HBM3 stack,80,FIT,ACME field returns 2026Q3,tbl_npu row 7,field,per stack (synthetic)
+Kunpeng 920 CPU,2500000,MTBF,CPU vendor datasheet rev C,section 4.2,vendor,(synthetic)
+DDR5 DIMM 64 GB,35,FIT,ACME field returns 2026Q3,tbl_mem row 2,field,(synthetic)
+NVMe SSD 3.84 TB,0.012,AFR,SSD vendor reliability report 2026H1,p. 3,vendor,annualised failure rate (synthetic)
+RoCE NIC 200G,60,FIT,ACME field returns 2026Q3,tbl_net row 1,field,per NIC (synthetic)
+QSFP-DD 400G transceiver,300,FIT,ACME field returns 2026Q3,tbl_net row 4,field,early-life returns of the new optics vendor (synthetic)
+RoCE switch 128-port,300000,MTBF,switch vendor datasheet,section 7,vendor,(synthetic)
+UB L1 switch chip,60,FIT,FIDES prediction 2026Q2,sheet UB,prediction,(synthetic)
+PSU 3 kW,600000,MTBF,PSU vendor datasheet,p. 12,vendor,(synthetic)
+Fan module,1200,FIT,ACME field returns 2026Q3,tbl_cab row 5,field,(synthetic)
+iBMC management module,400,FIT,FIDES prediction 2026Q2,sheet MGMT,prediction,(synthetic)

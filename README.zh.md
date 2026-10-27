@@ -7,6 +7,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ## v6（2026-10-22）：输入迁移流水线——工作表、校验门、差异评审、离线包
 
 - **v6.1**（2026-10-26）：流水线不再需要有人在终端操作。`hacd ingest run` 一次调用完成工作表 → 门禁 → 干跑 → 差异 → 报告，并写出机器可读的 `run.json`（状态 ok / needs-input / failed、每步的 issue 及其 path 与 code、KPI 行、路径）与 `SUMMARY.md`；`hacd ingest protocol` 打印给内网小模型的操作员协议（中 / 英系统提示词、函数调用工具清单、门禁 code → 修复表），规范见 `docs/markdown/AGENT_OPERATOR.md`，离线包随附。模型只抄有来源与置信的事实并运行这一条命令；HAC-D 计算；负责人签字并 promote。命令行测试覆盖 ok 与 needs-input 两条路径（`npm run test -w @hac-d/cli`）。
+- **v6.2**（2026-10-27）：参考宿主与首次试点。`hacd ingest operate` 把 OpenAI 兼容的内网模型当操作员运行（系统提示词 + 任务 + 工具清单；每次工具调用都是本 CLI 的子进程；只读工作目录与输入文档，只写 `ws/`，拒绝以短横线开头的参数值，步数上限，传输层重试，不含密钥的日志；退出码 = 最后一次 run 的）。`scripts/mock-onprem-model.mjs` 是一个按剧本回答的 OpenAI 兼容替身（按模式抽取、把操作员流程做成状态机），无模型即可跑通接线；随离线包一起发布，附合成试点输入（`examples/pilot/`）。操作手册 §8 的试点已用它在离线包内完成——一个以公开 `a3server` 为基线的 A3 服务器集群、10 万卡、一个季度的器件 FIT、一条机制增量——评审后 promote：`docs/markdown/PILOT_2026Q3_MOCK.md`。试点发现并修复：写到管道的 run 清单在退出前被截断（现同步写出）、`run` 在重新转换前删除上一次转换的暂存文件、`validate --json` 不再在输出刷出前退出。测试：`packages/agent/test/host.test.ts`、`packages/cli/test/operate.test.ts`（对替身的三个场景）。
 
 - **为什么**：内部硬件 FIT、新拓扑与新机制要从一个只有受限开源模型、数据不能外传的内网进入 HAC-D。基于提示词的 Skill 做不了这件迁移；围绕 v5 输入记录的确定性离线流水线可以，模型只是其中一个受约束的步骤。计划与决策：`docs/markdown/PLAN_V6_INPUT_MIGRATION.md`；内网团队的操作手册：`docs/markdown/INGEST_RUNBOOK.md`。
 - **工作表**（`packages/importers/src/worksheet`）：严格的 Markdown 规范（`hacd-worksheet-1`：YAML 头、`## 小节`、固定表头的竖线表格，出错报行号），六种类型——topology、fault-rates、device-fit、koujing-mapping、mechanisms（相对默认机制集的增量）、mechanism-proposal——与 v5 输入记录双向转换；`hacd ingest template <kind>` 打印原样可解析的示例。每条公开记录、默认机制集与 ReMAP 覆盖文件经工作表往返后不变。
@@ -56,7 +57,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ```bash
 npm install                      # Node ≥ 20
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 840 核心 + 52 导入器 + 30 抽取工作器 + 28 报告 + 3 命令行测试（含 530 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s
+npm test                         # 840 核心 + 52 导入器 + 36 抽取工作器 + 28 报告 + 7 命令行测试（含 530 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s（其 operate 测试会启动模型替身）
 node --import tsx packages/cli/src/main.ts examples        # 命令行：六个内置示例（四种拓扑模板 + 报告记录的 UBL128 与 A3 服务器集群，v5.3）
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 node --import tsx packages/cli/src/main.ts findings --record native950 --out out/950   # v5：由输入记录生成报告集

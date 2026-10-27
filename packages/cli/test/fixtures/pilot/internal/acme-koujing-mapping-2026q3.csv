@@ -1,0 +1,15 @@
+device,unit,class,devicesPerUnit,impactFactor,impactBasis,impactConfidence,note
+Ascend 910C module,npu,MODULE-hard,1,0.2,share of module returns that interrupted a job (Q3 incident review),derived,synthetic
+Ascend 910C module,npu,CORE-hard,1,0.5,runtime exceptions attributed to the module (Q3 incident review),derived,synthetic
+Ascend 910C module,npu,CORE-sdc,1,0.04,silent-result incidents per module return (Q3 incident review),assumed,few events; treated as assumed
+HBM3 stack,npu,MEMT-hard,8,0.6,UCE share after ECC (Q3 memory log),derived,8 stacks per NPU
+Kunpeng 920 CPU,cpu,CPU-hard,1,0.8,host interruptions per CPU fault (Q3 incident review),derived,
+DDR5 DIMM 64 GB,node,DDR-hard,32,0.5,UCE share after ECC (Q3 memory log),derived,32 DIMMs per server
+NVMe SSD 3.84 TB,node,SSD-hard,2,0.5,RAID-1 pair: a single-disk loss is tolerated half the time (ops rule),assumed,
+RoCE NIC 200G,npu,NIC-hard,1,1,every NIC loss interrupts the job (no NIC redundancy),measured,
+QSFP-DD 400G transceiver,roce-link,OPT-hard@roce,2,0.2,link-loss share after retraining (Q3 network log),derived,2 modules per link
+RoCE switch 128-port,roce-switch,FABRIC-hard@roce,1,0.02,ECMP: share of switch faults that stall a job (Q3 network log),assumed,
+UB L1 switch chip,ub-switch,FABRIC-hard,1,1,one L1 chip loss stalls the server fabric,assumed,
+PSU 3 kW,cabinet,POWER-hard,6,0.6,N+1 shelf: share of PSU faults that drop the cabinet (Q3 power log),derived,6 PSUs per cabinet
+Fan module,cabinet,COOL-hard,8,0.3,over-temperature trips per fan fault (Q3 thermal log),derived,
+iBMC management module,node,MGMT-hard,1,1,BMC loss blocks the node (ops rule),assumed,

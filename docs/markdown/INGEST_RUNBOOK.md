@@ -63,6 +63,7 @@ Closed vocabularies: `bin/hacd ingest fields --vocab`; field paths of a kind: `b
 ## 4. Prose documents with your on-prem model (optional) — and the model as operator (v6.1)
 
 The on-prem model can also drive the whole pipeline instead of a person: give it the system prompt `bin/hacd ingest protocol --lang zh` (or `prompts/operator.zh.md` in the bundle), the tool manifest `tools/hacd-tools.json`, read access to the work folder and write access to `ws/` only. It fills the worksheets from your data, runs the one call of §5 and reads `run.json`; what it may and may not do, the manifest contract and the fix table are in `docs/AGENT_OPERATOR.md`. The rules of this runbook do not change: no number without a source, no `--force`, `promote` and the sign-off stay with the owner.
+The host is `bin/hacd ingest operate --base-url <url> --model <name> --api-key-env <NAME> --work work --docs internal/ --brief brief.md --before-record <public id> --scales 100000 --lang zh` (the key only through the environment variable); test the wiring first with `node tools/mock-onprem-model.mjs` and the synthetic inputs in `examples/pilot/`, as the bundle's README shows.
 
 Convert PDFs to text first (`pdftotext -layout doc.pdf doc.txt`). Then
 
@@ -132,3 +133,4 @@ Run the pipeline once, end to end, on the smallest scope that exercises every st
   inputs, and a list of extension requests (§6) for anything the worksheet profile could not express.
 - **Time box**: one week of calendar time; if the gates still fail after that, the blocker is a 口径 or mapping question for the
   reliability owner, not a pipeline change.
+- **Run on 2026-10-27 with the mock model** (synthetic ACME A3 server cluster, baseline `a3server`, 100,000 NPUs, 400 windows): the operator session took 66 s, all five acceptance items held, 2 warnings were written down, nothing needed an extension request; the records were promoted after review and `findings` rendered from the promoted data. Report: `PILOT_2026Q3_MOCK.md`; the next pilot runs the same commands with the real model inside the network.

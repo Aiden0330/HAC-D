@@ -24,6 +24,25 @@ The offline bundle writes the three to `prompts/` and `tools/`. Source of truth:
 The host (the program that runs the model) needs only: a way to run `bin/hacd …` and return stdout, stderr and the exit code; a
 `read_file` tool over `<work>/` and the input documents; a `write_file` tool restricted to `<work>/ws/`. Nothing else is required.
 
+HAC-D ships that host (v6.1, `packages/cli/src/operate.ts` over `packages/agent/src/host.ts`):
+
+```sh
+hacd ingest operate --base-url http://host:8000/v1 --model <name> [--api-key-env NAME] --work <dir> --docs <file|dir>… [--brief <file.md>]
+                    [--before-record <public id>] [--scales 100000] [--trials 400] [--permutations 300] [--lang zh|en] [--max-steps 60] [--task "<text>"]
+```
+
+It sends the system prompt, the task written from the flags and the owner's brief (work folder, the documents with a one-line description
+each, the baseline record, scales / windows / permutations, the model endpoint for `extract`), and the tool manifest plus `read_file` /
+`write_file` / `list_files` in the OpenAI function-calling shape. Every hacd_* call becomes a child process of the same CLI, so the repo's
+`node --import tsx main.ts` and the bundle's `bin/hacd` both work. The host trusts nothing: reads only under `<work>/` and the
+documents, writes only under `<work>/ws/`, folder arguments (`out`, `staging`, `worksheets`) inside the work folder, every argument
+checked against the manifest's schema (enum, pattern, `trials ≥ 35`), any value starting with a dash refused (so `--force`, `--promote`
+and `--data` cannot reach the CLI), a step cap (`--max-steps`), a transport retry for the long pipeline call, and a log of every turn
+and tool call without the API key (`<work>/operator-log.jsonl`). Its outputs: the model's final message on stdout,
+`<work>/operator-result.json` (turns, tool calls, writes, commands, the last run's status); exit code = the last `hacd ingest run`'s
+(0 ok, 2 needs-input, 3 failed), 1 when the model did not finish or never ran the pipeline. The key goes in through an environment
+variable, never on the command line.
+
 ## 3. The six commands the model may run
 
 | Command | Produces | Reads |
@@ -103,9 +122,47 @@ With `id: native950` in the topology worksheet the same run stops after `validat
 
 ## 8. Validating an operator before the pilot
 
-1. Run the CLI tests (`npm run test -w @hac-d/cli`): the ok path, the needs-input path and the protocol printouts.
-2. Give the model the prompt, the tool manifest, the two template worksheets and a short design note; it must reproduce the session of
-   §7 without touching anything outside `ws/`, and its final message must contain the KPI table and the paths — nothing invented.
-3. Feed it a worksheet with a deliberate error of each level (a public id, an unknown class, a missing source): it must fix the errors
-   by the table, leave the warnings with a note, and stop after three rounds.
-4. Only then the pilot of the runbook §8, with the owner signing.
+Every step below runs without a real model, against the mock of §9, and `packages/cli/test/operate.test.ts` runs steps 2 and 3 on every
+`npm test`.
+
+1. The CLI tests (`npm run test -w @hac-d/cli`): `hacd ingest run` on its ok and needs-input paths, the protocol printouts, and the
+   three operator scenarios of step 2 and 3 through `hacd ingest operate`.
+2. The ok path: the synthetic inputs of `packages/cli/test/fixtures/pilot/internal` (a design note in prose, one quarter of device
+   FIT as a CSV, the reviewed 口径 mapping, a mechanism parameter note, the owner's brief) through the host —
+
+   ```sh
+   node scripts/mock-onprem-model.mjs --port 8010 &
+   hacd ingest operate --base-url http://127.0.0.1:8010/v1 --model mock-onprem --work /tmp/w --docs packages/cli/test/fixtures/pilot/internal \
+                       --brief packages/cli/test/fixtures/pilot/internal/brief.md --before-record a3server --scales 10000 --trials 40 --permutations 10 --lang en
+   ```
+
+   The expected session is 8 model turns and 15 tool calls: read the four documents; the two templates and `import-fit`; the mapping
+   and mechanisms worksheets, `normalize`, `extract`; read the draft; write the topology worksheet; `run`; read `SUMMARY.md`; the final
+   message with the KPI table, the two warnings (`implausible` on the optics class, `provenance-missing` on the set) and the paths.
+   Nothing is written outside `ws/`, no command carries `--force` or `--promote`.
+3. The deliberate errors (`packages/cli/test/fixtures/pilot/errors`: a worksheet set with a public record id, an unknown class
+   `HBM-hard` and an empty source cell; the brief says the worksheets are already prepared): three runs — the empty cell stops the
+   worksheet conversion (`worksheet-parse`, the stderrTail names the cell), then the gates report `id-collision` and `unknown-class`,
+   the model looks the vocabulary up with `hacd ingest fields fault-rates --json` and fixes both — and the third run is `ok`. The stale
+   staged record of the public id is gone because `run` removes the previous conversion's outputs before converting again. The
+   unfixable set (`packages/cli/test/fixtures/pilot/unfixable`: an unknown count row) ends after one run with the issue reported as
+   `(path, code)`, nothing written, exit 2.
+4. Only then the pilot of the runbook §8, with the owner signing. The pilot was run with the mock on 2026-10-27 (§10).
+
+## 9. The mock on-prem model (`scripts/mock-onprem-model.mjs`, in the bundle `tools/`)
+
+An OpenAI-compatible chat-completions server with scripted answers, so the host, the protocol and the pipeline can be exercised
+before a real model is connected: a request without `tools` is an extraction call and gets evidence cards drawn from the chunk by
+regular expressions over the sentences of the synthetic design note (grounded quotes, identical on both passes; `--flaky` drops one
+card in pass 2 to show the review queue); a request with `tools` is an operator turn, answered by a state machine over the conversation
+that follows the prompt's procedure and the fix table (`id-collision`, `unknown-class`, `worksheet-parse`; at most three rounds; stop
+when a round changes nothing). It sees the documents only through the host's tools and never computes a number. It is a stand-in for
+the wiring, not evidence that a given model will follow the prompt: that is what the pilot with the real model shows.
+
+## 10. The pilot run of 2026-10-27 (mock model)
+
+The runbook §8 pilot was run inside the bundle with the mock model on the synthetic ACME A3 server cluster (public baseline `a3server`,
+100,000 NPUs, one quarter of device FIT, one mechanism delta; 400 windows, 300 permutations): 8 model turns, 15 tool calls, 3 worksheets,
+one pipeline run of 65 s, status `ok`, 2 warnings written down, 0 extension requests; promoted after review, `findings` on the promoted
+inputs rendered with identical results. All five acceptance items held. The session, the KPI delta and how the inputs explain it, the
+gates, the pipeline defects the pilot found and fixed, and the limits of a mock-model pilot are in `PILOT_2026Q3_MOCK.md`.

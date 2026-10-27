@@ -8,7 +8,7 @@
  *   node scripts/bundle-offline.mjs [--out dist/offline]   →   dist/offline/hacd-<version>/… and dist/offline/hacd-<version>.tgz
  */
 import { build } from 'esbuild';
-import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, chmodSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, chmodSync, existsSync, copyFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -39,7 +39,7 @@ cpSync(join(REPO, 'node_modules/katex'), join(dir, 'node_modules/katex'), { recu
 cpSync(join(REPO, 'packages/core/data'), join(dir, 'data'), { recursive: true });
 // docs and templates
 mkdirSync(join(dir, 'docs'), { recursive: true });
-for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/AGENT_OPERATOR.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
+for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/AGENT_OPERATOR.md', 'docs/markdown/PILOT_2026Q3_MOCK.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
 mkdirSync(join(dir, 'templates'), { recursive: true });
 for (const kind of ['topology', 'fault-rates', 'mechanisms', 'mechanism-proposal', 'device-fit', 'koujing-mapping']) {
   const text = execFileSync('node', [join(dir, 'bin/hacd.mjs'), 'ingest', 'template', kind], { encoding: 'utf8', env: { ...process.env, HACD_DATA: join(dir, 'data'), HACD_VERSION: version } });
@@ -50,6 +50,10 @@ mkdirSync(join(dir, 'prompts'), { recursive: true }); mkdirSync(join(dir, 'tools
 const proto = (args) => execFileSync('node', [join(dir, 'bin/hacd.mjs'), 'ingest', 'protocol', ...args], { encoding: 'utf8', env: { ...process.env, HACD_DATA: join(dir, 'data'), HACD_VERSION: version } });
 for (const lang of ['zh', 'en']) { writeFileSync(join(dir, 'prompts', `operator.${lang}.md`), proto(['--lang', lang])); writeFileSync(join(dir, 'prompts', `fix-table.${lang}.md`), proto(['--fix-table', '--lang', lang])); }
 writeFileSync(join(dir, 'tools', 'hacd-tools.json'), proto(['--tools']));
+// the mock on-prem model (an OpenAI-compatible server with scripted answers), to test a host and the pipeline wiring before the real model is connected
+copyFileSync(join(REPO, 'scripts/mock-onprem-model.mjs'), join(dir, 'tools', 'mock-onprem-model.mjs'));
+mkdirSync(join(dir, 'examples', 'pilot'), { recursive: true });
+for (const f of readdirSync(join(REPO, 'packages/cli/test/fixtures/pilot/internal'))) copyFileSync(join(REPO, 'packages/cli/test/fixtures/pilot/internal', f), join(dir, 'examples', 'pilot', f));
 writeFileSync(join(dir, 'bin/hacd'), `#!/bin/sh
 # hacd offline launcher (${name}); Node >= 20 required; no network needed
 DIR=$(cd "$(dirname "$0")/.." && pwd)
@@ -77,6 +81,13 @@ One call for a program or the on-prem model (\`docs/AGENT_OPERATOR.md\`; the mod
 \`prompts/operator.en.md\`, the tool manifest \`tools/hacd-tools.json\`):
 
     bin/hacd ingest run --worksheets ws --staging staging --before-record native950 --out out --json   # gates → dry run → delta → report; run.json + SUMMARY.md; exit 0 / 2 needs-input / 3 failed
+
+The reference host runs your on-prem model as the operator (OpenAI-compatible endpoint; the key only through an environment variable):
+
+    bin/hacd ingest operate --base-url http://host:8000/v1 --model <name> --api-key-env MODEL_KEY --work work --docs internal/ --brief brief.md --before-record a3server --scales 100000 --lang zh
+
+Try the wiring first with the mock model and the synthetic pilot inputs (\`examples/pilot/\`): \`node tools/mock-onprem-model.mjs --port 8010\`, then the
+command above with \`--base-url http://127.0.0.1:8010/v1 --model mock-onprem --docs examples/pilot --brief examples/pilot/brief.md\`.
 `);
 execFileSync('tar', ['-czf', `${name}.tgz`, name], { cwd: outRoot });
 const size = (p) => `${(execFileSync('du', ['-sk', p], { encoding: 'utf8' }).split('\t')[0] / 1024).toFixed(1)} MB`;
