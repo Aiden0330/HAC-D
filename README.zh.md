@@ -53,7 +53,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ```bash
 npm install                      # Node ≥ 20
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 819 核心 + 52 导入器 + 30 抽取工作器 + 28 报告测试（含独立 Python 计算的黄金向量，v1–v6）
+npm test                         # 819 核心 + 52 导入器 + 30 抽取工作器 + 28 报告测试（含独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts）
 node --import tsx packages/cli/src/main.ts examples        # 命令行：六个内置示例（四种拓扑模板 + 报告记录的 UBL128 与 A3 服务器集群，v5.3）
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 node --import tsx packages/cli/src/main.ts findings --record native950 --out out/950   # v5：由输入记录生成报告集
@@ -94,7 +94,7 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 ## 文档
 
 - 用户手册：`docs/USER_MANUAL.zh.html`（中文）、`docs/USER_MANUAL.html`（英文），自包含、含截图与方法参考；源文件在 `docs/manual/`，`npm run manual` 重建。§15.5 介绍 v6 的工作表、校验门、差异评审与离线包；§8–§11 是 v5.2 合并后的各页面。
-- 用户指南与计划：`docs/markdown/USER_GUIDE.md`（各页面、“v5 CLI”、“v6 ingest”）、`docs/markdown/DEVELOPMENT_PLAN.md`、各阶段计划 `docs/markdown/PLAN_V*.md`（v6：`PLAN_V6_INPUT_MIGRATION.md`）、内网操作手册 `docs/markdown/INGEST_RUNBOOK.md`。
+- 用户指南与计划：`docs/markdown/USER_GUIDE.md`（各页面、“v5 CLI”、“v6 ingest”）、`docs/markdown/DEVELOPMENT_PLAN.md`、各阶段计划 `docs/markdown/PLAN_V*.md`（v6：`PLAN_V6_INPUT_MIGRATION.md`）、内网操作手册 `docs/markdown/INGEST_RUNBOOK.md`（其 §8 为试点：一条有公开对照的记录、一个规模、一个季度，promote 前五项验收；模型只起草，命令行编排，由人签字）。
 - 规范：`docs/markdown/SPEC.md`；输入记录的 JSON Schema 由 `hacd schema --record|--mechanisms|--rates` 输出。
 - 工作流：`docs/markdown/WORKFLOW.md`（分析工作流 A1–A10 含 v6 内部输入步骤、开发工作流 B1–B8）；分配实践 `docs/markdown/ALLOCATION_PRACTICE.md`。
 - 技能：`docs/markdown/SKILLS.md`（`.claude/skills` 中的 model-check、release-check、scenario-review、allocate-to-target、reference-compare、add-parameter、build-manual、update-inputs）。

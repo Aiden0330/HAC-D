@@ -561,6 +561,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 <h3>12.2 修复路径与倒换</h3>
 <div class="formula">E[R] = c·T_a + (1 − c·s)·T_m；A = 1/(1 + λ·E[R])；需人工比例 = 1 − c·s；自动路径停机占比 = c·T_a/E[R]
 k-of-n 组：在（自动修复中、人工修复中、倒换失败）状态上的精确链；短暂停机 U_sw = Σ π·w·λ·p_sw·t_sw/3600；倒换失败在 T_sf 内清除</div>
+<p>三种恢复模型遵循同一约定：尝试过的路径都计入其耗时，失败后转入下一路径（单元修复 E[R] = c·T_a + (1 − c·s)·T_m、作业混合 R = T_det + T_auto + (1 − p_s)·T_manual、分级 Σ P_i·t_i）；旧式单一 <code>mttrHours</code> 视为人工路径。</p>
 <h3>12.3 亚健康</h3>
 <div class="formula">单元：状态 U、H、H′、I、D_a、D_m；A_strict = π_U；A_tolerant = π_U + π_H；性能加权 = π_U + φ·π_H；φ < 阈值（0.7）时计为不可用
 作业：P(被拖慢) = 1 − Π (1 − p_H,i)^{nᵢ}；φ_job = 1 − P(被拖慢)(1 − φ_min)；隔离：ν_iso = π_H·p_d/T_d 为仅停顿事件（先保存进度）
@@ -622,7 +623,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <section id="s13">
 <h2>13. 验证与精度</h2>
 <h3>13.1 黄金向量与测试</h3>
-<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 817 个核心测试、52 个导入器测试、30 个抽取工作器测试与 28 个报告测试（v4 新增 126 个拓扑黄金向量，v5 新增 G1–G6 的 29 个预算原语用例，v6 新增 G7 的 5 个口径归一用例——单位换算与各类求和到 1e-9）；<code>node packages/reports/test/reproduce.mjs</code> 逐字节复现六份昇腾报告。</p>
+<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 819 个核心测试、52 个导入器测试、30 个抽取工作器测试与 28 个报告测试（v4 新增 126 个拓扑黄金向量，v5 新增 G1–G6 的 29 个预算原语用例，v6 新增 G7 的 5 个口径归一用例——单位换算与各类求和到 1e-9）；<code>node packages/reports/test/reproduce.mjs</code> 逐字节复现六份昇腾报告。三个测试在规模上运行引擎（笔记本上 8–26 s）；核心与导入器包的 vitest 超时设为 300 s，慢机器只在挂起时才失败。</p>
 <h3>13.2 与参考引擎的交叉校核</h3>
 <p>经审核的参考引擎（单训练作业、30 天离散事件仿真、每方案 4000 次）与 HAC-D 在同一基线上：万卡硬件 MTBF 30 h 并线性外推，τ 300 s，δ 4 s，检测 95 % 在 10 s 否则 60 s，恢复 180 s 成功率 99 % 否则加 2 h 人工。</p>
 <div class="table-wrap"><table>
@@ -741,7 +742,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <p><b>校验门</b>（<code>hacd ingest validate</code>）：封闭词表——故障类 id、故障单元、模板、计数行、机制 id 与机制实际读取的参数键；出处完整性；合理性，即在单元库值的 ×0.1 … ×10 之内（是要读的警告，不是错误）；拓扑记录的结构一致性（节点、机柜、SuperPoD 的 NPU 数与几何一致）；以及 id 政策：内部记录用自己的 id，与公开的 <code>native950</code>、<code>ubl128</code>、<code>cm384</code>、<code>a3server</code>、<code>a960e</code>、<code>remap-latest-2026-10</code>、<code>remap-per-card-2026-10-09</code> 并列，后者从不被覆盖。引擎无法表达的设计或机制（新的硬件单元类型、新模板、新变换）不是数据更新：<code>worksheet</code> 转而写出面向 HAC-D 侧的<i>扩展请求</i>，只含结构。</p>
 <p><b>差异</b>（<code>hacd ingest diff</code>）：评审页列出每个变化的输入及新记录声明的来源与置信、按每单元口径比较的失效率类及其倍数，以及该次运行各规模下预算的前后 KPI 行——A_op 名义与降额、交付 goodput、MTBF<sub>hw</sub>、MTTR<sub>hw</sub>、P(窗口)、因子 k、推荐机制与杠杆——并带 Δ 行。它是 <code>promote</code> 之前评审人签字的对象；之后 §15.1 的报告集在新输入上运行（<code>hacd findings --record &lt;id&gt; --rates &lt;id&gt;</code>）。</p>
 <p><b>文档与内网模型</b>（<code>hacd ingest extract</code>，包 <code>packages/agent</code>）：文档被分块；OpenAI 兼容端点后的模型（vLLM、SGLang、llama.cpp；受约束 JSON 或代码块回退）只写<i>证据卡</i>——字段路径、原文的值与单位、逐字引文及位置。只有当引文在分块中找到、值在引文之内、且用不同提示的第二遍结果一致时才接受；其余进入 <code>review.md</code>。模型从不换算单位、计算速率、判定故障类或置信：草稿工作表的置信来自你声明的来源类型。PDF 先转为文本。</p>
-<p><b>离线包</b>：<code>node scripts/bundle-offline.mjs</code> 生成 <code>dist/offline/hacd-&lt;version&gt;.tgz</code>——一个打包的命令行，katex 置于其旁，记录目录作为 <code>HACD_DATA</code>，启动脚本 <code>bin/hacd</code> 与 <code>bin\hacd.cmd</code>，工作表模板与文档；只需 Node ≥ 20，除你指定的模型端点外不联网。内网团队的分步操作手册是 <code>docs/markdown/INGEST_RUNBOOK.md</code>；公式与校验门见 <code>docs/markdown/MODEL_REFERENCE.md</code> §26；在本侧，<code>update-inputs</code> 技能把一批输入过校验门并带黄金向量实现扩展请求。</p>
+<p><b>离线包</b>：<code>node scripts/bundle-offline.mjs</code> 生成 <code>dist/offline/hacd-&lt;version&gt;.tgz</code>——一个打包的命令行，katex 置于其旁，记录目录作为 <code>HACD_DATA</code>，启动脚本 <code>bin/hacd</code> 与 <code>bin\hacd.cmd</code>，工作表模板与文档；只需 Node ≥ 20，除你指定的模型端点外不联网。内网团队的分步操作手册是 <code>docs/markdown/INGEST_RUNBOOK.md</code>；公式与校验门见 <code>docs/markdown/MODEL_REFERENCE.md</code> §26；在本侧，<code>update-inputs</code> 技能把一批输入过校验门并带黄金向量实现扩展请求。操作手册 §8 定义试点：一条有公开对照的记录、一个规模、一个季度；数据负责人编写工作表，内网模型只起草，命令行编排，可靠性负责人签署差异报告，promote 前须满足五项验收。</p>
 </section>
 
 <section id="s16">

@@ -44,7 +44,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 ## Documentation
 
 - **User manual**: `docs/USER_MANUAL.html` / `docs/USER_MANUAL.zh.html` (self-contained, with screenshots and the methods reference; sources `docs/manual/USER_MANUAL*.src.html`, rebuild with `npm run manual`). Section 15.5 covers the v6 worksheets, gates, delta and the offline bundle; sections 8 to 11 the pages after the v5.2 merge.
-- **User guide and plans**: `docs/markdown/USER_GUIDE.md` (pages, "v5 CLI", "v6 ingest"), `docs/markdown/DEVELOPMENT_PLAN.md`, the phase plans `docs/markdown/PLAN_V*.md` (v6: `PLAN_V6_INPUT_MIGRATION.md`), the inside-the-network runbook `docs/markdown/INGEST_RUNBOOK.md`.
+- **User guide and plans**: `docs/markdown/USER_GUIDE.md` (pages, "v5 CLI", "v6 ingest"), `docs/markdown/DEVELOPMENT_PLAN.md`, the phase plans `docs/markdown/PLAN_V*.md` (v6: `PLAN_V6_INPUT_MIGRATION.md`), the inside-the-network runbook `docs/markdown/INGEST_RUNBOOK.md` (its §8 is the pilot: one record with a public counterpart, one scale, one quarter, five acceptance criteria before promote; the model drafts, the CLI orchestrates, a person signs).
 - **Specification**: `docs/markdown/SPEC.md` (requirements, data model, KPIs and 口径, interfaces, validation); the input records' JSON Schemas print with `hacd schema --record|--mechanisms|--rates`.
 - **Workflows**: `docs/markdown/WORKFLOW.md` (analysis workflow A1–A10 with the v6 internal-input step, development workflow B1–B8); allocation practice `docs/markdown/ALLOCATION_PRACTICE.md`.
 - **Skills**: `docs/markdown/SKILLS.md` lists the Claude Code skills in `.claude/skills` (model-check, release-check, scenario-review, allocate-to-target, reference-compare, add-parameter, build-manual, update-inputs).
@@ -55,7 +55,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 
 ```bash
 npm install            # Node 20+, workspaces (core, importers, reports, agent, cli, mcp, web)
-npm test               # 819 core + 52 importer + 30 agent + 28 report tests incl. the independently computed golden vectors (v1–v6)
+npm test               # 819 core + 52 importer + 30 agent + 28 report tests incl. the independently computed golden vectors (v1–v6); engine-heavy tests have a 300 s timeout (vitest.config.ts)
 npm run dev            # web app at http://localhost:5173 (bilingual zh/en, light/dark)
 npm run build -w @hac-d/web   # static bundle in apps/web/dist
 ```
