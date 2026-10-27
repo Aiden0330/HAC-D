@@ -24,7 +24,7 @@ import a3server from '../../data/records/a3server.json';
 
 /** the two extension points a new template or hardware unit kind needs (plan §8 item 2) */
 export const TOPOLOGY_EXTENSION_POINTS =
-  'a new hardware unit kind needs two extension points in packages/core/src/topology/index.ts: a unit-library entry (unitFaultLibrary — FAULT_UNITS, DOMAIN_UNIT and the unit\'s count rule) and a bill-of-materials row (topologyBom); a new template also needs its TOPOLOGY_TEMPLATES entry';
+  'a new hardware unit kind needs two extension points in packages/core/src/topology/index.ts: a unit-library entry (unitFaultLibrary — FAULT_UNITS, DOMAIN_UNIT and the unit\'s count rule) and a bill-of-materials row (topologyBom); a new template also needs its TOPOLOGY_TEMPLATES entry — a SuperPoD of one of the four UB fabric kinds that is not a public product needs no code: template ub-generic with the geometry in the record (v5.4)';
 
 const BilingualSchema = z.object({ zh: z.string(), en: z.string() });
 type PresetKey = keyof typeof SUPERPOD_PRESETS;

@@ -132,7 +132,7 @@ export const DomainSchema = z.enum(['gpu', 'node', 'nvlink_domain', 'rack', 'tor
  * 7 L2 sub-planes × 16 chips × 48 ports, 16 links per L1 chip.
  */
 export const SuperpodSchema = z.object({
-  preset: z.enum(['cloudmatrix384', 'atlas950', 'atlas950-1k', 'atlas950-8k', 'atlas960e', 'custom']).default('custom'),
+  preset: z.enum(['cloudmatrix384', 'atlas950', 'atlas950-1k', 'atlas950-8k', 'atlas960e', 'ub-generic', 'custom']).default('custom'),
   /**
    * v4.2 fabric of the UB scale-up domain:
    *  - 'two-level' (CloudMatrix384): L1 UB chips on every node, L2 chips in sub-planes in the communication cabinets, an optical
@@ -182,7 +182,7 @@ export type Superpod = z.infer<typeof SuperpodSchema>;
 const TWO_LEVEL_IDLE = { fabric: 'two-level' as const, rackSwitches: 0, podUplinksPerNpu: 0, podSwitchRadix: 128, opticalEnginesPerNpu: 0, meshRackGrid: 0, backupNpusPerRack: 0 };
 /** CloudMatrix384-style L1 / L2 fields of a mesh preset, used when its fabric is switched to 'two-level' (non-blocking L2 for the pod's nodes) */
 const twoLevelOf = (nodesPerPod: number) => ({ l1PerNode: 7, subPlanes: 7, l2PerSubPlane: Math.ceil((nodesPerPod * 16) / 48), l2Ports: 48, linksPerL1: 16 });
-type PresetKey = 'cloudmatrix384' | 'atlas950' | 'atlas950-1k' | 'atlas950-8k' | 'atlas960e';
+type PresetKey = 'cloudmatrix384' | 'atlas950' | 'atlas950-1k' | 'atlas950-8k' | 'atlas960e' | 'ub-generic';
 export const SUPERPOD_PRESETS: Record<PresetKey, { values: Superpod; assumed: (keyof Superpod)[]; source: string }> = {
   cloudmatrix384: {
     values: { preset: 'cloudmatrix384', npusPerNode: 8, cpusPerNode: 4, l1PerNode: 7, nodesPerRack: 4, computeRacks: 12, commRacks: 4, subPlanes: 7, l2PerSubPlane: 16, l2Ports: 48, linksPerL1: 16, transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, ...TWO_LEVEL_IDLE },
@@ -219,6 +219,14 @@ export const SUPERPOD_PRESETS: Record<PresetKey, { values: Superpod; assumed: (k
     values: { preset: 'atlas960e', npusPerNode: 8, cpusPerNode: 2, nodesPerRack: 9, computeRacks: 56, commRacks: 14, ...twoLevelOf(504), transceiversPerLink: 0, rdmaPortsPerNpu: 4, vpcNicsPerNode: 1, fabric: 'blade-clos', rackSwitches: 5, podUplinksPerNpu: 5.5, podSwitchRadix: 176, opticalLinksPerNpu: 48000 / 2 / 4096, opticalEnginesPerNpu: 5500 / 4096, meshRackGrid: 0, backupNpusPerRack: 0 },
     assumed: ['npusPerNode', 'cpusPerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'rackSwitches', 'podUplinksPerNpu', 'opticalLinksPerNpu', 'rdmaPortsPerNpu', 'vpcNicsPerNode'],
     source: 'Huawei HUAWEI CONNECT 2026 Atlas 960E release and UnifiedBus release 2026-09-17 (4,096 NPUs, orthogonal full liquid cooling, 5,500 Hi-ONE NPO engines at 7.2 Tb/s replacing 48,000 × 800G modules, LinkDevice 176 × 1.6 Tb/s, two-tier four-plane Clos to 512,000 NPUs); 智东西 2026-09-19 (56 + 14 cabinets, 72 Ascend + 18 Kunpeng per cabinet, 8-NPU compute blades; single media source)',
+  },
+  // v5.4 generic UB SuperPoD: the placeholder geometry of the record-defined template (every value is replaced by the topology
+  // record or worksheet) — a 1,024-NPU two-level L1 / L2 SuperPoD of 16 compute + 4 communication cabinets, 8 nodes × 8 NPUs and
+  // 2 CPUs per node (the a950-2l geometry), so that the template works on the page before a record exists
+  'ub-generic': {
+    values: { preset: 'ub-generic', npusPerNode: 8, cpusPerNode: 2, nodesPerRack: 8, computeRacks: 16, commRacks: 4, ...twoLevelOf(128), transceiversPerLink: 2, rdmaPortsPerNpu: 2, vpcNicsPerNode: 1, ...TWO_LEVEL_IDLE },
+    assumed: ['npusPerNode', 'cpusPerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'l1PerNode', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink', 'rdmaPortsPerNpu', 'vpcNicsPerNode'],
+    source: 'HAC-D v5.4 placeholder for record-defined SuperPoDs (no public product behind it): CloudMatrix384-style L1 / L2 fabric scaled to 128 nodes; every value is meant to be replaced by the topology record or worksheet',
   },
 };
 
@@ -327,7 +335,7 @@ export const TopologySchema = z.object({
   /** v2: supernode geometry; when present it defines gpusPerNode / nodesPerRack and the superpod count scopes */
   superpod: SuperpodSchema.optional(),
   /** v4 topology template the scenario was generated from (topology page); informational */
-  template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub']).optional(),
+  template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic']).optional(),
   /** v4 host CPUs per node without a superpod geometry (count rule `cpu`) */
   cpusPerNode: z.number().int().nonnegative().optional(),
   /**

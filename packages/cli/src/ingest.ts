@@ -11,6 +11,7 @@
  *   hacd ingest diff [--record <id|path>] [--before-record] [--after-record] [--before-rates] [--after-rates] [--before-set] [--after-set] [--scales] [--target] [--trials] [--seed] [--out dir] [--json]
  *   hacd ingest promote <dir|staged.json>… [--data <dir>] [--force]      copy validated records into the data folder under their own ids; CHANGELOG entry
  *   hacd ingest extract <doc.txt|md>… --kind topology|device-fit|mechanisms --provider openai-compatible|mock|none [--base-url] [--model] [--api-key-env NAME] [--mode json_schema|guided_json|fenced] [--passes 2] [--chunk 2500] [--overlap 200] [--source-type vendor] [--id x] [--template a950-ub2] [--out dir]
+ *   hacd ingest run --staging <dir> [--worksheets <dir>] [--record] [--rates] [--mechanisms] [--before-record] [--scales] [--trials] [--permutations] [--out] [--promote] [--no-report] [--json]   the whole chain as one call for a program or an on-prem model: run.json + SUMMARY.md; exit 0 ok / 2 needs-input / 3 failed
  *
  * Every number comes from @hac-d/core; the worksheets from @hac-d/importers; the review page from @hac-d/reports; the model step from
  * @hac-d/agent (loaded only by `extract`). Internal records get their own ids: an id of a public record is refused.
@@ -27,6 +28,8 @@ import {
 import { parseWorksheet, worksheetTemplate, readWorkbook, deviceTableFromSheet, faultRateOverrideToWorksheet, deviceTableToWorksheet, proposalIntoSet, type DeviceColumn } from '@hac-d/importers';
 import { deltaHtml, deltaMarkdown } from '@hac-d/reports';
 import { argsOf, resolveRecord, resolveSet, resolveRates, DATA, dataIds, engine } from './pipeline.js';
+import { runPipeline } from './run.js';
+import { protocol } from './protocol.js';
 
 type Args = ReturnType<typeof argsOf>;
 function fail(msg: string): never { console.error(`hacd ingest: ${msg}`); process.exit(1); }
@@ -339,6 +342,8 @@ const HELP = `hacd ingest — worksheets → staged records → gates → KPI de
   diff --record r | --after-record r [--before-record] [--before-rates] [--after-rates] [--before-set] [--after-set] [--scales] [--target] [--trials] [--seed] [--out] [--json]
   promote <dir|file>… [--data dir] [--force]        copy validated records into the data folder (own ids only); CHANGELOG
   extract <docs>… --kind k --provider p …           model step (@hac-d/agent): evidence cards, review queue, draft worksheet
+  run --staging dir [--worksheets dir] [--before-record r] [--promote] [--out dir] …   v6.1 one call: worksheets → validate → dry-run → diff → promote → findings; run.json + SUMMARY.md (docs/markdown/AGENT_OPERATOR.md)
+  protocol [--lang zh|en] [--tools] [--fix-table]   the operator protocol for an on-prem model: system prompt, tool manifest, fix table
 Data folder: ${DATA}${process.env.HACD_DATA ? ' (HACD_DATA)' : ''}`;
 
 export async function ingest(rest: string[]): Promise<void> {
@@ -356,6 +361,8 @@ export async function ingest(rest: string[]): Promise<void> {
     case 'diff': return diff(a, json);
     case 'promote': return promote(a, args);
     case 'extract': return extract(a, args);
+    case 'run': return runPipeline(a, args);
+    case 'protocol': return protocol(a);
     case 'help': case undefined: case '--help': console.log(HELP); return;
     default: fail(`unknown subcommand '${sub}'\n${HELP}`);
   }

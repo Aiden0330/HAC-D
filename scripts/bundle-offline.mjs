@@ -39,12 +39,17 @@ cpSync(join(REPO, 'node_modules/katex'), join(dir, 'node_modules/katex'), { recu
 cpSync(join(REPO, 'packages/core/data'), join(dir, 'data'), { recursive: true });
 // docs and templates
 mkdirSync(join(dir, 'docs'), { recursive: true });
-for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
+for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/AGENT_OPERATOR.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
 mkdirSync(join(dir, 'templates'), { recursive: true });
 for (const kind of ['topology', 'fault-rates', 'mechanisms', 'mechanism-proposal', 'device-fit', 'koujing-mapping']) {
   const text = execFileSync('node', [join(dir, 'bin/hacd.mjs'), 'ingest', 'template', kind], { encoding: 'utf8', env: { ...process.env, HACD_DATA: join(dir, 'data'), HACD_VERSION: version } });
   writeFileSync(join(dir, 'templates', `${kind}.md`), text);
 }
+// v6.1 the operator protocol for the on-prem model: system prompt (zh / en), tool manifest, fix table (hacd ingest protocol)
+mkdirSync(join(dir, 'prompts'), { recursive: true }); mkdirSync(join(dir, 'tools'), { recursive: true });
+const proto = (args) => execFileSync('node', [join(dir, 'bin/hacd.mjs'), 'ingest', 'protocol', ...args], { encoding: 'utf8', env: { ...process.env, HACD_DATA: join(dir, 'data'), HACD_VERSION: version } });
+for (const lang of ['zh', 'en']) { writeFileSync(join(dir, 'prompts', `operator.${lang}.md`), proto(['--lang', lang])); writeFileSync(join(dir, 'prompts', `fix-table.${lang}.md`), proto(['--fix-table', '--lang', lang])); }
+writeFileSync(join(dir, 'tools', 'hacd-tools.json'), proto(['--tools']));
 writeFileSync(join(dir, 'bin/hacd'), `#!/bin/sh
 # hacd offline launcher (${name}); Node >= 20 required; no network needed
 DIR=$(cd "$(dirname "$0")/.." && pwd)
@@ -67,6 +72,11 @@ writes there. Start with \`docs/INGEST_RUNBOOK.md\`; worksheet examples are in \
     bin/hacd ingest validate staging
     bin/hacd ingest diff --before-record native950 --after-record staging/records/<id>.json --out staging/delta
     bin/hacd ingest promote staging
+
+One call for a program or the on-prem model (\`docs/AGENT_OPERATOR.md\`; the model's system prompt is \`prompts/operator.zh.md\` /
+\`prompts/operator.en.md\`, the tool manifest \`tools/hacd-tools.json\`):
+
+    bin/hacd ingest run --worksheets ws --staging staging --before-record native950 --out out --json   # gates → dry run → delta → report; run.json + SUMMARY.md; exit 0 / 2 needs-input / 3 failed
 `);
 execFileSync('tar', ['-czf', `${name}.tgz`, name], { cwd: outRoot });
 const size = (p) => `${(execFileSync('du', ['-sk', p], { encoding: 'utf8' }).split('\t')[0] / 1024).toFixed(1)} MB`;

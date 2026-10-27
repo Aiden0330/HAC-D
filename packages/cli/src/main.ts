@@ -3,7 +3,7 @@
  * hacd — command-line access to the HAC-D core.
  *   hacd examples                                   list the example scenarios (the four topology templates; scale with --npus)
  *   hacd example <id> [--npus N]                    print an example scenario as JSON at N NPUs (built-in 10k / 100k / 200k / 500k, any N)
- *   hacd topology <a2-roce|a3-ub384|a950-ub2|a960e-ub> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--count ubPodSwitch=200,cabinet=170] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
+ *   hacd topology <a2-roce|a3-ub384|a950-ub2|a960e-ub|ub-generic> [--variant a950-1k|a950-8k|a950-4d|a950-2l] [--count ubPodSwitch=200,cabinet=170] [--npus 10000] [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--out scenario.json] [--json]   hardware bill of materials and fault types per unit (v4)
  *   hacd strategy <scenario.json | --template a3-ub384 [--npus 10000]> [--strategy optimal|mttr-first|mttf-first] [--target 0.985] [--metric aOp|delivered] [--split min-effort|agree|arinc] [--candidates D-HARD,…] [--no-levers] [--no-derate] [--sizes 1000,10000] [--trials 0] [--json]   allocation strategy (v4)
  *   hacd eval <scenario.json> [--json]              evaluate a scenario (table or JSON)
  *   hacd compare <a.json> <b.json> ... [--json]     side-by-side KPIs

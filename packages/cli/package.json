@@ -7,7 +7,8 @@
     "hacd": "./src/main.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hac-d/agent": "0.5.0",

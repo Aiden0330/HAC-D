@@ -55,11 +55,14 @@ A950_4D = dict(A950_8K, fabric='mesh-4d', up=0.5, radix=64)
 A950_2L = dict(fabric='two-level', npn=8, cpn=2, npr=8, crk=16, comm=4, l1=7, sub=7, l2ps=math.ceil(128 * 16 / 48), l2p=48, lpl1=16, tpl=2)
 # v4.2 Atlas 960E: 56 + 14 cabinets of 9 blades × 8 NPUs and 18 CPUs, 5 LinkBlade chips per cabinet, 5.5 LinkDevice ports per NPU (radix 176), NPO
 A960E = dict(fabric='blade-clos', npn=8, cpn=2, npr=9, crk=56, comm=14, rsw=5, up=5.5, radix=176, tpl=0, opt=48000 / 2 / 4096, eng=5500 / 4096, grid=0, backup=0)
+# v5.4 generic UB SuperPoD template: the placeholder default is the a950-2l geometry (16 + 4 cabinets, 8 × 8 NPUs, 2 CPUs, two-level L1 / L2)
+UBGEN = dict(A950_2L, rdma=2)
 TEMPLATES = {
     'a2-roce': dict(npn=8, cpn=4, npr=8, pod=None, so=dict(ports=1, planes=1, k=64, o=1, tpl=2)),
     'a3-ub384': dict(npn=8, cpn=4, npr=4, pod=CM384, so=dict(ports=2, planes=1, k=64, o=1, tpl=2)),
     'a950-ub2': dict(npn=8, cpn=2, npr=8, pod=A950_1K, so=dict(ports=2, planes=2, k=128, o=1, tpl=2)),
     'a960e-ub': dict(npn=8, cpn=2, npr=9, pod=A960E, so=dict(ports=4, planes=4, k=1024, o=1, tpl=2)),
+    'ub-generic': dict(npn=8, cpn=2, npr=8, pod=UBGEN, so=dict(ports=2, planes=2, k=128, o=1, tpl=2)),
 }
 # superpod variants of the Atlas 950 template (the scenario's topology.superpod replaced by the preset with these fields)
 VARIANTS = {

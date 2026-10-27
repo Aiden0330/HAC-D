@@ -6,6 +6,8 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 
 ## v6（2026-10-22）：输入迁移流水线——工作表、校验门、差异评审、离线包
 
+- **v6.1**（2026-10-26）：流水线不再需要有人在终端操作。`hacd ingest run` 一次调用完成工作表 → 门禁 → 干跑 → 差异 → 报告，并写出机器可读的 `run.json`（状态 ok / needs-input / failed、每步的 issue 及其 path 与 code、KPI 行、路径）与 `SUMMARY.md`；`hacd ingest protocol` 打印给内网小模型的操作员协议（中 / 英系统提示词、函数调用工具清单、门禁 code → 修复表），规范见 `docs/markdown/AGENT_OPERATOR.md`，离线包随附。模型只抄有来源与置信的事实并运行这一条命令；HAC-D 计算；负责人签字并 promote。命令行测试覆盖 ok 与 needs-input 两条路径（`npm run test -w @hac-d/cli`）。
+
 - **为什么**：内部硬件 FIT、新拓扑与新机制要从一个只有受限开源模型、数据不能外传的内网进入 HAC-D。基于提示词的 Skill 做不了这件迁移；围绕 v5 输入记录的确定性离线流水线可以，模型只是其中一个受约束的步骤。计划与决策：`docs/markdown/PLAN_V6_INPUT_MIGRATION.md`；内网团队的操作手册：`docs/markdown/INGEST_RUNBOOK.md`。
 - **工作表**（`packages/importers/src/worksheet`）：严格的 Markdown 规范（`hacd-worksheet-1`：YAML 头、`## 小节`、固定表头的竖线表格，出错报行号），六种类型——topology、fault-rates、device-fit、koujing-mapping、mechanisms（相对默认机制集的增量）、mechanism-proposal——与 v5 输入记录双向转换；`hacd ingest template <kind>` 打印原样可解析的示例。每条公开记录、默认机制集与 ReMAP 覆盖文件经工作表往返后不变。
 - **口径归一**（`packages/core/src/ingest/koujing.ts`）：按来源原文记录的器件失效率（FIT、每 10⁶ 小时、每小时、MTBF 小时、AFR）× 经评审的映射表（器件 → 故障单元、目录故障类、每单元器件数、影响因子）→ 各类每单元·小时的业务影响 FIT，`FIT = Σ FIT_器件 × 每单元器件数 × 影响因子`，算式写入每个条目，置信按政策给出（任一因子或来源为假设即 assumed，否则 derived，否则取来源类型自身的置信）。黄金向量 G7a–G7e 由 Python 独立计算（`compute_golden_v6.py`）。
@@ -19,6 +21,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 - **v5**：昇腾分配报告集（方法、各拓扑结果、10 万卡元件清单）由三种输入记录——拓扑记录、失效率覆盖、机制集（`packages/core/src/records`，JSON 在 `packages/core/data/{records,fault-rates,mechanism-sets}`，每个值带出处与置信）——经核心原语（KPI 形式、MTTR 分解、分层预算、要求、窗口规则、Shapley 剪除、分层预算汇总）、双语报告套件 `packages/reports`（报告配方是旁路 JSON 的纯函数；`node packages/reports/test/reproduce.mjs` 逐字节复现六份报告）与命令行 `hacd findings | bom | budget | methodology | prune | study --record | records | schema --record|--mechanisms|--rates` 生成；黄金向量 G1–G6；参数复核 `docs/markdown/V5_PARAMETER_RECONCILIATION.md`；计划 `docs/markdown/PLAN_V5_REPORT_PIPELINE.md`。
 - **v5.1**：唯一的**项目页**（项目 = 方案 + 各页设置）作为载入 / 保存的单一入口；导航 项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库；删除重复的分配视图（拓扑页的分配页签、分配页的规划器页签与 v3.7 研究面板）。
 - **v5.2**（2026-10-22）：十二个页面合并为八个，一个功能只在一处——项目页新增导入与对比页签；新增**评审**页，容纳带导出的评审清单、蒙特卡洛校核与敏感性龙卷风；推理与备件合为「全部页面」中的一页；各硬件单元的故障类型只在拓扑页的硬件页签显示一次，故障库页即参数库。导航：项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审；「全部页面」另有方案编辑器与推理与备件。
+- **v5.4**（2026-10-26）：第五个拓扑模板——**通用 UB 超节点**（`ub-generic`，由记录定义）：面向非公开产品的超节点，几何（四种 UB 互联形态之一）、名称、来源与假设全部来自拓扑记录 / 工作表；页面在没有记录时显示 1,024 NPU 两级 L1/L2 的占位几何，Findings 报告的叠加图按记录绘制。首个记录 `a960`：HC2025 路线图的 Atlas 960 超节点（15,488 NPU、220 柜；柜内几何为假设，HC2026 已把该产品改为 4,096 NPU = `a960e` 记录）。`hacd findings --record a960` 仅凭记录即可生成其结果报告；新增黄金向量固定该模板的数量（核心测试 840 个）。
 - **v5.3**（2026-10-22）：页面与报告同一口径。拓扑页指标条按公式 (1) 显示：A_op 名义 / 降额、正确有效产出、MTBF_hw（硬中断的 1/Σλ；注释保留 MTBI）、MTTR_hw 名义 / 降额（硬中断类按速率加权的暂停；注释保留全部事件均值）、每 NPU 中断 FIT——即结果报告「今天」一行。分配 › 策略新增「**报告设置**」（机制集的候选、工作量、参数与杠杆、ARINC、降额、400 个窗口，使最优行与报告一致）和「**报告预算（逐窗口规则）**」卡（对当前项目运行 `hierarchicalBudget`：今天 / 要求 / 推荐，同 `hacd budget`）；名义与降额在出现处均有定义（名义 = 机制库给出的参数；降额 = 覆盖率 −5 pt、成功率 −8 pt、时间 ×1.5、发生率改善 ×0.5；两者都须达标，起决定作用的是降额值）。内置项目：Atlas 950 示例采用 native950 记录的几何（跨超节点 4 端口 / 4 平面 / radix 1024），新增 UBL128 与 Atlas 800T A3 服务器集群，报告集的每个架构都能以报告的数字在页面上打开。`hacd findings --data <dir>` 由已存旁路 JSON 重新渲染页面。评审页的 HTML 导出带指标条的数字。重复整个策略表单的「跨规模」页签并入「策略」页签末尾的跨规模卡（分配页剩两个页签）。结果报告按评审精简：目标与要点、一条结论（MTBF / MTTR 要求）、表 1–6（机制集及其各规模 Shapley 值为表 6，方法报告不再重复）、每张表下只保留一句口径注、屏幕字号加大。可靠性页签：模型表只显示 A_op 与首要模型（其余折叠），机制链表简化为六列（各梯级结束占比合并为一格），规模表只保留首要 goodput 一列。
 
 ## v4.3（2026-10-19）：用户设定硬件数量
@@ -35,7 +38,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 
 ## v4（2026-10-18）：NPU 工具，拓扑优先
 
-- **拓扑与硬件**成为首页：四种昇腾模板——A2（Atlas 800T A2 服务器 + RoCE Clos）、A3 / CloudMatrix384（UB 超节点，论文几何）、Atlas 950（v4.2：产品页现行规格的 1,024 NPU 超节点，16 计算柜 + 4 灵衢互联柜，柜内全互联 + 一层光交换 Clos；8,192 卡路线图形态、UB-Mesh 论文的 4D 网格与 CloudMatrix384 两级拷贝可选）、Atlas 960E（v4.2：56 + 14 柜、每柜 72 NPU，NPO 光互联，LinkBlade + LinkDevice，四平面两层 scale-out）——在任意规模下（内置 10k / 100k / 200k / 500k NPU，或任意 N）给出硬件清单（NPU、节点、CPU、机柜、超节点、UB L1 / L2 芯片或柜内与超节点层交换、全互联与光链路、NPO 光引擎、各层各平面的 scale-out 交换机与链路）、实时示意图、指标条，原训练作业页成为「可靠性」页签（`packages/core/src/topology`）。
+- **拓扑与硬件**成为首页：五种模板（v5.4 新增由记录定义的通用 UB 超节点）——A2（Atlas 800T A2 服务器 + RoCE Clos）、A3 / CloudMatrix384（UB 超节点，论文几何）、Atlas 950（v4.2：产品页现行规格的 1,024 NPU 超节点，16 计算柜 + 4 灵衢互联柜，柜内全互联 + 一层光交换 Clos；8,192 卡路线图形态、UB-Mesh 论文的 4D 网格与 CloudMatrix384 两级拷贝可选）、Atlas 960E（v4.2：56 + 14 柜、每柜 72 NPU，NPO 光互联，LinkBlade + LinkDevice，四平面两层 scale-out）——在任意规模下（内置 10k / 100k / 200k / 500k NPU，或任意 N）给出硬件清单（NPU、节点、CPU、机柜、超节点、UB L1 / L2 芯片或柜内与超节点层交换、全互联与光链路、NPO 光引擎、各层各平面的 scale-out 交换机与链路）、实时示意图、指标条，原训练作业页成为「可靠性」页签（`packages/core/src/topology`）。
 - **各硬件单元的故障类型**：54 事件目录挂到对应单元，并在 CloudMatrix384 几何下换算（每单元 FIT = 每卡 FIT × 每单元对应卡数），因此拓扑会改变中断率（10k 时 A2 / A3 / Atlas 950 / Atlas 960E 每 NPU 分别为 3,086 / 3,371 / 3,092 / 3,041 FIT）；不含 scale-out 的 CloudMatrix384 精确复现目录。黄金向量见 `packages/core/test/golden/compute_golden_v4.py`。
 - **默认机制**：每个拓扑方案默认应用 ReMAP 六项机制（D-SDC、R-SDC、R-REPLAY、R-PROCESS、R-ELASTIC、C-FAST），在机制页修改；机制页现为静默错误策略与恢复链的唯一归属处（页签：选择与归因、静默错误与恢复链、单点收益审核）。
 - **分配策略**（`packages/core/src/strategy`）：最优（总工作量最小）、MTTR 降低优先、MTTF 提升优先，可用手段为机制库机制、推到上限的恢复杠杆，以及带下限与每减半工作量的各类中断 FIT；硬件分配方式为最小工作量 / AGREE / ARINC；降额可行性、余量、账本校核，并可跨规模运行（分配 → 策略、跨规模）。命令行 `hacd topology`、`hacd strategy`；MCP `topology_bom`、`allocation_strategy`。
@@ -53,7 +56,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ```bash
 npm install                      # Node ≥ 20
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 819 核心 + 52 导入器 + 30 抽取工作器 + 28 报告测试（含独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts）
+npm test                         # 840 核心 + 52 导入器 + 30 抽取工作器 + 28 报告 + 3 命令行测试（含 530 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s
 node --import tsx packages/cli/src/main.ts examples        # 命令行：六个内置示例（四种拓扑模板 + 报告记录的 UBL128 与 A3 服务器集群，v5.3）
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 node --import tsx packages/cli/src/main.ts findings --record native950 --out out/950   # v5：由输入记录生成报告集
@@ -111,4 +114,4 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 
 ## 验证
 
-`npm test`（黄金向量与单元测试：核心、导入器、抽取工作器、报告）、`node packages/reports/test/reproduce.mjs`（六份报告逐字节复现）、`npm run typecheck`、`npm run build -w @hac-d/web`、`npm run shots`（每页 1280 / 375 px、浅 / 深色截图与溢出检查）、`node scripts/ref-compare-v3.ts`（参考引擎交叉校核）。
+`npm test`（黄金向量与单元测试：核心、导入器、抽取工作器、报告、命令行）、`node packages/reports/test/reproduce.mjs`（六份报告逐字节复现）、`npm run typecheck`、`npm run build -w @hac-d/web`、`npm run shots`（每页 1280 / 375 px、浅 / 深色截图与溢出检查）、`node scripts/ref-compare-v3.ts`（参考引擎交叉校核）。

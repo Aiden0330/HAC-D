@@ -1,0 +1,152 @@
+{
+  "id": "a960",
+  "name": {
+    "zh": "华为 Atlas 960 超节点（HC2025 路线图：15,488 NPU、220 柜）",
+    "en": "Huawei Atlas 960 SuperPoD (HC2025 roadmap: 15,488 NPUs, 220 cabinets)"
+  },
+  "short": {
+    "zh": "960 路线图",
+    "en": "960 roadmap"
+  },
+  "family": "960",
+  "template": "ub-generic",
+  "superpod": {
+    "base": "ub-generic",
+    "fabric": "mesh-clos",
+    "npusPerNode": 8,
+    "cpusPerNode": 2,
+    "nodesPerRack": 11,
+    "computeRacks": 176,
+    "commRacks": 44,
+    "rackSwitches": 72,
+    "podUplinksPerNpu": 2,
+    "podSwitchRadix": 128,
+    "meshRackGrid": 4,
+    "opticalEnginesPerNpu": 0,
+    "backupNpusPerRack": 0,
+    "l1PerNode": 7,
+    "subPlanes": 7,
+    "l2PerSubPlane": 646,
+    "l2Ports": 48,
+    "linksPerL1": 16,
+    "transceiversPerLink": 2,
+    "rdmaPortsPerNpu": 2,
+    "vpcNicsPerNode": 1
+  },
+  "scaleOut": {
+    "portsPerNpu": 4,
+    "planes": 4,
+    "radix": 1024,
+    "oversubscription": 1,
+    "transceiversPerLink": 2
+  },
+  "variants": [
+    {
+      "id": "main",
+      "name": {
+        "zh": "4 平面 × 两层，radix 1,024，每 NPU 4 个 scale-out 口（主算例）",
+        "en": "4 planes × 2 tiers, radix 1,024, 4 scale-out ports per NPU (main case)"
+      },
+      "basis": {
+        "zh": "与 native950 / 960E 记录相同的假设：HC2026 的两层四平面 Clos，UBG 交换机 1,024 口",
+        "en": "the same assumption as the native950 / 960E records: HC2026 two-tier four-plane Clos, UBG switches of 1,024 ports"
+      },
+      "scaleOut": {
+        "portsPerNpu": 4,
+        "planes": 4,
+        "radix": 1024,
+        "oversubscription": 1,
+        "transceiversPerLink": 2
+      }
+    }
+  ],
+  "layers": {
+    "superpod": {
+      "unit": "supernodes",
+      "npus": 15488
+    },
+    "cabinet": {
+      "npus": 88
+    },
+    "node": {
+      "npus": 8
+    }
+  },
+  "scenarioId": "scaling-a960",
+  "scenarioName": "{name} — {npus} NPUs",
+  "provenance": {
+    "superpod": {
+      "source": "Huawei Connect 2025 keynote (2025-09-18): Atlas 960 SuperPoD, 15,488 NPUs in 220 cabinets, 2027 Q4 roadmap; HUAWEI CONNECT 2026 (2026-09-17) revised the 960 SuperPoD to 4,096 NPUs (the a960e record) — this record keeps the HC2025 figure as a roadmap case",
+      "confidence": "vendor",
+      "note": "roadmap announcement, not a build; the two public numbers are the NPU count and the cabinet count"
+    },
+    "superpod.computeRacks": {
+      "source": "assumed: the 220 cabinets split 4 : 1 into compute and UB interconnect cabinets, as the Atlas 950 (16 + 4) and Atlas 960E (56 + 14) SuperPoDs",
+      "confidence": "assumed"
+    },
+    "superpod.commRacks": {
+      "source": "assumed: the 220 cabinets split 4 : 1 into compute and UB interconnect cabinets, as the Atlas 950 (16 + 4) and Atlas 960E (56 + 14) SuperPoDs",
+      "confidence": "assumed"
+    },
+    "superpod.nodesPerRack": {
+      "source": "assumed: 15,488 NPUs ÷ 176 compute cabinets = 88 NPUs per cabinet = 11 trays × 8 NPUs",
+      "confidence": "assumed"
+    },
+    "superpod.fabric": {
+      "source": "assumed: the Atlas 950 cabinet-mesh + optical-Clos form (UB 2.x successor): 72 in-cabinet UB switches, 2 × 800G uplinks per NPU, 128-port pod switches",
+      "confidence": "assumed"
+    },
+    "superpod.rackSwitches": {
+      "source": "assumed: as the Atlas 950 cabinet (UB-Mesh paper reference cabinet)",
+      "confidence": "assumed"
+    },
+    "superpod.podUplinksPerNpu": {
+      "source": "assumed: as the Atlas 950 (2 × 800G per NPU)",
+      "confidence": "assumed"
+    },
+    "superpod.podSwitchRadix": {
+      "source": "assumed: as the Atlas 950 (128 × 800G)",
+      "confidence": "assumed"
+    },
+    "superpod.cpusPerNode": {
+      "source": "assumed: 2 Kunpeng per 8-NPU tray, as the Atlas 950 / 960E records",
+      "confidence": "assumed"
+    },
+    "scaleOut": {
+      "source": "assumed: as the native950 / a960e records — HC2026 two-tier four-plane Clos, 1,024-port UBG switches, 4 ports per NPU",
+      "confidence": "assumed"
+    }
+  },
+  "assumed": [
+    {
+      "zh": "220 柜按 4 : 1 分为 176 计算柜 + 44 互联柜（Atlas 950 为 16 + 4、960E 为 56 + 14）",
+      "en": "220 cabinets split 4 : 1 into 176 compute + 44 UB cabinets (Atlas 950 16 + 4, 960E 56 + 14)"
+    },
+    {
+      "zh": "每计算柜 88 NPU = 11 托盘 × 8（15,488 ÷ 176），每托盘 2 颗鲲鹏",
+      "en": "88 NPUs per compute cabinet = 11 trays × 8 (15,488 ÷ 176), 2 Kunpeng per tray"
+    },
+    {
+      "zh": "柜内全互联 + 光交换 Clos 的 Atlas 950 形态：每柜 72 片 UB 交换、每 NPU 2 × 800G 上联、128 口超节点层交换机",
+      "en": "the Atlas 950 cabinet-mesh + optical-Clos form: 72 UB switches per cabinet, 2 × 800G uplinks per NPU, 128-port pod-tier switches"
+    },
+    {
+      "zh": "超节点之间 4 平面 × 两层 Clos、radix 1,024、每 NPU 4 口（与 native950 / 960E 记录相同）",
+      "en": "between SuperPoDs 4 planes × 2 tiers, radix 1,024, 4 ports per NPU (as the native950 / 960E records)"
+    },
+    {
+      "zh": "HC2026 已把 960 超节点改为 4,096 NPU（a960e 记录）；本记录保留 HC2025 的 15,488 卡路线图数字作为对照",
+      "en": "HC2026 revised the 960 SuperPoD to 4,096 NPUs (the a960e record); this record keeps the HC2025 15,488-NPU roadmap figure as a comparison case"
+    }
+  ],
+  "schematic": {
+    "ubLabel": {
+      "zh": "UB 交换（柜内 + 互联柜）+ 光链路（假设形态）",
+      "en": "UB switching (in-cabinet + UB cabinets) + optics (assumed form)"
+    },
+    "podLabel": {
+      "zh": "超节点 15,488 NPU：176 计算柜 + 44 互联柜（路线图）",
+      "en": "SuperPoD 15,488 NPUs: 176 compute + 44 UB cabinets (roadmap)"
+    }
+  }
+}

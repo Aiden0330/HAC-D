@@ -32,8 +32,8 @@ import { applyMechanisms, stripMechanisms, mechanismById, DEFAULT_PLAYERS } from
 import { toPerHour } from '../units/index.js';
 import { withSize } from '../study/index.js';
 
-export type TopologyTemplate = 'a2-roce' | 'a3-ub384' | 'a950-ub2' | 'a960e-ub';
-export const TOPOLOGY_TEMPLATE_IDS: TopologyTemplate[] = ['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub'];
+export type TopologyTemplate = 'a2-roce' | 'a3-ub384' | 'a950-ub2' | 'a960e-ub' | 'ub-generic';
+export const TOPOLOGY_TEMPLATE_IDS: TopologyTemplate[] = ['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic'];
 /** v4.1 built-in scales (NPUs in the job) of the topology page, the bill-of-materials columns, the cross-scale tabs, the CLI and MCP; any N is allowed */
 export const TOPOLOGY_SCALES = [10000, 100000, 200000, 500000];
 /** compact label of a scale: 10k, 100k, 1.2M */
@@ -193,6 +193,22 @@ export const TOPOLOGY_TEMPLATES: Record<TopologyTemplate, TemplateInfo> = {
       { label: 'Fabric counts', confidence: 'assumed', note: { zh: '每 NPU 5.5 个 LinkDevice 口（2.2 TB/s ÷ 2 ÷ 1.6 Tb/s）→ 每 4,032 NPU 126 台 LinkDevice（每互联柜 9 台）；每柜 5 片 LinkBlade 交换芯片；每 NPU 4 个 scale-out 口、每平面 1 个、1,024 口交换机', en: '5.5 LinkDevice ports per NPU (2.2 TB/s ÷ 2 ÷ 1.6 Tb/s) → 126 LinkDevices per 4,032 NPUs (9 per interconnect cabinet); 5 LinkBlade switch chips per cabinet; 4 scale-out ports per NPU, one per plane, 1,024-port switches' } },
     ],
   },
+  // v5.4 the record-defined template: for SuperPoDs that are not public products. The record or worksheet gives every geometry
+  // value (any of the four UB fabric kinds), its own names, sources and assumptions; this entry only carries the placeholder
+  // default so that the template works on the page, and the unit library of a UB SuperPoD with a scale-out network.
+  'ub-generic': {
+    id: 'ub-generic',
+    name: { zh: '通用 UB 超节点（由记录定义）', en: 'Generic UB SuperPoD (record-defined)' },
+    chip: 'Ascend',
+    scaleUpNpus: 1024,
+    podNpus: 1024,
+    summary: { zh: '非公开产品的超节点模板：几何（四种 UB 互联形态之一：两级 L1/L2、柜内全互联 + 光 Clos、UB-Mesh 4D、LinkBlade + LinkDevice）、名称、来源与假设全部来自拓扑记录 / 工作表；页面上的默认几何只是占位——1,024 NPU、16 计算柜 + 4 通信柜、每柜 8 节点 × 8 NPU、两级 L1/L2，全部标为 assumed', en: 'The template for SuperPoDs that are not public products: geometry (any of the four UB fabric kinds — two-level L1/L2, cabinet mesh + optical Clos, UB-Mesh 4D, LinkBlade + LinkDevice), names, sources and assumptions all come from the topology record or worksheet; the default on the page is a placeholder — 1,024 NPUs, 16 compute + 4 communication cabinets, 8 nodes × 8 NPUs per cabinet, two-level L1/L2, every value assumed' },
+    topology: { gpusPerNode: 8, nodesPerRack: 8, racksPerZone: 20, nvlinkDomainGpus: 1024, networkPlanes: 2, superpod: { ...SUPERPOD_PRESETS['ub-generic'].values }, template: 'ub-generic', fabricFill: 'proportional', scaleOut: { portsPerNpu: 2, planes: 2, radix: 128, oversubscription: 1, transceiversPerLink: 2 } },
+    assumed: [...SUPERPOD_PRESETS['ub-generic'].assumed.map((k) => `superpod.${k}`), 'scaleOut.portsPerNpu', 'scaleOut.planes', 'scaleOut.radix', 'scaleOut.oversubscription', 'scaleOut.transceiversPerLink'],
+    sources: [
+      { label: 'Record-defined geometry (HAC-D v5.4)', confidence: 'assumed', note: { zh: '本模板没有公开产品来源：几何、名称与来源来自拓扑记录 / 工作表的出处字段（v6 ingest）；默认几何为占位，用记录替换后 Findings 报告的叠加图按记录的几何与标签绘制', en: 'No public product behind this template: geometry, names and sources come from the topology record / worksheet provenance (v6 ingest); the default geometry is a placeholder, and once a record replaces it the Findings overlay is drawn from the record’s geometry and labels' } },
+    ],
+  },
 };
 
 /* ---------------------------------------------------------------------- */
@@ -333,7 +349,7 @@ export function topologyScenario(template: TopologyTemplate, npus: number, opts:
       id: opts.id ?? `topology-${template}`,
       name: opts.name ?? `${info.name.en} — ${N.toLocaleString('en-US')} NPUs`,
       basis: [...info.sources.map((x) => x.label), 'ai-cluster-reliability audited catalog (54 events) attached per hardware unit', 'docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md §2'],
-      description: `${info.summary.en}. Fault types per hardware unit: the audited catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit)${scaleOut ? `; ${template === 'a950-ub2' || template === 'a960e-ub' ? 'UBoE / RoCE' : 'RoCE'} switches and links carry the UB analogues` : ''}.`,
+      description: `${info.summary.en}. Fault types per hardware unit: the audited catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit)${scaleOut ? `; ${template === 'a950-ub2' || template === 'a960e-ub' || template === 'ub-generic' ? 'UBoE / RoCE' : 'RoCE'} switches and links carry the UB analogues` : ''}.`,
     },
     topology,
     components,
@@ -480,7 +496,7 @@ export function topologyBom(s: Scenario): TopologyBom {
     rows.push({ ...r, perNpu: N > 0 ? r.count / N : 0, fit: f, hardPerHour: f ? (f.hard * 1e-9) * r.count : undefined });
   };
   const nodeName: L = t.template === 'a2-roce' ? { zh: '服务器（Atlas 800T A2）', en: 'Server (Atlas 800T A2)' } : sp?.fabric === 'blade-clos' ? { zh: '计算刀片', en: 'Compute blade' } : sp && sp.fabric !== 'two-level' ? { zh: 'NPU 托盘（含 CPU 托盘份额）', en: 'NPU tray (with its CPU-tray share)' } : sp ? { zh: '计算节点', en: 'Compute node' } : { zh: '服务器 / 节点', en: 'Server / node' };
-  const vendorish = (x: TopologyTemplate | undefined) => (x === 'a950-ub2' || x === 'a960e-ub' ? 'assumed' : 'vendor');
+  const vendorish = (x: TopologyTemplate | undefined) => (x === 'a950-ub2' || x === 'a960e-ub' || x === 'ub-generic' ? 'assumed' : 'vendor');
   const chip = t.template ? TOPOLOGY_TEMPLATES[t.template].chip : undefined;
   row({ id: 'npu', name: chip ? { zh: `NPU（${chip}）`, en: `NPU (${chip})` } : { zh: 'NPU / 加速卡', en: 'NPU / accelerator card' }, level: 'npu', count: N, faultUnit: 'npu', impact: { zh: '1 张卡；同步作业中断', en: 'one card; the synchronous job stops' }, blastRadiusNpus: 1, confidence: 'paper' });
   row({ id: 'job', name: FAULT_UNIT_NAMES.job, level: 'cluster', count: N, faultUnit: 'job', impact: { zh: '整个作业：共享存储、软件、未归因（按 NPU·h 口径）', en: 'the whole job: shared storage, software, unattributed (per NPU-hour 口径)' }, blastRadiusNpus: N, confidence: 'assumed' });
@@ -522,7 +538,7 @@ export function topologyBom(s: Scenario): TopologyBom {
     // tiers are named by index: the role of tier k (spine, aggregation, core) depends on the tier count, which changes with N, and the
     // bill of materials shows several sizes side by side (10k needs three tiers at radix 64, 100k and beyond four)
     // Atlas 950 / 960E SuperClusters run UBoE or RoCE between SuperPoDs (HC2025); the fault class stays roce-switch / roce-link
-    const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub';
+    const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub' || t.template === 'ub-generic';
     const net = ubFamily ? { zh: 'UBoE / RoCE ', en: 'UBoE / RoCE ' } : { zh: 'RoCE ', en: 'RoCE ' };
     const planes = Math.max(1, so.planes ?? 1);
     const planeNote = planes > 1 ? { zh: `，${planes} 平面`, en: `, ${planes} planes` } : { zh: '', en: '' };
@@ -656,7 +672,7 @@ export function withFabric(sp: Superpod, fabric: Superpod['fabric']): Superpod {
 
 /** display name of a fault unit on a template: the scale-out units of the Atlas 950 / 960E run UBoE or RoCE (HC2025) */
 export function faultUnitName(u: FaultUnit, template?: TopologyTemplate): L {
-  const ub = template === 'a950-ub2' || template === 'a960e-ub';
+  const ub = template === 'a950-ub2' || template === 'a960e-ub' || template === 'ub-generic';
   if (ub && u === 'roce-switch') return { zh: 'UBoE / RoCE 交换机（叶 / 脊 / 核心）', en: 'UBoE / RoCE switch (leaf / spine / core)' };
   if (ub && u === 'roce-link') return { zh: 'UBoE / RoCE 光链路（两端光模块）', en: 'UBoE / RoCE optical link (two transceivers)' };
   return FAULT_UNIT_NAMES[u];
@@ -680,12 +696,13 @@ export function applySuperpodVariant(s: Scenario, id: string): Scenario {
   return { ...s, topology: { ...withoutSuperpodOverrides(s.topology), superpod: sp, gpusPerNode: sp.npusPerNode, nodesPerRack: sp.nodesPerRack, racksPerZone: sp.computeRacks + sp.commRacks, nvlinkDomainGpus: pod } };
 }
 
-/** v4.2 built-in examples: the four topology templates at the first built-in scale (10,000 NPUs) with the six default mechanisms — the whole example registry; the scale is a parameter (`resizeTopology`) */
+/** v4.2 built-in examples: the topology templates (five since v5.4) at the first built-in scale (10,000 NPUs) with the six default mechanisms — the whole example registry; the scale is a parameter (`resizeTopology`) */
 export const TOPOLOGY_EXAMPLES: Record<string, () => Scenario> = {
   'topology-a3-ub384': () => topologyScenario('a3-ub384', TOPOLOGY_SCALES[0]),
   'topology-a2-roce': () => topologyScenario('a2-roce', TOPOLOGY_SCALES[0]),
   'topology-a950-ub2': () => topologyScenario('a950-ub2', TOPOLOGY_SCALES[0]),
   'topology-a960e-ub': () => topologyScenario('a960e-ub', TOPOLOGY_SCALES[0]),
+  'topology-ub-generic': () => topologyScenario('ub-generic', TOPOLOGY_SCALES[0]),
 };
 // the shared example registry is exactly the topology templates (registered here because the scenario module cannot import the topology module)
 Object.assign(EXAMPLES, TOPOLOGY_EXAMPLES);

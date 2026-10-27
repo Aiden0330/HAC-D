@@ -87,7 +87,7 @@ export function TopologyPicture({ scenario, counts, lang }: { scenario: Scenario
   const zh = lang === 'zh';
   const parts: ReactNode[] = [];
   let y = 8;
-  const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub';
+  const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub' || t.template === 'ub-generic';
   const planes = t.scaleOut?.planes ?? 1;
   const planeTxt = planes > 1 ? (zh ? ` × ${planes} 平面` : ` × ${planes} planes`) : '';
   const soLabel = ubFamily ? (zh ? `UBoE / RoCE scale-out 网络 · ${counts.scaleOutTiers} 层 Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `UBoE / RoCE scale-out network · ${counts.scaleOutTiers}-tier Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`) : sp ? (zh ? `RDMA scale-out 网络 · ${counts.scaleOutTiers} 层 Clos · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RDMA scale-out network · ${counts.scaleOutTiers}-tier Clos · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`) : zh ? `RoCE 参数面 · ${counts.scaleOutTiers} 层 Clos · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RoCE parameter plane · ${counts.scaleOutTiers}-tier Clos · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`;

@@ -11,7 +11,7 @@ const DOMAINS = ['gpu', 'node', 'nvlink_domain', 'rack', 'tor', 'power_zone', 'c
 const SUPERPOD_FIELDS: (keyof Superpod)[] = ['npusPerNode', 'cpusPerNode', 'l1PerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'subPlanes', 'l2PerSubPlane', 'l2Ports', 'linksPerL1', 'transceiversPerLink'];
 /** v4.2 fields of the mesh / blade fabrics (Atlas 950 product-page spec, UB-Mesh 4D, Atlas 960E) */
 const MESH_FIELDS: (keyof Superpod)[] = ['npusPerNode', 'cpusPerNode', 'nodesPerRack', 'computeRacks', 'commRacks', 'rackSwitches', 'podUplinksPerNpu', 'podSwitchRadix', 'opticalLinksPerNpu', 'opticalEnginesPerNpu', 'meshRackGrid', 'backupNpusPerRack', 'transceiversPerLink'];
-const PRESET_LABELS: Record<Exclude<Superpod['preset'], 'custom'>, string> = { cloudmatrix384: 'CloudMatrix384 (Atlas 900 A3)', atlas950: 'Atlas 950 SuperPoD (v2 two-level estimate)', 'atlas950-1k': 'Atlas 950 SuperPoD · 1,024 NPUs (current spec)', 'atlas950-8k': 'Atlas 950 SuperPoD · 8,192 NPUs (roadmap)', atlas960e: 'Atlas 960E SuperPoD · 4,032 NPUs' };
+const PRESET_LABELS: Record<Exclude<Superpod['preset'], 'custom'>, string> = { cloudmatrix384: 'CloudMatrix384 (Atlas 900 A3)', atlas950: 'Atlas 950 SuperPoD (v2 two-level estimate)', 'atlas950-1k': 'Atlas 950 SuperPoD · 1,024 NPUs (current spec)', 'atlas950-8k': 'Atlas 950 SuperPoD · 8,192 NPUs (roadmap)', atlas960e: 'Atlas 960E SuperPoD · 4,032 NPUs', 'ub-generic': 'Generic UB SuperPoD (record-defined placeholder)' };
 const SUBSYSTEMS = ['compute', 'memory', 'interconnect', 'network', 'host', 'storage', 'power', 'cooling', 'software', 'other'] as const;
 const STAGES = ['detect', 'localize', 'remediate', 'restart', 'load', 'warmup'] as const;
 

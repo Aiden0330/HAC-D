@@ -88,7 +88,7 @@ describe('v4 topology templates', () => {
   });
 
   it('v4.2 example registry = the four topology templates at the first built-in scale (v5.3: the Atlas 950 example is the native950 record, UBL128 and the A3 server cluster added); resizing keeps a generated name in step', () => {
-    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a3server', 'topology-a950-ub2', 'topology-a960e-ub', 'topology-ubl128']);
+    expect(Object.keys(EXAMPLES).sort()).toEqual(['topology-a2-roce', 'topology-a3-ub384', 'topology-a3server', 'topology-a950-ub2', 'topology-a960e-ub', 'topology-ub-generic', 'topology-ubl128']);
     expect(Object.keys(RECORD_EXAMPLES).sort()).toEqual(['topology-a3server', 'topology-a950-ub2', 'topology-ubl128']);
     // the page's Atlas 950 = the record's geometry (scale-out 4 ports / 4 planes / radix 1024), under the page id and the template name
     const a950 = EXAMPLES['topology-a950-ub2']();
@@ -116,7 +116,7 @@ describe('v4 topology templates', () => {
   });
 
   it('port-count fill of a partly populated SuperPoD never exceeds the full-pod fill and equals it for whole pods', () => {
-    for (const t of ['a3-ub384', 'a950-ub2', 'a960e-ub'] as const) {
+    for (const t of ['a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic'] as const) {
       for (const N of [1000, 8192, 12345, 50000]) {
         const p = computeCounts(topologyScenario(t, N, { mechanisms: [] }));
         const f = computeCounts(topologyScenario(t, N, { mechanisms: [], topology: { fabricFill: 'full-pod' } }));

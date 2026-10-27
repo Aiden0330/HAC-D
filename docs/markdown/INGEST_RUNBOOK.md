@@ -52,7 +52,7 @@ Closed vocabularies: `bin/hacd ingest fields --vocab`; field paths of a kind: `b
 - Topology: copy `templates/topology.md`, give it an internal id (never a public one: `native950`, `ubl128`, `cm384`, `a3server`,
   `a960e`), fill the geometry rows you know (blank value = not stated; `base` names a preset the rest falls back to), the scale-out
   design, layers, counts, and a source + confidence per row. `bin/hacd ingest worksheet my-topology.md --out staging`.
-- A design the four templates cannot express (a new hardware unit kind, a new hierarchy level) is not a data update: the loader's
+- A SuperPoD that is not a public product but uses one of the four UB fabric kinds (two-level L1/L2, cabinet mesh + optical Clos, UB-Mesh 4D, LinkBlade + LinkDevice) is a data update: template `ub-generic` in the worksheet front matter and every geometry value in the geometry table (v5.4). A design the templates cannot express (a new hardware unit kind, a new hierarchy level, a new fabric kind) is not a data update: the loader's
   message names the extension point and `worksheet` writes an **extension request** under `staging/extension-requests/` for the HAC-D
   side (structure only, no values).
 - Mechanisms: `templates/mechanisms.md` is a delta over the default set — list only what changes (a parameter, a verdict, an effort,
@@ -60,7 +60,9 @@ Closed vocabularies: `bin/hacd ingest fields --vocab`; field paths of a kind: `b
   `mechanism-proposal` worksheet; a person decides `mapsTo` (an existing library mechanism whose stage and effect it matches) or
   leaves it empty for an extension request.
 
-## 4. Prose documents with your on-prem model (optional)
+## 4. Prose documents with your on-prem model (optional) — and the model as operator (v6.1)
+
+The on-prem model can also drive the whole pipeline instead of a person: give it the system prompt `bin/hacd ingest protocol --lang zh` (or `prompts/operator.zh.md` in the bundle), the tool manifest `tools/hacd-tools.json`, read access to the work folder and write access to `ws/` only. It fills the worksheets from your data, runs the one call of §5 and reads `run.json`; what it may and may not do, the manifest contract and the fix table are in `docs/AGENT_OPERATOR.md`. The rules of this runbook do not change: no number without a source, no `--force`, `promote` and the sign-off stay with the owner.
 
 Convert PDFs to text first (`pdftotext -layout doc.pdf doc.txt`). Then
 
@@ -78,6 +80,8 @@ accepted card, source = document + location, confidence from `--source-type`, th
 `ingest worksheet`. `--kind device-fit` drafts a device table from rate mentions; `--kind mechanisms` a parameters delta.
 
 ## 5. Gates, dry run, review page, promote
+
+One call does the chain below (v6.1), for a person as much as for the model: `bin/hacd ingest run --worksheets ws --staging staging --before-record native950 --out out --json` runs `worksheet`, `validate`, `dry-run`, `diff` and `findings` as child processes and writes `out/run.json` (status `ok` / `needs-input` / `failed`, every step with its issues, the KPI rows, the report and delta paths) and `out/SUMMARY.md`; exit 0, 2 (fix the rows the issues name and run again) or 3 (hand the manifest to the owner). Add `--promote` only when the owner has signed. The single commands remain for step-by-step work:
 
 ```sh
 bin/hacd ingest validate staging                                   # exit 1 on errors; read every warning
@@ -120,7 +124,7 @@ Run the pipeline once, end to end, on the smallest scope that exercises every st
 - **Division of work**: the data owner writes or corrects the worksheets (§2–§3); the on-prem model, if used, only drafts them
   from documents (§4) — it never runs the pipeline and never produces a number that is not a quoted evidence card; the CLI runs
   the gates, the dry run, the delta and the report set (§5); the reliability owner signs `staging/delta/delta.html`.
-- **Acceptance**, all five before `promote`: `validate` exits 0 with every warning read and either fixed or written down;
+- **Acceptance**, all five before `promote` (with `hacd ingest run` they are one manifest: `status: ok`, no error issue, warnings noted, the report rendered): `validate` exits 0 with every warning read and either fixed or written down;
   `dry-run` completes at the chosen scale; every changed input in the delta carries a source and a confidence; every KPI
   change (A_op nominal and derated, MTBF_hw, MTTR_hw, P(window), k, the recommended mechanisms and levers) is explained by the
   input changes listed above it; `hacd findings` on the promoted inputs renders without an error.

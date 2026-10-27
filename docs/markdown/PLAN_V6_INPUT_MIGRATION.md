@@ -5,6 +5,8 @@ documents and runs the allocation — or something better, given that the intern
 model inside is a limited open-source one". This is also the deferred M5 decision of `PLAN_V5_REPORT_PIPELINE.md` §6
 (agent module), now with a concrete use.
 
+Follow-up v6.1 (2026-10-26): the chain runs without a person at the terminal — `hacd ingest run` (one call, `run.json` manifest, exit 0 / 2 / 3) and `hacd ingest protocol` (the on-prem model's system prompt, tool manifest and fix table), specified in `AGENT_OPERATOR.md`; §6 below stays the rule: the model never computes and never promotes.
+
 ## 1. Answer in brief
 
 A Claude Code Skill is the wrong unit for the migration itself and the right unit for maintaining it.

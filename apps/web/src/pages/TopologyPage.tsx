@@ -20,7 +20,7 @@ const fmtCount = (n: number) => (n >= 1 ? fmtInt(n) : '—');
 const fmtRowCount = (r: BomRow) => (r.noCount ? '—' : fmtInt(r.count));
 const FABRICS = ['two-level', 'mesh-clos', 'mesh-4d', 'blade-clos'] as const;
 
-/** thumbnails of the four templates for the selector cards */
+/** thumbnails of the templates for the selector cards (the generic one shows its placeholder 16 + 4 cabinets) */
 function Thumb({ t }: { t: TopologyTemplate }) {
   if (t === 'a2-roce') {
     return (
@@ -32,7 +32,7 @@ function Thumb({ t }: { t: TopologyTemplate }) {
     );
   }
   // compute cabinets (rows of `cols`) over the communication / UB interconnect cabinets of one SuperPoD
-  const g = ({ 'a3-ub384': { cab: 12, cols: 6, comm: 4 }, 'a950-ub2': { cab: 16, cols: 8, comm: 4 }, 'a960e-ub': { cab: 28, cols: 14, comm: 7 } } as const)[t];
+  const g = ({ 'a3-ub384': { cab: 12, cols: 6, comm: 4 }, 'a950-ub2': { cab: 16, cols: 8, comm: 4 }, 'a960e-ub': { cab: 28, cols: 14, comm: 7 }, 'ub-generic': { cab: 16, cols: 8, comm: 4 } } as const)[t];
   const rows = Math.ceil(g.cab / g.cols);
   const cw = 66 / g.cols, ch = 15 / rows, mw = 66 / g.comm;
   return (
@@ -232,7 +232,7 @@ function HardwareParams({ s, upd, lang }: { s: Scenario; upd: (fn: (s: Scenario)
       )}
       {nApplied > 0 && <div className="callout" style={{ fontSize: 12, margin: '6px 0' }}>{t('topology.userCountsLeft', { n: nApplied })}</div>}
       <div className="kv-sep" />
-      <label className="check"><input type="checkbox" checked={!!so} onChange={(e) => toggleScaleOut(e.target.checked)} />{tp.template === 'a950-ub2' || tp.template === 'a960e-ub' ? t('topology.scaleOutUboe') : sp ? t('topology.scaleOutUb') : t('topology.scaleOutA2')}</label>
+      <label className="check"><input type="checkbox" checked={!!so} onChange={(e) => toggleScaleOut(e.target.checked)} />{tp.template === 'a950-ub2' || tp.template === 'a960e-ub' || tp.template === 'ub-generic' ? t('topology.scaleOutUboe') : sp ? t('topology.scaleOutUb') : t('topology.scaleOutA2')}</label>
       {so && (
         <>
           <Row label={t('topology.portsPerNpu')}><NumberInput value={so.portsPerNpu} min={1} step={1} onChange={(v) => setSo({ portsPerNpu: Math.max(1, Math.round(v)) })} /></Row>
@@ -401,7 +401,7 @@ function PictureTab({ s, lang }: { s: Scenario; lang: Lang }) {
       <div className="legend" style={{ marginTop: 8 }}>
         <span className="key"><span className="swatch" style={{ background: 'var(--series-3)' }} />{t('topology.legendNpu')}</span>
         <span className="key"><span className="swatch" style={{ background: 'var(--accent)' }} />UB</span>
-        <span className="key"><span className="swatch" style={{ background: 'var(--series-2)' }} />{s.topology.template === 'a950-ub2' || s.topology.template === 'a960e-ub' ? 'UBoE / RoCE' : 'RoCE / RDMA'}</span>
+        <span className="key"><span className="swatch" style={{ background: 'var(--series-2)' }} />{s.topology.template === 'a950-ub2' || s.topology.template === 'a960e-ub' || s.topology.template === 'ub-generic' ? 'UBoE / RoCE' : 'RoCE / RDMA'}</span>
       </div>
       {info && (
         <>

@@ -117,7 +117,7 @@
 <main>
 <header class="title">
   <h1>HAC-D 用户手册</h1>
-  <div class="sub">面向昇腾 NPU 训练集群的可用性、MTBF、MTTR 与 goodput 建模：四种拓扑模板转换为硬件数量与各单元的故障类型，配合故障管理机制，在硬件 FIT、机制与恢复上限之间按三种策略分配目标；解析式带有效性标记，解析式不成立时转蒙特卡洛，每个数字都带公式与口径（事件、分母、层级）。版本 4.0，2026-10-18。</div>
+  <div class="sub">面向昇腾 NPU 训练集群的可用性、MTBF、MTTR 与 goodput 建模：五种拓扑模板转换为硬件数量与各单元的故障类型，配合故障管理机制，在硬件 FIT、机制与恢复上限之间按三种策略分配目标；解析式带有效性标记，解析式不成立时转蒙特卡洛，每个数字都带公式与口径（事件、分母、层级）。版本 4.0，2026-10-18。</div>
 </header>
 
 <section id="s1">
@@ -149,10 +149,10 @@
 <h2>2. 快速开始</h2>
 <pre>npm install                      # Node ≥ 20，npm workspaces
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 672 个核心测试 + 29 个导入器测试（含黄金向量）
+npm test                         # 840 核心 + 52 导入器 + 30 抽取工作器 + 28 报告 + 3 命令行测试（含 530 个黄金向量）
 node --import tsx packages/cli/src/main.ts examples        # 命令行
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务</pre>
-<p>Web 应用的主页面是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950、Atlas 960E）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。应用打开时显示<b>项目</b>页（§3.4）：列出全部项目——项目 = 方案 + 页面设置；内置六个项目——四种拓扑模板，加上来自报告记录的 SuperPoD Flex / UBL128 与 Atlas 800T A3 服务器集群（v5.3），见 §15.3；规模是参数，不另设示例——页眉显示当前项目名称，点击即打开项目页。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。每次修改都自动保存在浏览器本地存储；<b>导出 JSON</b>、<b>导入 JSON</b> 与<b>重置为模板</b>都在项目页。</p>
+<p>Web 应用的主页面是<b>拓扑与硬件</b>：选择模板卡片（A2、A3 · CloudMatrix384、Atlas 950、Atlas 960E，或几何由记录定义的通用 UB 超节点）与规模（内置 10k / 100k / 200k / 500k 或任意 N）；硬件表、各单元故障类型、指标与「可靠性」页签在每次编辑后自动重算，没有「重新计算」步骤。应用打开时显示<b>项目</b>页（§3.4）：列出全部项目——项目 = 方案 + 页面设置；内置六个项目——四种拓扑模板，加上来自报告记录的 SuperPoD Flex / UBL128 与 Atlas 800T A3 服务器集群（v5.3），见 §15.3；规模是参数，不另设示例——页眉显示当前项目名称，点击即打开项目页。页眉有语言（中文 / EN）与主题（自动 / 浅色 / 深色）开关。每次修改都自动保存在浏览器本地存储；<b>导出 JSON</b>、<b>导入 JSON</b> 与<b>重置为模板</b>都在项目页。</p>
 <figure class="narrow"><img src="img-zh/topology-mobile.jpg" alt="375 px 宽度下的拓扑与硬件页"><figcaption>每个页面都按 1280 px 与 375 px 两种宽度排版；窄屏下输入分组堆叠在指标条与页签之上，图表都有「表格」按钮可读取精确数值。</figcaption></figure>
 <p><b>精简模式。</b>应用默认只显示主流程（项目 → 拓扑与硬件 → 分配 → 机制库 → 故障库 → 评审）；页眉的<b>全部页面</b>开关可加回方案编辑器与推理与备件页。所有功能在命令行与 MCP 中保持可用。<b>ReMAP。</b><code>scripts/remap-bridge.ts</code> 在 HAC-D 方案上运行 ReMAP 内嵌的专家引擎并与解析式对比，<code>hacd import-remap</code> 把 ReMAP 或参考工具的事件库转为方案（见 <code>docs/REMAP_INTEGRATION.md</code>）。</p>
 </section>
@@ -196,16 +196,17 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 <h2>4. 拓扑与硬件页</h2>
 <figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条（A_op 名义 / 降额、正确有效产出、MTBF_hw、MTTR_hw 名义 / 降额、每 NPU 中断 FIT）与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，其后是各单元的故障类型）。</figcaption></figure>
 <p>首页回答：在这个拓扑、这个规模下，有哪些硬件单元、各有多少、各带哪些故障类型，以及在默认机制下得到什么结果。输入位于左侧可折叠分组，输出位于右侧指标条下的四个页签（拓扑图、硬件、可靠性、分配）。每次编辑即时重算。</p>
-<h3>4.1 四种拓扑模板</h3>
+<h3>4.1 五种拓扑模板</h3>
 <div class="table-wrap"><table>
   <tr><th>模板</th><th>scale-up 域</th><th>几何</th><th>来源与置信</th></tr>
   <tr><td>A2 · 8 卡服务器 + RoCE</td><td class="num">8</td><td>Atlas 800T A2 服务器：8 × 昇腾 910B（HCCS 全互连）、4 × 鲲鹏 920、8 × 200GE RoCE 口由 NPU 直出；每柜 8 台 = 64 NPU；RoCE 折叠 Clos 为参数面</td><td>产品页（厂商）；机柜密度由 Atlas 900 A2 PoD（每柜 32 颗鲲鹏 920）推得；交换机 64 口、无收敛、每链路两个光模块为假设</td></tr>
   <tr><td>A3 · CloudMatrix384</td><td class="num">384</td><td>48 节点 ×（8 NPU + 4 CPU + 7 片 L1 UB 芯片），12 计算柜 + 4 通信柜，7 子平面 × 16 片 L2 × 48 口，每片 L1 16 条链路（每超节点 5,376 条）；RDMA scale-out 面，每 NPU 2 口</td><td>arXiv 2506.12708 §3.3（论文）；每链路两个光模块与 scale-out Clos 为假设</td></tr>
   <tr><td>Atlas 950 · UB 2.0 SuperPoD</td><td class="num">1,024（可选 8,192）</td><td>v4.2，按产品页现行规格：16 计算柜 + 4 灵衢互联柜；每计算柜 64 NPU（8 托盘 × 8）与 16 颗鲲鹏 950；柜内 2D 全互联（每柜 448 条电链路、72 片低阶 UB 交换）；每 NPU 2 条 800G 光链路上联一层 128 口 UB 交换（Clos；每超节点 16 台、4,096 个光模块）；超节点之间每 NPU 2 × 400G UBoE，两平面三层 Clos（128³ / 4 = 524,288）。<b>超节点形态</b>可切换为 8,192 卡路线图形态（128 + 32 柜、128 台交换）、UB-Mesh 论文的 4D 网格（每 8K 64 台 HRS）或 v4.1 的 CloudMatrix384 两级拷贝</td><td>产品页、HC2025 主题演讲、昇腾 950 白皮书（厂商）；LightCounting 对 WAIC 2026 整机的拆解（分析师）；Hot Chips 2025 与 UB-Mesh（论文）；LRS 数量、交换端口数与 scale-out 平面为假设</td></tr>
   <tr><td>Atlas 960E · NPO 超节点</td><td class="num">4,032（名义 4,096）</td><td>v4.2：56 计算柜 + 14 灵衢互联柜，每柜 9 刀片 × 8 NPU 与 18 颗 CPU；柜内 LinkBlade（每柜 5 片，假设）；每超节点 126 台跨柜 LinkDevice（176 × 1.6 Tb/s，由每 NPU 2.2 TB/s 推得）；NPO 光互联（每 4,096 卡 5,500 个 Hi-ONE 引擎替代 48,000 个 800G 模块，按 800G 等效链路计）；scale-out 四平面 × 两层 1,024 口交换，至 512,000 卡（125 个超节点）</td><td>HC2026 发布与主题演讲（厂商）；柜数拆分来自单一媒体报道（智东西，扫描级）；刀片芯片数与 scale-out 端口为假设</td></tr>
+  <tr><td>通用 UB 超节点（由记录定义）</td><td class="num">由记录给出（占位 1,024）</td><td>v5.4：面向非公开产品的超节点。几何的每个值来自拓扑记录 / 工作表；四种 UB 互联形态及其计数规则都可用（两级 L1/L2、柜内全互联 + 光 Clos、UB-Mesh 4D、LinkBlade + LinkDevice）；没有记录时页面显示占位的 1,024 NPU 两级超节点（16 + 4 柜、每柜 8 节点 × 8 NPU、每节点 2 CPU），Findings 报告的叠加图按记录绘制。首个记录：<code>a960</code>，HC2025 路线图的 Atlas 960 超节点——15,488 NPU、220 柜（厂商路线图），按 176 + 44 柜、每柜 11 托盘 × 8 NPU、Atlas 950 的互联形态拆分（假设）；HC2026 已把该产品改为 4,096 NPU，即 960E 记录</td><td>本身没有来源：取记录的出处字段；占位值全部为假设</td></tr>
 </table></div>
 <p>新单元沿用 CloudMatrix384 对应单元的 FIT（按单元等价，假设）：每片交换芯片（LRS、UB 交换、HRS、LinkBlade、LinkDevice）按一片 UB 芯片计（57.1 FIT），每条光链路按一条 L1–L2 链路计（4.76 FIT）；柜内电链路与 NPO 光引擎只计数。证据、对早期稿的复核以及计数与公开数字的核对见综述<a href="ASCEND_NEXTGEN_CLUSTER_SURVEY.zh.html">《昇腾下一代集群架构综述（复核与扩展版）》</a>。</p>
-<p>点击卡片切换模板。勾选<b>切换时带上作业设置、机制与 FIT 修改</b>（默认）时，当前设计迁移到另一拓扑：NPU 数、负载、恢复、静默错误策略、目标、已应用机制（按原顺序与参数重新应用）以及两个模板都有的故障类型的 FIT 修改；硬件取新模板。每个模板在页顶列表中有自己的方案（<code>topology-a2-roce</code>、<code>topology-a3-ub384</code>、<code>topology-a950-ub2</code>、<code>topology-a960e-ub</code>）；非模板生成的方案（参考目录、早期昇腾示例）按其自身数量显示，并有提示。</p>
+<p>点击卡片切换模板。勾选<b>切换时带上作业设置、机制与 FIT 修改</b>（默认）时，当前设计迁移到另一拓扑：NPU 数、负载、恢复、静默错误策略、目标、已应用机制（按原顺序与参数重新应用）以及两个模板都有的故障类型的 FIT 修改；硬件取新模板。每个模板在页顶列表中有自己的方案（<code>topology-a2-roce</code>、<code>topology-a3-ub384</code>、<code>topology-a950-ub2</code>、<code>topology-a960e-ub</code>、<code>topology-ub-generic</code>）；非模板生成的方案（参考目录、早期昇腾示例）按其自身数量显示，并有提示。</p>
 <h3>4.2 规模与硬件数量</h3>
 <p>规模按钮设定作业 NPU 数（10k、100k、200k、500k，或在输入框中填任意 N；自动生成的方案名随规模更新）。数量按模板几何推算：节点 = ⌈N ÷ 每节点 NPU⌉，CPU = 节点 × 每节点 CPU，计算柜 = ⌈节点 ÷ 每柜节点⌉；超节点模板中，超节点 = ⌈节点 ÷ 每超节点节点⌉，L1 = 节点 × 每节点 L1，L1–L2 链路 = L1 × 每 L1 链路。未满的最后一个超节点，其 L2 芯片与通信柜按已部署节点计算（<b>按需</b>：每子平面 ⌈子平面链路数 ÷ L2 端口数⌉ 片，允许 L1–L2 并行链路；<b>整个超节点</b>则按整柜采购计）。scale-out 网络是覆盖各 NPU 端口的折叠 Clos：交换机端口数 k、叶收敛比 o 时，叶交换机有 d = ⌊k·o/(1+o)⌋ 个下行口，t 层可承载 d·k·(k/2)^(t−2) 个端口；第一层 ⌈P/d⌉ 台，中间层 ⌈H/(k/2)⌉，顶层 ⌈H/k⌉，H = ⌈P/o⌉；k = 64 时 10,000 个端口需三层（313 + 313 + 157 台，30,000 条链路），100,000 个端口需四层（3,125 + 3,125 + 3,125 + 1,563 台，400,000 条链路）。</p>
 <div class="table-wrap"><table>
@@ -623,7 +624,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <section id="s13">
 <h2>13. 验证与精度</h2>
 <h3>13.1 黄金向量与测试</h3>
-<p>282 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 21 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）。测试集含 819 个核心测试、52 个导入器测试、30 个抽取工作器测试与 28 个报告测试（v4 新增 126 个拓扑黄金向量，v5 新增 G1–G6 的 29 个预算原语用例，v6 新增 G7 的 5 个口径归一用例——单位换算与各类求和到 1e-9）；<code>node packages/reports/test/reproduce.mjs</code> 逐字节复现六份昇腾报告。三个测试在规模上运行引擎（笔记本上 8–26 s）；核心与导入器包的 vitest 超时设为 300 s，慢机器只在挂起时才失败。</p>
+<p>530 个黄金向量由 Python 按模型规范独立计算（mpmath 求积、CTMC 精确解、网格上的更新方程、SciPy 分布），计算时不读引擎代码：v1 143 个、v2 26 个、v3 28 个（含梯级顺序的机制链、混合更新式、两种期末规则下的静默错误）、v3.5 统计 92 个（Student-t 与卡方分位数、不完全伽马 / 贝塔函数、Wilson 与 Garwood 区间）、v4 拓扑模板 207 个（v5.4 新增通用 UB 超节点用例）、v5 预算原语 29 个（G1–G6）、v6 口径归一 5 个（G7：单位换算与各类求和到 1e-9）。测试集含 840 个核心测试、52 个导入器测试、30 个抽取工作器测试、28 个报告测试与 3 个命令行测试（<code>hacd ingest run</code> 的 ok 与 needs-input 两条路径、协议打印）；<code>node packages/reports/test/reproduce.mjs</code> 逐字节复现六份昇腾报告。三个测试在规模上运行引擎（笔记本上 8–26 s）；核心与导入器包的 vitest 超时设为 300 s，命令行包 600 s，慢机器只在挂起时才失败。</p>
 <h3>13.2 与参考引擎的交叉校核</h3>
 <p>经审核的参考引擎（单训练作业、30 天离散事件仿真、每方案 4000 次）与 HAC-D 在同一基线上：万卡硬件 MTBF 30 h 并线性外推，τ 300 s，δ 4 s，检测 95 % 在 10 s 否则 60 s，恢复 180 s 成功率 99 % 否则加 2 h 人工。</p>
 <div class="table-wrap"><table>
@@ -674,7 +675,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <div class="table-wrap"><table>
   <tr><th>命令</th><th>作用</th></tr>
   <tr><td><code>hacd examples</code>、<code>hacd example &lt;id&gt;</code></td><td>列出 / 打印内置方案（v3.7 的 GPU 示例仍可按 ID 打印）</td></tr>
-  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2|a960e-ub&gt; --npus 10000 [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--variant a950-8k] [--count ubPodSwitch=200,…] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件；<code>--variant</code> 选 Atlas 950 超节点形态，<code>--count</code> 按行设定用户数量（v4.3）</td></tr>
+  <tr><td><code>hacd topology &lt;a2-roce|a3-ub384|a950-ub2|a960e-ub|ub-generic&gt; --npus 10000 [--sizes 10000,100000,200000,500000] [--no-scale-out] [--fill proportional|full-pod] [--radix 64] [--variant a950-8k] [--count ubPodSwitch=200,…] [--out s.json]</code></td><td>v4 硬件清单、各规模下按单元的每 NPU 中断 FIT、方案文件；<code>--variant</code> 选 Atlas 950 超节点形态，<code>--count</code> 按行设定用户数量（v4.3）</td></tr>
   <tr><td><code>hacd strategy &lt;s&gt; | --template a3-ub384 --npus 50000 [--strategy optimal|mttr-first|mttf-first] --target 0.998 [--metric aOp|delivered] [--split min-effort|agree|arinc] [--sizes …] [--trials 200]</code></td><td>v4 分配策略（不指定策略时运行三种），<code>--sizes</code> 跨规模运行</td></tr>
   <tr><td><code>hacd eval &lt;scenario.json&gt;</code></td><td>评估：可用率、MTBF、goodput、备件、推理、清单</td></tr>
   <tr><td><code>hacd compare a.json b.json …</code></td><td>并排 KPI</td></tr>
@@ -705,12 +706,14 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td><code>hacd ingest diff --before-record native950 --after-record r [--after-rates f] --out staging/delta</code></td><td>带出处的输入变化、前后 KPI 行与 Δ → <code>delta.{json,md,zh.md,html}</code>，双语评审页</td></tr>
   <tr><td><code>hacd ingest promote staging [--data dir] [--force]</code></td><td>通过校验的记录以自己的 id 进入数据目录（公开 id 被拒绝），每个文件一行 <code>CHANGELOG.md</code></td></tr>
   <tr><td><code>hacd ingest extract doc.txt --kind topology --provider openai-compatible --base-url … --model … [--mode guided_json] --source-type vendor</code></td><td>模型步骤：证据卡、评审队列、运行日志、草稿工作表（§15.5）</td></tr>
+  <tr><td><code>hacd ingest run --worksheets ws --staging staging [--before-record id] [--scales …] [--trials n] [--out dir] [--promote] [--json]</code></td><td>v6.1 一次调用完成整条链：工作表 → validate → dry-run → diff →（promote）→ findings，每步一个子进程；写出 <code>run.json</code>（状态 ok / needs-input / failed、每步 issue 的 path 与 code、KPI 行、路径）与 <code>SUMMARY.md</code>；退出码 0 / 2 / 3；从不使用 <code>--force</code></td></tr>
+  <tr><td><code>hacd ingest protocol [--lang zh|en] [--tools] [--fix-table]</code></td><td>给内网模型的操作员协议：系统提示词、函数调用工具清单、门禁 code → 修复表（<code>docs/markdown/AGENT_OPERATOR.md</code>）</td></tr>
 </table></div>
 <p>所有命令都接受 <code>--json</code>。</p>
 <h3>15.2 MCP 工具</h3>
 <p><code>list_examples</code>、<code>get_example</code>、<code>scenario_schema</code>、<code>evaluate_scenario</code>、<code>compare_scenarios</code>、<code>allocate_scenario</code>、<code>tornado_scenario</code>、<code>simulate_scenario</code>、<code>library_search</code>、<code>excel_method_report</code>、<code>import_excel_scenario</code>、<code>export_excel</code>、<code>mechanism_library</code>、<code>mechanism_report</code>、<code>apply_mechanisms</code>、<code>simulate_ledger</code>、<code>plan_mechanisms</code>、<code>audit_mechanisms</code>、<code>allocation_study</code>、<code>estimate_rate</code>，v4 新增 <code>topology_bom</code> 与 <code>allocation_strategy</code>。</p>
 <h3>15.3 内置示例</h3>
-<p>自 v4.1 起，内置示例就是各拓扑模板（v4.2 起为四种）；v5.3 加入报告集中没有独立模板的两个架构，并由记录构建 Atlas 950 示例（<code>records/topologyRecord.ts</code> 的 <code>RECORD_EXAMPLES</code>），使昇腾报告集的每个架构都能以报告的数字在页面上打开。规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
+<p>自 v4.1 起，内置示例就是各拓扑模板（v4.2 起为四种，v5.4 起加上由记录定义的通用 UB 超节点为五种）；v5.3 加入报告集中没有独立模板的两个架构，并由记录构建 Atlas 950 示例（<code>records/topologyRecord.ts</code> 的 <code>RECORD_EXAMPLES</code>），使昇腾报告集的每个架构都能以报告的数字在页面上打开。规模是参数（页面的规模按钮 10k / 100k / 200k / 500k 或任意 N、<code>hacd example &lt;id&gt; --npus N</code>、MCP 工具 <code>get_example</code> 的 <code>npus</code>），不再为各规模或各设计另设示例。</p>
 <div class="table-wrap"><table>
   <tr><th>ID</th><th>方案（10,000 NPU，各单元故障类型，默认六项机制）</th></tr>
   <tr><td><code>topology-a3-ub384</code></td><td>A3 · CloudMatrix384 UB 超节点（论文几何）</td></tr>
@@ -718,6 +721,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td><code>topology-a950-ub2</code></td><td>Atlas 950 · UB 2.0 SuperPoD（产品页现行规格的 1,024 卡形态，柜内全互联 + 光交换 Clos；可选 8,192 / UB-Mesh 4D / 两级拷贝）；v5.3：采用 native950 记录的几何（跨超节点网络每 NPU 4 端口、4 平面、radix 1024，assumed）</td></tr>
   <tr><td><code>topology-ubl128</code></td><td>SuperPoD Flex / UBL128（128 NPU，单层 UB 交换）——ubl128 记录（v5.3）</td></tr>
   <tr><td><code>topology-a3server</code></td><td>Atlas 800T A3 服务器集群（每台 8 NPU，跨机 RoCE）——a3server 记录（v5.3）</td></tr>
+  <tr><td><code>topology-ub-generic</code></td><td>通用 UB 超节点（由记录定义）——v5.4 的占位 1,024 NPU 两级超节点；用记录或工作表替换其几何（首个记录 a960：HC2025 路线图的 Atlas 960 超节点）</td></tr>
   <tr><td><code>topology-a960e-ub</code></td><td>Atlas 960E · NPO 超节点（56 + 14 柜、每柜 72 NPU，LinkBlade + LinkDevice，四平面 scale-out）</td></tr>
 </table></div>
 <p>不列出的参考夹具：<code>ref-catalog-100k</code>（按卡计的 54 事件目录，100,000 卡，逐事件重执行 / 进程 / 弹性标志）与 <code>ref-three-classes-100k</code>（参考工具已确认的三类故障基线）仍可按 ID 取得，用于与参考工具及 ReMAP 的交叉核对（<code>hacd example</code>、<code>get_example</code>、<code>scripts/remap-bridge.ts</code>）。v2 的昇腾示例 <code>ascend-cm384</code>、<code>ascend-atlas950</code>、<code>ascend-supercluster-100k</code> 已移除——A3 与 Atlas 950 模板加规模即可覆盖（推理池可在方案编辑器中把模板的负载改为推理）；浏览器中这些示例未修改的副本会自动移出列表。v3.7 的 GPU 示例（<code>ref-baseline-100k</code>、<code>survey-ex1</code>、<code>survey-ex3</code>、<code>survey-ex4</code>、<code>nvl72-16k</code>）同样不列出；<code>hacd example &lt;id&gt;</code> 与 <code>get_example</code> 仍可返回它们，GPU 工具可从 git 标签 <code>v3.7-gpu</code> 分出。</p>
@@ -742,7 +746,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
 <p><b>校验门</b>（<code>hacd ingest validate</code>）：封闭词表——故障类 id、故障单元、模板、计数行、机制 id 与机制实际读取的参数键；出处完整性；合理性，即在单元库值的 ×0.1 … ×10 之内（是要读的警告，不是错误）；拓扑记录的结构一致性（节点、机柜、SuperPoD 的 NPU 数与几何一致）；以及 id 政策：内部记录用自己的 id，与公开的 <code>native950</code>、<code>ubl128</code>、<code>cm384</code>、<code>a3server</code>、<code>a960e</code>、<code>remap-latest-2026-10</code>、<code>remap-per-card-2026-10-09</code> 并列，后者从不被覆盖。引擎无法表达的设计或机制（新的硬件单元类型、新模板、新变换）不是数据更新：<code>worksheet</code> 转而写出面向 HAC-D 侧的<i>扩展请求</i>，只含结构。</p>
 <p><b>差异</b>（<code>hacd ingest diff</code>）：评审页列出每个变化的输入及新记录声明的来源与置信、按每单元口径比较的失效率类及其倍数，以及该次运行各规模下预算的前后 KPI 行——A_op 名义与降额、交付 goodput、MTBF<sub>hw</sub>、MTTR<sub>hw</sub>、P(窗口)、因子 k、推荐机制与杠杆——并带 Δ 行。它是 <code>promote</code> 之前评审人签字的对象；之后 §15.1 的报告集在新输入上运行（<code>hacd findings --record &lt;id&gt; --rates &lt;id&gt;</code>）。</p>
 <p><b>文档与内网模型</b>（<code>hacd ingest extract</code>，包 <code>packages/agent</code>）：文档被分块；OpenAI 兼容端点后的模型（vLLM、SGLang、llama.cpp；受约束 JSON 或代码块回退）只写<i>证据卡</i>——字段路径、原文的值与单位、逐字引文及位置。只有当引文在分块中找到、值在引文之内、且用不同提示的第二遍结果一致时才接受；其余进入 <code>review.md</code>。模型从不换算单位、计算速率、判定故障类或置信：草稿工作表的置信来自你声明的来源类型。PDF 先转为文本。</p>
-<p><b>离线包</b>：<code>node scripts/bundle-offline.mjs</code> 生成 <code>dist/offline/hacd-&lt;version&gt;.tgz</code>——一个打包的命令行，katex 置于其旁，记录目录作为 <code>HACD_DATA</code>，启动脚本 <code>bin/hacd</code> 与 <code>bin\hacd.cmd</code>，工作表模板与文档；只需 Node ≥ 20，除你指定的模型端点外不联网。内网团队的分步操作手册是 <code>docs/markdown/INGEST_RUNBOOK.md</code>；公式与校验门见 <code>docs/markdown/MODEL_REFERENCE.md</code> §26；在本侧，<code>update-inputs</code> 技能把一批输入过校验门并带黄金向量实现扩展请求。操作手册 §8 定义试点：一条有公开对照的记录、一个规模、一个季度；数据负责人编写工作表，内网模型只起草，命令行编排，可靠性负责人签署差异报告，promote 前须满足五项验收。</p>
+<p><b>离线包</b>：<code>node scripts/bundle-offline.mjs</code> 生成 <code>dist/offline/hacd-&lt;version&gt;.tgz</code>——一个打包的命令行，katex 置于其旁，记录目录作为 <code>HACD_DATA</code>，启动脚本 <code>bin/hacd</code> 与 <code>bin\hacd.cmd</code>，工作表模板与文档；只需 Node ≥ 20，除你指定的模型端点外不联网。内网团队的分步操作手册是 <code>docs/markdown/INGEST_RUNBOOK.md</code>；公式与校验门见 <code>docs/markdown/MODEL_REFERENCE.md</code> §26；在本侧，<code>update-inputs</code> 技能把一批输入过校验门并带黄金向量实现扩展请求。v6.1 增加操作员模式：<code>hacd ingest run</code> 一次调用完成工作表 → 门禁 → 干跑 → 差异 → 报告，并写出 <code>run.json</code>（状态 ok / needs-input / failed、每步 issue 的 path 与 code、KPI 行、路径）与 <code>SUMMARY.md</code>，程序或内网模型即可驱动流水线而无需有人在 HAC-D 里点击；<code>hacd ingest protocol</code> 打印该模型的系统提示词、工具清单与修复表，规范见 <code>docs/markdown/AGENT_OPERATOR.md</code>。操作手册 §8 定义试点：一条有公开对照的记录、一个规模、一个季度；数据负责人编写工作表，内网模型只起草，命令行编排，可靠性负责人签署差异报告，promote 前须满足五项验收。 v6.1 增加 <code>prompts/operator.{zh,en}.md</code>、<code>prompts/fix-table.{zh,en}.md</code> 与 <code>tools/hacd-tools.json</code>，内网模型可自行驱动 <code>bin/hacd ingest run</code>。</p>
 </section>
 
 <section id="s16">
