@@ -109,3 +109,22 @@ about the worksheet profile, synthetic examples. The HAC-D side returns a new bu
   does not model yet → extension request.
 - `recommendPlan: no move set meets the target with a supported window check` — too few windows for the Wilson bound: use `--trials 400`.
 - Windows: run from `cmd` with `bin\hacd.cmd`; PowerShell quoting of `--columns` values needs double quotes.
+
+## 8. Pilot: the first batch
+
+Run the pipeline once, end to end, on the smallest scope that exercises every step, before any wider use.
+
+- **Scope**: one topology record that has a public counterpart (the A3 server cluster or CM384, so the delta has a baseline), one
+  scale (100,000 NPUs), one historical period of hardware FIT (one quarter). One worksheet per kind: topology, fault rates and, if
+  the period changed a mechanism, a mechanism delta.
+- **Division of work**: the data owner writes or corrects the worksheets (§2–§3); the on-prem model, if used, only drafts them
+  from documents (§4) — it never runs the pipeline and never produces a number that is not a quoted evidence card; the CLI runs
+  the gates, the dry run, the delta and the report set (§5); the reliability owner signs `staging/delta/delta.html`.
+- **Acceptance**, all five before `promote`: `validate` exits 0 with every warning read and either fixed or written down;
+  `dry-run` completes at the chosen scale; every changed input in the delta carries a source and a confidence; every KPI
+  change (A_op nominal and derated, MTBF_hw, MTTR_hw, P(window), k, the recommended mechanisms and levers) is explained by the
+  input changes listed above it; `hacd findings` on the promoted inputs renders without an error.
+- **Output of the pilot**: the promoted record and rates under their own ids, the signed delta report, the Findings set on the new
+  inputs, and a list of extension requests (§6) for anything the worksheet profile could not express.
+- **Time box**: one week of calendar time; if the gates still fail after that, the blocker is a 口径 or mapping question for the
+  reliability owner, not a pipeline change.
