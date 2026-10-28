@@ -28,6 +28,7 @@ import { evaluateScenario, type TrainingKpis as TrainingResult } from '../scenar
 import { cloneScenario } from '../scenario/analysis.js';
 import { computeCounts, componentInstances } from '../scenario/build.js';
 import { mechanismById, applyMechanisms, applyMechanismsInOrder, stripMechanisms } from '../mechanisms/index.js';
+import { STAGE_MECHANISM_IDS } from '../mechanisms/auditLibrary.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
 import { buildLedgerRun, simulateLedgerReplications } from '../mc/ledgerFromScenario.js';
 import { proportionEstimate, proportionVerdict, summaryStat, type SummaryStat } from '../math/stats.js';
@@ -136,10 +137,18 @@ function training(s: Scenario): TrainingResult {
 }
 const valuesOf = (t: TrainingResult, metric: StrategyMetric): StrategyValues => ({ value: metric === 'aOp' ? t.operationalAvailability : t.deliveredGoodput, aOp: t.operationalAvailability, delivered: t.deliveredGoodput, mtbiHours: t.mtbiHours, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS });
 
-/** Move the mixture recovery to the lever limits (derated limits never worse than the current value). */
+/**
+ * Move the mixture recovery to the lever limits (derated limits never worse than the current value). The levers act after the
+ * design's mechanisms (a mechanism's job-level stage saving is absorbed when the lever's attempt is shorter). v5.5 (second recheck
+ * N4): the same-stage mechanisms (`STAGE_MECHANISM_IDS`) store a class's stage as absolute seconds computed against the job's stage
+ * when they were applied; when the automatic-attempt lever shortens the attempt, the job's stages shrink with it, so those
+ * mechanisms are stripped before the lever and re-applied over the new attempt in their recorded order (as `editBase` does for a
+ * recovery edit) — a class's stage is then the same-stage expectation over the levered job stage, never longer than the job's.
+ */
 export function applyLevers(s: Scenario, levers: RecoveryLever[], derate?: DerateSpec | null): Scenario {
   if (s.recovery.mode !== 'mixture' || !levers.length) return s;
-  const c = cloneScenario(s);
+  const staged = levers.some((l) => l.id === 'auto') ? Object.entries(s.mechanisms.applied ?? {}).filter(([id]) => STAGE_MECHANISM_IDS.includes(id)).sort((a, b) => a[1].order - b[1].order) : [];
+  const c = staged.length ? stripMechanisms(s, staged.map(([id]) => id)) : cloneScenario(s);
   if (c.recovery.mode !== 'mixture') return c;
   const r = c.recovery;
   for (const l of levers) {
@@ -147,7 +156,7 @@ export function applyLevers(s: Scenario, levers: RecoveryLever[], derate?: Derat
     else if (l.id === 'success') r.automatic = { ...r.automatic, successProbability: Math.max(r.automatic.successProbability, Math.min(1, derate ? l.limit - derate.successDelta : l.limit)) };
     else if (l.id === 'manual') r.manual = { seconds: Math.min(r.manual.seconds, derate ? l.limit * derate.timeFactor : l.limit) };
   }
-  return c;
+  return staged.length ? applyMechanismsInOrder(c, staged.map(([id]) => id), Object.fromEntries(staged.map(([id, rec]) => [id, rec.parameters]))) : c;
 }
 
 /** Multiply the interruption FIT of the given classes. */

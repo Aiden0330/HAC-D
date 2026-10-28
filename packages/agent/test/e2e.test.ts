@@ -150,12 +150,16 @@ describe('end to end: device failure rates → draft device table', () => {
     const cases: [string, string | null][] = [
       ['FIT', 'FIT'], ['fits', 'FIT'], ['/10^6 h', 'per_1e6_h'], ['per million hours', 'per_1e6_h'], ['fpmh', 'per_1e6_h'], ['ppm/h', 'per_1e6_h'], ['/10⁶h', 'per_1e6_h'],
       ['/h', 'per_h'], ['per hour', 'per_h'], ['h', 'mtbf_h'], ['hours', 'mtbf_h'], ['MTBF', 'mtbf_h'], ['MTBF (h)', 'mtbf_h'], ['小时', 'mtbf_h'],
-      ['%/year', 'afr'], ['AFR', 'afr'], ['per year', 'afr'], ['%/年', 'afr'], ['年', 'afr'], ['ppb', null], ['%', null], ['', null],
+      ['%/year', 'afr'], ['AFR', 'afr'], ['per year', 'afr'], ['%/年', 'afr'], ['ppb', null], ['%', null], ['', null],
+      // second recheck N6: a bare year is a duration (MTBF in years); a year is an AFR only with AFR wording; a count per time is a rate
+      ['年', 'mtbf_h'], ['years', 'mtbf_h'], ['MTBF（年）', 'mtbf_h'], ['MTBF (years)', 'mtbf_h'], ['平均无故障时间（年）', 'mtbf_h'],
+      ['每年', 'afr'], ['次/年', 'afr'], ['年化失效率', 'afr'], ['年失效率', 'afr'],
+      ['次/百万小时', 'per_1e6_h'], ['failures/10^6 h', 'per_1e6_h'], ['次/小时', 'per_h'],
       // recheck N2: an MTBF in a multiple of hours is MTBF; a rate per 10⁶ h says per / 每 / "/"
       ['MTBF（百万小时）', 'mtbf_h'], ['MTBF (million hours)', 'mtbf_h'], ['万小时', 'mtbf_h'], ['MTBF (kh)', 'mtbf_h'], ['10^6 h', 'mtbf_h'], ['每百万小时', 'per_1e6_h'], ['/百万小时', 'per_1e6_h'], ['failures per million hours', 'per_1e6_h'],
     ];
     for (const [u, want] of cases) expect([u, deviceRateUnit(u)]).toEqual([u, want]);
-    for (const [u, factor] of [['MTBF（百万小时）', 1e6], ['MTBF (million hours)', 1e6], ['十万小时', 1e5], ['万小时', 1e4], ['MTBF (kh)', 1e3], ['千小时', 1e3], ['MTBF (h)', 1], ['FIT', 1]] as const) expect([u, deviceRateUnitFactor(u)?.factor]).toEqual([u, factor]);
+    for (const [u, factor] of [['MTBF（百万小时）', 1e6], ['MTBF (million hours)', 1e6], ['十万小时', 1e5], ['万小时', 1e4], ['MTBF (kh)', 1e3], ['千小时', 1e3], ['MTBF (h)', 1], ['FIT', 1], ['MTBF（年）', 8760], ['MTBF (years)', 8760], ['年', 8760], ['次/百万小时', 1]] as const) expect([u, deviceRateUnitFactor(u)?.factor]).toEqual([u, factor]);
   });
   it('recheck N1 / N2: a percent in the value is an AFR’s only; an MTBF in millions of hours is multiplied into hours', async () => {
     const doc = ['SSD: AFR 0.5% per the vendor.', 'Fan: the fan tray is rated 5% FIT.', 'PSU: MTBF 2 百万小时.'].join('\n');

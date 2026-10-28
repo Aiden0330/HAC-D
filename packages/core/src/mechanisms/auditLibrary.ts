@@ -58,6 +58,12 @@ const STAGE_MECHANISMS: Record<string, { stage: Stage; candidate: (def: Stages, 
   'R-CANN-GRAPH': { stage: 'startup', candidate: (d, p) => d.startup - Math.max(0, d.graphWithinStartup - p.graphTargetSeconds), share: (p) => clamp01(num(p, 'eligibleShare')) },
 };
 /**
+ * v5.5 the mechanisms that write per-class automatic stages (`component.recoveryStages`) as absolute seconds computed against the
+ * job's stage when they are applied: whatever later changes the job's automatic attempt (the strategies' automatic-attempt lever)
+ * must re-apply them over the new attempt (`applyLevers`; second recheck N4)
+ */
+export const STAGE_MECHANISM_IDS: readonly string[] = Object.keys(STAGE_MECHANISMS);
+/**
  * The audit's same-stage rule per event: of the same-stage mechanisms an event is eligible for, the best (lowest) candidate wins,
  * else the stage keeps its base value. With independent eligible shares a_k the class's stage is the expectation over the events,
  *   E = Σ_k c_(k)·a_(k)·Π_{j<k} (1 − a_(j)) + Π_j (1 − a_j)·base   (candidates sorted ascending; a candidate at or above the base adds nothing),

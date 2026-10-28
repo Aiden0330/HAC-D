@@ -11,7 +11,7 @@ import {
   parseWorksheetMarkdown, writeWorksheetMarkdown, splitRow, WorksheetError, parseWorksheet, worksheetKind, worksheetTemplate,
   topologyRecordToWorksheet, worksheetToTopologyRecord, faultRateOverrideToWorksheet, worksheetToFaultRateOverride,
   mechanismSetToWorksheet, worksheetToMechanismSet, deviceTableToWorksheet, worksheetToDeviceTable, mappingToWorksheet, worksheetToMapping,
-  proposalToWorksheet, worksheetToProposal, proposalIntoSet, deviceTableFromSheet, EXAMPLE_DEVICE_TABLE, EXAMPLE_MAPPING, EXAMPLE_PROPOSAL,
+  proposalToWorksheet, worksheetToProposal, proposalIntoSet, deviceTableFromSheet, isPercentFormat, EXAMPLE_DEVICE_TABLE, EXAMPLE_MAPPING, EXAMPLE_PROPOSAL,
 } from '../src/index.js';
 import type { SheetInfo } from '../src/index.js';
 import { BUILTIN_TOPOLOGY_RECORDS, DEFAULT_MECHANISM_SET, parseTopologyRecord, parseFaultRateOverride, normalizeFaultRates, deviceFit, WORKSHEET_KINDS, validateMechanismSet, type TopologyRecord, type MechanismSet } from '@hac-d/core';
@@ -185,5 +185,36 @@ describe('device table from a sheet', () => {
     expect([d.unit, d.value, d.note]).toEqual(['per_1e6_h', 2.5, undefined]);
     const u = all([['Part', 'Rate', 'Unit', 'Source'], ['PSU', 2, '百万小时', 'v'], ['Fan', 2, '/百万小时', 'v'], ['CPU', 2, '万小时', 'v'], ['NIC', 2, 'per million hours', 'v']]);
     expect(u.table.rows.map((r) => [r.device, r.unit, r.value])).toEqual([['PSU', 'mtbf_h', 2e6], ['Fan', 'per_1e6_h', 2], ['CPU', 'mtbf_h', 2e4], ['NIC', 'per_1e6_h', 2]]);
+  });
+  it('second recheck N5 / N6: a percent-formatted cell holds the fraction; an MTBF in years; a count per time is a rate', () => {
+    const withFmt = (rows: (string | number | null)[][], fmts: Record<string, string>): SheetInfo => { const s = cells(rows); return { ...s, cells: s.cells.map((c) => (fmts[`${c.row},${c.col}`] ? { ...c, format: fmts[`${c.row},${c.col}`] } : c)) }; };
+    const one = (s: SheetInfo) => deviceTableFromSheet(s, { id: 't', sourceType: 'vendor' });
+    const afr = (frac: number) => (-Math.log(1 - frac) / 8760) * 1e9;
+    // Excel stores a cell shown as 0.5 % as 0.005: a percent header or unit cell does not divide it again
+    const a = one(withFmt([['Device', 'AFR (%)', 'Source'], ['DIMM', 0.005, 'v']], { '1,1': '0.0%' })).table.rows[0];
+    expect([a.unit, a.value, a.note]).toEqual(['afr', 0.005, '0.5% (cell format 0.0%, stored 0.005) read as afr 0.005']);
+    expect(deviceFit(a)).toBeCloseTo(afr(0.005), 6);
+    const b = one(withFmt([['Device', 'Rate', 'Unit', 'Source'], ['DIMM', 0.005, '%/year', 'v']], { '1,1': '0.00%' })).table.rows[0];
+    expect([b.unit, b.value]).toEqual(['afr', 0.005]);
+    expect(one(withFmt([['Device', 'AFR', 'Source'], ['DIMM', 0.005, 'v']], { '1,1': '0.00%' })).table.rows[0].value).toBe(0.005);
+    // a typed percentage under a percent header is still divided (D2); a quoted or escaped "%" in a format only prints the sign
+    expect(one(withFmt([['Device', 'AFR (%)', 'Source'], ['SSD', 0.8, 'v']], { '1,1': '0.0"%"' })).table.rows[0].value).toBe(0.008);
+    expect(one(withFmt([['Device', 'AFR (%)', 'Source'], ['SSD', 0.8, 'v']], { '1,1': '0.0\\%' })).table.rows[0].value).toBe(0.008);
+    expect([isPercentFormat('0.0%'), isPercentFormat('0%'), isPercentFormat('0.0"%"'), isPercentFormat('0.0\\%'), isPercentFormat('General'), isPercentFormat(undefined)]).toEqual([true, true, false, false, false, false]);
+    // a percent-formatted cell under any other unit refuses the row
+    const f = one(withFmt([['Device', 'FIT', 'Source'], ['Fan', 0.05, 'v'], ['PSU', 500, 'v']], { '1,1': '0%' }));
+    expect(f.table.rows.map((r) => r.device)).toEqual(['PSU']);
+    expect(f.skipped).toEqual([{ row: 2, reason: "a percentage ('5% (cell format 0%)') is not a FIT value (FIT, per 10⁶ h, per hour or MTBF hours)" }]);
+    // MTBF in years: × 8,760 h; a header that names hours stays in hours
+    for (const h of ['MTBF（年）', 'MTBF (years)', '平均无故障时间（年）', 'MTTF (yr)']) {
+      const r = one(cells([['Part', h, 'Source'], ['Fan', 10, 'v']])).table.rows[0];
+      expect([h, r.unit, r.value, r.note]).toEqual([h, 'mtbf_h', 87600, `10 ${h} read as mtbf_h 87600`]);
+      expect(deviceFit(r)).toBeCloseTo(1e9 / 87600, 9);
+    }
+    expect(one(cells([['Part', 'MTBF (h), 5-year field data', 'Source'], ['Fan', 2e6, 'v']])).table.rows[0].value).toBe(2e6);
+    // unit cells: a count per time is a rate, a bare year a duration
+    const u = one(cells([['Part', 'Rate', 'Unit', 'Source'], ['PSU', 2.5, '次/百万小时', 'v'], ['Fan', 2.5, 'failures/10^6 h', 'v'], ['CPU', 2e-6, '次/小时', 'v'], ['NIC', 10, 'years', 'v'], ['SSD', 10, '年', 'v']]));
+    expect(u.table.rows.map((r) => [r.device, r.unit, r.value])).toEqual([['PSU', 'per_1e6_h', 2.5], ['Fan', 'per_1e6_h', 2.5], ['CPU', 'per_h', 2e-6], ['NIC', 'mtbf_h', 87600], ['SSD', 'mtbf_h', 87600]]);
+    expect(deviceFit(u.table.rows[0])).toBeCloseTo(2500, 9);
   });
 });

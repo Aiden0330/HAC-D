@@ -116,7 +116,9 @@ function draftTopology(cards: EvidenceCard[], o: DraftOptions): string {
 /**
  * unit as written → device-table unit and the factor the stated value is multiplied by. A rate per 10⁶ hours says "per" / "/" /
  * "每"; a bare multiple of hours (百万小时, million hours, 10^6 h, 万小时, kh), with or without the MTBF word, is a duration — an
- * MTBF in that many hours (recheck N2). The percent of an AFR is handled by the caller (the value text may carry it).
+ * MTBF in that many hours (recheck N2) — and so is a bare year (年, years, yr; × 8,760 h; second recheck N6). A year is an AFR only
+ * with AFR wording (`%/年`, `/year`, `per year`, `每年`, `年化`, `年失效`), never after an MTBF word; a count per time (`次/百万小时`,
+ * `failures/10^6 h`) is a rate. The percent of an AFR is handled by the caller (the value text may carry it).
  */
 const UNIT_LEXICON: [RegExp, DeviceRateUnit, number][] = [
   [/^fits?$/, 'FIT', 1],
@@ -124,9 +126,10 @@ const UNIT_LEXICON: [RegExp, DeviceRateUnit, number][] = [
   [/^(mtbf|mttf|平均无故障时间?)?十万小时$/, 'mtbf_h', 1e5],
   [/^(mtbf|mttf|平均无故障时间?)?万小时$/, 'mtbf_h', 1e4],
   [/^(mtbf|mttf|平均无故障时间?)?(千小时|thousandh(?:ours?|rs?)?|kh|10\^?3h(?:ours?|rs?)?)$/, 'mtbf_h', 1e3],
-  [/^(failures?)?(\/|per|每)(10\^?6|1e6|million|百万)(h|hr|hrs|hours?|小时)$|^fpmh$|^ppm\/h$|^(10\^?-6|1e-6)\/h$/, 'per_1e6_h', 1],
-  [/^(failures?|1)?\/(h|hr|hour)$|^perhour$|每小时/, 'per_h', 1],
-  [/^%?\/(year|yr|a|年)$|^afr|^peryear$|年/, 'afr', 1],
+  [/^(mtbf|mttf|平均无故障时间?)?(年|years?|yrs?)$/, 'mtbf_h', 8760],
+  [/^(failures?|fails?|次)?(\/|per|每)(10\^?6|1e6|million|百万)(h|hr|hrs|hours?|小时)$|^fpmh$|^ppm\/h$|^(10\^?-6|1e-6)\/h$/, 'per_1e6_h', 1],
+  [/^(failures?|fails?|次|1)?(\/|per)(h|hr|hour|小时)$|^perhour$|每小时/, 'per_h', 1],
+  [/^(%|次|failures?|1)?\/(year|yr|a|年)$|^afr|^%?peryear$|^%?每年$|年化|年失效/, 'afr', 1],
   [/^(h|hr|hrs|hours?|小时)$|^mtbf/, 'mtbf_h', 1],
 ];
 /** the device-table unit of a unit as written and the factor to multiply the stated value by (null when not recognised) */

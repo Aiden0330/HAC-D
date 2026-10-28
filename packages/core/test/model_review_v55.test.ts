@@ -9,6 +9,8 @@ import { describe, it, expect } from 'vitest';
 import { topologyScenario, unitFaultLibrary } from '../src/topology/index.js';
 import { editMechanisms, setScenarioFields, scenarioVocabulary, mechanismDefaults } from '../src/project/edit.js';
 import { applyMechanisms, applyMechanismsInOrder, stripMechanisms, DEFAULT_PLAYERS } from '../src/mechanisms/index.js';
+import { applyLevers, DEFAULT_LEVERS } from '../src/strategy/index.js';
+import { DERATE_DEFAULT } from '../src/mechanisms/plan.js';
 import { deratedOf, recommendPlan } from '../src/strategy/window.js';
 import { requirement } from '../src/strategy/requirement.js';
 import { mttrDecomposition, classChainSplits } from '../src/mttr/decompose.js';
@@ -297,4 +299,45 @@ describe('recheck D5 — custom rungs are tried in the canonical order whatever 
     expect(mttrDecomposition(b, tb).mttrS).toBeCloseTo(mttrDecomposition(a, ta).mttrS, 12);
     expect(simulateScenarioLedger(b, { trials: 20, seed: 2 }).summary.counts).toEqual(simulateScenarioLedger(a, { trials: 20, seed: 2 }).summary.counts);
   }, 120_000);
+});
+
+/* ---------------- second recheck (2026-10-28, MODEL_REVIEW_2026-10-28_RECHECK2.md): stage mechanisms under the automatic-attempt lever (N4) ---------------- */
+
+describe('second recheck N4 — the automatic-attempt lever re-applies the per-class stage mechanisms over the shorter attempt', () => {
+  const s = topologyScenario('a3-ub384', 100000);
+  const auto = DEFAULT_LEVERS.filter((l) => l.id === 'auto');
+  const row = (x: Scenario, id: string) => trainingOf(x).chain.rows.find((r) => r.id === id)!;
+  const startup = (x: Scenario, id: string) => x.components.find((c) => c.id === id)!.recoveryStages?.startup;
+  it('a stage mechanism never lengthens a class’s recovery under the lever: its stage is the expectation over the levered job stage', () => {
+    const lever = applyLevers(s, auto, null);
+    expect(row(lever, 'CORE-hard').globalS).toBeCloseTo(60 + 0.01 * 7200, 9);
+    // R-CANN-GRAPH on the 20 s startup (graph 10 s → 7.5 s): candidate 17.5 s, share 0.95 → 17.625 s; it lengthened CORE-hard by 18.6 s before
+    const cann = applyLevers(applyMechanisms(s, ['R-CANN-GRAPH'], SET.parameters), auto, null);
+    expect(startup(cann, 'CORE-hard')).toBeCloseTo(sameStageValue(20, [{ c: 17.5, a: 0.95 }]), 12);
+    expect(row(cann, 'CORE-hard').globalS).toBeCloseTo(132 - 0.95 * 2.5, 9);
+    expect(aOp(cann)).toBeGreaterThan(aOp(lever));
+    // R-RUNTIME-SNAPSHOT: 0.95 × 15 + 0.05 × 20 = 15.25 s (17.25 s before, against the 60 s startup of the 180 s attempt)
+    const snap = applyLevers(applyMechanisms(s, ['R-RUNTIME-SNAPSHOT'], SET.parameters), auto, null);
+    expect(startup(snap, 'UNKNOWN-hard')).toBeCloseTo(15.25, 12);
+    expect(row(snap, 'UNKNOWN-hard').globalS).toBeCloseTo(132 - 4.75, 9);
+    // R-WARM-PROCESS: its 20 s target equals the levered startup, so it adds nothing — and never a longer recovery
+    const warm = applyLevers(applyMechanisms(s, ['R-WARM-PROCESS'], SET.parameters), auto, null);
+    expect(row(warm, 'UNKNOWN-hard').globalS).toBeCloseTo(132, 9);
+    // the success and manual levers leave the stages alone (no strip / re-apply)
+    const other = applyLevers(applyMechanisms(s, ['R-RUNTIME-SNAPSHOT'], SET.parameters), DEFAULT_LEVERS.filter((l) => l.id !== 'auto'), null);
+    expect(startup(other, 'UNKNOWN-hard')).toBeCloseTo(17.25, 12);
+  });
+  it('derated twin, idempotence and exact removal', () => {
+    const d = applyMechanisms(s, ['R-RUNTIME-SNAPSHOT', 'R-CANN-GRAPH'], SET.parameters);
+    const once = applyLevers(d, auto, null);
+    expect(aOp(applyLevers(once, auto, null))).toBeCloseTo(aOp(once), 14);
+    // the strategies' derated design: mechanisms → deratedOf → levers (derated: 60 s × 1.5 = 90 s, job startup 30 s, graph 15 s)
+    const der = applyLevers(deratedOf(d), auto, DERATE_DEFAULT);
+    const rec = der.mechanisms.applied!;
+    const cS = rec['R-RUNTIME-SNAPSHOT'].parameters.startupTargetSeconds, aS = rec['R-RUNTIME-SNAPSHOT'].parameters.eligibleShare;
+    const cG = 30 - Math.max(0, 15 - rec['R-CANN-GRAPH'].parameters.graphTargetSeconds), aG = rec['R-CANN-GRAPH'].parameters.eligibleShare;
+    expect(startup(der, 'CORE-hard')).toBeCloseTo(sameStageValue(30, [{ c: cS, a: aS }, { c: cG, a: aG }]), 12);
+    expect(startup(der, 'CORE-hard')!).toBeLessThan(30);
+    expect(aOp(stripMechanisms(once, ['R-RUNTIME-SNAPSHOT', 'R-CANN-GRAPH']))).toBeCloseTo(aOp(applyLevers(s, auto, null)), 12);
+  });
 });
