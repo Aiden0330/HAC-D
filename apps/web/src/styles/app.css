@@ -253,3 +253,12 @@ table.data.projects td.when, table.data.projects td.origin { white-space: nowrap
 }
 .new-project { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
 .new-project .field { min-width: 0; flex: 1 1 200px; max-width: 360px; }
+
+/* Topology › Hardware: layer section rows (six layers of the Findings report) above the BOM rows and the fault-unit sections */
+table.data tr.layer-head td { background: var(--surface-2); font-weight: 600; color: var(--ink); padding-top: 7px; padding-bottom: 7px; border-top: 1px solid var(--rule-strong); border-bottom: 1px solid var(--rule-strong); }
+table.data tr.layer-head .layer-label { position: sticky; left: 8px; display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; max-width: calc(100vw - 72px); }
+table.data tr.layer-head .muted { font-weight: 400; font-size: 12px; font-variant-numeric: tabular-nums; }
+table.data tr.layer-head + tr.unit-head td { border-top: 0; }
+.layer-toggle { align-self: center; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink-2); font-size: 12px; line-height: 1; cursor: pointer; }
+.layer-toggle:hover { border-color: var(--rule-strong); color: var(--ink); }
+.layer-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }

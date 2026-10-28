@@ -8,6 +8,9 @@
  * Inputs are resolved by id or path: a record is a built-in id (BUILTIN_TOPOLOGY_RECORDS), a JSON path, or
  * packages/core/data/records/<id>.json; a mechanism set the default id, a path, or packages/core/data/mechanism-sets/<id>.json; a
  * failure-rate override a path or packages/core/data/fault-rates/<id>.json. Sidecar JSON goes to --data-out (default <out>/data).
+ * v6.3: the sidecar also holds `records.json` (the records as resolved for the run: the Findings pages draw their Figure 1 from
+ * them), and `hacd findings --data` accepts a bundle file (`<id>-findings-data.json` of the web app's Report tab: results,
+ * mechanisms, provenance, studies and records in one JSON) as well as a folder.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -127,7 +130,7 @@ const pt = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(3)} pt` : '
 
 /**
  * hacd findings --record a,b [--rates] [--mechanisms] [--scales] [--main] [--target] [--trials] [--seed] [--study-dir] [--permutations] [--reuse-studies] [--strict-prune] [--out] [--data-out] [--no-methodology]
- * hacd findings --data <dir> [--record a,b] [--out docs] [--study-dir <dir>] [--no-methodology]   re-render the reports from a stored sidecar (no engine run)
+ * hacd findings --data <dir | bundle.json> [--record a,b] [--out docs] [--study-dir <dir>] [--no-methodology]   re-render the reports from a stored sidecar (no engine run)
  */
 export function findings(a: Args): void {
   if (a.flag('data')) { renderFindings(a); return; }
@@ -182,6 +185,7 @@ export function findings(a: Args): void {
   writeJson(join(dataOut, 'results.json'), results);
   writeJson(join(dataOut, 'mechanisms.json'), { ...mechanisms, source: { dir: studyDir, ...mechanisms.source } });
   writeJson(join(dataOut, 'provenance.json'), prov);
+  writeJson(join(dataOut, 'records.json'), Object.fromEntries(records.map((r) => [r.id, resolvedRecord(r)])));
   const R = asFile(results), MX = asFile({ ...mechanisms, source: { dir: studyDir, ...mechanisms.source } });
   for (const rec of records) {
     const file = join(outDir, `ASCEND_ALLOCATION_FINDINGS_${(FINDINGS_FILES as Record<string, string>)[rec.id] ?? rec.id.toUpperCase()}.html`);
@@ -193,40 +197,80 @@ export function findings(a: Args): void {
     writeText(file, methodologyHtml({ results: R, mechanisms: MX, provenance: prov }));
     log(`written ${file}`);
   }
-  log(`sidecar JSON in ${dataOut}: results.json, mechanisms.json, provenance.json; studies in ${studyDir}`);
+  log(`sidecar JSON in ${dataOut}: results.json, mechanisms.json, provenance.json, records.json; studies in ${studyDir}`);
+}
+
+/** v6.3 a stored sidecar: a folder (results.json, mechanisms.json, provenance.json, records.json, <id>.json studies) or one bundle file */
+interface Sidecar {
+  where: string;
+  results: BudgetDocument;
+  mechanisms: { source?: { dir?: string; set?: string } } & Record<string, unknown>;
+  provenance: ReportProvenance;
+  study: (id: string) => ArchStudy | undefined;
+  records: Record<string, Record<string, unknown>>;
+  /** a folder without records.json: the records resolved now are written back so the next render (and reproduce.mjs) uses them */
+  writeRecords?: (recs: Record<string, Record<string, unknown>>) => void;
+}
+/** the bundle file of the web app's Report tab (`<id>-findings-data.json`): results, mechanisms, provenance, studies and records in one JSON */
+interface SidecarBundle { results: BudgetDocument; mechanisms: Sidecar['mechanisms']; provenance?: ReportProvenance; studies?: Record<string, ArchStudy>; records?: Record<string, Record<string, unknown>> }
+function readSidecar(spec: string, studyDirFlag?: string): Sidecar {
+  if (!existsSync(spec)) fail(`${spec} not found: --data takes the sidecar folder of a findings run or its bundle file (<id>-findings-data.json)`);
+  if (spec.endsWith('.json')) {
+    const b = readJson(spec) as SidecarBundle;
+    if (!b.results || !b.mechanisms) fail(`${spec}: a sidecar bundle needs results and mechanisms (and provenance, studies, records)`);
+    if (!b.provenance) fail(`${spec}: the bundle carries no provenance`);
+    return { where: spec, results: b.results, mechanisms: b.mechanisms, provenance: b.provenance, study: (id) => b.studies?.[id], records: b.records ?? {} };
+  }
+  const dir = spec;
+  const results = readJson(join(dir, 'results.json')) as BudgetDocument;
+  const mechanisms = readJson(join(dir, 'mechanisms.json')) as Sidecar['mechanisms'];
+  const studyDir = studyDirFlag ?? mechanisms.source?.dir ?? dir;
+  const pp = join(dir, 'provenance.json');
+  if (!existsSync(pp)) fail(`${pp} not found: a render-only run needs the provenance the hacd run stored next to the data`);
+  const rp = join(dir, 'records.json');
+  const stored = existsSync(rp) ? (readJson(rp) as Record<string, Record<string, unknown>>) : undefined;
+  return {
+    where: dir, results, mechanisms, provenance: readJson(pp) as ReportProvenance,
+    study: (id) => { const sp = existsSync(join(dir, `${id}.json`)) ? join(dir, `${id}.json`) : join(studyDir, `${id}.json`); return existsSync(sp) ? (readJson(sp) as ArchStudy) : undefined; },
+    records: stored ?? {},
+    ...(stored ? {} : { writeRecords: (recs) => { writeJson(rp, recs); log(`written ${rp} (the records as resolved now; the Findings pages draw Figure 1 from them)`); } }),
+  };
 }
 
 /**
- * Render-only: the Findings pages (and the Methodology unless --no-methodology) from a stored sidecar folder (results.json,
- * mechanisms.json, provenance.json, the <record>.json studies there or in --study-dir / mechanisms.source.dir), after a change to a
- * recipe in @hac-d/reports. The stored provenance is used unchanged, so the output equals what `node packages/reports/test/reproduce.mjs`
- * renders and compares with the committed docs/*.html. --record restricts the architectures (default: every one in results.json).
+ * Render-only: the Findings pages (and the Methodology unless --no-methodology) from a stored sidecar — a folder (results.json,
+ * mechanisms.json, provenance.json, records.json, the <record>.json studies there or in --study-dir / mechanisms.source.dir) or the
+ * bundle file the web app's Report tab downloads — after a change to a recipe in @hac-d/reports. The stored provenance is used
+ * unchanged, so the output equals what `node packages/reports/test/reproduce.mjs` renders and compares with the committed docs/*.html.
+ * --record restricts the architectures (default: every one in results.json). A folder without records.json gets one from the
+ * records resolved now (built-in or the data folder's).
  */
 function renderFindings(a: Args): void {
-  const dir = a.flag('data')!;
-  const results = readJson(join(dir, 'results.json')) as BudgetDocument;
-  const mechanisms = readJson(join(dir, 'mechanisms.json')) as { source?: { dir?: string; set?: string } } & Record<string, unknown>;
+  const sc = readSidecar(a.flag('data')!, a.flag('study-dir'));
+  const { results } = sc;
   const outDir = a.flag('out') ?? 'docs';
-  const studyDir = a.flag('study-dir') ?? mechanisms.source?.dir ?? dir;
-  const pp = join(dir, 'provenance.json');
-  if (!existsSync(pp)) fail(`${pp} not found: a render-only run needs the provenance the hacd run stored next to the data`);
-  const prov = readJson(pp) as ReportProvenance;
   const ids = a.flag('record') || a.flag('records') ? list(a.flag('record') ?? a.flag('records')) : Object.keys(results.archs);
-  const R = asFile(results), MX = asFile(mechanisms);
+  const R = asFile(results), MX = asFile(sc.mechanisms);
+  const resolvedNow: Record<string, Record<string, unknown>> = {};
   for (const id of ids) {
     if (!results.archs[id]) fail(`results.json has no architecture '${id}' (${Object.keys(results.archs).join(', ')})`);
-    const sp = existsSync(join(dir, `${id}.json`)) ? join(dir, `${id}.json`) : join(studyDir, `${id}.json`);
-    if (!existsSync(sp)) fail(`no Shapley study for '${id}' in ${dir} or ${studyDir}`);
-    const st = readJson(sp) as ArchStudy;
-    const rec = (BUILTIN_TOPOLOGY_RECORDS as Record<string, TopologyRecord>)[id] ?? (existsSync(join(DATA, 'records', `${id}.json`)) ? parseTopologyRecord(readJson(join(DATA, 'records', `${id}.json`))) : undefined);
+    const st = sc.study(id);
+    if (!st) fail(`no Shapley study for '${id}' in ${sc.where}`);
+    let record = sc.records[id];
+    if (!record) {
+      const rec = (BUILTIN_TOPOLOGY_RECORDS as Record<string, TopologyRecord>)[id] ?? (existsSync(join(DATA, 'records', `${id}.json`)) ? parseTopologyRecord(readJson(join(DATA, 'records', `${id}.json`))) : undefined);
+      if (!rec) fail(`no topology record for '${id}': not in ${sc.where} (records.json), not built in, not in ${join(DATA, 'records')}`);
+      record = resolvedNow[id] = resolvedRecord(rec);
+    }
     const file = join(outDir, `ASCEND_ALLOCATION_FINDINGS_${(FINDINGS_FILES as Record<string, string>)[id] ?? id.toUpperCase()}.html`);
-    writeText(file, findingsHtml(id, { results: R, mechanisms: MX, shapley: asFile(studyAt(st, results.sizes)), ...(rec ? { record: resolvedRecord(rec) } : {}), provenance: prov }));
-    log(`written ${file} (from ${dir})`);
+    writeText(file, findingsHtml(id, { results: R, mechanisms: MX, shapley: asFile(studyAt(st, results.sizes)), record, provenance: sc.provenance }));
+    log(`written ${file} (from ${sc.where})`);
   }
+  if (sc.writeRecords && Object.keys(resolvedNow).length === Object.keys(results.archs).length) sc.writeRecords(resolvedNow);
   if (!a.has('no-methodology')) {
     const file = join(outDir, 'ASCEND_ALLOCATION_METHODOLOGY.html');
-    writeText(file, methodologyHtml({ results: R, mechanisms: MX, provenance: prov }));
-    log(`written ${file} (from ${dir})`);
+    writeText(file, methodologyHtml({ results: R, mechanisms: MX, provenance: sc.provenance }));
+    log(`written ${file} (from ${sc.where})`);
   }
 }
 

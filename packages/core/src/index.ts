@@ -46,5 +46,11 @@ export * from './records/index.js';
 export * from "./budget/bom.js";
 export * from "./study/hierarchy.js";
 export * from "./study/archStudy.js";
+/* v6.3 the Findings report of a scenario (the web app's Report tab: the same pipeline as hacd findings) */
+export * from './budget/report.js';
+/** engine version of packages/core/package.json (the report footers; packages/core/test/report_v63 keeps the two equal) */
+export const CORE_VERSION = '0.5.0';
 /* v6 ingest: vocabularies, evidence cards, 口径 normaliser, validation gates, delta, extension requests */
 export * from './ingest/index.js';
+/* v6.4 editing a project the way the pages do: fields, FIT, mechanisms, summary (hacd scenario, MCP, the operator model) */
+export * from './project/edit.js';

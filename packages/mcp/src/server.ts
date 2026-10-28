@@ -4,7 +4,9 @@
  * allocate_scenario, tornado_scenario, simulate_scenario, library_search, scenario_schema,
  * excel_method_report, import_excel_scenario, export_excel (v2), mechanism_library, mechanism_report, apply_mechanisms, simulate_ledger, plan_mechanisms (v3),
  * estimate_rate (v3.5), audit_mechanisms, allocation_study (v3.7: single-point benefit audit and cross-scale allocation study, each with an optional standalone HTML report),
- * topology_bom, allocation_strategy (v4: topology templates with per-unit fault types; optimal / MTTR-preferred / MTTF-preferred allocation).
+ * topology_bom, allocation_strategy (v4: topology templates with per-unit fault types; optimal / MTTR-preferred / MTTF-preferred allocation),
+ * scenario_new, scenario_show, scenario_fields, scenario_set, scenario_fit, scenario_mechanisms, scenario_report (v6.4: the web pages'
+ * operations on a project — topology inputs, FIT of the fault types, mechanisms — and its Findings report written to a folder).
  * Register in Claude Code with: claude mcp add hacd -- node --import tsx <repo>/packages/mcp/src/server.ts
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -21,7 +23,10 @@ import {
   rateFromCounts, unitRateFromCounts, type LossBudgetMethod, type LedgerLossLine,
   auditMechanisms, auditReportHtml, allocationStudy, studyReportHtml, type StudyMetric, type ReportLang,
   GPU_EXAMPLES, REFERENCE_FIXTURES, TOPOLOGY_SCALES, resizeTopology, topologyScenario, topologyBom, bomAtSizes, TOPOLOGY_TEMPLATES, SUPERPOD_VARIANTS, applySuperpodVariant, computeCounts, allocateStrategy, strategyAcrossSizes, type TopologyTemplate,
+  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary,
 } from '@hac-d/core';
+// v6.4 the project report of the web app's Report tab, written to a folder (shared with `hacd scenario report`)
+import { renderScenarioReport } from '../../cli/src/report.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 let library: Library | null = null;
@@ -202,6 +207,48 @@ server.registerTool(
     const { scenario: finalScenario, ...r } = allocateStrategy(s, opts);
     return text(includeScenario ? { ...r, scenario: finalScenario } : r);
   },
+);
+
+/* ---------------- v6.4 the project workflow: the web pages' operations on one project and its Findings report ---------------- */
+server.registerTool(
+  'scenario_new',
+  { description: 'A new project (scenario) from a topology template at N NPUs with the six default mechanisms applied — what the web app’s Projects › New does. Returns the scenario JSON and its summary; keep the scenario and pass it to scenario_set / scenario_fit / scenario_mechanisms / scenario_report.', inputSchema: { template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic']), npus: z.number().int().positive(), variant: z.string().optional(), id: z.string().regex(/^[a-z0-9-]+$/).optional(), name: z.string().optional() } },
+  async ({ template, npus, variant, id, name }) => {
+    if (variant && !SUPERPOD_VARIANTS[template as TopologyTemplate]?.some((v) => v.id === variant)) throw new Error(`variant ${variant} does not belong to ${template}`);
+    let s = topologyScenario(template as TopologyTemplate, npus, { id, name });
+    if (variant) s = applySuperpodVariant(s, variant);
+    return text({ scenario: s, summary: scenarioSummary(s) });
+  },
+);
+server.registerTool(
+  'scenario_show',
+  { description: 'What a project has set, for reading before and after an edit: template, size, geometry, scale-out, user counts, FIT overrides against the library, applied mechanisms with parameters, targets, workload, recovery, and the KPI strip (A_op nominal / derated, MTBF_hw, MTTR_hw, delivered goodput; formula 1 of the Findings report).', inputSchema: { scenario: scenarioArg } },
+  async ({ scenario }) => text(scenarioSummary(toScenario(scenario))),
+);
+server.registerTool(
+  'scenario_fields',
+  { description: 'The vocabulary of scenario_set / scenario_fit / scenario_mechanisms: the settable field paths with kind, allowed values and note; with a scenario its fault types (ids, current and library FIT per unit-hour) and the mechanisms with their parameter names. A path, class or parameter outside it is refused.', inputSchema: { scenario: scenarioArg.optional() } },
+  async ({ scenario }) => text(scenarioVocabulary(scenario ? toScenario(scenario) : undefined)),
+);
+server.registerTool(
+  'scenario_set',
+  { description: 'Set fields of a project the way the Topology page does: topology.template, topology.variant, topology.fabric, topology.fabricFill, topology.superpod.<field>, topology.scaleOut (on / off) and topology.scaleOut.<field>, counts.<row> (user counts), npus, name, id, targets.*, workload.*, recovery.* (scenario_fields lists them). Edits of settings a mechanism owns are refused; the other edits keep the applied mechanisms (re-applied with their parameters). Returns the scenario, the changed paths and the summary.', inputSchema: { scenario: scenarioArg, sets: z.record(z.string(), z.union([z.number(), z.string(), z.boolean(), z.null()])).describe('path → value, e.g. { "topology.superpod.nodesPerRack": 9, "targets.operational": 0.985 }') } },
+  async ({ scenario, sets }) => { const r = setScenarioFields(toScenario(scenario), sets); return text({ scenario: r.scenario, changed: r.changed, summary: scenarioSummary(r.scenario) }); },
+);
+server.registerTool(
+  'scenario_fit',
+  { description: 'Set the FIT (per unit-hour, business impact after the existing protection) of fault types of a project — the Hardware tab’s editable cells; null returns a class to the library value. Class ids from scenario_fields. Returns the scenario, the changed classes and the summary.', inputSchema: { scenario: scenarioArg, fits: z.record(z.string(), z.number().nonnegative().nullable()).describe('class id → FIT, e.g. { "CORE-hard": 500, "MEMT-hard": null }') } },
+  async ({ scenario, fits }) => { const r = setFaultFit(toScenario(scenario), fits); return text({ scenario: r.scenario, changed: r.changed, summary: scenarioSummary(r.scenario) }); },
+);
+server.registerTool(
+  'scenario_mechanisms',
+  { description: 'Apply mechanisms with parameter overrides (an applied one is replaced) or remove applied ones — the Mechanism library page. Returns the scenario, the changes (+id / −id) and the summary.', inputSchema: { scenario: scenarioArg, apply: z.record(z.string(), z.record(z.string(), z.number())).optional().describe('id → parameters, e.g. { "D-HARD": { "detectSeconds": 20 }, "R-NETFAIL": {} }'), remove: z.array(z.string()).optional() } },
+  async ({ scenario, apply, remove }) => { const r = editMechanisms(toScenario(scenario), { apply, remove }); return text({ scenario: r.scenario, changed: r.changed, summary: scenarioSummary(r.scenario) }); },
+);
+server.registerTool(
+  'scenario_report',
+  { description: 'The Findings report of a project written to outDir — what the web app’s Allocation › Report tab does: the hierarchical MTBF / MTTR budget with the window rule at every scale, the mechanism Shapley study and hierarchy, the bilingual Findings and Methodology pages, the sidecar JSON (data/) and the bundle that `hacd findings --data` re-renders. Default scale = the project’s own size; 400 windows and 300 permutations as the report (lower them for a quick run; the footer records what was used). Minutes at 500k NPUs. Returns the manifest with the KPI rows (today / required / recommended per scale) and the file paths.', inputSchema: { scenario: scenarioArg, outDir: z.string(), sizes: z.array(z.number().int().positive()).optional(), trials: z.number().int().min(1).optional(), permutations: z.number().int().min(1).optional(), seed: z.number().int().optional(), target: z.number().min(0.5).max(0.99999).optional(), id: z.string().regex(/^[a-z0-9-]+$/).optional(), name: z.string().optional() } },
+  async ({ scenario, outDir, sizes, trials, permutations, seed, target, id, name }) => text(renderScenarioReport(toScenario(scenario), { outDir, sizes, trials, permutations, seed, target, id, name, command: `hacd-mcp scenario_report (outDir ${outDir})` })),
 );
 
 const transport = new StdioServerTransport();

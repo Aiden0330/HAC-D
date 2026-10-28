@@ -138,7 +138,7 @@
   <tr><td><code>packages/core</code></td><td>纯 TypeScript 数值核心</td><td>单位、数学、RBD、CTMC、修复路径、分级恢复、checkpoint 与 goodput 模型、静默错误交付（两种期末规则）、机制链（可配置梯级顺序）与机制库、带检查点上界的规划器、备件、MTTR、带损失预算的分配、敏感性、成本、带 Student-t 与 Wilson 统计的蒙特卡洛、事件计数估计故障率（Garwood）、ReMAP 事件库导入、方案 schema 与示例、参数库（635 条）、v4 拓扑模板（A2 RoCE、A3 CloudMatrix384、Atlas 950）与各单元故障类型、分配策略（最优 / MTTR 降低优先 / MTTF 提升优先）；v5 输入记录与预算原语；v6 <code>ingest</code>（词表、证据卡、口径归一、校验门、差异、扩展请求）</td></tr>
   <tr><td><code>apps/web</code></td><td>Vite + React 静态应用</td><td>中英双语、浅 / 深色，计算在 Web Worker 中；六个主页面（项目、拓扑与硬件、分配、机制库、故障库、评审），另有两个页面在「全部页面」中（方案编辑器、推理与备件）</td></tr>
   <tr><td><code>packages/cli</code></td><td>命令行 <code>hacd</code></td><td>与 Web 应用同一套函数，输出表格或 JSON；v5 报告流水线 <code>findings | bom | budget | methodology | prune | study</code>；v6 输入流水线 <code>ingest</code></td></tr>
-  <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 22 个工具（评估、对比、含损失预算的分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器、审核、研究、事件计数估计故障率、v4 拓扑硬件清单与分配策略）</td></tr>
+  <tr><td><code>packages/mcp</code></td><td>MCP 服务</td><td>面向智能体的 29 个工具（v6.4：项目流程的 scenario_new / show / fields / set / fit / mechanisms / report；评估、对比、含损失预算的分配、龙卷风、仿真、参数库、Excel、机制、账本、规划器、审核、研究、事件计数估计故障率、v4 拓扑硬件清单与分配策略）</td></tr>
   <tr><td><code>packages/importers</code></td><td>Excel 导入 / 导出；v6 工作表</td><td>公式方法识别、拓扑提取、对账、含公式的工作簿导出；v6：Markdown 工作表规范 <code>hacd-worksheet-1</code> 与输入记录的双向转换、模板、电子表格器件表导入</td></tr>
   <tr><td><code>packages/reports</code></td><td>双语 HTML 报告套件</td><td>v5 结果 / 方法 / 元件清单报告与 v6 变更评审页，均为数据的纯函数，逐字节复现</td></tr>
   <tr><td><code>packages/agent</code></td><td>v6 抽取工作器</td><td>OpenAI 兼容适配器（vLLM / SGLang / llama.cpp）、分块、两种提示变体、经原文落地与两遍一致才接受的证据卡、评审队列、草稿工作表</td></tr>
@@ -194,7 +194,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s4">
 <h2>4. 拓扑与硬件页</h2>
-<figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条（A_op 名义 / 降额、正确有效产出、MTBF_hw、MTTR_hw 名义 / 降额、每 NPU 中断 FIT）与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，其后是各单元的故障类型）。</figcaption></figure>
+<figure><img src="img-zh/topology.jpg" alt="拓扑与硬件页"><figcaption>拓扑与硬件页（A3 · CloudMatrix384，500,000 NPU）：左侧为模板卡片、规模按钮与各输入分组；右侧为指标条（A_op 名义 / 降额、正确有效产出、MTBF_hw、MTTR_hw 名义 / 降额、每 NPU 中断 FIT）与「硬件」页签（10k / 100k / 200k / 500k 的硬件清单，当前规模高亮，v6.3 起按六个层级分组并给出各层小计，其后是各单元的故障类型）。</figcaption></figure>
 <p>首页回答：在这个拓扑、这个规模下，有哪些硬件单元、各有多少、各带哪些故障类型，以及在默认机制下得到什么结果。输入位于左侧可折叠分组，输出位于右侧指标条下的四个页签（拓扑图、硬件、可靠性、分配）。每次编辑即时重算。</p>
 <h3>4.1 五种拓扑模板</h3>
 <div class="table-wrap"><table>
@@ -261,7 +261,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </table></div>
 <p>六个内置项目中四个就是昇腾报告集的架构：Atlas 950 项目采用 native950 记录的几何（跨超节点网络每 NPU 4 端口、4 平面、radix 1024，assumed）而不是模板默认值，所以其指标条等于 ASCEND_ALLOCATION_FINDINGS_950 在 10,000 卡的「今天」一行（A_op 99.920 / 99.910 %、MTBF_hw 32.3 h、MTTR_hw 88.3 / 99.5 s）；UBL128 与 A3 服务器集群出于同一目的加入（v5.3）。A2 · RoCE 与 Atlas 960E 没有记录，也没有结果报告。</p>
 <figure><img src="img-zh/topology-picture.jpg" alt="拓扑图页签"><figcaption>拓扑图页签：scale-out 各层、一个超节点及其计算柜、通信柜（或灵衢互联柜）与 UB 交换——两级拓扑画子平面，全互联与刀片拓扑画超节点层交换（其余超节点叠在其后）、放大的一个节点；下方是模板的来源与假设字段。</figcaption></figure>
-<p>页签：<b>拓扑图</b>（按数量实时绘制的示意图）、<b>硬件</b>（硬件清单——单元、每 NPU 数量、10k / 100k / 200k / 500k 数量且当前 N 高亮、每单元中断 FIT、占作业硬件中断率的比例、一次故障的影响、置信——其后是可编辑 FIT 的各单元故障类型及每 NPU 贡献）与<b>可靠性</b>（§5）；页签栏右侧的「<b>分配 ›</b>」链接转到分配页（§7），策略只在那里运行。</p>
+<p>页签：<b>拓扑图</b>（按数量实时绘制的示意图；v6.3 起与 Findings 页面的图 1 和 BOM 报告的图 1a–d 是同一幅图）、<b>硬件</b>（硬件清单——单元、每 NPU 数量、10k / 100k / 200k / 500k 数量且当前 N 高亮、每单元中断 FIT、占作业硬件中断率的比例、一次故障的影响、置信——v6.3 起按 Findings 报告的六个层级自集群级到 NPU 自上而下分组，每层一行小计（硬 FIT / NPU = Σ 数量 × 单元 FIT / N 与占作业硬件中断率的比例）并可折叠；其后是可编辑 FIT 的各单元故障类型及每 NPU 贡献，同样按层分组）与<b>可靠性</b>（§5）；页签栏右侧的「<b>分配 ›</b>」链接转到分配页（§7），策略只在那里运行。</p>
 <h3>4.6 方案编辑器（高级）</h3>
 <p>位于<b>全部页面</b>中，显示当前方案的全部字段：名称、结构模板、拓扑与超节点几何、度量、负载、备件、目标、成本、恢复编辑器（预设、流水线、分级、MTTR 混合）、带逐类详情的部件表与 JSON（可靠性框图自 v5.2 起在评审页的评审清单页签，§9.1）。用于非模板生成的方案以及首页未显示的字段。静默错误策略与恢复链已移到机制库页（§6.4）。</p>
 <p><b>部件类</b>：</p>
@@ -377,8 +377,8 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 
 <section id="s7">
 <h2>7. 分配页</h2>
-<figure><img src="img-zh/allocation.jpg" alt="分配页「策略」页签"><figcaption>分配页「策略」页签（A3 · CloudMatrix384、500,000 NPU、A_op ≥ 98.5 %，默认目标）：目标与策略（含「报告设置」/「页面默认」按钮）、候选机制与恢复上限、硬件约束、三种策略的对比以及所选方案的明细（步骤、各类允许 FIT、其他方案、说明），其后是「报告预算（窗口规则）」卡与跨规模卡。</figcaption></figure>
-<p>v5.3：两个页签。<b>策略</b>（§7.1）在约束下用机制、恢复上限与硬件 FIT 达到目标——在项目自身规模上，并在页签末尾的卡片中跨规模运行（§7.2；v5.2 之前是单独的「跨规模」页签，重复了整个表单）；<b>经典方法</b>（§7.3–7.11）保留 v3 的预算方法。原来的纯机制规划页签与 v3.7 分配研究面板已去掉：最优策略覆盖了规划器的搜索，跨规模研究由 v5 命令行生成（<code>hacd findings</code>，§15）。</p>
+<figure><img src="img-zh/allocation.jpg" alt="分配页「策略」页签"><figcaption>分配页「策略」页签（A3 · CloudMatrix384、500,000 NPU、A_op ≥ 98.5 %，默认目标）：目标与策略（含「报告设置」/「页面默认」按钮）、候选机制与恢复上限、硬件约束、三种策略的对比以及所选方案的明细（步骤、各类允许 FIT、其他方案、说明）；v5.3 的「报告预算」卡与跨规模卡自 v6.3 起并入「报告」页签（§7.2）。</figcaption></figure>
+<p>v6.3：三个页签。<b>报告</b>（§7.2）一键生成本项目的 Findings 报告；<b>策略</b>（§7.1）在约束下用机制、恢复上限与硬件 FIT 在项目自身规模上达到目标（v6.2 之前其末尾两张卡在单一规模上运行报告预算并跨规模运行策略，现均在「报告」页签）；<b>经典方法</b>（§7.3–7.11）保留 v3 的预算方法。原来的纯机制规划页签与 v3.7 分配研究面板已去掉：最优策略覆盖了规划器的搜索。</p>
 <h3>7.1 「策略」页签</h3>
 <p>三种策略求解同一问题：在方案自身机制之上，使目标（作业窗口内的 A_op 或正确有效产出）在名义参数下<em>且</em>在所有机制参数与杠杆降额后（覆盖率 −5 pt、成功率 −8 pt、时间 ×1.5）都得到满足，可用三类手段：</p>
 <ul>
@@ -394,7 +394,7 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
 </table></div>
 <p><b>硬件分配方式。</b>对由引擎二分求出的水平 L，xᵢ·cᵢ = clamp(wᵢ·L, 下限ᵢ·cᵢ, cᵢ)，其中 cᵢ = λᵢ·p̄ᵢ 是该类的暂停贡献（故障率 × 其机制链每次事件平均暂停）。<i>最小工作量</i>（默认）取 wᵢ = eᵢ，对 A_op 预算使 Σ eᵢ log₂(1/xᵢ) 最小；<i>AGREE</i> 取 wᵢ = 单元数 × 重要度，并把低于预算的类的余量再分配；<i>ARINC</i> 取 wᵢ = cᵢ（统一比例）。对 A_op，运行占比精确为 1/(1 + (Σ xᵢcᵢ + F)/3600)（F：隔离、误报与已检出静默错误的暂停），由此可闭式求出水平。目标已满足时结果给出<b>硬件余量</b>：所有中断 FIT 同比放大多少倍目标仍成立。</p>
 <p><b>输出</b>：三种策略并列（名义 / 降额结果、新增手段、工作量、是否达到；所选策略的说明首行给出名义与降额的定义，§3.1）；所选策略的步骤、各类允许的中断 FIT（当前、允许、倍数、下限、单元允许 MTBF、不可用点数前 → 后、工作量）、备选方案（最优）、可选的窗口账本校核（P(窗口 ≥ 目标) 及 Wilson 区间），以及<b>将该设计另存为新项目</b>。</p>
-<p><b>报告设置（v5.3）。</b>页面默认在机制库的候选机制上搜索，使用机制库的工作量分数（或在机制库表中修改过的分数）、最小工作量硬件分配且无逐窗口规则，所以其最优方案不是结果报告的方案——报告使用机制集的候选、工作量与杠杆、ARINC 分配与逐窗口规则：native950 记录 500,000 卡时，页面默认得到 D-HARD + R-NETFAIL + 两项杠杆（工作量 16.0），报告推荐 D-HARD + D-RECOVERY-CLASSIFY + R-LINK-LOCAL + H-CONTROL-CONTINUITY + 两项杠杆、k = 0.863（工作量 24.5）。「<b>报告设置（hacd findings）</b>」按钮把表单设为报告的输入（默认机制集的候选、工作量、参数与杠杆、ARINC、降额开、A_op 目标、400 个窗口），此时结果的最优行与报告一致；「<b>页面默认</b>」恢复机制库默认。下方的「<b>报告预算（窗口规则）</b>」卡在当前项目及其规模上运行与 <code>hacd findings</code> / <code>hacd budget</code> 相同的函数，打印报告的三行——今天、要求、推荐——含 A_op 名义与降额、MTBF_hw 与 MTTR_hw（降额）、P(窗口) 及判定、方案与硬件系数 k 及其约束侧（降额均值或逐窗口）；500,000 卡 400 个窗口需数分钟，可随时取消；少于 35 个窗口时窗口校核永远不能判定为「支持」（Wilson 下界达不到 90 %），卡片会给出说明。表上方的口径行就是报告的口径。该卡只对 A_op 运行。</p>
+<p><b>报告设置（v5.3）。</b>页面默认在机制库的候选机制上搜索，使用机制库的工作量分数（或在机制库表中修改过的分数）、最小工作量硬件分配且无逐窗口规则，所以其最优方案不是结果报告的方案——报告使用机制集的候选、工作量与杠杆、ARINC 分配与逐窗口规则：native950 记录 500,000 卡时，页面默认得到 D-HARD + R-NETFAIL + 两项杠杆（工作量 16.0），报告推荐 D-HARD + D-RECOVERY-CLASSIFY + R-LINK-LOCAL + H-CONTROL-CONTINUITY + 两项杠杆、k = 0.863（工作量 24.5）。「<b>报告设置（hacd findings）</b>」按钮把表单设为报告的输入（默认机制集的候选、工作量、参数与杠杆、ARINC、降额开、A_op 目标、400 个窗口），此时结果的最优行与报告一致；「<b>页面默认</b>」恢复机制库默认。「<b>报告</b>」页签（§7.2）生成报告本身，其「推荐」行（窗口规则）一键可得。</p>
 <div class="table-wrap"><table>
   <tr><th>A3 · CloudMatrix384，500,000 NPU，A_op ≥ 98.5 %</th><th>最优</th><th>MTTR 降低优先</th><th>MTTF 提升优先</th></tr>
   <tr><td>结果（名义 / 降额）</td><td class="num">99.308 / 98.500 %</td><td class="num">99.304 / 98.500 %</td><td class="num">98.916 / 98.500 %</td></tr>
@@ -403,8 +403,11 @@ claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服�
   <tr><td>工作量 机制 + 杠杆 + 硬件 = 合计</td><td class="num">5 + 5 + 10.90 = <b>20.90</b></td><td class="num">8 + 5 + 10.88 = 23.88</td><td class="num">0 + 0 + 44.67 = 44.67</td></tr>
 </table></div>
 <p>解读：500,000 NPU 时默认设计为 95.59 %（降额 95.10 %）；1 s 检测、网络切换与两项恢复上限把降额值提到 97.60 %，再压低五个没有恢复梯级覆盖的类（未归因 ×0.19 … 冷却 ×0.77）即可补足。只靠硬件则需改进十五类，未归因中断降到下限 0.05。<code>docs/ALLOCATION_STRATEGY_V4.zh.html</code> 详细讲解这一算例，并在 16 个内置算例（四种模板 × 四个规模）上与 v3.0、v3.7 的方法对比。</p>
-<h3>7.2 跨规模（「策略」页签末尾的卡片）</h3>
-<p>「策略」页签的最后一张卡在多个规模下运行相同的目标、策略与约束（默认为内置的 10k / 100k / 200k / 500k；模板的硬件数量随 N 变化）：每个规模给出基线、名义 / 降额结果、新增手段、硬件工作量、总工作量以及最大的硬件任务或余量。带窗口规则的分规模预算由 <code>hacd findings</code> 生成（§15.1）；单个规模在「报告预算」卡中运行（§7.1）。</p>
+<h3>7.2 「报告」页签（v6.3）</h3>
+<figure><img src="img-zh/allocation-report.jpg" alt="分配页「报告」页签"><figcaption>分配页「报告」页签：报告预设以固定设置显示（目标 A_op、机制集、参考集与候选机制），窗口数与置换次数，规模（项目自身规模；可加四个内置规模），然后是「生成报告」；运行后给出报告表 1（各规模的今天 / 所需 / 推荐）与三项下载。</figcaption></figure>
+<p>一个按钮即在计算工作器中对当前项目运行 <code>hacd findings</code>（§15.1）的流水线——各规模带窗口规则的 MTBF / MTTR 分层预算、机制 Shapley 研究与机制分层——并用与已提交的 <code>ASCEND_ALLOCATION_FINDINGS_*.html</code> 相同的配方与口径生成双语的 Findings 与 Methodology 页面。设置即报告预设，不会偏离：默认机制集的候选机制（可应用、本项目未应用、按机制集参数已就绪）、参数、工作量与杠杆，ARINC 分配，降额，种子 1，本项目的 A_op 目标；参考集为本项目已应用的机制。规模：项目自身规模，或同时计算四个内置规模（需数分钟）；窗口数（400）与 Shapley 置换次数（300）可以调低以快速粗算——页面页脚记录所用设置。项目自身规模 ≤ 100,000 NPU 时约一分钟，可随时取消。下载：Findings 页面、Methodology 页面与数据包（<code>&lt;id&gt;-findings-data.json</code>：results、mechanisms、provenance、研究与记录），配方更新后 <code>hacd findings --data &lt;bundle&gt;.json --out &lt;dir&gt;</code> 可重新渲染。记录自身的项目给出记录的数字（<code>packages/core/test/report_v63.test.ts</code>）。没有超节点几何的项目（A2 模板）不生成报告：层级模型与图 1 需要它。</p>
+<p><b>运行状态与已保存的 Findings（v6.4）。</b>一次运行归属项目，切到其他页签或页面时在计算工作器中继续：「报告」页签标签显示「运行中」，回来后看到实时进度，然后是结果；由项目较早版本计算的结果会标注为过期。「<b>保存 Findings</b>」把两个页面与数据包保存在本浏览器中（IndexedDB，每个项目一条记录），刷新后「已保存的 Findings」卡仍在，提供「打开」（在新标签页显示页面）、三项下载与「删除」；浏览器存储只在本设备上——要转移文件请用下载。程序或模型可用 <code>hacd scenario …</code>（§15.1）与 MCP 工具 <code>scenario_*</code> 完成同样的操作。</p>
+<p>以下为参考：§7.1 的最优策略跨规模的结果（原「策略」页签的卡片；<code>hacd strategy --sizes</code> 输出相同内容）：</p>
 <div class="table-wrap"><table>
   <tr><th>最优，A_op ≥ 98.5 %</th><th class="num">10,000</th><th class="num">100,000</th><th class="num">200,000</th><th class="num">500,000</th></tr>
   <tr><td>A2 · RoCE</td><td class="num">余量 ×18.7</td><td class="num">余量 ×1.82</td><td class="num">硬件 1.11</td><td class="num">D-HARD + 杠杆 + 硬件 8.27；合计 15.27</td></tr>
@@ -649,7 +652,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
       <rect x="156" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="215" y="45" text-anchor="middle" font-weight="600">2 硬件 + 故障</text><text x="215" y="61" text-anchor="middle" fill="var(--muted)">硬件页签、故障库</text>
       <rect x="302" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="361" y="45" text-anchor="middle" font-weight="600">3 机制</text><text x="361" y="61" text-anchor="middle" fill="var(--muted)">机制库页</text>
       <rect x="448" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="507" y="45" text-anchor="middle" font-weight="600">4 评估</text><text x="507" y="61" text-anchor="middle" fill="var(--muted)">指标条、可靠性</text>
-      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 分配</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">策略、跨规模</text>
+      <rect x="594" y="26" width="118" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="653" y="45" text-anchor="middle" font-weight="600">5 分配</text><text x="653" y="61" text-anchor="middle" fill="var(--muted)">报告、策略</text>
       <rect x="740" y="26" width="150" height="44" rx="8" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="815" y="45" text-anchor="middle" font-weight="600">6 校核 + 报告</text><text x="815" y="61" text-anchor="middle" fill="var(--muted)">账本、仿真、报告</text>
     </g>
     <g stroke="var(--rule-strong)" stroke-width="2" fill="none"><path d="M128 48 L156 48"/><path d="M274 48 L302 48"/><path d="M420 48 L448 48"/><path d="M566 48 L594 48"/><path d="M712 48 L740 48"/></g>
@@ -663,7 +666,7 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <li><b>硬件与故障类型</b>：阅读 10k–500k 的硬件清单；有实测值时替换库中 FIT（按单元；区间可用方案编辑器中的事件计数估计）。</li>
   <li><b>机制</b>：保留或调整默认六项，设定参数与恢复链顺序，检查静默错误策略；用归因（Shapley）看各机制的贡献。</li>
   <li><b>评估</b>：指标条与「可靠性」页签——A_op、正确有效产出、MTBI、区间标记、窗口账本。</li>
-  <li><b>分配</b>：设定目标与约束（FIT 下限、每减半工作量、候选机制、恢复上限），对比三种策略，再跨规模运行；把各单元允许 FIT 交给硬件负责方，把机制组合与恢复上限交给平台团队。</li>
+  <li><b>分配</b>：设定目标与约束（FIT 下限、每减半工作量、候选机制、恢复上限），生成 Findings 报告（「报告」页签）或对比三种策略；把各单元允许 FIT 交给硬件负责方，把机制组合与恢复上限交给平台团队。</li>
   <li><b>校核与报告</b>：账本校核（P(窗口 ≥ 目标) 及 Wilson 判定）、非指数或相关输入时用评审页的仿真校核页签、评审清单页签及其导出；然后在生产中实测并循环。</li>
 </ol>
 <p>内部输入（v6）：硬件 FIT 表、新拓扑与新机制通过工作表与 <code>hacd ingest</code>——暂存、校验、试算、差异、提升——在持有文档的内网中用离线包完成（§15.5；操作手册 <code>docs/markdown/INGEST_RUNBOOK.md</code>）。</p>
@@ -696,7 +699,8 @@ A_op 水平的闭式：Σ x_i c_i ≤ 3600·((1 − φ_sdc)/A* − 1) − F；�
   <tr><td colspan="2"><b>v5 报告流水线</b>（记录按内置 id、JSON 路径或 <code>packages/core/data/records/&lt;id&gt;.json</code> 解析；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v5 CLI” 一节）</td></tr>
   <tr><td><code>hacd records</code>、<code>hacd schema --record|--mechanisms|--rates</code></td><td>列出拓扑记录、机制集与失效率覆盖文件；输出三种输入记录的 JSON Schema</td></tr>
   <tr><td><code>hacd study --record a960e --scales 10000,100000 --permutations 300 --out-dir docs/data</code></td><td>机制集在该记录裸场景上的 Shapley 研究（结果报告表 6、机制分层）</td></tr>
-  <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本。<code>hacd findings --data docs/backup/ascend-allocation [--record ids] [--out docs]</code> 在配方改动后由已存旁路 JSON 重新渲染页面，沿用其中的出处（不运行引擎；即 <code>node packages/reports/test/reproduce.mjs</code> 所比较的内容）</td></tr>
+  <tr><td><code>hacd scenario new --template a950-ub2 --npus 100000 --out p.json</code>、<code>hacd scenario show | fields | set --set &lt;路径&gt;=&lt;值&gt; | fit --set &lt;故障类&gt;=&lt;FIT&gt; | mechanisms --apply &lt;ID&gt;[:k=v] --remove &lt;ID&gt; | report --out &lt;目录&gt;</code></td><td>v6.4 项目流程：网页各页面对项目文件的操作（拓扑输入、故障类型 FIT、机制）及其 Findings 报告（页面、旁路 JSON 与数据包写到 <code>--out</code>）；<code>fields</code> 列出可设置的内容；<code>--json</code> 供程序或模型使用（操作员工具 <code>hacd_scenario_*</code>、MCP 工具 <code>scenario_*</code>）</td></tr>
+  <tr><td><code>hacd findings --record native950,ubl128 [--rates f.json] [--mechanisms m.json] [--scales …] [--target 0.985] [--trials 400] [--study-dir dir] [--out docs] [--data-out docs/data]</code></td><td>分层 MTBF / MTTR 预算、Shapley 研究与机制分层 → 旁路 JSON 与双语结果报告（另加方法报告）；页脚回显命令、记录与机制集 id、运行选项与引擎版本。<code>hacd findings --data docs/backup/ascend-allocation [--record ids] [--out docs]</code> 在配方改动后由已存旁路 JSON 重新渲染页面，沿用其中的出处（不运行引擎；即 <code>node packages/reports/test/reproduce.mjs</code> 所比较的内容）；v6.3：没有 <code>records.json</code> 的目录会补写一份，<code>--data</code> 也接受网页端「报告」页签下载的数据包</td></tr>
   <tr><td><code>hacd methodology --data docs/data</code>、<code>hacd bom --records … --npus 100000</code></td><td>由一次 findings 运行的旁路 JSON 生成方法报告；各 scale-out 变体的元件清单</td></tr>
   <tr><td><code>hacd budget --record cm384 --scale 200000</code>、<code>hacd prune --study-dir dir --out pruned.json</code></td><td>单个架构 × 规模的预算（今天 / 要求 / 推荐）；按剪除规则重新判定机制集的分类列表</td></tr>
   <tr><td colspan="2"><b>v6 输入流水线</b>（工作表 → 暂存记录 → 校验门 → KPI 差异 → 提升；细节见 <code>docs/markdown/USER_GUIDE.md</code> 的 “v6 ingest” 一节与 §15.5）</td></tr>

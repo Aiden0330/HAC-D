@@ -91,9 +91,18 @@ export declare function topoGeomFromRecord(record: { id: string; short: Bilingua
 export declare function provenanceFooter(p: ReportProvenance, lang: 'zh' | 'en', files: string[], date: string): string;
 export declare function drawLayer(topo: string | TopoGeom, layer: 'cluster' | 'scaleout' | 'superpod' | 'cabinet' | 'node' | 'npu', x: number, y: number, w: number, h: number, T: (zh: unknown, en: unknown) => unknown): { svg: string; zoom: Rect | null; outer: Rect | null };
 export declare function zoomLines(z: Rect, o: Rect): string;
+/* v6.3 the topology schematic shared with the web app (src/schematic.mjs; also the entry @hac-d/reports/schematic) */
+export { topologySchematicSvg, TOPO_STYLE, SCHEMATIC_WIDTH } from './schematic.js';
 
 /* ---------------- kit: KaTeX and the page shell ---------------- */
+/** the KaTeX CSS with the fonts embedded (Node entry only; a browser build registers its own through setKatexCss) */
 export declare const KATEX_CSS: string;
+/** the fonts a report may need: [family, style, file name without extension] */
+export declare const KATEX_FONTS: [string, string, string][];
+export declare function katexCssFrom(fonts: { family: string; style: string; base64: string }[], minCss: string): string;
+/** register the KaTeX CSS the page shell embeds (done by the Node entry; a browser build calls it with the fonts it fetched) */
+export declare function setKatexCss(css: string): void;
+export declare function katexCss(): string;
 export declare function tex(src: string, display?: boolean): string;
 export declare function M(src: string): string;
 export declare function katexFontGuard(): void;

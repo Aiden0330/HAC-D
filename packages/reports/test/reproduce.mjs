@@ -20,10 +20,12 @@ export function cases() {
   const results = json(`${DATA}results.json`);
   const mechanisms = json(`${DATA}mechanisms.json`);
   const provenance = maybe(`${DATA}provenance.json`), bomProvenance = maybe(`${DATA}bom-provenance.json`);
+  // v6.3 the records as resolved by the hacd run (Figure 1 of the Findings pages is drawn from them)
+  const records = maybe(`${DATA}records.json`) ?? {};
   const studyDir = mechanisms.source?.dir ? `${mechanisms.source.dir.replace(/\/$/, '')}/` : 'docs/backup/arch-mechanism-shapley/';
   const study = (arch) => (existsSync(REPO + `${DATA}${arch}.json`) ? json(`${DATA}${arch}.json`) : json(`${studyDir}${arch}.json`));
   return [
-    ...Object.entries(FINDINGS_FILES).map(([arch, suffix]) => [`docs/ASCEND_ALLOCATION_FINDINGS_${suffix}.html`, () => findingsHtml(arch, { results, mechanisms, shapley: study(arch), provenance })]),
+    ...Object.entries(FINDINGS_FILES).map(([arch, suffix]) => [`docs/ASCEND_ALLOCATION_FINDINGS_${suffix}.html`, () => findingsHtml(arch, { results, mechanisms, shapley: study(arch), record: records[arch], provenance })]),
     ['docs/ASCEND_ALLOCATION_METHODOLOGY.html', () => methodologyHtml({ results, mechanisms, provenance })],
     ['docs/ASCEND_BOM_100K.html', () => bomHtml({ bom: json(`${DATA}bom.json`), provenance: bomProvenance })],
   ];

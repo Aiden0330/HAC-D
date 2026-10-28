@@ -147,7 +147,7 @@ export function commandArgs(command: string, args: Json): string[] {
 
 /** the manifest parameters that name a folder HAC-D writes (must stay in the work folder) and the inputs it reads (work or documents) */
 const WRITE_DIR_PARAMS = new Set(['out', 'staging', 'worksheets']);
-const READ_PATH_PARAMS = new Set(['file', 'docs', 'devices', 'mapping']);
+const READ_PATH_PARAMS = new Set(['file', 'docs', 'devices', 'mapping', 'scenario']);
 
 const cut = (s: string, max: number) => (s.length > max ? `${s.slice(0, max)}\n…[${s.length - max} characters cut]` : s);
 const num = (x: unknown): number => (typeof x === 'number' && Number.isFinite(x) ? x : 0);
@@ -254,7 +254,8 @@ export async function runOperatorHost(o: OperatorHostOptions): Promise<OperatorH
       o.onProgress?.(`step ${step}: hacd ${cmd.join(' ')}`);
       const r = o.runHacd(cmd);
       rec.exitCode = r.exitCode;
-      if (name === 'hacd_ingest_run') {
+      // the pipeline run and the project report both end a session: their manifest is the result the host reports (v6.4)
+      if (name === 'hacd_ingest_run' || name === 'hacd_scenario_report') {
         const manifest = parseManifest(r.stdout) as { status?: string } | null;
         result.lastRun = { status: manifest?.status ?? null, exitCode: r.exitCode, manifest };
       }

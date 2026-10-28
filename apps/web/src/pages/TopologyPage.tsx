@@ -2,8 +2,8 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, kpiForm, deratedOf, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts,
-  type Scenario, type TopologyTemplate, type FaultUnit, type BomRow,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, kpiForm, deratedOf, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts, DEFAULT_LAYERS,
+  type Scenario, type LayerId, type TopologyTemplate, type FaultUnit, type BomRow,
 } from '@hac-d/core';
 import { useStore, useActiveSettings } from '../state/store.js';
 import { useActive, useLang } from '../hooks.js';
@@ -417,6 +417,8 @@ function PictureTab({ s, lang }: { s: Scenario; lang: Lang }) {
 }
 
 const UNIT_ORDER: FaultUnit[] = ['npu', 'job', 'cpu', 'node', 'cabinet', 'ub-switch', 'ub-link', 'roce-switch', 'roce-link'];
+/** BOM row level → layer of the Findings report (DEFAULT_LAYERS: cluster, scale-out network, SuperPoD, cabinet, node, NPU) */
+const LEVEL_LAYER: Record<BomRow['level'], LayerId> = { npu: 'npu', node: 'node', cabinet: 'cabinet', pod: 'superpod', fabric: 'superpod', 'scale-out': 'scaleout', cluster: 'cluster' };
 
 function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn: (b: Scenario) => Scenario) => void }) {
   const { t } = useTranslation();
@@ -429,6 +431,16 @@ function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn
   // rows of every displayed size (a fourth Clos tier appears from 100,000 NPUs); '—' where a row does not exist at that size
   const rows = useMemo(() => bomRowsAcross(bom, sizes), [bom, sizes]);
   const here = useMemo(() => new Map(bom.rows.map((r) => [r.id, r])), [bom]);
+  // rows grouped under the six layers, top-down; a layer without rows is omitted; row order inside a layer is kept
+  const groups = useMemo(() => DEFAULT_LAYERS.map((layer) => {
+    const lr = rows.filter((r) => LEVEL_LAYER[r.level] === layer.id);
+    // subtotal at the current size: Σ λ_row (hard interruptions per hour) of the layer's rows present at N
+    const perHour = lr.reduce((a, r) => a + (here.get(r.id)?.hardPerHour ?? 0), 0);
+    return { layer, rows: lr, perHour };
+  }).filter((g) => g.rows.length > 0), [rows, here]);
+  const [collapsed, setCollapsed] = useState<Set<LayerId>>(() => new Set());
+  const toggleLayer = (id: LayerId) => setCollapsed((c) => { const n = new Set(c); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const nCols = 2 + TOPOLOGY_SCALES.length + (extra ? 1 : 0) + 3;
   const overrides = s.topology.countOverrides ?? {};
   const nOver = Object.keys(overrides).length;
   const { applied, ignored } = bom.countOverrides;
@@ -484,7 +496,20 @@ function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
+              {groups.map(({ layer, rows: lr, perHour }) => {
+                const open = !collapsed.has(layer.id);
+                const name = L(layer.name, lang);
+                return [
+                  <tr key={`layer-${layer.id}`} className="layer-head">
+                    <td colSpan={nCols}>
+                      <span className="layer-label">
+                        <button type="button" className="layer-toggle" aria-expanded={open} aria-label={t(open ? 'topology.layerCollapse' : 'topology.layerExpand', { layer: name })} onClick={() => toggleLayer(layer.id)}>{open ? '▾' : '▸'}</button>
+                        <b>{name}</b>
+                        <span className="muted">· {t('topology.layerSubtotal', { fit: fmtNum((perHour * 1e9) / Math.max(1, N), 1), share: total > 0 ? fmtPct(perHour / total, 1) : '—' })}</span>
+                      </span>
+                    </td>
+                  </tr>,
+                  ...(open ? lr : []).map((r) => (
                 <tr key={r.id} className={r.faultUnit ? undefined : 'count-only'}>
                   <td>{L(r.name, lang)} <Badge status={r.confidence === 'paper' ? 'paper-reported' : r.confidence}>{r.confidence === 'user' ? t('topology.userValue') : r.confidence}</Badge></td>
                   <td className="num">{!here.has(r.id) || here.get(r.id)!.noCount ? '—' : here.get(r.id)!.perNpu === 0 ? '0' : here.get(r.id)!.perNpu >= 0.01 ? fmtNum(here.get(r.id)!.perNpu, 3) : here.get(r.id)!.perNpu.toExponential(2)}</td>
@@ -494,11 +519,14 @@ function HardwareTab({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: (fn
                   <td className="num">{here.has(r.id) && r.hardPerHour !== undefined && total > 0 ? fmtPct(r.hardPerHour / total, 1) : '—'}</td>
                   <td style={{ fontSize: 12, minWidth: 150 }}>{L(r.impact, lang)}</td>
                 </tr>
-              ))}
+                  )),
+                ];
+              })}
             </tbody>
           </table>
         </div>
         <ul className="plain muted" style={{ fontSize: 12, marginTop: 6 }}>
+          <li>{t('topology.bomNoteLayers')}</li>
           <li>{t('topology.bomNoteFit')}</li>
           {s.topology.scaleOut && <li>{t('topology.bomNoteTiers')}</li>}
           {bom.notes.map((n) => <li key={n}>{n}</li>)}
@@ -516,6 +544,8 @@ function FaultTypesCard({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: 
   const byId = useMemo(() => new Map(s.components.map((c) => [c.id, c])), [s]);
   const lib = LIB.filter((f) => byId.has(f.id));
   const units = UNIT_ORDER.filter((u) => lib.some((f) => f.unit === u));
+  // unit sections grouped under the six layers, top-down (unit → layer by DEFAULT_LAYERS[i].units); empty layers omitted
+  const layerGroups = DEFAULT_LAYERS.map((layer) => ({ layer, units: units.filter((u) => layer.units.includes(u)) })).filter((g) => g.units.length > 0);
   const fitOf = (id: string) => {
     if (over[id] !== undefined) return over[id];
     return LIB.find((f) => f.id === id)!.fitPerUnit;
@@ -537,7 +567,9 @@ function FaultTypesCard({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: 
             </tr>
           </thead>
           <tbody>
-            {units.map((u) => {
+            {layerGroups.map(({ layer, units: lu }) => [
+              <tr key={`layer-${layer.id}`} className="layer-head"><td colSpan={6}><span className="layer-label"><b>{L(layer.name, lang)}</b></span></td></tr>,
+              ...lu.map((u) => {
               const domains = [...new Set(lib.filter((f) => f.unit === u).map((f) => f.domainId))];
               return [
                 <tr key={`h-${u}`} className="unit-head"><td colSpan={6}><b>{L(faultUnitName(u, s.topology.template), lang)}</b> <span className="muted">· {fmtInt(unitCount[u])} {t('topology.units')} · {fmtNum(bom.hardFitPerNpu[u] ?? 0, 1)} FIT / NPU</span></td></tr>,
@@ -572,7 +604,8 @@ function FaultTypesCard({ s, lang, upBase }: { s: Scenario; lang: Lang; upBase: 
                   );
                 }),
               ];
-            })}
+            }),
+            ])}
           </tbody>
         </table>
       </div>

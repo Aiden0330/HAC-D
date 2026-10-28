@@ -88,8 +88,9 @@
   .tag { display: inline-block; font-size: 10.5px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); margin-left: 4px; vertical-align: middle; }
   td.ok { color: var(--accent); font-weight: 600; } td.warn { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
   sup { font-size: 0.75em; line-height: 0; }
+  figure.schem figcaption.top { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: 13px; }
   @media screen and (max-width: 760px) { #lang { top: 6px; right: 6px; } }
-  @media print { #lang { display: none !important; } .katex { font-size: 1.02em; } .math-block { padding: 1px 6px; margin: 2px 0; overflow: visible; } .math-block + .math-block { margin-top: -2px; } .katex-display { margin: 0.12em 0; } .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; } }
+  @media print { figure.schem figcaption.top { font-size: 8.3px; margin: 0 0 1px; } #lang { display: none !important; } .katex { font-size: 1.02em; } .math-block { padding: 1px 6px; margin: 2px 0; overflow: visible; } .math-block + .math-block { margin-top: -2px; } .katex-display { margin: 0.12em 0; } .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; } }
 
   figure.chart.first { margin-top: 4px; }
   table.s1 td:first-child { min-width: 7em; } table.s1 td:nth-child(3) { min-width: 9em; } table.s1 td:nth-child(4) { min-width: 12em; } table.s1 td:last-child { min-width: 11em; }

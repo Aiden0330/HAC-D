@@ -5,8 +5,11 @@
  * mechanisms as players and the set's parameters: sampled Shapley values of A_op and delivered goodput (permutations, 95 %
  * half-width), single and last-added gains, and the planner's cheapest set meeting the target nominally and derated. The output is
  * the `StoredStudy` shape the hierarchy and the Findings recipe read (docs/backup/arch-mechanism-shapley/<record>.json).
+ * v6.3: `studyOfBuild` is the same study over any builder of the scenario at N — the web app's Report tab passes a project at its
+ * own geometry (`withSize`) — and `archStudy` is its record form; a project's applied players are stripped to reach the bare scenario.
  * 口径: Shapley values in fractions of A_op / delivered goodput at each scale; the base is the bare architecture scenario.
  */
+import type { Scenario } from '../scenario/schema.js';
 import { allocationStudy, type StudyGain, type StudyResult } from './index.js';
 import { stripMechanisms, mechanismById, DEFAULT_PLAYERS } from '../mechanisms/index.js';
 import { scenarioFromRecord, type TopologyRecord } from '../records/topologyRecord.js';
@@ -48,21 +51,26 @@ export interface ArchStudy {
   perSize: Record<string, ArchStudySize>;
 }
 
-/** the Shapley study of a record under a set: one `allocationStudy` per scale on the bare scenario */
-export function archStudy(record: TopologyRecord, set: MechanismSet, o: ArchStudyOptions = {}): ArchStudy {
+/**
+ * The study over any builder of the scenario at N (`id` names the architecture): one `allocationStudy` per scale on the bare
+ * scenario — the built scenario with every player of the set stripped (a record scenario is built without mechanisms; a project
+ * may carry some) and the optional failure-rate override applied.
+ */
+export function studyOfBuild(id: string, build: (n: number) => Scenario, set: MechanismSet, o: Omit<ArchStudyOptions, 'variantId'> = {}): ArchStudy {
   const r = resolveMechanismSet(set);
   const sizes = o.sizes ?? [10000, 100000, 200000, 500000];
   const target = o.target ?? 0.985, perms = o.permutations ?? 300, seed = o.seed ?? 1;
   // player order fixes the permutation sampler's draws for a given seed: the eight ReMAP originals first, then the audited
   // extensions in library order (the order of the stored v4.4 studies), then anything else the set lists
   const players = [...HIERARCHY_DEFAULT_IDS.filter((id) => r.players.includes(id)), ...r.players.filter((id) => !HIERARCHY_DEFAULT_IDS.includes(id))];
+  const strip = [...new Set([...DEFAULT_PLAYERS, ...players])];
   const perSize: Record<string, ArchStudySize> = {};
   let library: StudyResult['library'] | null = null;
   sizes.forEach((N, i) => {
-    // one size per study: each size is built from the record's own geometry (count overrides scale with N)
-    let s = scenarioFromRecord(record, N, o.variantId, { mechanisms: [] });
+    // one size per study: each size is built from the architecture's own geometry (count overrides scale with N)
+    let s = build(N);
     if (o.rates) s = applyFaultRates(s, o.rates);
-    const bare = stripMechanisms(s, DEFAULT_PLAYERS);
+    const bare = stripMechanisms(s, strip);
     const study = allocationStudy(bare, { sizes: [N], target, metric: 'aOp', players, parameters: r.parameters, trials: 0, seed, levers: false, curves: false, permutations: perms, derate: r.derate });
     const z = study.perSize[N];
     library ??= study.library;
@@ -76,5 +84,11 @@ export function archStudy(record: TopologyRecord, set: MechanismSet, o: ArchStud
     o.onProgress?.(N, i + 1, sizes.length);
   });
   const original = players.filter((id) => !mechanismById(id).audit);
-  return { generated: new Date().toISOString(), arch: record.id, sizes, target, permutations: perms, players, original, extensions: players.filter((id) => !original.includes(id)), parameters: set.parameters, set: set.id, library, perSize };
+  return { generated: new Date().toISOString(), arch: id, sizes, target, permutations: perms, players, original, extensions: players.filter((id) => !original.includes(id)), parameters: set.parameters, set: set.id, library, perSize };
+}
+
+/** the Shapley study of a record under a set: `studyOfBuild` over the record's scenario at each scale (no mechanisms, the optional variant) */
+export function archStudy(record: TopologyRecord, set: MechanismSet, o: ArchStudyOptions = {}): ArchStudy {
+  const { variantId, ...rest } = o;
+  return studyOfBuild(record.id, (N) => scenarioFromRecord(record, N, variantId, { mechanisms: [] }), set, rest);
 }

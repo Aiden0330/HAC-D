@@ -20,6 +20,12 @@
       ],
       "@hac-d/importers": [
         "../../packages/importers/src/index.ts"
+      ],
+      "@hac-d/reports/browser": [
+        "../../packages/reports/src/browser.d.ts"
+      ],
+      "@hac-d/reports/schematic": [
+        "../../packages/reports/src/schematic.d.ts"
       ]
     }
   },

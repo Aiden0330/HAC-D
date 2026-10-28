@@ -38,6 +38,8 @@
  *
  * v6 ingest (src/ingest.ts; docs/markdown/PLAN_V6_INPUT_MIGRATION.md): hacd ingest <template | fields | worksheet | normalize | import-fit |
  *   validate | dry-run | diff | promote | extract> — worksheets (Markdown) → staged records → gates → KPI delta → promote; `hacd ingest help`.
+ * v6.4 project workflow (src/scenarioCmd.ts): hacd scenario <new | show | fields | set | fit | mechanisms | report> — the web pages'
+ *   operations on a project file (topology inputs, FIT of the fault types, mechanisms) and its Findings report, for a program or a model.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
@@ -54,6 +56,7 @@ import {
 import { importSpreadsheet, methodReport, readWorkbook, exportWorkbook, flattenDraft } from '@hac-d/importers';
 import * as V5 from './pipeline.js';
 import { ingest } from './ingest.js';
+import { scenario } from './scenarioCmd.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -93,6 +96,10 @@ switch (cmd) {
   }
   case 'ingest':
     await ingest(rest);
+    break;
+  case 'scenario':
+    // v6.4 the web pages' operations on a project file (new / show / fields / set / fit / mechanisms / report), for a program or a model
+    await scenario(rest);
     break;
   case 'schema':
     if (!V5.schemaV5(V5.argsOf(cmd, rest))) out(scenarioJsonSchema());
@@ -614,5 +621,5 @@ switch (cmd) {
     break;
   }
   default:
-    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]\n v6 ingest: hacd ingest <template|fields|worksheet|normalize|import-fit|validate|dry-run|diff|promote|extract> … (hacd ingest help)\n v5 report pipeline: hacd <findings --record ids | bom --records ids | budget --record id --scale N | methodology --data dir | prune --study-dir dir | study --record id | records | schema --record|--mechanisms|--rates> (see the header of packages/cli/src/main.ts)');
+    console.log('usage: hacd <examples | example <id> | topology <template> | strategy <scenario.json> | eval <scenario.json> | compare <a.json> <b.json>… | allocate <scenario.json> | tornado <scenario.json> | simulate <scenario.json> | measures <scenario.json> | methods <book.xlsx> | import-excel <book.xlsx> | export-excel <scenario.json> [out.xlsx] | mechanisms <scenario.json> | ledger <scenario.json> | plan <scenario.json> | audit <scenario.json> | study <scenario.json> | rate <events> <unitHours> | import-remap <events.json> | schema> [--json]\n v6 ingest: hacd ingest <template|fields|worksheet|normalize|import-fit|validate|dry-run|diff|promote|extract> … (hacd ingest help)\n v6.4 project workflow: hacd scenario <new|show|fields|set|fit|mechanisms|report> … (hacd scenario)\n v5 report pipeline: hacd <findings --record ids | bom --records ids | budget --record id --scale N | methodology --data dir | prune --study-dir dir | study --record id | records | schema --record|--mechanisms|--rates> (see the header of packages/cli/src/main.ts)');
 }

@@ -129,6 +129,31 @@ describe('hacd ingest operate with the mock on-prem model', () => {
     expect((res.commands as string[][]).filter((c) => c[1] === 'run')).toHaveLength(1);
   });
 
+  it('project workflow: the model changes the topology, a FIT and the mechanisms of a project and produces its report through the host', () => {
+    const work = mkdtempSync(join(tmpdir(), 'hacd-operate-project-'));
+    const task = ['Project workflow: template a950-ub2, npus 10000, id acme-950-demo, name "ACME 950 demo".', 'Set: topology.superpod.nodesPerRack=9; targets.operational=0.985', 'FIT: CORE-hard=500', 'Mechanisms: apply D-HARD:detectSeconds=20; remove R-ELASTIC', 'Report: scales 10000; trials 40; permutations 8'].join('\n');
+    const r = hacd(['ingest', 'operate', '--base-url', url, '--model', 'mock-onprem', '--work', work, '--lang', 'en', '--max-steps', '20', '--task', task]);
+    expect(r.status, r.stderr).toBe(0);
+    expect(r.stdout).toMatch(/^status: ok\n/);
+    expect(r.stdout).toMatch(/mechanisms applied: .*D-HARD/);
+    expect(r.stdout).not.toMatch(/mechanisms applied: .*R-ELASTIC/);
+    expect(r.stdout).toContain('changes: (topology.superpod.nodesPerRack, 9, task); (targets.operational, 0.985, task); (fit CORE-hard, 500, task); (apply D-HARD:detectSeconds=20, task); (remove R-ELASTIC, task)');
+    expect(r.stdout).toMatch(/\| 10000 \| \d+\.\d+ % \/ \d+\.\d+ % \|/);
+    const res = readJson(join(work, 'operator-result.json'));
+    expect(res.stopped).toBe('final');
+    expect((res.commands as string[][]).map((c) => c.slice(0, 2).join(' '))).toEqual(['scenario new', 'scenario fields', 'scenario set', 'scenario fit', 'scenario mechanisms', 'scenario show', 'scenario report']);
+    expect(res.lastRun).toEqual({ status: 'ok', exitCode: 0 });
+    // the model wrote no file itself: HAC-D wrote the project and the report
+    expect(res.writes).toEqual([]);
+    const p = readJson(join(work, 'project', 'acme-950-demo.json'));
+    expect(p.topology.superpod.nodesPerRack).toBe(9);
+    expect(p.targets.operational).toBe(0.985);
+    expect(p.mechanisms.applied['D-HARD'].parameters.detectSeconds).toBe(20);
+    expect(p.mechanisms.applied['R-ELASTIC']).toBeUndefined();
+    expect(existsSync(join(work, 'out', 'ASCEND_ALLOCATION_FINDINGS_ACME-950-DEMO.html'))).toBe(true);
+    expect(existsSync(join(work, 'out', 'acme-950-demo-findings-data.json'))).toBe(true);
+  });
+
   it('refuses to start without the endpoint, the model or the work folder', () => {
     const r = hacd(['ingest', 'operate', '--model', 'x']);
     expect(r.status).toBe(1);

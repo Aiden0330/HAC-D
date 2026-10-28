@@ -10,6 +10,14 @@
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/index.mjs"
+    },
+    "./browser": {
+      "types": "./src/browser.d.ts",
+      "default": "./src/browser.mjs"
+    },
+    "./schematic": {
+      "types": "./src/schematic.d.ts",
+      "default": "./src/schematic.mjs"
     }
   },
   "scripts": {

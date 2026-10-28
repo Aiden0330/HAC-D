@@ -5,15 +5,15 @@ import { mkdirSync } from 'node:fs';
 const out = process.argv[2] ?? 'shots';
 const lang = process.argv[3] ?? 'en';
 const L = lang === 'zh'
-  ? { nav: { Projects: '项目', Topology: '拓扑与硬件', Mechanisms: '机制库', Allocation: '分配', Library: '故障库', Review: '评审', Editor: '方案编辑器', Inference: '推理与备件' }, tabs: { list: '列表', new: '新建', import: '导入', compare: '对比', checklist: '评审清单', simulation: '仿真校核', sensitivity: '敏感性', picture: '拓扑图', hardware: '硬件', reliability: '可靠性', chain: '静默错误与恢复链', strategies: '策略' }, open: '打开', attribute: '归因', run: '运行', ledger: '运行账本仿真', importBtn: '导入为方案', details: '详情', steps: '步骤' }
-  : { nav: { Projects: 'Projects', Topology: 'Topology & hardware', Mechanisms: 'Mechanism library', Allocation: 'Allocation', Library: 'Fault library', Review: 'Review', Editor: 'Scenario editor', Inference: 'Inference & spares' }, tabs: { list: 'List', new: 'New', import: 'Import', compare: 'Compare', checklist: 'Checklist', simulation: 'Simulation', sensitivity: 'Sensitivity', picture: 'Picture', hardware: 'Hardware', reliability: 'Reliability', chain: 'Silent corruption & chain', strategies: 'Strategies' }, open: 'Open', attribute: 'Attribute', run: 'Run', ledger: 'Run ledger simulation', importBtn: 'Import as scenario', details: 'Details', steps: 'Steps' };
+  ? { nav: { Projects: '项目', Topology: '拓扑与硬件', Mechanisms: '机制库', Allocation: '分配', Library: '故障库', Review: '评审', Editor: '方案编辑器', Inference: '推理与备件' }, tabs: { list: '列表', new: '新建', import: '导入', compare: '对比', checklist: '评审清单', simulation: '仿真校核', sensitivity: '敏感性', picture: '拓扑图', hardware: '硬件', reliability: '可靠性', chain: '静默错误与恢复链', strategies: '策略', report: '报告' }, open: '打开', attribute: '归因', run: '运行', ledger: '运行账本仿真', importBtn: '导入为方案', details: '详情', steps: '步骤' }
+  : { nav: { Projects: 'Projects', Topology: 'Topology & hardware', Mechanisms: 'Mechanism library', Allocation: 'Allocation', Library: 'Fault library', Review: 'Review', Editor: 'Scenario editor', Inference: 'Inference & spares' }, tabs: { list: 'List', new: 'New', import: 'Import', compare: 'Compare', checklist: 'Checklist', simulation: 'Simulation', sensitivity: 'Sensitivity', picture: 'Picture', hardware: 'Hardware', reliability: 'Reliability', chain: 'Silent corruption & chain', strategies: 'Strategies', report: 'Report' }, open: 'Open', attribute: 'Attribute', run: 'Run', ledger: 'Run ledger simulation', importBtn: 'Import as scenario', details: 'Details', steps: 'Steps' };
 mkdirSync(out, { recursive: true });
 // [file name, nav page, tab (label key of L.tabs) or null, extra action]
 const shots = [
   ['projects', 'Projects', 'list', null],
   ['topology', 'Topology', 'hardware', null], ['topology-picture', 'Topology', 'picture', null], ['reliability', 'Topology', 'reliability', null],
   ['mechanisms', 'Mechanisms', null, 'attribute'], ['chain', 'Mechanisms', 'chain', null],
-  ['allocation', 'Allocation', null, 'strategies'], ['library', 'Library', null, null],
+  ['allocation', 'Allocation', 'strategies', 'strategies'], ['allocation-report', 'Allocation', 'report', null], ['library', 'Library', null, null],
   ['review', 'Review', 'checklist', null], ['simulate', 'Review', 'simulation', 'ledger'], ['sensitivity', 'Review', 'sensitivity', null],
   ['editor', 'Editor', null, 'details'], ['inference', 'Inference', null, null],
   ['compare', 'Projects', 'compare', null], ['import', 'Projects', 'import', 'import'],

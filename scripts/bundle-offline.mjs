@@ -88,6 +88,17 @@ The reference host runs your on-prem model as the operator (OpenAI-compatible en
 
 Try the wiring first with the mock model and the synthetic pilot inputs (\`examples/pilot/\`): \`node tools/mock-onprem-model.mjs --port 8010\`, then the
 command above with \`--base-url http://127.0.0.1:8010/v1 --model mock-onprem --docs examples/pilot --brief examples/pilot/brief.md\`.
+
+The project workflow (v6.4; \`docs/AGENT_OPERATOR.md\` §11): the web pages' operations on one project and its Findings report, for a program or the model:
+
+    bin/hacd scenario new --template a950-ub2 --npus 100000 --id acme-950 --out work/project/acme-950.json
+    bin/hacd scenario fields work/project/acme-950.json          # what may be set: paths, fault types with their FIT, mechanisms with their parameters
+    bin/hacd scenario set work/project/acme-950.json --set topology.superpod.nodesPerRack=9 targets.operational=0.985
+    bin/hacd scenario fit work/project/acme-950.json --set CORE-hard=500
+    bin/hacd scenario mechanisms work/project/acme-950.json --apply D-HARD:detectSeconds=20 --remove R-ELASTIC
+    bin/hacd scenario report work/project/acme-950.json --out work/out --json   # the Findings and Methodology pages, data/, the bundle
+
+The model runs the same through the tools hacd_scenario_* of the manifest: \`bin/hacd ingest operate … --task "Project workflow: template a950-ub2, npus 100000, id acme-950. Set: …"\` (the mock answers that task too).
 `);
 execFileSync('tar', ['-czf', `${name}.tgz`, name], { cwd: outRoot });
 const size = (p) => `${(execFileSync('du', ['-sk', p], { encoding: 'utf8' }).split('\t')[0] / 1024).toFixed(1)} MB`;

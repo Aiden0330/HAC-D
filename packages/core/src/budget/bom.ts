@@ -26,6 +26,9 @@ export interface BomDesign {
   hardFitPerNpu: Partial<Record<FaultUnit, number>>; hardFitPerNpuTotal: number; hardFitPerNpuOther: number; hardPerHour: number; mtbiH: number | null;
   aOp: number; delivered: number;
   scaleOut: Scenario['topology']['scaleOut'];
+  /** v6.3 the geometry the BOM report's schematic (Figure 1a–d) is drawn from: the record's template and the scenario's resolved SuperPoD */
+  template: TopologyRecord['template'];
+  superpod: Scenario['topology']['superpod'];
 }
 
 /** one design's bill of materials at N NPUs */
@@ -41,6 +44,7 @@ export function bomDesign(record: TopologyRecord, variantId: string, npus: numbe
     hardFitPerNpu: b.hardFitPerNpu, hardFitPerNpuTotal: b.hardFitPerNpuTotal, hardFitPerNpuOther: b.hardFitPerNpuOther, hardPerHour: b.hardPerHour, mtbiH: b.hardPerHour > 0 ? 1 / b.hardPerHour : null,
     aOp: t.operationalAvailability, delivered: t.deliveredGoodput,
     scaleOut: s.topology.scaleOut,
+    template: record.template, superpod: s.topology.superpod,
   };
 }
 

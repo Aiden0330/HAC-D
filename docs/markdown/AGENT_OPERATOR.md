@@ -54,6 +54,9 @@ variable, never on the command line.
 | `hacd ingest extract <docs> --kind … --provider openai-compatible …` | evidence cards, a review queue and a draft worksheet from prose (optional) | documents |
 | `hacd ingest run --worksheets ws --staging staging --before-record <id> --out out --json` | gates → dry run → delta → report; `run.json` + `SUMMARY.md` | the worksheets |
 
+v6.4 adds the seven project commands `hacd scenario new | show | fields | set | fit | mechanisms | report` (§11): the web pages'
+operations on one project file and its Findings report, for the case where the task gives a project or a template instead of worksheets.
+
 `run` is the only orchestration: it executes `ingest worksheet`, `ingest validate`, `ingest dry-run`, `ingest diff` (when
 `--before-record` is given), `ingest promote` (only with `--promote`, never with `--force`) and `findings`, each as a child process of
 the same CLI, so every step keeps its own exit code and JSON output.
@@ -156,7 +159,8 @@ before a real model is connected: a request without `tools` is an extraction cal
 regular expressions over the sentences of the synthetic design note (grounded quotes, identical on both passes; `--flaky` drops one
 card in pass 2 to show the review queue); a request with `tools` is an operator turn, answered by a state machine over the conversation
 that follows the prompt's procedure and the fix table (`id-collision`, `unknown-class`, `worksheet-parse`; at most three rounds; stop
-when a round changes nothing). It sees the documents only through the host's tools and never computes a number. It is a stand-in for
+when a round changes nothing); a task that starts with `Project workflow: template …` gets the project personality of §11 instead
+(new → fields → set → fit → mechanisms → show → report, one command per turn). It sees the documents only through the host's tools and never computes a number. It is a stand-in for
 the wiring, not evidence that a given model will follow the prompt: that is what the pilot with the real model shows.
 
 ## 10. The pilot run of 2026-10-27 (mock model)
@@ -166,3 +170,37 @@ The runbook §8 pilot was run inside the bundle with the mock model on the synth
 one pipeline run of 65 s, status `ok`, 2 warnings written down, 0 extension requests; promoted after review, `findings` on the promoted
 inputs rendered with identical results. All five acceptance items held. The session, the KPI delta and how the inputs explain it, the
 gates, the pipeline defects the pilot found and fixed, and the limits of a mock-model pilot are in `PILOT_2026Q3_MOCK.md`.
+
+## 11. The project workflow (v6.4): a model changes a project and produces its report
+
+Everything the web app's pages do on one project — the Topology page's inputs, the Hardware tab's FIT cells, the Mechanism library
+page, the Report tab — is one command group on a project file, so a program or a model can run it without the pages:
+
+| Tool (manifest) | Command | Does |
+|---|---|---|
+| `hacd_scenario_new` | `hacd scenario new --template <id> --npus N [--variant] [--id] [--name] --out <work>/project/<id>.json --json` | a project from a template with the six default mechanisms (Projects › New) |
+| `hacd_scenario_show` | `hacd scenario show <file> --json` | what is set: geometry, scale-out, user counts, FIT overrides, applied mechanisms with parameters, targets, workload, recovery, the KPI strip |
+| `hacd_scenario_fields` | `hacd scenario fields <file> --json` | the settable paths with their allowed values, the project's fault types (current and library FIT), the mechanisms with their parameter names — the vocabulary the next three commands accept |
+| `hacd_scenario_set` | `hacd scenario set <file> --set <path>=<value>… --out <file> --json` | topology inputs (template, variant, fabric, `topology.superpod.*`, `topology.scaleOut` on / off and `topology.scaleOut.*`, `counts.<row>`, `npus`), `targets.*`, `workload.*`, `recovery.*` |
+| `hacd_scenario_fit` | `hacd scenario fit <file> --set <class>=<FIT>… [--reset <class>…] --out <file> --json` | the FIT of fault types, per unit-hour on the unit library's units (the Hardware tab's cells) |
+| `hacd_scenario_mechanisms` | `hacd scenario mechanisms <file> [--apply <ID>[:param=value,…]…] [--remove <ID>…] --out <file> --json` | apply with parameters (an applied one is replaced), remove (exact inverse) |
+| `hacd_scenario_report` | `hacd scenario report <file> --out <work>/out [--scales] [--trials 400] [--permutations 300] --json` | the Findings and Methodology pages, the sidecar and the bundle; the manifest has the KPI rows per scale |
+
+The core functions behind them (`packages/core/src/project/edit.ts`: `setScenarioFields`, `setFaultFit`, `editMechanisms`,
+`scenarioSummary`, `scenarioVocabulary`) are the pages' own operations: a setting an applied mechanism owns (the checkpoint interval
+under C-FAST, the detection under D-HARD) is refused with the mechanism named; every other edit keeps the applied mechanisms
+(re-applied with their recorded parameters); every value is validated against the scenario schema and the closed vocabularies, and an
+unknown path, class or parameter is refused with the allowed values named. The MCP server exposes the same seven as `scenario_*` tools
+(scenario JSON in and out; `scenario_report` writes to a folder).
+
+Procedure D of the prompt: start from the given project file or from `new`; read `fields`; apply the task's changes with `set` / `fit` /
+`mechanisms`, each value exactly as the task or a cited document states it; read `show` and check that what was set is what is shown;
+run `report`; read the manifest. A command that exits 1 names the reason on stderr; the model corrects that one argument once from
+`fields`, otherwise stops. The final message lists the project file, the changes as (path, value, source), the KPI rows and the paths.
+The host treats `hacd_scenario_report` like `hacd_ingest_run`: its manifest is the session's result and its exit code the host's.
+
+What stays with people is unchanged: the model copies values from the task or a cited document, HAC-D computes, the owner reads the
+report. The project files live under `<work>/project/` and are written only by the commands. The CLI test
+`packages/cli/test/operate.test.ts` ("project workflow") drives the chain through the host with the mock model: template a950-ub2 at
+10,000 NPUs, nodes per cabinet 9, target 0.985, CORE-hard 500 FIT, D-HARD applied with a 20 s detection, R-ELASTIC removed, the report
+at 40 windows and 8 permutations — seven tool calls, no file written by the model, the report under `out/`.

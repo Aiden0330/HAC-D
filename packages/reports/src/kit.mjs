@@ -3,12 +3,10 @@
  * docs/ASCEND_BOM_100K.html): the page shell (bilingual zh / en in one file with a toggle, print shows the active language, the
  * house CSS of the earlier reports), KaTeX at build time with embedded fonts, SVG figure helpers with enlarged type (FS = 1.18 × the
  * earlier reports), flow-chart nodes, chips, and the hardware schematics of the four architectures used by the overlay figures.
- * Relocated from scripts/report-kit.mjs (v5 T10); every file it reads is resolved from the katex package directory, never from
- * the working directory.
+ * Relocated from scripts/report-kit.mjs (v5 T10). v6.3: no file access here — the KaTeX fonts are registered by katex-node.mjs
+ * (the Node entry, read from the installed katex package) or by a browser build through setKatexCss (katexCssFrom), so the kit
+ * and the recipes also run in a web worker (@hac-d/reports/browser).
  */
-import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
 import katex from 'katex';
 import { esc, fmt, tw, wrap, lines, textBlock, STYLE } from './svg-base.mjs';
 import { BASE_CSS } from './base-css.mjs';
@@ -71,10 +69,18 @@ export const tiny = (x, y, t, anchor = 'middle', style = '') => `<text x="${x}" 
 export const ENDS = (T) => [['replay', T('重执行', 'replay'), 'var(--s3)'], ['custom', T('透明梯级', 'transparent rung'), 'var(--s5)'], ['elastic', T('弹性', 'elastic'), 'var(--s1)'], ['process', T('进程', 'process'), 'var(--s4)'], ['global', T('全局恢复', 'global'), 'var(--s2)']];
 
 /* ---------------- LaTeX at build time (KaTeX), fonts embedded ---------------- */
-const KATEX_FONTS = [['KaTeX_Main', 'normal', 'KaTeX_Main-Regular'], ['KaTeX_Math', 'italic', 'KaTeX_Math-Italic'], ['KaTeX_Size1', 'normal', 'KaTeX_Size1-Regular'], ['KaTeX_Size2', 'normal', 'KaTeX_Size2-Regular'], ['KaTeX_Size3', 'normal', 'KaTeX_Size3-Regular'], ['KaTeX_Size4', 'normal', 'KaTeX_Size4-Regular'], ['KaTeX_Caligraphic', 'normal', 'KaTeX_Caligraphic-Regular'], ['KaTeX_AMS', 'normal', 'KaTeX_AMS-Regular']];
-/** the installed katex package (the same copy `import katex` resolves to), located from this file rather than the working directory */
-const KATEX_DIR = dirname(createRequire(import.meta.url).resolve('katex/package.json'));
-export const KATEX_CSS = KATEX_FONTS.map(([fam, style, file]) => `@font-face{font-family:${fam};font-style:${style};font-weight:400;font-display:block;src:url(data:font/woff2;base64,${readFileSync(join(KATEX_DIR, 'dist', 'fonts', `${file}.woff2`)).toString('base64')}) format("woff2")}`).join('\n') + '\n' + readFileSync(join(KATEX_DIR, 'dist', 'katex.min.css'), 'utf8').replace(/@font-face\{[^}]*\}/g, '');
+/** the KaTeX fonts a report may need: [family, style, file]; the guard below refuses output that needs any other */
+export const KATEX_FONTS = [['KaTeX_Main', 'normal', 'KaTeX_Main-Regular'], ['KaTeX_Math', 'italic', 'KaTeX_Math-Italic'], ['KaTeX_Size1', 'normal', 'KaTeX_Size1-Regular'], ['KaTeX_Size2', 'normal', 'KaTeX_Size2-Regular'], ['KaTeX_Size3', 'normal', 'KaTeX_Size3-Regular'], ['KaTeX_Size4', 'normal', 'KaTeX_Size4-Regular'], ['KaTeX_Caligraphic', 'normal', 'KaTeX_Caligraphic-Regular'], ['KaTeX_AMS', 'normal', 'KaTeX_AMS-Regular']];
+/** the KaTeX CSS with the fonts embedded as data URIs: `fonts` = [{ family, style, base64 }] (KATEX_FONTS order), `minCss` = katex.min.css */
+export const katexCssFrom = (fonts, minCss) => fonts.map((f) => `@font-face{font-family:${f.family};font-style:${f.style};font-weight:400;font-display:block;src:url(data:font/woff2;base64,${f.base64}) format("woff2")}`).join('\n') + '\n' + minCss.replace(/@font-face\{[^}]*\}/g, '');
+let katexCssValue = null;
+/** register the KaTeX CSS the page shell embeds: katex-node.mjs does it from the installed package (Node entry index.mjs); a browser build passes the fonts it fetched */
+export function setKatexCss(css) { katexCssValue = css; }
+/** the registered KaTeX CSS (throws until setKatexCss ran: import @hac-d/reports under Node, or register the fonts in a browser build) */
+export function katexCss() {
+  if (katexCssValue === null) throw new Error('KaTeX CSS not registered: import @hac-d/reports (Node, reads the katex package) or call setKatexCss(katexCssFrom(fonts, minCss)) before rendering a page');
+  return katexCssValue;
+}
 const usedFonts = new Set();
 const ALLOWED = new Set(['mathnormal', 'mathcal', 'amsrm']);
 export const tex = (src, display = false) => { const h = katex.renderToString(src, { displayMode: display, output: 'htmlAndMathml', throwOnError: true, strict: 'ignore' }); for (const m of h.matchAll(/class="[^"]*\b(mathnormal|mathit|mathbf|amsrm|textbf|textit|mathsf|mathtt|mathcal|mathfrak|mathscr|boldsymbol)\b/g)) usedFonts.add(m[1]); return h; };
@@ -101,8 +107,9 @@ export const KIT_CSS = `
   .tag { display: inline-block; font-size: 10.5px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); margin-left: 4px; vertical-align: middle; }
   td.ok { color: var(--accent); font-weight: 600; } td.warn { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
   sup { font-size: 0.75em; line-height: 0; }
+  figure.schem figcaption.top { margin: 0 0 4px; font-weight: 600; color: var(--ink); font-size: 13px; }
   @media screen and (max-width: 760px) { #lang { top: 6px; right: 6px; } }
-  @media print { #lang { display: none !important; } .katex { font-size: 1.02em; } .math-block { padding: 1px 6px; margin: 2px 0; overflow: visible; } .math-block + .math-block { margin-top: -2px; } .katex-display { margin: 0.12em 0; } .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; } }
+  @media print { figure.schem figcaption.top { font-size: 8.3px; margin: 0 0 1px; } #lang { display: none !important; } .katex { font-size: 1.02em; } .math-block { padding: 1px 6px; margin: 2px 0; overflow: visible; } .math-block + .math-block { margin-top: -2px; } .katex-display { margin: 0.12em 0; } .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; } }
 `;
 const SCRIPT = `<script>
 (() => {
@@ -136,7 +143,7 @@ export function pageShell({ title, description, zhBody, enBody, extraCss = '' })
 <meta name="description" content="${esc(description)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
-<style>${KATEX_CSS}</style>
+<style>${katexCss()}</style>
 <style>${BASE_CSS}${KIT_CSS}${extraCss}</style>
 </head>
 <body>

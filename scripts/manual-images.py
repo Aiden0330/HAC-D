@@ -10,6 +10,7 @@ crops = [
     ('reliability', 'reliability', (380, 300, 1280, 2300)),
     ('mechanisms', 'mechanisms', (0, 0, 1280, 1750)),
     ('allocation', 'allocation', (0, 100, 1280, None)),
+    ('allocation-report', 'allocation-report', (0, 100, 1280, 1500)),
     ('library', 'library', (0, 0, 1280, 1300)),
     ('compare', 'compare', (0, 0, 1280, 1250)),
     ('simulate', 'simulate', (0, 0, 1280, 1500)),

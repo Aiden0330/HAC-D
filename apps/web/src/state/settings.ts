@@ -9,8 +9,8 @@ import type { StrategySettings } from '../panels/StrategyPanel.js';
  * settings too; `compare` keeps the comparison set (Projects › Compare) and the tornado metric (Review › Sensitivity). Older
  * bundles without the two new groups normalise to their defaults.
  */
-/** v5.3 'cross' (the former Cross-scale tab) is gone: a stored value falls back to 'strategies', where the across-sizes card now lives */
-export type AllocationTab = 'strategies' | 'classic';
+/** v5.3 'cross' (the former Cross-scale tab) is gone; v6.3 'report' (the Findings report of the project, one button) is the first tab and the default */
+export type AllocationTab = 'report' | 'strategies' | 'classic';
 export type MechanismsTab = 'selection' | 'chain' | 'audit';
 export type TopologyTab = 'picture' | 'hardware' | 'reliability';
 export type ProjectsTab = 'list' | 'new' | 'import' | 'compare';
@@ -55,7 +55,7 @@ export interface ProjectSettings {
 export function defaultProjectSettings(): ProjectSettings {
   return {
     allocation: {
-      tab: 'strategies',
+      tab: 'report',
       strategy: null,
       classic: { method: 'arinc', goodputTarget: null, availabilityTarget: null, restartShare: 0.5, basis: null, lossMethod: 'proportional', lossWeights: {} },
     },
@@ -77,7 +77,7 @@ export function defaultProjectSettings(): ProjectSettings {
 
 /** the allowed values of the enumerated settings (a stored value outside the list falls back to the default) */
 const ENUMS: Record<string, readonly string[]> = {
-  'allocation.tab': ['strategies', 'classic'],
+  'allocation.tab': ['report', 'strategies', 'classic'],
   'allocation.classic.method': ['arinc', 'agree', 'equal', 'feasibility', 'minimum-effort', 'cost-optimal'],
   'allocation.classic.lossMethod': ['proportional', 'equal', 'custom'],
   'mechanisms.tab': ['selection', 'chain', 'audit'],

@@ -12,10 +12,14 @@
  * sentence with the hacd command, record / set / override ids, run options and engine version. Sizes, the main scale, the window
  * count and the scale range come from `results`; with the v4.4 data the output is byte-identical to the committed reports.
  * Relocated from scripts/build-ascend-allocation-findings.mjs (v5 T10), which is now a thin wrapper that reads and writes the files.
+ * v6.3: Figure 1 is the topology schematic drawn from the record (the web app's Picture tab, schematic.mjs) at the headline scale, so
+ * `record` is required (hacd findings writes records.json next to the data); the overlay became Figure 2; Table 3 groups the units
+ * under the six layers with the layer's hard FIT per NPU and share in its section row.
  */
+import { topologySchematicSvg } from './schematic.mjs';
 import { esc, fmt, tw, wrap, lines, pct, fk, pP, f2, kN, hours, secs, sz, W, svgDyn, svgClose, titleBlock, legend, flow, chip, CHIP_H, pages, pageShell, drawLayer, zoomLines, topoGeomFromRecord, provenanceFooter, countWord } from './kit.mjs';
 
-const UNIT_LAYER = { npu: 'npu', cluster: 'cluster', node: 'node', cabinet: 'cabinet', fabric: 'superpod', 'scale-out': 'scaleout' };
+const UNIT_LAYER = { npu: 'npu', cluster: 'cluster', node: 'node', cabinet: 'cabinet', pod: 'superpod', fabric: 'superpod', 'scale-out': 'scaleout' };
 /** architecture id → file suffix of docs/ASCEND_ALLOCATION_FINDINGS_<suffix>.html */
 export const FINDINGS_FILES = { native950: '950', ubl128: 'UBL128', cm384: 'CM384', a3server: 'A3SERVER' };
 
@@ -90,11 +94,19 @@ export function findingsHtml(arch, { results, mechanisms, shapley, record, prove
     const conclusion = T(`<b>结论（MTBF / MTTR 要求，${kN(MAIN, lang)}卡，降额）</b>：今天 MTBF_hw ${hours(t5.kpiDerated.mtbfHwH, lang)}、MTTR_hw ${secs(t5.kpiDerated.mttrS)}，B = ${fmt(q5.B, 1)} s/h → 在今天的 MTTR 下 MTBF ≥ ${hours(q5.mtbfAtTodayMttrH, lang)}（× ${fk(q5.mtbfFactor)}），或在今天的 MTBF 下 MTTR ≤ ${secs(q5.mttrAtTodayMtbfS)}（× ${fk(q5.mttrFactor)}）；推荐设计落在 MTBF ${hours(r5.final.kpiDerated.mtbfHwH, lang)}、MTTR ${secs(r5.final.kpiDerated.mttrS)}——${VIA.zh}。`,
       `<b>Conclusion (MTBF / MTTR requirement at ${kN(MAIN, lang)}, derated)</b>: today MTBF_hw ${hours(t5.kpiDerated.mtbfHwH, lang)}, MTTR_hw ${secs(t5.kpiDerated.mttrS)}, B = ${fmt(q5.B, 1)} s/h → MTBF ≥ ${hours(q5.mtbfAtTodayMttrH, lang)} at today’s MTTR (× ${fk(q5.mtbfFactor)}) or MTTR ≤ ${secs(q5.mttrAtTodayMtbfS)} at today’s MTBF (× ${fk(q5.mttrFactor)}); the recommended design lands at MTBF ${hours(r5.final.kpiDerated.mtbfHwH, lang)}, MTTR ${secs(r5.final.kpiDerated.mttrS)} — ${VIA.en}.`);
 
-    /* ---------------- Figure 1: the overlay ---------------- */
+    /* ---------------- Figure 1: the topology schematic (v6.3: the web app's Picture tab, drawn from the record at the headline scale) ---------------- */
+    function figSchematic() {
+      if (!record) throw new Error(`${arch}: the Findings page needs the topology record for Figure 1 — pass it as 'record' (hacd findings writes records.json next to the data)`);
+      const pic = topologySchematicSvg({ template: record.template, superpod: record.superpod, scaleOut: record.scaleOut }, Z5.counts, lang, { id: `fig-topology-${lang}` });
+      const cap = T(`图 1：${SH} 拓扑示意图，${kN(MAIN, lang)}卡——按模板几何绘制（只画少量单元，总数见标注；scale-out 网络在上，一个超节点在中，右侧放大一个节点）`, `Figure 1: ${SH} topology schematic at ${kN(MAIN, lang)} NPUs — drawn from the template geometry (a few units drawn, totals in the labels; the scale-out network on top, one SuperPoD in the middle, one node enlarged on the right)`);
+      return `<figure class="chart schem"><figcaption class="top">${esc(cap)}</figcaption><div class="scroll">${pic.svg}</div></figure>`;
+    }
+
+    /* ---------------- Figure 2: the overlay ---------------- */
     function figOverlay() {
       const x0 = 14, colW = 150, step = 158, schemH = 110;
       const kList = SIZES.map((n) => `× ${fk(Z(n).recommended.k)}`).join(' / ');
-      const head = titleBlock(T(`图 1：${SH} 的硬件层级与分层预算——每层：允许的实例 MTBF、层 MTTR、不可用度预算 Uℓ（降额，百分点），${NS.zh}；k = ${kList}`, `Figure 1: ${SH} hardware hierarchy and layer budgets — per layer: allowed MTBF per instance, layer MTTR and unavailability budget Uℓ (derated, points) at ${NS.en}; k = ${kList}`));
+      const head = titleBlock(T(`图 2：${SH} 的硬件层级与分层预算——每层：允许的实例 MTBF、层 MTTR、不可用度预算 Uℓ（降额，百分点），${NS.zh}；k = ${kList}`, `Figure 2: ${SH} hardware hierarchy and layer budgets — per layer: allowed MTBF per instance, layer MTTR and unavailability budget Uℓ (derated, points) at ${NS.en}; k = ${kList}`));
       const lhH = Math.round(sz(11.5) * 1.3), lhM = Math.round(sz(9.8) * 1.3), lhT = Math.round(sz(8.4) * 1.45);
       const top = 50;
       const hdrs = LV.map((l) => ({ n: wrap(LN[l], colW - 4, sz(11.5) * 1.05), i: wrap(LAYER[l].instance[lang], colW - 4, sz(9.8)) }));
@@ -178,10 +190,19 @@ export function findingsHtml(arch, { results, mechanisms, shapley, record, prove
     // v5 the FIT's own confidence where a failure-rate override replaced the library value (UnitBudgetRow.fitProvenance)
     const fitTag = (u) => (u.fitProvenance?.length ? ` <span class="cf fit" title="${esc(u.fitProvenance.map((f) => `${f.id}: ${fmt(f.fit, 1)} FIT, ${f.confidence} — ${f.source}`).join(' | '))}">FIT ${esc([...new Set(u.fitProvenance.map((f) => f.confidence))].join(' / '))}</span>` : '');
     const anyFitTag = units.some((u) => u.fitProvenance?.length);
-    const t3rows = units.map((u) => `<tr><td>${esc(u.name[lang])} <span class="cf">${esc(u.confidence)}</span>${fitTag(u)}</td><td>${esc(u.faultUnit)} · ${esc(LN[UNIT_LAYER[u.level]] ?? u.level)}</td><td class="num">${fmt(u.count)}</td><td class="num">${fmt(u.fitToday, 1)}</td>${SIZES.map((n) => `<td class="num${Z(n).recommended.k < 1 ? ' b' : ''}">${Number.isFinite(fitAt(n, u.id)) ? fmt(fitAt(n, u.id), 1) : '—'}</td>`).join('')}<td class="num">${hours(u.mtbfAllowedH, lang)}</td><td class="num">${fmt((100 * u.hardPerHourToday) / t0.kpi.lamHw, 1)} %</td></tr>`).join('');
-    const table3 = `<div class="table-wrap"><table class="s3"><thead><tr>${th(T('硬件单元', 'Hardware unit'), false)}${th(T('故障单元 · 层', 'Fault unit · layer'), false)}${th(T(`数量（${kN(MAIN, lang)}）`, `Count (${kN(MAIN, lang)})`))}${th(T('今天 FIT / 单元', 'Today FIT per unit'))}${SIZES.map((n) => th(T(`允许 FIT ${kN(n, lang)}`, `Allowed FIT ${kN(n, lang)}`))).join('')}${th(T(`MTBF / 单元 ${kN(MAIN, lang)}（允许）`, `MTBF per unit ${kN(MAIN, lang)} (allowed)`))}${th(T('占今天集群中断率', 'Share of today’s interruption rate'))}</tr></thead><tbody><tr class="sec"><td colspan="4">${esc(T('硬件系数 k（公式 4）', 'Hardware factor k (formula 4)'))}</td>${SIZES.map((n) => `<td class="num">× ${fk(Z(n).recommended.k)}</td>`).join('')}<td colspan="2"></td></tr>${t3rows}</tbody></table></div>`;
-    const note3 = T(`口径：每单元硬中断 FIT（HAC-D 单元口径；跨超节点单元为 UB 类比值 @roce，assumed），允许 = 今天 × k（ARINC，公式 4；粗体 k < 1 为交付任务，其余为验收上限），MTBF / 单元 = 10⁹ / 允许 FIT，占比 = 该单元类今天的中断率 / 集群中断率 Σλ（只计硬中断）${anyFitTag ? '，“FIT …”标签 = 失效率覆盖文件给出的 FIT 置信度' : ''}；“—” = 该规模没有这类单元，数量与几何假设见 ASCEND_BOM_100K。`,
-      `口径: hard-interruption FIT per unit (HAC-D per-unit basis; scale-out units the UB analogue @roce, assumed), allowed = today × k (ARINC, formula 4; bold k < 1 a delivery task, the others acceptance ceilings), MTBF per unit = 10⁹ / allowed FIT, share = the unit class’s interruption rate today / the cluster rate Σλ (hard interruptions only)${anyFitTag ? ', a “FIT …” tag = the FIT confidence of the failure-rate override' : ''}; “—” = no such unit at that size, counts and geometry assumptions in ASCEND_BOM_100K.`);
+    const unitRow = (u) => `<tr><td>${esc(u.name[lang])} <span class="cf">${esc(u.confidence)}</span>${fitTag(u)}</td><td>${esc(u.faultUnit ?? '—')}</td><td class="num">${fmt(u.count)}</td><td class="num">${u.faultUnit ? fmt(u.fitToday, 1) : '—'}</td>${SIZES.map((n) => `<td class="num${Z(n).recommended.k < 1 ? ' b' : ''}">${Number.isFinite(fitAt(n, u.id)) && u.faultUnit ? fmt(fitAt(n, u.id), 1) : '—'}</td>`).join('')}<td class="num">${u.faultUnit ? hours(u.mtbfAllowedH, lang) : '—'}</td><td class="num">${u.faultUnit ? `${fmt((100 * u.hardPerHourToday) / t0.kpi.lamHw, 1)} %` : '—'}</td></tr>`;
+    // v6.3 the units under the six layers (top-down); the section row carries the layer's hard FIT per NPU (unit library split by fault unit, as Figure 2) and its share of today's rate
+    const COLS3 = 6 + SIZES.length;
+    const t3rows = LV.map((l) => {
+      const rows = units.filter((u) => UNIT_LAYER[u.level] === l);
+      if (!rows.length) return '';
+      const share = (100 * rows.reduce((a, u) => a + u.hardPerHourToday, 0)) / t0.kpi.lamHw;
+      const fl = fitOfLayer(l);
+      return `<tr class="sec"><td colspan="${COLS3}">${esc(T(`${LN[l]} · 硬 FIT / NPU ${fmt(fl, 1)} · 占今天集群中断率 ${fmt(share, 1)} %`, `${LN[l]} · hard FIT per NPU ${fmt(fl, 1)} · ${fmt(share, 1)} % of today’s interruption rate`))}</td></tr>` + rows.map(unitRow).join('');
+    }).join('');
+    const table3 = `<div class="table-wrap"><table class="s3"><thead><tr>${th(T('硬件单元（按层级）', 'Hardware unit (by layer)'), false)}${th(T('故障单元', 'Fault unit'), false)}${th(T(`数量（${kN(MAIN, lang)}）`, `Count (${kN(MAIN, lang)})`))}${th(T('今天 FIT / 单元', 'Today FIT per unit'))}${SIZES.map((n) => th(T(`允许 FIT ${kN(n, lang)}`, `Allowed FIT ${kN(n, lang)}`))).join('')}${th(T(`MTBF / 单元 ${kN(MAIN, lang)}（允许）`, `MTBF per unit ${kN(MAIN, lang)} (allowed)`))}${th(T('占今天集群中断率', 'Share of today’s interruption rate'))}</tr></thead><tbody><tr class="sec"><td colspan="4">${esc(T('硬件系数 k（公式 4）', 'Hardware factor k (formula 4)'))}</td>${SIZES.map((n) => `<td class="num">× ${fk(Z(n).recommended.k)}</td>`).join('')}<td colspan="2"></td></tr>${t3rows}</tbody></table></div>`;
+    const note3 = T(`口径：每单元硬中断 FIT（HAC-D 单元口径；跨超节点单元为 UB 类比值 @roce，assumed），允许 = 今天 × k（ARINC，公式 4；粗体 k < 1 为交付任务，其余为验收上限），MTBF / 单元 = 10⁹ / 允许 FIT，占比 = 该单元类今天的中断率 / 集群中断率 Σλ（只计硬中断）${anyFitTag ? '，“FIT …”标签 = 失效率覆盖文件给出的 FIT 置信度' : ''}；行按图 2 的六个层级分组，层行 = 该层各故障单元的硬 FIT / NPU（Σ 数量 × 单元 FIT / N）与占比之和；只计数的单元（无故障单元）显示“—”，“—” 也表示该规模没有这类单元，数量与几何假设见 ASCEND_BOM_100K。`,
+      `口径: hard-interruption FIT per unit (HAC-D per-unit basis; scale-out units the UB analogue @roce, assumed), allowed = today × k (ARINC, formula 4; bold k < 1 a delivery task, the others acceptance ceilings), MTBF per unit = 10⁹ / allowed FIT, share = the unit class’s interruption rate today / the cluster rate Σλ (hard interruptions only)${anyFitTag ? ', a “FIT …” tag = the FIT confidence of the failure-rate override' : ''}; rows grouped under the six layers of Figure 2, a layer row = the sum over its fault units of hard FIT per NPU (Σ count × unit FIT / N) and of the share; count-only units (no fault unit) show “—”, as does a unit absent at that size; counts and geometry assumptions in ASCEND_BOM_100K.`);
 
     /* ---------------- Table 4: mechanism parameters ---------------- */
     const PK = { success: T('成功', 'success'), successSeconds: T('耗时 s', 'time s'), failureSeconds: T('失败耗时 s', 'fail s'), coverage: T('覆盖', 'coverage'), detectSeconds: T('检测 s', 'detect s'), domains: T('域数', 'domains'), recoverSeconds: T('局部恢复 s', 'recover s'), syncSeconds: T('同步 s', 'sync s'), computeSeconds: T('周期 s', 'period s'), saveSeconds: T('保存 s', 'save s'), stepSeconds: T('重算 s', 'recompute s'), eligibleShare: T('适用份额', 'eligible'), manualProbabilityTarget: T('人工概率', 'P(manual)'), pauseSeconds: T('暂停 s', 'pause s'), startupTargetSeconds: T('启动 s', 'startup s'), compressionRatio: T('压缩比', 'compression'), decompressSeconds: T('解压 s', 'decompress s'), overhead: T('开销', 'overhead') };
@@ -241,6 +262,7 @@ export function findingsHtml(arch, { results, mechanisms, shapley, record, prove
       `<h1>${esc(T(`${NAME}：可用度目标的 MTBF / MTTR 分层预算，${RANGE.zh}卡`, `${NAME}: hierarchical MTBF / MTTR budgets for the availability goal, ${RANGE.en} NPUs`))}</h1>
   <p class="sub">${sub}</p>
   <div class="callout">${conclusion}</div>
+  ${figSchematic()}
   <figure class="chart"><div class="scroll">${figOverlay()}</div></figure>
   <h3>${esc(T('表 1：系统级目标与方案', 'Table 1: System-level targets and plans'))}</h3>
   ${table1}

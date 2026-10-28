@@ -213,11 +213,52 @@ const kpiTableOf = (summary) => {
 /** the synonym table of a small model for class prefixes it meets in device names */
 const CLASS_SYNONYMS = { HBM: 'MEMT', DRAM: 'DDR', DIMM: 'DDR', PSU: 'POWER', FAN: 'COOL', BMC: 'MGMT', OPTIC: 'OPT', OPTICS: 'OPT', TRANSCEIVER: 'OPT', SWITCH: 'FABRIC', DISK: 'SSD', NVME: 'SSD', HOST: 'CPU', NPU: 'CORE' };
 
+/* ---------- v6.4 the project workflow: the task names a template, the changes and the report settings ---------- */
+function parseProject(text) {
+  const m = /Project workflow: template ([a-z0-9-]+), npus (\d+)(?:, id ([a-z0-9-]+))?(?:, name "([^"]+)")?/.exec(text);
+  if (!m) return null;
+  const line = (label) => g(new RegExp(`^${label}: (.*)$`, 'm'), text);
+  const items = (x) => (x ?? '').split(';').map((y) => y.trim()).filter(Boolean);
+  const mech = items(line('Mechanisms'));
+  return {
+    template: m[1], npus: Number(m[2]), id: m[3] ?? 'project', name: m[4],
+    sets: items(line('Set')), fits: items(line('FIT')),
+    apply: mech.filter((x) => x.startsWith('apply ')).map((x) => x.slice(6).trim()), remove: mech.filter((x) => x.startsWith('remove ')).map((x) => x.slice(7).trim()),
+    report: Object.fromEntries(items(line('Report')).map((kv) => { const [k, v] = kv.split(/\s+/); return [k, v]; })),
+  };
+}
+/** the scripted project workflow of a small model: one command per turn, read back, then the final message of procedure D */
+function projectTurn(W, calls, pj) {
+  const file = `${W}/project/${pj.id}.json`, OUT = `${W}/out`;
+  const has = (n) => calls.some((c) => c.name === n);
+  const last = (n) => [...calls].reverse().find((c) => c.name === n);
+  const tool = (name, args) => ({ name, args });
+  const broken = calls.find((c) => c.hacd && c.hacd.exitCode !== 0);
+  if (broken) return { content: `status: failed\nfailed: hacd ${broken.name.replace(/^hacd_/, '').replace(/_/g, ' ')} (exit ${broken.hacd.exitCode})\nstderr: ${(broken.hacd.stderr ?? '').split('\n').slice(-5).join(' ')}` };
+  if (!has('hacd_scenario_new')) return { toolCalls: [tool('hacd_scenario_new', { template: pj.template, npus: pj.npus, id: pj.id, ...(pj.name ? { name: pj.name } : {}), out: file })] };
+  if (!has('hacd_scenario_fields')) return { toolCalls: [tool('hacd_scenario_fields', { scenario: file })] };
+  if (pj.sets.length && !has('hacd_scenario_set')) return { toolCalls: [tool('hacd_scenario_set', { scenario: file, sets: pj.sets, out: file })] };
+  if (pj.fits.length && !has('hacd_scenario_fit')) return { toolCalls: [tool('hacd_scenario_fit', { scenario: file, sets: pj.fits, out: file })] };
+  if ((pj.apply.length || pj.remove.length) && !has('hacd_scenario_mechanisms')) return { toolCalls: [tool('hacd_scenario_mechanisms', { scenario: file, ...(pj.apply.length ? { apply: pj.apply } : {}), ...(pj.remove.length ? { remove: pj.remove } : {}), out: file })] };
+  if (!has('hacd_scenario_show')) return { toolCalls: [tool('hacd_scenario_show', { scenario: file })] };
+  if (!has('hacd_scenario_report')) return { toolCalls: [tool('hacd_scenario_report', { scenario: file, out: OUT, ...(pj.report.scales ? { scales: pj.report.scales } : {}), ...(pj.report.trials ? { trials: Number(pj.report.trials) } : {}), ...(pj.report.permutations ? { permutations: Number(pj.report.permutations) } : {}) })] };
+  const rep = last('hacd_scenario_report');
+  const man = rep.hacd ? safeJson(rep.hacd.stdout, null) : null;
+  if (!man) return { content: 'status: failed\nfailed: hacd scenario report (no manifest on stdout)' };
+  const show = safeJson(last('hacd_scenario_show').hacd?.stdout ?? '', {})?.summary ?? {};
+  const pct = (x) => `${(100 * x).toFixed(3)} %`;
+  const kpi = (man.kpi ?? []).map((k) => `| ${k.scale} | ${pct(k.today.aOp)} / ${pct(k.today.aOpDerated)} | ${pct(k.recommended.aOpDerated)} | ${k.recommended.mechanisms.join('+') || '—'} | k ${k.recommended.k.toFixed(3)} |`);
+  const changes = [...pj.sets.map((x) => `(${x.replace('=', ', ')}, task)`), ...pj.fits.map((x) => `(fit ${x.replace('=', ', ')}, task)`), ...pj.apply.map((x) => `(apply ${x}, task)`), ...pj.remove.map((x) => `(remove ${x}, task)`)];
+  return { content: ['status: ok', `project: ${file}`, `changes: ${changes.join('; ') || 'none'}`, `mechanisms applied: ${(show.mechanisms ?? []).map((m) => m.id).join(' + ')}`, 'KPI (manifest): | scale | today A_op nominal / derated | recommended A_op derated | added mechanisms | hardware k |', ...kpi, `paths: findings ${man.files?.findings}; methodology ${man.files?.methodology}; bundle ${man.files?.bundle}; sidecar ${man.files?.data}`].join('\n') };
+}
+
 /** the next turn of the operator: { toolCalls: [{name, args}] } or { content } */
 function operatorTurn(body) {
   const user = body.messages.find((m) => m.role === 'user')?.content ?? '';
   const t = parseTask(user);
   const calls = history(body.messages);
+  const pj = parseProject(user);
+  if (pj) return projectTurn(t.work, calls, pj);
   const files = knownFiles(calls);
   const W = t.work, WS = `${W}/ws`, STAGING = `${W}/staging`, OUT = `${W}/out`;
   const has = (name, pred = () => true) => calls.some((c) => c.name === name && pred(c));

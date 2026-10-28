@@ -6,8 +6,11 @@
  * Pure function of its data: `bom` = the bomDocument JSON (docs/backup/ascend-allocation/bom.json). No file access; the date comes
  * from `bom.generated`. v5: generic over the records in the data — families, architectures and variants are read from `designs`
  * and `scaleOutDesigns`, labels from the records' bilingual names, assumptions from the records' `assumed` items; optional
- * `provenance` replaces the footer's data / reproduce sentence (hacd bom).
+ * `provenance` replaces the footer's data / reproduce sentence (hacd bom). v6.3: Figure 1a–d are the topology schematics of the main
+ * designs (schematic.mjs, from each design's `template` / `superpod` / `scaleOut` and counts), the part density is Figure 2, and
+ * Table 1 is sectioned by the hardware layers top-down (SuperPoD, compute cabinet, node, NPU; the scale-out network is Table 2).
  */
+import { topologySchematicSvg } from './schematic.mjs';
 import { esc, fmt, pct, tex, W, sz, tw, svgDyn, svgClose, titleBlock, legend, pages, pageShell, provenanceFooter, countWord, kN } from './kit.mjs';
 
 const cnt = (d, id) => d.rows.find((r) => r.id === id)?.count ?? 0;
@@ -72,16 +75,20 @@ function body(lang, ctx) {
 
   /* ---------- Table 1: scale-up part ---------- */
   const cell = (d, id, n = cnt(d, id)) => { const r = rowOf(d, id); if (!r) return `<td class="num">—</td>`; return `<td class="num"${r ? ` data-tip="${esc(`${r.name[lang]}|${CONF[r.confidence]}`)}"` : ''}>${fmt(n)}<br><span class="src">${r1k(k1(n))} · ${CONF[r.confidence]}</span></td>`; };
-  const T1 = [
-    ['sec', T('计算', 'Compute')], ['npu', 'NPU'], ['cpu', T('CPU（鲲鹏）', 'CPUs (Kunpeng)')], ['node', T('节点（NPU 托盘 / 服务器，8 NPU）', 'nodes (NPU trays / servers, 8 NPUs)')], ['qingtian', T('擎天卡', 'Qingtian cards')],
-    ['sec', T('机柜与超节点', 'Cabinets and SuperPoDs')], ['cabinet', T('计算柜', 'compute cabinets')], ['pod', T('超节点 / UB 域', 'SuperPoDs / UB domains')], ['commCabinet', T('互联柜 / 通信柜（UB 交换）', 'UB / communication cabinets')],
-    ['sec', T('UB 交换网络', 'UB fabric')], ['ubRackSwitch', T('UB 交换芯片：柜内 LRS / LinkBlade', 'UB switch chips: in-cabinet LRS / LinkBlade')], ['ubPodSwitch', T('UB 交换芯片：超节点层（光 / LinkDevice）', 'UB switch chips: pod tier (optical / LinkDevice)')], ['ubL1', T('UB 交换芯片：L1（节点内）', 'UB switch chips: L1 (in node)')], ['ubL2', T('UB 交换芯片：L2（通信柜）', 'UB switch chips: L2 (comm. cabinets)')],
-    ['ubSum', T('UB 交换芯片合计', 'UB switch chips, total')], ['ubMeshLink', T('UB 电链路（柜内 / 托盘内全互联）', 'UB electrical mesh links')], ['ubRackMesh', T('UB 电链路（柜间全互联）', 'UB electrical rack-to-rack links')], ['ubLink', T('UB 光链路', 'UB optical links')], ['npoEngine', T('NPO 光引擎', 'NPO optical engines')], ['ubTransceiver', T('UB 光模块（链路两端）', 'UB transceivers (both ends)')],
+  // v6.3 the parts under the hardware layers top-down (the Findings report's layers; the scale-out network is Table 2, the cluster level has no counted part)
+  const LAYERS1 = [
+    ['superpod', T('超节点（UB 域）', 'SuperPoD (UB domain)'), ['pod', 'fabric'], [['pod', T('超节点 / UB 域', 'SuperPoDs / UB domains')], ['commCabinet', T('互联柜 / 通信柜（UB 交换）', 'UB / communication cabinets')], ['ubRackSwitch', T('UB 交换芯片：柜内 LRS / LinkBlade', 'UB switch chips: in-cabinet LRS / LinkBlade')], ['ubPodSwitch', T('UB 交换芯片：超节点层（光 / LinkDevice）', 'UB switch chips: pod tier (optical / LinkDevice)')], ['ubL1', T('UB 交换芯片：L1（节点内）', 'UB switch chips: L1 (in node)')], ['ubL2', T('UB 交换芯片：L2（通信柜）', 'UB switch chips: L2 (comm. cabinets)')], ['ubSum', T('UB 交换芯片合计', 'UB switch chips, total')], ['ubMeshLink', T('UB 电链路（柜内 / 托盘内全互联）', 'UB electrical mesh links')], ['ubRackMesh', T('UB 电链路（柜间全互联）', 'UB electrical rack-to-rack links')], ['ubLink', T('UB 光链路', 'UB optical links')], ['npoEngine', T('NPO 光引擎', 'NPO optical engines')], ['ubTransceiver', T('UB 光模块（链路两端）', 'UB transceivers (both ends)')]]],
+    ['cabinet', T('计算柜', 'Compute cabinet'), ['cabinet'], [['cabinet', T('计算柜', 'compute cabinets')]]],
+    ['node', T('节点', 'Node'), ['node'], [['node', T('节点（NPU 托盘 / 服务器，8 NPU）', 'nodes (NPU trays / servers, 8 NPUs)')], ['cpu', T('CPU（鲲鹏）', 'CPUs (Kunpeng)')], ['qingtian', T('擎天卡', 'Qingtian cards')]]],
+    ['npu', 'NPU', ['npu'], [['npu', 'NPU']]],
   ];
-  // rows the main designs carry that the list above does not name (scale-out rows are Table 2; rate-only rows have no count)
-  const known = new Set(T1.map(([id]) => id));
-  const extra = uniq(MAIN.flatMap((d) => d.rows.filter((r) => !known.has(r.id) && r.level !== 'scale-out' && r.level !== 'cluster' && !r.noCount && r.count > 0).map((r) => r.id)));
-  const t1rows = [...T1.filter(([id]) => id === 'sec' || id === 'ubSum' || MAIN.some((d) => rowOf(d, id))), ...(extra.length ? [['sec', T('其他部件', 'Other parts')], ...extra.map((id) => [id, MAIN.find((d) => rowOf(d, id)).rows.find((r) => r.id === id).name[lang]])] : [])];
+  // rows the main designs carry that the lists above do not name go to their own level's layer (rate-only rows have no count)
+  const known = new Set(LAYERS1.flatMap(([, , , ids]) => ids.map(([id]) => id)));
+  const extraOf = (levels) => uniq(MAIN.flatMap((d) => d.rows.filter((r) => !known.has(r.id) && levels.includes(r.level) && !r.noCount && r.count > 0).map((r) => r.id))).map((id) => [id, MAIN.find((d) => rowOf(d, id)).rows.find((r) => r.id === id).name[lang]]);
+  const t1rows = LAYERS1.flatMap(([, name, levels, ids]) => {
+    const rows = [...ids.filter(([id]) => id === 'ubSum' || MAIN.some((d) => rowOf(d, id))), ...extraOf(levels)];
+    return rows.length ? [['sec', name], ...rows] : [];
+  });
   const t1 = `<div class="table-wrap"><table class="s1"><thead><tr><th>${esc(T('部件（数量；下行：每千 NPU · 置信度）', 'Part (count; second line: per 1,000 NPUs · confidence)'))}</th>${MAIN.map((d) => `<th class="num">${esc(d.name[lang])}</th>`).join('')}</tr></thead><tbody>${t1rows.map(([id, l]) => {
     if (id === 'sec') return `<tr class="sec"><td colspan="${MAIN.length + 1}">${esc(l)}</td></tr>`;
     if (id === 'ubSum') return `<tr class="sum"><td class="b">${esc(l)}</td>${MAIN.map((d) => `<td class="num b">${fmt(d.counts.ubSwitches)}<br><span class="src">${r1k(k1(d.counts.ubSwitches))}</span></td>`).join('')}</tr>`;
@@ -121,7 +128,7 @@ function body(lang, ctx) {
 
   /* ---------- Figure 1: small multiples ---------- */
   function figParts() {
-    const head = titleBlock(T(`图 1：${B.designs.length} 个设计的部件密度——UB 交换芯片与 scale-out 交换机（每千 NPU），光链路与光模块（每 NPU，实色 = UB、描边色块 = scale-out）`, `Figure 1: part density of the ${B.designs.length} designs — UB switch chips and scale-out switches (per 1,000 NPUs), optical links and transceivers (per NPU; solid = UB, outlined = scale-out)`));
+    const head = titleBlock(T(`图 2：${B.designs.length} 个设计的部件密度——UB 交换芯片与 scale-out 交换机（每千 NPU），光链路与光模块（每 NPU，实色 = UB、描边色块 = scale-out）`, `Figure 2: part density of the ${B.designs.length} designs — UB switch chips and scale-out switches (per 1,000 NPUs), optical links and transceivers (per NPU; solid = UB, outlined = scale-out)`));
     let g = svgDyn(`fig-parts-${lang}`, T('部件密度', 'Part density')) + head.svg + `<g transform="translate(0 ${head.dy})">`;
     const LW = 14 + Math.max(...ORDER.map((d) => tw(lab(d), sz(9.8)))) + 10, gap = 14, PW = (W - LW - 14 - 3 * gap) / 4, bh = 13, step = 18, fgap = 12, top = 66;
     const P = [
@@ -149,6 +156,16 @@ function body(lang, ctx) {
     g += lg.g;
     return svgClose(g, lg.y + 12 + head.dy);
   }
+
+  /* ---------- Figure 1a–d: the topology schematics of the main designs at N (v6.3, schematic.mjs) ---------- */
+  const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+  const figSchematics = () => MAIN.map((d, i) => {
+    if (!d.superpod && !d.scaleOut) throw new Error(`bomHtml: design ${d.id} carries neither a superpod nor a scale-out network for the schematic`);
+    const pic = topologySchematicSvg({ template: d.template, superpod: d.superpod, scaleOut: d.scaleOut }, d.counts, lang, { id: `fig-topo-${d.arch}-${lang}` });
+    const cap = T(`图 1${LETTERS[i]}：${d.name.zh}，${kN(N, 'zh')}卡拓扑示意图（主设计，按模板几何绘制：scale-out 网络在上，一个超节点在中，右侧放大一个节点；只画少量单元，总数见标注）`, `Figure 1${LETTERS[i]}: ${d.name.en}, topology schematic at ${kN(N, 'en')} NPUs (main design, drawn from the template geometry: the scale-out network on top, one SuperPoD in the middle, one node enlarged on the right; a few units drawn, totals in the labels)`);
+    return `<figure class="chart schem${i ? '' : ' first'}"><figcaption class="top">${esc(cap)}</figcaption><div class="scroll">${pic.svg}</div></figure>`;
+  }).join('\n  ');
+  const secSchem = figSchematics();
 
   const asm = (d) => d.assumed.map((x) => txt(x, lang)).join(sep);
   const narch = countWord(MAIN.length, 'zh').replace(/个$/, '种');
@@ -178,7 +195,8 @@ function body(lang, ctx) {
   <div class="callout"><ul>${keys.map((k) => `<li>${k}</li>`).join('')}</ul></div>
   <h3>${esc(T('表 1：scale-up 部分（超节点内，主设计）', 'Table 1: Scale-up part (inside the SuperPoD, main designs)'))}</h3>
   ${t1}
-  <p class="note">${T('“—”= 该架构没有此部件；0 = 模板有此行但数量为 0。UB 交换芯片合计 = 同类（交换芯片）相加；电链路与光链路分列，不相加。', '“—” = the architecture has no such part; 0 = the template has the row with count 0. The total adds switch chips only; electrical and optical links are never added.')}</p>`,
+  <p class="note">${T('行按硬件层级自上而下分组（超节点、计算柜、节点、NPU；scale-out 网络见表 2，集群级服务不计数）。“—”= 该架构没有此部件；0 = 模板有此行但数量为 0。UB 交换芯片合计 = 同类（交换芯片）相加；电链路与光链路分列，不相加。', 'Rows grouped by hardware layer, top-down (SuperPoD, compute cabinet, node, NPU; the scale-out network is Table 2, cluster-level services carry no count). “—” = the architecture has no such part; 0 = the template has the row with count 0. The total adds switch chips only; electrical and optical links are never added.')}</p>`,
+    secSchem,
     ...(wide ? [secT2, `${secT3}
   ${secFig}`, secT4] : [`${secT2}
   ${secT3}`, `${secFig}

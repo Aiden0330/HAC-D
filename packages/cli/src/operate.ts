@@ -110,9 +110,9 @@ export async function operate(a: Args, rest: string[]): Promise<void> {
   };
   writeFileSync(join(work, 'operator-result.json'), JSON.stringify(summary, null, 1) + '\n');
   if (result.finalMessage !== null) console.log(result.finalMessage);
-  const runs = result.commands.filter((c) => c[0] === 'ingest' && c[1] === 'run').length;
+  const runs = result.commands.filter((c) => (c[0] === 'ingest' && c[1] === 'run') || (c[0] === 'scenario' && c[1] === 'report')).length;
   log(`${result.stopped}${result.error ? ` (${result.error})` : ''}: ${result.steps} model turns, ${result.toolCalls.length} tool calls, ${result.writes.length} file(s) written, ${runs} pipeline run(s)${result.lastRun ? `, last run ${result.lastRun.status ?? '?'} (exit ${result.lastRun.exitCode})` : ''}; operator-result.json and operator-log.jsonl in ${work}`);
   if (result.stopped !== 'final') process.exit(1);
-  if (!result.lastRun) { log('the model finished without running the pipeline'); process.exit(1); }
+  if (!result.lastRun) { log('the model finished without running the pipeline or a project report'); process.exit(1); }
   process.exit(result.lastRun.exitCode ?? 1);
 }
