@@ -14,7 +14,7 @@ import {
   proposalToWorksheet, worksheetToProposal, proposalIntoSet, deviceTableFromSheet, EXAMPLE_DEVICE_TABLE, EXAMPLE_MAPPING, EXAMPLE_PROPOSAL,
 } from '../src/index.js';
 import type { SheetInfo } from '../src/index.js';
-import { BUILTIN_TOPOLOGY_RECORDS, DEFAULT_MECHANISM_SET, parseTopologyRecord, parseFaultRateOverride, normalizeFaultRates, WORKSHEET_KINDS, validateMechanismSet, type TopologyRecord, type MechanismSet } from '@hac-d/core';
+import { BUILTIN_TOPOLOGY_RECORDS, DEFAULT_MECHANISM_SET, parseTopologyRecord, parseFaultRateOverride, normalizeFaultRates, deviceFit, WORKSHEET_KINDS, validateMechanismSet, type TopologyRecord, type MechanismSet } from '@hac-d/core';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const data = join(here, '..', '..', 'core', 'data');
@@ -141,5 +141,49 @@ describe('device table from a sheet', () => {
     const r = deviceTableFromSheet(sheet, { id: 't', columns: { device: 'Part', value: 1, unit: 'Unit' }, sourceType: 'vendor', rowSource: 'vendor sheet' });
     expect(r.table.rows.map((x) => [x.device, x.unit, x.source])).toEqual([['Fan', 'afr', 'vendor sheet'], ['CPU', 'mtbf_h', 'vendor sheet'], ['NIC', 'per_1e6_h', 'vendor sheet']]);
     expect(() => deviceTableFromSheet(sheet, { id: 't', columns: { device: 'Nope' } })).toThrow(/no column headed 'Nope'/);
+  });
+  it('fifth review D2: a percent AFR becomes the fraction (noted as written); zh per-10⁶-h and per-hour headers are not MTBF', () => {
+    const one = (rows: (string | number | null)[][]) => deviceTableFromSheet(cells(rows), { id: 't', sourceType: 'vendor' }).table.rows[0];
+    const afr = (pct: number) => (-Math.log(1 - pct / 100) / 8760) * 1e9;
+    const a = one([['器件', '失效率', '单位', '来源'], ['DIMM', 0.5, '%/year', 'v']]);
+    expect([a.unit, a.value]).toEqual(['afr', 0.005]);
+    expect(a.note).toMatch(/0\.5 %\/year read as afr 0\.005/);
+    expect(deviceFit(a)).toBeCloseTo(afr(0.5), 6);
+    const b = one([['器件', 'AFR (%)', '来源'], ['SSD', 0.8, 'v']]);
+    expect([b.unit, b.value]).toEqual(['afr', 0.008]);
+    expect(deviceFit(b)).toBeCloseTo(afr(0.8), 6);
+    const c = one([['Part', 'Annual failure rate', 'source'], ['HDD', 0.02, 'v']]);
+    expect([c.unit, c.value, c.note]).toEqual(['afr', 0.02, undefined]);
+    const d = one([['器件', '失效率（每百万小时）', '来源'], ['PSU', 2.5, 'v']]);
+    expect([d.unit, deviceFit(d)]).toEqual(['per_1e6_h', 2500]);
+    const e = one([['器件', '每小时失效率', '来源'], ['FAN', 2e-6, 'v']]);
+    expect([e.unit, deviceFit(e)]).toEqual(['per_h', 2000]);
+    const f = one([['器件', '平均无故障时间（小时）', '来源'], ['CPU', 2e6, 'v']]);
+    expect([f.unit, deviceFit(f)]).toEqual(['mtbf_h', 500]);
+    const g = one([['Part', 'Failure rate (per million hours)', 'source'], ['PSU', 2.5, 'v']]);
+    expect([g.unit, deviceFit(g)]).toEqual(['per_1e6_h', 2500]);
+    const h = one([['Part', 'Rate', 'Unit', 'source'], ['Fan', '3 %', '% per year', 'v']]);
+    expect([h.unit, h.value]).toEqual(['afr', 0.03]);
+  });
+  it('recheck N1 / N2: a percent in the value cell is an AFR’s only; an MTBF in a multiple of hours is multiplied into hours', () => {
+    const all = (rows: (string | number | null)[][]) => deviceTableFromSheet(cells(rows), { id: 't', sourceType: 'vendor' });
+    const afr = (pct: number) => (-Math.log(1 - pct / 100) / 8760) * 1e9;
+    const a = all([['Device', 'AFR', 'Source'], ['DIMM', '0.5%', 'v']]).table.rows[0];
+    expect([a.unit, a.value, a.note]).toEqual(['afr', 0.005, '0.5% read as afr 0.005']);
+    expect(deviceFit(a)).toBeCloseTo(afr(0.5), 6);
+    const b = all([['器件', '年化失效率', '来源'], ['SSD', '0.3%', 'v']]).table.rows[0];
+    expect([b.unit, b.value]).toEqual(['afr', 0.003]);
+    const c = all([['Device', 'FIT', 'Source'], ['Fan', '5%', 'v'], ['PSU', 500, 'v']]);
+    expect(c.table.rows.map((r) => [r.device, r.value])).toEqual([['PSU', 500]]);
+    expect(c.skipped).toEqual([{ row: 2, reason: "a percentage ('5%') is not a FIT value (FIT, per 10⁶ h, per hour or MTBF hours)" }]);
+    for (const [h, factor] of [['MTBF（百万小时）', 1e6], ['MTBF (million hours)', 1e6], ['MTBF (10^6 h)', 1e6], ['平均无故障时间（万小时）', 1e4], ['MTBF (kh)', 1e3]] as const) {
+      const r = all([['Part', h, 'Source'], ['PSU', 2, 'v']]).table.rows[0];
+      expect([h, r.unit, r.value, r.note]).toEqual([h, 'mtbf_h', 2 * factor, `2 ${h} read as mtbf_h ${2 * factor}`]);
+      expect(deviceFit(r)).toBeCloseTo(1e9 / (2 * factor), 9);
+    }
+    const d = all([['器件', '失效率（每百万小时）', '来源'], ['PSU', 2.5, 'v']]).table.rows[0];
+    expect([d.unit, d.value, d.note]).toEqual(['per_1e6_h', 2.5, undefined]);
+    const u = all([['Part', 'Rate', 'Unit', 'Source'], ['PSU', 2, '百万小时', 'v'], ['Fan', 2, '/百万小时', 'v'], ['CPU', 2, '万小时', 'v'], ['NIC', 2, 'per million hours', 'v']]);
+    expect(u.table.rows.map((r) => [r.device, r.unit, r.value])).toEqual([['PSU', 'mtbf_h', 2e6], ['Fan', 'per_1e6_h', 2], ['CPU', 'mtbf_h', 2e4], ['NIC', 'per_1e6_h', 2]]);
   });
 });

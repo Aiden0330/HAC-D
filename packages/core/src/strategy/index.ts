@@ -27,7 +27,7 @@ import type { Scenario } from '../scenario/schema.js';
 import { evaluateScenario, type TrainingKpis as TrainingResult } from '../scenario/evaluate.js';
 import { cloneScenario } from '../scenario/analysis.js';
 import { computeCounts, componentInstances } from '../scenario/build.js';
-import { mechanismById, applyMechanisms, stripMechanisms } from '../mechanisms/index.js';
+import { mechanismById, applyMechanisms, applyMechanismsInOrder, stripMechanisms } from '../mechanisms/index.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
 import { buildLedgerRun, simulateLedgerReplications } from '../mc/ledgerFromScenario.js';
 import { proportionEstimate, proportionVerdict, summaryStat, type SummaryStat } from '../math/stats.js';
@@ -192,7 +192,8 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
     if (!v) {
       const levers = leverList.filter((l) => st.levers.includes(l.id));
       const nom = applyLevers(st.mechs.length ? applyMechanisms(s0, st.mechs, nominalParams) : s0, levers, null);
-      const der = derate ? applyLevers(applyMechanisms(baseStripped, [...baseIds, ...st.mechs], deratedParams), levers, derate) : nom;
+      // the derated twin keeps the scenario's recorded order for its own mechanisms (v5.5, fifth review D5) and appends the added ones in library order, as the nominal design does
+      const der = derate ? applyLevers(applyMechanisms(applyMechanismsInOrder(baseStripped, baseIds, deratedParams), st.mechs, deratedParams), levers, derate) : nom;
       v = { nom, der };
       scCache.set(k, v);
     }

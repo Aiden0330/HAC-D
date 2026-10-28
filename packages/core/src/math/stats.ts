@@ -60,3 +60,13 @@ export function proportionVerdict(est: ProportionEstimate, required: number): 's
   if (est.high < required) return 'below';
   return 'uncertain';
 }
+
+/**
+ * The smallest sample size at which "supported" is reachable at all: with every sample passing the Wilson lower bound is
+ * n / (n + z²), so n ≥ required · z² / (1 − required) — 35 windows for P ≥ 0.9 at 95 %. Fewer windows can only give
+ * 'uncertain' or 'below' (fifth review D7).
+ */
+export function minWindowTrials(required = 0.9, confidence = 0.95): number {
+  for (let n = 1; n <= 1_000_000; n++) if (wilsonInterval(n, n, confidence).low >= required) return n;
+  return Infinity;
+}

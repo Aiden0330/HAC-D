@@ -242,6 +242,8 @@ export interface UnitFaultType {
   /** business-impact FIT per unit-hour = fitPerCard × cardsPerUnit */
   fitPerUnit: number;
   persistence: string;
+  /** catalog scope of the event (card, server, rack, zone, job …): with `persistence` it decides the predictor's applicability, as in the catalog scenario */
+  scope: string;
   flags: { replay: boolean; process: boolean; elastic: boolean };
   analogue: boolean;
   confidence: 'assumed';
@@ -266,6 +268,7 @@ export function unitFaultLibrary(events: ReferenceEvent[] = REFERENCE_EVENTS): U
       cardsPerUnit: k,
       fitPerUnit: e.fit * k,
       persistence: e.persistence,
+      scope: e.scope,
       flags: { replay: e.replay, process: e.process, elastic: e.elastic },
       analogue,
       confidence: 'assumed',
@@ -338,7 +341,9 @@ export function topologyScenario(template: TopologyTemplate, npus: number, opts:
         ...base,
         failure: { value: fit, unit: 'FIT' as const, koujing, provenance },
         repair: { auto: { coverage: 1, successProbability: 0.99, mttrHours: (12.5 + 180) / 3600 }, manual: { mttrHours: 2 } },
-        mechanisms: { replay: f.flags.replay ? 1 : 0, process: f.flags.process ? 1 : 0, elastic: f.flags.elastic ? 1 : 0, predict: f.persistence === 'persistent' && (f.unit === 'npu' || f.unit === 'node' || f.unit === 'cpu') ? 1 : 0, netfail: ['NIC', 'OPT', 'BOXIO', 'FABRIC'].includes(f.domainId) ? 1 : 0, hotswap: f.flags.elastic ? 1 : 0 },
+        // predict: the catalog rule (catalogScenario) — persistent faults of card or server scope; v5.5 by the event's scope, not its
+        // fault unit, so BOXIO-hard (unit node, scope rack) is not predictable here either (fourth review R2)
+        mechanisms: { replay: f.flags.replay ? 1 : 0, process: f.flags.process ? 1 : 0, elastic: f.flags.elastic ? 1 : 0, predict: f.persistence === 'persistent' && (f.scope === 'card' || f.scope === 'server') ? 1 : 0, netfail: ['NIC', 'OPT', 'BOXIO', 'FABRIC'].includes(f.domainId) ? 1 : 0, hotswap: f.flags.elastic ? 1 : 0 },
       };
     }
     if (f.type === 'slow') return { ...base, failure: { value: 0, unit: 'FIT' as const, provenance }, repair: { mttrHours: 1 }, subhealth: { ratePerHour: rate, durationHours: 24, performance: 0.95, escalationMultiplier: 1, policy: 'isolate' as const, detection: { probability: 0.95, delayHours: 5 / 60 } } };

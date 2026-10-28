@@ -47,21 +47,61 @@ function addCustomRung(s: Scenario, id: string, rung: NonNullable<Scenario['mech
   return recordApplied(c, id, p, previous);
 }
 
-/** Lower one automatic stage of the candidate classes towards a candidate value: new = current − share·(current − candidate), never above the current (the audit's same-stage minimum rule). */
-function lowerStage(s: Scenario, id: string, stage: 'startup' | 'read' | 'communication', candidates: string[], share: number, candidateOf: (def: ReturnType<typeof automaticStages>, current: number) => number, p: P): Scenario {
+type Stage = 'startup' | 'read' | 'communication';
+type Stages = ReturnType<typeof automaticStages>;
+type ClassStages = Scenario['components'][number]['recoveryStages'];
+const clamp01 = (x: number | undefined) => Math.min(1, Math.max(0, x ?? 1));
+/** the same-stage mechanisms of §24.2: the stage each lowers, and its candidate value and eligible share from its (recorded) parameters */
+const STAGE_MECHANISMS: Record<string, { stage: Stage; candidate: (def: Stages, p: P) => number; share: (p: P) => number }> = {
+  'R-WARM-PROCESS': { stage: 'startup', candidate: (_d, p) => p.startupTargetSeconds, share: (p) => clamp01(num(p, 'eligibleShare')) },
+  'R-RUNTIME-SNAPSHOT': { stage: 'startup', candidate: (_d, p) => p.startupTargetSeconds, share: (p) => clamp01(num(p, 'eligibleShare')) },
+  'R-CANN-GRAPH': { stage: 'startup', candidate: (d, p) => d.startup - Math.max(0, d.graphWithinStartup - p.graphTargetSeconds), share: (p) => clamp01(num(p, 'eligibleShare')) },
+};
+/**
+ * The audit's same-stage rule per event: of the same-stage mechanisms an event is eligible for, the best (lowest) candidate wins,
+ * else the stage keeps its base value. With independent eligible shares a_k the class's stage is the expectation over the events,
+ *   E = Σ_k c_(k)·a_(k)·Π_{j<k} (1 − a_(j)) + Π_j (1 − a_j)·base   (candidates sorted ascending; a candidate at or above the base adds nothing),
+ * which does not depend on the order the mechanisms were applied in (v5.5, recheck of the fifth review). One mechanism gives
+ * base − a·(base − c), the former sequential rule, and two applied larger-candidate-first coincide with it as well, so the
+ * library-order designs of the reports are unchanged.
+ */
+export function sameStageValue(base: number, entries: { c: number; a: number }[]): number {
+  const sorted = entries.filter((e) => e.c < base).sort((x, y) => x.c - y.c);
+  let rest = 1, e = 0;
+  for (const { c, a } of sorted) { e += c * a * rest; rest *= 1 - a; }
+  return Math.max(0, e + rest * base);
+}
+/**
+ * Lower one automatic stage of the mechanism's candidate classes to the same-stage expectation over this mechanism and the
+ * same-stage mechanisms already applied on the class (their recorded parameters). The base of a class is the value the first of
+ * them found (its applied record), else the class's own override, else the job's stage; every candidate class is recorded for
+ * the exact inverse. Re-application through `stripMechanisms` recomputes the expectation, so the result is order-independent.
+ */
+function lowerStage(s: Scenario, id: string, p: P): Scenario {
   if (s.recovery.mode !== 'mixture') return s;
+  const me = STAGE_MECHANISMS[id];
+  if (!me) throw new Error(`${id} is not a same-stage mechanism`);
+  const candidates = catalog(id).eventCandidates;
   const c = cloneScenario(s);
   if (c.recovery.mode !== 'mixture') return c;
   const def = automaticStages(c.recovery);
-  const compPrev: Record<string, Scenario['components'][number]['recoveryStages'] | null> = {};
+  const stage = me.stage;
+  const others = Object.entries(c.mechanisms.applied ?? {})
+    .filter(([oid]) => oid !== id && STAGE_MECHANISMS[oid]?.stage === stage)
+    .sort((a, b) => a[1].order - b[1].order)
+    .map(([oid, rec]) => ({ events: catalog(oid).eventCandidates, rec, m: STAGE_MECHANISMS[oid] }));
+  const compPrev: Record<string, ClassStages | null> = {};
   for (const comp of c.components) {
-    if (!candidates.includes(eventIdOf(comp.id))) continue;
-    const current = comp.recoveryStages?.[stage] ?? def[stage];
-    const cand = candidateOf(def, current);
-    if (!(cand < current)) continue;
+    const ev = eventIdOf(comp.id);
+    if (!candidates.includes(ev)) continue;
+    const applied = others.filter((o) => o.events.includes(ev));
+    const first = applied[0];
+    const firstPrev = first ? (first.rec.previous.componentStages as Record<string, ClassStages | null> | undefined)?.[comp.id] : undefined;
+    const base = first ? (firstPrev?.[stage] ?? def[stage]) : (comp.recoveryStages?.[stage] ?? def[stage]);
+    const entries = [...applied.map((o) => ({ c: o.m.candidate(def, o.rec.parameters), a: o.m.share(o.rec.parameters) })), { c: me.candidate(def, p), a: me.share(p) }];
     compPrev[comp.id] = orNull(comp.recoveryStages ? { ...comp.recoveryStages } : undefined);
-    const next = Math.max(0, current - Math.min(1, Math.max(0, share)) * (current - cand));
-    comp.recoveryStages = { ...(comp.recoveryStages ?? {}), [stage]: next };
+    const next = sameStageValue(base, entries);
+    if (next < base || first) comp.recoveryStages = { ...(comp.recoveryStages ?? {}), [stage]: next };
   }
   return recordApplied(c, id, p, { componentStages: compPrev });
 }
@@ -155,7 +195,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     events: catalog('R-WARM-PROCESS').eventCandidates, integrationNeeds: ['eligibleShare'], provisional: { eligibleShare: 1 },
     parameters: { startupTargetSeconds: 20 },
     singlePoint: (b, p) => decrease(seconds('启动阶段耗时', 'startup stage time'), b.stages.startup, p.startupTargetSeconds, { zh: `启动 ${r3(b.stages.startup)} → ${p.startupTargetSeconds} s；恢复 ${r3(b.autoS)} → ${r3(b.autoS - b.stages.startup + p.startupTargetSeconds)} s；与运行时快照、图缓存共用同一启动预算，取最小不相加`, en: `startup ${r3(b.stages.startup)} → ${p.startupTargetSeconds} s; same-stage mechanisms take the minimum` }, 'seconds', [{ label: '10 s', value: 10 }, { label: '30 s', value: 30 }], { recoveryBeforeSeconds: r3(b.autoS), recoveryAfterSeconds: r3(b.autoS - b.stages.startup + p.startupTargetSeconds), normalEventLossAfterSeconds: r3(b.normalLossS - b.stages.startup + p.startupTargetSeconds) }),
-    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-WARM-PROCESS', 'startup', catalog('R-WARM-PROCESS').eventCandidates, p.eligibleShare, () => p.startupTargetSeconds, p) : s),
+    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-WARM-PROCESS', p) : s),
   },
   {
     id: 'R-RUNTIME-SNAPSHOT', name: { zh: '运行时初始化快照', en: 'Runtime initialisation snapshot' }, kind: 'recover', status: 'candidate', scope: 'hard', audit: catalog('R-RUNTIME-SNAPSHOT'),
@@ -166,7 +206,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     events: catalog('R-RUNTIME-SNAPSHOT').eventCandidates, integrationNeeds: ['eligibleShare'], provisional: { eligibleShare: 1 },
     parameters: { startupTargetSeconds: 15 },
     singlePoint: (b, p) => decrease(seconds('启动阶段耗时', 'startup stage time'), b.stages.startup, p.startupTargetSeconds, { zh: `启动 ${r3(b.stages.startup)} → ${p.startupTargetSeconds} s；恢复 ${r3(b.autoS)} → ${r3(b.autoS - b.stages.startup + p.startupTargetSeconds)} s；与预热进程为同一阶段的替代方案`, en: `startup ${r3(b.stages.startup)} → ${p.startupTargetSeconds} s; alternative to the warm process on the same stage` }, 'seconds', [{ label: '10 s', value: 10 }, { label: '30 s', value: 30 }], { recoveryBeforeSeconds: r3(b.autoS), recoveryAfterSeconds: r3(b.autoS - b.stages.startup + p.startupTargetSeconds), normalEventLossAfterSeconds: r3(b.normalLossS - b.stages.startup + p.startupTargetSeconds) }),
-    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-RUNTIME-SNAPSHOT', 'startup', catalog('R-RUNTIME-SNAPSHOT').eventCandidates, p.eligibleShare, () => p.startupTargetSeconds, p) : s),
+    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-RUNTIME-SNAPSHOT', p) : s),
   },
   {
     id: 'C-ASYNC', name: { zh: '异步检查点保存', en: 'Asynchronous checkpoint saves' }, kind: 'checkpoint', status: 'candidate', scope: 'all', audit: catalog('C-ASYNC'),
@@ -318,7 +358,7 @@ export const AUDIT_MECHANISM_DEFS: MechanismDef[] = [
     events: catalog('R-CANN-GRAPH').eventCandidates, integrationNeeds: ['eligibleShare'], provisional: { eligibleShare: 1 },
     parameters: { graphTargetSeconds: 7.5 },
     singlePoint: (b, p) => decrease(seconds('图准备阶段耗时', 'graph-preparation stage'), b.stages.graphWithinStartup, p.graphTargetSeconds, { zh: `图准备 ${r3(b.stages.graphWithinStartup)} → ${p.graphTargetSeconds} s（启动 ${r3(b.stages.startup)} s 的子段）；恢复 ${r3(b.autoS)} → ${r3(b.autoS - b.stages.graphWithinStartup + p.graphTargetSeconds)} s；不与预热／快照的启动节省相加`, en: `graph preparation ${r3(b.stages.graphWithinStartup)} → ${p.graphTargetSeconds} s inside the startup stage` }, 'seconds', [{ label: '5 s', value: 5 }, { label: '10 s', value: 10 }], { recoveryAfterSeconds: r3(b.autoS - b.stages.graphWithinStartup + p.graphTargetSeconds) }),
-    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-CANN-GRAPH', 'startup', catalog('R-CANN-GRAPH').eventCandidates, p.eligibleShare, (def) => def.startup - Math.max(0, def.graphWithinStartup - p.graphTargetSeconds), p) : s),
+    apply: (s, p) => (ready(p, ['eligibleShare']) ? lowerStage(s, 'R-CANN-GRAPH', p) : s),
   },
 ];
 

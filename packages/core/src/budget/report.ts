@@ -19,6 +19,7 @@ import { DEFAULT_MECHANISM_SET, resolveMechanismSet, type MechanismSet } from '.
 import { MECHANISM_LIBRARY } from '../mechanisms/index.js';
 import { integrationStatus } from '../mechanisms/auditLibrary.js';
 import { TOPOLOGY_TEMPLATES } from '../topology/index.js';
+import { minWindowTrials } from '../math/stats.js';
 import type { LayerModelSpec } from '../layers/index.js';
 
 type L = { zh: string; en: string };
@@ -90,22 +91,26 @@ export function reportFromScenario(s: Scenario, o: ScenarioReportOptions): Scena
   const main = o.main ?? sizes[sizes.length - 1];
   if (!sizes.includes(main)) throw new Error(`main ${main} is not one of the sizes ${sizes.join(', ')}`);
   const trials = o.trials ?? 400, seed = o.seed ?? 1, permutations = o.permutations ?? 300;
+  if (trials < minWindowTrials()) throw new Error(`the Findings report needs at least ${minWindowTrials()} windows: with fewer, P(A_op ≥ A*) ≥ 0.9 per window can never be supported (Wilson 95 % lower bound n/(n + z²), formula 6) and the window rule has no design to recommend; got ${trials}`);
   const build = (n: number) => withSize(s, n);
   // the reference set is the project's applied mechanisms with the parameters they were applied with (a project may have set
-  // them on the Mechanism library page): the budget rebuilds the design from them, the candidates take the set's parameters
+  // them on the Mechanism library page): the budget rebuilds the design from them, the candidates take the set's parameters;
+  // v5.5 the Shapley study evaluates the same players with the same merged parameters (fifth review D8), so one report has one
+  // parameter set; a project mechanism outside the set stays in the study's base and is listed as fixed
   const applied = Object.entries(s.mechanisms.applied ?? {});
   const reference = applied.map(([id]) => id);
   const parameters = { ...r.parameters, ...Object.fromEntries(applied.map(([id, rec]) => [id, { ...(r.parameters[id] ?? {}), ...rec.parameters }])) };
   const candidates = reportCandidates(s, set);
   const family = o.family ?? (s.topology.template ? TOPOLOGY_TEMPLATES[s.topology.template].name.en : 'custom');
   const assumed = o.assumed ?? [];
-  const study = studyOfBuild(o.id, build, set, { sizes, target: o.target, permutations, seed, onProgress: (n, i, k) => o.onProgress?.('study', n, `${i} / ${k}`) });
+  const study = studyOfBuild(o.id, build, set, { sizes, target: o.target, permutations, seed, parameters, onProgress: (n, i, k) => o.onProgress?.('study', n, `${i} / ${k}`) });
   const results = budgetDocument(
     { [o.id]: { name: o.name, short: o.short, family, assumed, build, layerSpec } },
     { sizes, target: o.target, main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
   );
   o.onProgress?.('hierarchy', main, '');
-  const h = mechanismHierarchy(set, { [o.id]: study as unknown as StoredStudy }, { permutations, basis: `bare project scenario ${o.id}, the project's per-unit FIT, ${set.id}`, check: false });
+  const custom = Object.keys(study.projectParameters ?? {});
+  const h = mechanismHierarchy(set, { [o.id]: study as unknown as StoredStudy }, { permutations, basis: `bare project scenario ${o.id}, the project's per-unit FIT, ${set.id}${custom.length ? `, the project's parameters for ${custom.join(' + ')}` : ''}${study.fixed?.length ? `; fixed in the base (outside the set): ${study.fixed.join(' + ')}` : ''}`, check: false });
   const mechanisms = { ...h, source: { dir: 'in-memory', ...h.source } };
   const records: Record<string, ReportRecord> = { [o.id]: { id: o.id, name: o.name, short: o.short, family, template: s.topology.template, superpod: s.topology.superpod, scaleOut: s.topology.scaleOut, layers: layerSpec, assumed } };
   return { results, mechanisms, studies: { [o.id]: study }, records };

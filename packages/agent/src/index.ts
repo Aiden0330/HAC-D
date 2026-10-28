@@ -12,6 +12,6 @@ export { parseCardsText } from './parse.js';
 export { buildPrompts, cardsJsonSchema, fieldList } from './prompts.js';
 export { extractDocuments, allowedFields } from './extract.js';
 export { reviewMarkdown } from './review.js';
-export { draftWorksheet, deviceRateUnit } from './draft.js';
+export { draftWorksheet, deviceRateUnit, deviceRateUnitFactor } from './draft.js';
 export { OPERATOR_PROMPT, HACD_TOOLS, FIX_TABLE, PUBLIC_RECORD_IDS, fixTableMarkdown, type FixRule } from './operator.js';
 export { runOperatorHost, toolsForModel, commandArgs, insidePath, type OperatorHostOptions, type OperatorHostResult, type ToolCallRecord, type HacdRun } from './host.js';

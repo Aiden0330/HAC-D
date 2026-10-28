@@ -1,0 +1,941 @@
+{
+ "design": {
+  "arch": "a3server",
+  "npus": 10000,
+  "mechanisms": [
+   "R-RUNTIME-SNAPSHOT"
+  ],
+  "levers": [],
+  "k": 1,
+  "derated": false
+ },
+ "detectS": 12.500000000000004,
+ "globalS": 252.00000000000006,
+ "params": {
+  "replay": {
+   "success": 0.9,
+   "successSeconds": 5,
+   "failureSeconds": 10
+  },
+  "elastic": {
+   "domains": 50,
+   "success": 0.98,
+   "recoverSeconds": 180,
+   "failureSeconds": 120,
+   "syncSeconds": 1
+  },
+  "process": {
+   "success": 0.95,
+   "successSeconds": 60,
+   "failureSeconds": 120
+  }
+ },
+ "order": null,
+ "recovery": {
+  "mode": "mixture",
+  "detection": {
+   "coverage": 0.95,
+   "autoSeconds": 10,
+   "timeoutSeconds": 60
+  },
+  "automatic": {
+   "successProbability": 0.99,
+   "seconds": 180
+  },
+  "manual": {
+   "seconds": 7200
+  }
+ },
+ "sdc": {
+  "detection": {
+   "coverage": 0.95,
+   "detectSeconds": 1
+  },
+  "fallbackDelayHours": 120,
+  "terminalRule": "retain-last-clean",
+  "stepRecovery": {
+   "stepSeconds": 1,
+   "recoverSeconds": 1
+  }
+ },
+ "rows": [
+  {
+   "id": "CORE-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.004666666666666665,
+   "meanPauseS": 17.259925000000003,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "SRAM-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.001666666666666666,
+   "meanPauseS": 17.259925000000003,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "IOD-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.0019999999999999996,
+   "meanPauseS": 17.259925000000003,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "MODULE-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.0016999999999999993,
+   "meanPauseS": 5.099250000000004,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "MEMT-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.003999999999999999,
+   "meanPauseS": 17.259925000000003,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "MEMP-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.0017333333333333333,
+   "meanPauseS": 5.099250000000004,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "NIC-hard",
+   "unit": "npu",
+   "count": 10000,
+   "ratePerHour": 0.001,
+   "meanPauseS": 17.259925000000003,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "OPT-hard@roce",
+   "unit": "roce-link",
+   "count": 60000,
+   "ratePerHour": 0.0002857142857142857,
+   "meanPauseS": 43.2,
+   "applicable": {
+    "replay": 1,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "BOXIO-hard",
+   "unit": "node",
+   "count": 1250,
+   "ratePerHour": 0.0004666666666666666,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "FABRIC-hard",
+   "unit": "ub-switch",
+   "count": 8750,
+   "ratePerHour": 0.0004999999999999999,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "FABRIC-hard@roce",
+   "unit": "roce-switch",
+   "count": 1563,
+   "ratePerHour": 0.00008931428571428569,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 1,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "CPU-hard",
+   "unit": "cpu",
+   "count": 5000,
+   "ratePerHour": 0.0016666666666666666,
+   "meanPauseS": 5.099250000000004,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "DDR-hard",
+   "unit": "node",
+   "count": 1250,
+   "ratePerHour": 0.0019999999999999996,
+   "meanPauseS": 5.099250000000004,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "SSD-hard",
+   "unit": "node",
+   "count": 1250,
+   "ratePerHour": 0.0016666666666666666,
+   "meanPauseS": 5.099250000000004,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  },
+  {
+   "id": "POWER-hard",
+   "unit": "cabinet",
+   "count": 313,
+   "ratePerHour": 0.0016693333333333332,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "COOL-hard",
+   "unit": "cabinet",
+   "count": 313,
+   "ratePerHour": 0.0010015999999999998,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "MGMT-hard",
+   "unit": "node",
+   "count": 1250,
+   "ratePerHour": 0.001333333333333333,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "STORAGE-hard",
+   "unit": "job",
+   "count": 10000,
+   "ratePerHour": 0.001333333333333333,
+   "meanPauseS": 264.50000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "UNKNOWN-hard",
+   "unit": "job",
+   "count": 10000,
+   "ratePerHour": 0.0041,
+   "meanPauseS": 221.75000000000006,
+   "applicable": {
+    "replay": 0,
+    "process": 0,
+    "elastic": 0,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 0
+   },
+   "recoveryStages": {
+    "startup": 17.250000000000004
+   }
+  }
+ ],
+ "other": {
+  "isolationPerHour": 0.0006392587622459745,
+  "sdcDetectedPerHour": 0.0004581980566529302,
+  "falseAlarmPerHour": 0,
+  "globalRecoveryS": 252.00000000000006,
+  "predictMigrationS": null
+ },
+ "aOp": 0.9991521156354632,
+ "aRun": 0.9991535161476178,
+ "delivered": 0.9797458215641975,
+ "slowSdcByClass": [
+  {
+   "id": "CORE-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "CORE-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 1.4163372859025032e-8,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "CORE-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 4.106280193236715e-8,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SRAM-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SRAM-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 8.430579082752994e-10,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SRAM-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "IOD-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "IOD-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 4.046677959721438e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "IOD-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 1.0305969095676323e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MODULE-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MODULE-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 1.7198381328816111e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MODULE-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMT-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMT-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 1.1145779669968282e-8,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMT-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMP-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMP-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 7.24475678547938e-10,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MEMP-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "NIC-hard",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "NIC-slow",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 1.7929179740026897e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "NIC-sdc",
+   "unit": "npu",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 1.0058431102498928e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-hard",
+   "unit": "ub-link",
+   "count": 0,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-hard@roce",
+   "unit": "roce-link",
+   "count": 60000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-slow",
+   "unit": "ub-link",
+   "count": 0,
+   "slowPerUnitPerHour": 1.7075409276216095e-10,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-slow@roce",
+   "unit": "roce-link",
+   "count": 60000,
+   "slowPerUnitPerHour": 1.7075409276216095e-10,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-sdc",
+   "unit": "ub-link",
+   "count": 0,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "OPT-sdc@roce",
+   "unit": "roce-link",
+   "count": 60000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "BOXIO-hard",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "BOXIO-slow",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 3.3467802181383544e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "BOXIO-sdc",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 3.7551476115995995e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-hard",
+   "unit": "ub-switch",
+   "count": 8750,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-hard@roce",
+   "unit": "roce-switch",
+   "count": 1563,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-slow",
+   "unit": "ub-switch",
+   "count": 8750,
+   "slowPerUnitPerHour": 1.0245245565729656e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-slow@roce",
+   "unit": "roce-switch",
+   "count": 1563,
+   "slowPerUnitPerHour": 1.0245245565729656e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-sdc",
+   "unit": "ub-switch",
+   "count": 8750,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 5.747674915713672e-10,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "FABRIC-sdc@roce",
+   "unit": "roce-switch",
+   "count": 1563,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 5.747674915713672e-10,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "CPU-hard",
+   "unit": "cpu",
+   "count": 5000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "CPU-slow",
+   "unit": "cpu",
+   "count": 5000,
+   "slowPerUnitPerHour": 4.891649413388544e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "CPU-sdc",
+   "unit": "cpu",
+   "count": 5000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "DDR-hard",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "DDR-slow",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 2.3479917184265006e-8,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "DDR-sdc",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SSD-hard",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SSD-slow",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 3.9133195307108355e-8,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "SSD-sdc",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "POWER-hard",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "POWER-slow",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 7.826639061421671e-8,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "POWER-sdc",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "COOL-hard",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "COOL-slow",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 2.3479917184265008e-7,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "COOL-sdc",
+   "unit": "cabinet",
+   "count": 313,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MGMT-hard",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MGMT-slow",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 4.6959834368530015e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "MGMT-sdc",
+   "unit": "node",
+   "count": 1250,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "STORAGE-hard",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "STORAGE-slow",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 3.913319530710835e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "STORAGE-sdc",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "UNKNOWN-hard",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "UNKNOWN-slow",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 6.0167287784679094e-9,
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  },
+  {
+   "id": "UNKNOWN-sdc",
+   "unit": "job",
+   "count": 10000,
+   "slowPerUnitPerHour": 0,
+   "sdcPerUnitPerHour": 4.0699812668268e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
+  }
+ ]
+}

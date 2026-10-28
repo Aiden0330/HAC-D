@@ -22,8 +22,9 @@ import { toPerHour } from '../units/index.js';
 import { allocateStrategy, applyLevers, withHardwareFactors, DEFAULT_LEVERS, type LeverId, type RecoveryLever, type StrategyPlan, type StrategyResult } from '../strategy/index.js';
 import { recommendPlan, windowCheck, deratedOf, type WindowCheck, type WindowRulePlan, type WindowRuleTrial } from '../strategy/window.js';
 import { requirementFromKpi, type Requirement } from '../strategy/requirement.js';
-import { applyMechanisms, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
+import { applyMechanismsInOrder, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
+import { minWindowTrials } from '../math/stats.js';
 import { kpiForm, trainingOf, type KpiForm } from './kpiForm.js';
 import { mttrDecomposition, type MttrDecomposition } from '../mttr/decompose.js';
 import { byLayer, layerModel, DEFAULT_LAYERS, type LayerDef, type LayerId, type LayerModel, type LayerModelSpec, type LayerClassRow } from '../layers/index.js';
@@ -153,6 +154,8 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   if (s.workload.type !== 'training') throw new Error('hierarchicalBudget needs a training workload');
   const n = s.workload.nGpus;
   const TARGET = o.target, TRIALS = o.trials ?? 400, SEED = o.seed ?? 1, REQUIRED = o.required ?? 0.9;
+  // fewer windows than the Wilson bound allows can never be 'supported': the window rule would escalate through every move and fail (fifth review D7)
+  if (TRIALS < minWindowTrials(REQUIRED)) throw new Error(`hierarchicalBudget: ${TRIALS} windows cannot support P(A_op ≥ A*) ≥ ${REQUIRED} per window (Wilson 95 % lower bound n/(n + z²)); use at least ${minWindowTrials(REQUIRED)} windows (formula 6)`);
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT, params = o.parameters ?? {};
   const model = layerModel(o.layerSpec, o.layers ?? DEFAULT_LAYERS);
   const log = o.onProgress ?? (() => {});
@@ -184,7 +187,9 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   const bare = stripMechanisms(s, [...REF]);
   const allIds = applied.map((a) => a.id);
   const kFactors = Object.fromEntries(rec.hardwareClasses.map((id) => [id, rec.k]));
-  const rebuild = (keep: string[]) => withHardwareFactors(applyLevers(applyMechanisms(bare, keep, paramsOf(keep)), LEVERS.filter((l) => rec.levers.includes(l.id)), null), kFactors);
+  // rebuilt in the final design's recorded order (`allIds` is sorted by it; a `keep` subset keeps that order): the reference set as the
+  // project applied it, then the plan's additions — a library-order rebuild is not the same design when transforms do not commute (v5.5)
+  const rebuild = (keep: string[]) => withHardwareFactors(applyLevers(applyMechanismsInOrder(bare, keep, paramsOf(keep)), LEVERS.filter((l) => rec.levers.includes(l.id)), null), kFactors);
   { const a = trainingOf(rebuild(allIds)).operationalAvailability; if (Math.abs(a - fin.kpi.aOp) > 1e-9) throw new Error(`rebuilt final design differs: ${a} vs ${fin.kpi.aOp}`); }
   const removal = Object.fromEntries(allIds.map((id) => {
     const keep = allIds.filter((x) => x !== id && !(id === 'D-SDC' && x === 'R-SDC'));
@@ -247,7 +252,7 @@ export function budgetDocument(archs: Record<string, BudgetArchInput>, o: Budget
 
 /* ---------------- records → budget document ---------------- */
 import { scenarioFromRecord, type TopologyRecord } from '../records/topologyRecord.js';
-import { resolveMechanismSet, applyMechanismSet, type MechanismSet } from '../records/mechanismSet.js';
+import { resolveMechanismSet, applyMechanismSet, withRecoveryBaseline, type MechanismSet } from '../records/mechanismSet.js';
 import { applyFaultRates, type FaultRateOverride } from '../records/faultRates.js';
 
 export interface BudgetRunOptions {
@@ -263,10 +268,15 @@ export interface BudgetRunOptions {
   variantId?: string;
   onProgress?: (arch: string, n: number, step: string) => void;
 }
-/** the scenario of a record at N with the mechanism set's baseline (set parameters) and the optional failure-rate override */
+/**
+ * the scenario of a record at N with the mechanism set's recovery baseline (the MTTR mixture of `set.recovery` and its stage
+ * split, written on the bare design: v5.5, fifth review D3 — the default set's equals the template's, so the public reports are
+ * unchanged, while an internal set with a measured baseline now reaches every record-built scenario), the optional failure-rate
+ * override and the set's baseline mechanisms with the set's parameters
+ */
 export function recordScenario(record: TopologyRecord, set: MechanismSet, n: number, rates?: FaultRateOverride, variantId?: string): Scenario {
   const r = resolveMechanismSet(set);
-  let s = scenarioFromRecord(record, n, variantId, { mechanisms: [] });
+  let s = withRecoveryBaseline(scenarioFromRecord(record, n, variantId, { mechanisms: [] }), set);
   if (rates) s = applyFaultRates(s, rates);
   return applyMechanismSet(s, set, r.baseline);
 }

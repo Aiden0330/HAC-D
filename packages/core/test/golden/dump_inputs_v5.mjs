@@ -70,7 +70,8 @@ function table(s, design) {
     aOp: r.operationalAvailability,
     aRun: r.runningFraction,
     delivered: r.deliveredGoodput,
-    slowSdcByClass: s.components.map((c) => ({ id: c.id, unit: lib.get(c.id)?.unit ?? null, count: count.get(c.id) ?? null, slowPerUnitPerHour: c.subhealth ? c.subhealth.ratePerHour : 0, sdcPerUnitPerHour: c.sdc ? c.sdc.ratePerHour : 0 })),
+    // v5.5: the per-class silent-corruption detection inputs of §24.3 (an absolute class coverage, the conditional detectors' gains), for the detected-rate split of formula (3)
+    slowSdcByClass: s.components.map((c) => ({ id: c.id, unit: lib.get(c.id)?.unit ?? null, count: count.get(c.id) ?? null, slowPerUnitPerHour: c.subhealth ? c.subhealth.ratePerHour : 0, sdcPerUnitPerHour: c.sdc ? c.sdc.ratePerHour : 0, sdcCoverage: c.sdc?.coverage ?? null, sdcExtraDetection: c.sdc?.extraDetection ?? null })),
   };
 }
 
@@ -109,6 +110,13 @@ for (const [arch, n] of [['native', 500000], ['cm384', 200000], ['a3server', 100
   const name = `${archKey[arch]}-${n / 1000}k`;
   write(`${name}.table.json`, table(b, { arch, npus: n, mechanisms: [], levers: [], k: 1, derated: false }));
   write(`${name}.derated.table.json`, table(W.deratedOf(b), { arch, npus: n, mechanisms: [], levers: [], k: 1, derated: true }));
+}
+// v5.5 (fifth review D4, M1, M2): one mechanism each on today's a3server 10k — per-class recovery stages (R-RUNTIME-SNAPSHOT: the
+// class's own global recovery g_i and stage split, §24.2), the predictor's false alarms in F (P-PREDICT, formula (3)'s D) and a
+// per-class silent-corruption detector (D-ABFT: the detected-rate split of formula (3), §24.3)
+for (const [suffix, mech] of [['snapshot', 'R-RUNTIME-SNAPSHOT'], ['predict', 'P-PREDICT'], ['abft', 'D-ABFT']]) {
+  const s = M.applyMechanisms(base('a3server', 10000), [mech], REMAP_LATEST_PARAMS);
+  write(`a3server-10k.${suffix}.table.json`, table(s, { arch: 'a3server', npus: 10000, mechanisms: [mech], levers: [], k: 1, derated: false }));
 }
 for (const [arch, n] of [['native', 500000], ['cm384', 200000]]) {
   const name = `${archKey[arch]}-${n / 1000}k`;

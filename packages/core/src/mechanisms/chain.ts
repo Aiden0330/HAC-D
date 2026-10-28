@@ -60,7 +60,7 @@ export interface CustomRungParams {
   position: 'transparent' | 'delayed';
 }
 export interface ChainParams {
-  /** v3.7 custom rungs keyed by id, tried in insertion order */
+  /** v3.7 custom rungs keyed by id, tried in the canonical order of `orderCustomRungs` (v5.5; before: insertion order) */
   custom?: Record<string, CustomRungParams>;
   predict?: PredictParams;
   netfail?: NetfailParams;
@@ -80,6 +80,21 @@ export interface Applicability {
   hotswap?: number;
   /** v3.7 fraction of the class's events each custom rung applies to */
   custom?: Record<string, number>;
+}
+
+/**
+ * v5.5 the order custom rungs are tried in, whatever the order they were applied in (recheck of the fifth review, D5): the
+ * library's audited rungs first — link-local recovery, fabric re-route, control-plane continuity — then any other id in insertion
+ * order. The closed form, the MTTR split and the window ledger all use it, so a design's chain does not depend on the order of
+ * application; the reports apply them in library order, which is this order.
+ */
+export const CUSTOM_RUNG_ORDER = ['R-LINK-LOCAL', 'R-FABRIC-DEGRADE', 'H-CONTROL-CONTINUITY'];
+export function orderCustomRungs<T>(custom: Record<string, T> | undefined): Record<string, T> | undefined {
+  if (!custom) return custom;
+  const ids = Object.keys(custom);
+  const rank = (id: string) => { const i = CUSTOM_RUNG_ORDER.indexOf(id); return i < 0 ? CUSTOM_RUNG_ORDER.length + ids.indexOf(id) : i; };
+  const sorted = [...ids].sort((a, b) => rank(a) - rank(b));
+  return sorted.every((id, i) => id === ids[i]) ? custom : Object.fromEntries(sorted.map((id) => [id, custom[id]]));
 }
 
 export type ChainOutcomeKind = 'predict' | 'netfail' | 'replay' | 'hotswap' | 'elastic' | 'process' | 'global' | 'custom';
@@ -182,7 +197,7 @@ export function chainOutcome(detectS: number, globalS: number, params: ChainPara
   const aHs = hs ? clamp01(applicable.hotswap) : 0;
   const aEl = el ? clamp01(applicable.elastic) : 0;
   const aPr = pr ? clamp01(applicable.process) : 0;
-  const customRungs = Object.entries(params.custom ?? {});
+  const customRungs = Object.entries(orderCustomRungs(params.custom) ?? {});
   const customStage = (position: 'transparent' | 'delayed') => {
     for (const [id, cr] of customRungs) {
       if ((cr.position ?? 'transparent') !== position) continue;

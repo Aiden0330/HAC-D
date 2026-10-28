@@ -23,7 +23,9 @@ identity check, declared below:
   * G2 byLayer — formula (3): C_ℓ = Σ_{i∈ℓ} λ_i t̄_i, λ_ℓ = Σ_{i∈ℓ} λ_i with the unit → layer map of the Methodology §3
     (job → cluster; roce-switch, roce-link → scaleout; ub-switch, ub-link → superpod; cabinet; node, cpu → node; npu);
     the isolation and detected-silent pauses are split over the layers in proportion to the layer's sub-health rate
-    Σ slow_u·n_u and silent rate Σ sdc_u·n_u; U_ℓ = 100·C_ℓ / (3600·D), D = 1 + (Σ_ℓ C_ℓ + F) / 3600 (percentage points of A_op).
+    Σ slow_u·n_u and detected silent rate Σ sdc_u·n_u·q_u (v5.5; q_u the class coverage of §24.3: an absolute class coverage or
+    the job's, compounded with the conditional detectors' gains; equal to the raw-rate split while every q_u is the job's);
+    U_ℓ = 100·C_ℓ / (3600·D), D = 1 + (Σ_ℓ C_ℓ + F) / 3600 (percentage points of A_op; F includes the predictor's false alarms).
     Identities: Σ_ℓ λ_ℓ = λ_hw, Σ_ℓ C_ℓ = ΣC.
   * G3 chainSplit / mttrDecomposition — §19, §19.1, §19.2, §24.1, §24.2: recursive enumeration of the rung tree
     predict → netfail → transparent custom rungs → ordered detection-delayed rungs (default replay → hotswap → elastic →
@@ -32,8 +34,10 @@ identity check, declared below:
     time under its id (`custom:<id>` for custom rungs; elastic charges t_sync), `failed:<rung>` for the failure time of every
     rung tried and failed before the terminal, `globalAuto` = p_global·T_auto and `globalManual` = p_global·(G − T_auto).
     Σ contributions = the class mean pause (identity with the engine's meanPauseS, ≤ 1e-9 relative). Job level: rate-weighted
-    means; stages = globalAuto split as the automatic stages (thirds when absent, else the given stages rescaled to T_auto),
-    manual = globalManual; MTTR = Σ contributions.
+    means; stages = each class's globalAuto split by its own automatic stages (thirds when absent, else the given stages rescaled
+    to T_auto; a class's `recoveryStages` override the job's stage by stage), manual = globalManual; MTTR = Σ contributions.
+    v5.5 (§24.2): a class with its own stages runs its chain on g_i = G − (A − A_i) and A_i = Σ stages_i (no recovery scale law
+    in the tables), so the identity holds with R-RUNTIME-SNAPSHOT applied (a3server-10k.snapshot).
   * G4 requirementFromKpi — formula (2) on the derated design: B = 3600·((1 − φ)/A* − 1) − F, total budget 3600·(1/A* − 1),
     MTBF needed at today's MTTR = MTTR_hw / B, MTTR needed at today's MTBF = B·MTBF_hw, ratio today MTTR_hw / MTBF_hw and the
     two factors (required / today).
@@ -113,11 +117,20 @@ def rung_order(order):
     return out
 
 
+CUSTOM_RUNG_ORDER = ['R-LINK-LOCAL', 'R-FABRIC-DEGRADE', 'H-CONTROL-CONTINUITY']
+
+
+def custom_rung_rank(ids):
+    """v5.5: custom rungs are tried in a canonical order — the library's audited rungs first, then any other id as inserted"""
+    return lambda cid: CUSTOM_RUNG_ORDER.index(cid) if cid in CUSTOM_RUNG_ORDER else len(CUSTOM_RUNG_ORDER) + list(ids).index(cid)
+
+
 def chain_split(detect_s, global_s, auto_s, params, applicable, order=None):
     """Enumerate the rung tree (the recursion of compute_golden_v3.chain) and book every terminal's pause by contributor."""
     custom = params.get('custom') or {}
     capp = applicable.get('custom') or {}
-    customs = lambda pos: [(('custom', cid), capp.get(cid, 0.0), cr) for cid, cr in custom.items() if cr.get('position', 'transparent') == pos and capp.get(cid, 0.0) > 0]
+    rank = custom_rung_rank(custom.keys())
+    customs = lambda pos: [(('custom', cid), capp.get(cid, 0.0), custom[cid]) for cid in sorted(custom.keys(), key=rank) if custom[cid].get('position', 'transparent') == pos and capp.get(cid, 0.0) > 0]
     front = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in ['predict', 'netfail'] if params.get(kind) and applicable.get(kind, 0.0) > 0]
     delayed = [(kind, applicable.get(kind, 0.0), params[kind]) for kind in rung_order(order) if params.get(kind) and applicable.get(kind, 0.0) > 0]
     rungs = front + customs('transparent') + delayed + customs('delayed')
@@ -189,16 +202,30 @@ def chain_split(detect_s, global_s, auto_s, params, applicable, order=None):
 
 
 # ---------------------------------------------------------------- per-table derivations
+def class_recovery(rec, row):
+    """§24.2 (v5.5): a class with its own recovery stages keeps the job's stage for every stage it does not override; its automatic
+    attempt is A_i = Σ stages_i and its global recovery g_i = G − (A − A_i)·(T_auto(N)/A) — the stage saving scaled like the attempt.
+    The tables carry no recovery scale law, so T_auto(N) = A and g_i = G − (A − A_i); the manual share (1 − p_s)·T_manual is unchanged."""
+    if rec['automatic'].get('scale') is not None:
+        raise RuntimeError('a recovery scale law is not modelled here')
+    A = rec['automatic']['seconds']
+    st = automatic_stages(rec)
+    rs = row.get('recoveryStages') or {}
+    stages = OrderedDict((k, rs[k] if rs.get(k) is not None else st[k]) for k in ('startup', 'read', 'communication'))
+    A_i = sum(stages.values())
+    return stages, A_i, global_seconds(rec) - (A - A_i)
+
+
 def class_splits(t):
-    """chain split of every hard class of a table; also the max relative deviation from the engine's meanPauseS (reported only)"""
+    """chain split of every hard class of a table on its own global recovery and attempt (§24.2); also the max relative
+    deviation from the engine's meanPauseS (reported only)"""
     rec = t['recovery']
-    d, G, A = detect_seconds(rec), global_seconds(rec), rec['automatic']['seconds']
+    d = detect_seconds(rec)
     out = OrderedDict()
     worst = 0.0
     for r in t['rows']:
-        if r.get('recoveryStages'):
-            raise RuntimeError('%s: per-class recovery stages present; the class global recovery g_i (§24.2) is not modelled here' % r['id'])
-        sp = chain_split(d, G, A, t['params'], r['applicable'], t.get('order'))
+        _stages, A_i, g_i = class_recovery(rec, r)
+        sp = chain_split(d, g_i, A_i, t['params'], r['applicable'], t.get('order'))
         out[r['id']] = sp
         if r['meanPauseS'] > 0:
             worst = max(worst, abs(sp['meanS'] - r['meanPauseS']) / r['meanPauseS'])
@@ -260,16 +287,26 @@ def by_layer(t, splits, form):
         c[l] += r['ratePerHour'] * splits[r['id']]['meanS']
     slow = OrderedDict((l, 0.0) for l in LAYERS)
     sdcr = OrderedDict((l, 0.0) for l in LAYERS)
+    sdcd = OrderedDict((l, 0.0) for l in LAYERS)
+    # §24.3 (v5.5): the class's immediate detection coverage q_i = 1 − (1 − q_i,abs | q)·Π_k (1 − c_k) over its conditional detectors;
+    # the detected-corruption pause is split by the detected rate Σ sdc_u·n_u·q_u (equal to the raw split while every q_u = q)
+    q_job = ((t.get('sdc') or {}).get('detection') or {}).get('coverage', 0.0)
     for x in t['slowSdcByClass']:
         l = LAYER_OF_UNIT[x['unit']]
         slow[l] += x['slowPerUnitPerHour'] * x['count']
         sdcr[l] += x['sdcPerUnitPerHour'] * x['count']
+        q_abs = x.get('sdcCoverage')
+        miss = 1.0
+        for gain in (x.get('sdcExtraDetection') or {}).values():
+            miss *= (1 - gain)
+        q_i = min(1.0, max(0.0, 1 - (1 - (q_abs if q_abs is not None else q_job)) * miss))
+        sdcd[l] += x['sdcPerUnitPerHour'] * x['count'] * q_i
     iso_total = form['other']['isolation'][0] * form['other']['isolation'][1]
     sdc_total = form['other']['sdcDetected'][0] * form['other']['sdcDetected'][1]
-    slow_sum, sdc_sum = sum(slow.values()), sum(sdcr.values())
+    slow_sum, sdcd_sum = sum(slow.values()), sum(sdcd.values())
     iso = OrderedDict((l, iso_total * slow[l] / slow_sum if slow_sum > 0 else 0.0) for l in LAYERS)
-    sdc = OrderedDict((l, sdc_total * sdcr[l] / sdc_sum if sdc_sum > 0 else 0.0) for l in LAYERS)
-    D = 1 + (sum(c.values()) + form['F']) / 3600  # formula (3); equals 1 + Σ_ℓ (C_ℓ + iso_ℓ + sdc_ℓ)/3600 when there are no false alarms
+    sdc = OrderedDict((l, sdc_total * sdcd[l] / sdcd_sum if sdcd_sum > 0 else 0.0) for l in LAYERS)
+    D = 1 + (sum(c.values()) + form['F']) / 3600  # formula (3): F includes the predictor's false alarms, which no layer owns (v5.5: so does the engine)
     U = OrderedDict((l, 100 * c[l] / (3600 * D)) for l in LAYERS)
     exp = OrderedDict()
     for l in LAYERS:
@@ -277,6 +314,7 @@ def by_layer(t, splits, form):
         exp['%s.c' % l] = c[l]
         exp['%s.slowRate' % l] = slow[l]
         exp['%s.sdcRate' % l] = sdcr[l]
+        exp['%s.sdcDetectedRate' % l] = sdcd[l]
         exp['%s.iso' % l] = iso[l]
         exp['%s.sdc' % l] = sdc[l]
         exp['%s.U' % l] = U[l]
@@ -303,7 +341,15 @@ def decomposition(t, splits):
             probs[k] = probs.get(k, 0.0) + w * v
     A = rec['automatic']['seconds']
     st = automatic_stages(rec)
-    stages = OrderedDict((k, contrib['globalAuto'] * st[k] / A) for k in ('startup', 'read', 'communication'))
+    # §24.2 (v5.5): each class's global attempt split by its own stages, p_global,i · t_stage,i (= globalAuto_i · t_stage,i / A_i), rate-weighted
+    stages = OrderedDict((k, 0.0) for k in ('startup', 'read', 'communication'))
+    for r in t['rows']:
+        w = r['ratePerHour'] / lam
+        st_i, A_i, _g = class_recovery(rec, r)
+        ga = splits[r['id']]['contrib']['globalAuto']
+        if A_i > 0:
+            for k in stages:
+                stages[k] += w * ga * st_i[k] / A_i
     stages['manual'] = contrib['globalManual']
     exp = OrderedDict()
     for cid, sp in splits.items():
@@ -406,6 +452,10 @@ TABLES = OrderedDict([
     ('cm384-200k.recommended-derated-k1', 'cm384-200k.recommended-derated-k1.table.json'),
     ('native950-500k.recommended-derated-k', 'native950-500k.recommended-derated-k.table.json'),
     ('cm384-200k.recommended-derated-k', 'cm384-200k.recommended-derated-k.table.json'),
+    # v5.5 (fifth review D4 / M1 / M2): one mechanism each on today's a3server 10k
+    ('a3server-10k.snapshot', 'a3server-10k.snapshot.table.json'),
+    ('a3server-10k.predict', 'a3server-10k.predict.table.json'),
+    ('a3server-10k.abft', 'a3server-10k.abft.table.json'),
 ])
 ANALYSIS = OrderedDict()
 for name, fname in TABLES.items():
@@ -421,7 +471,7 @@ for name, fname in TABLES.items():
         'expected': exp, 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
     })
 
-for name in ['native950-500k', 'native950-500k.recommended', 'cm384-200k', 'a3server-10k.derated']:
+for name in ['native950-500k', 'native950-500k.recommended', 'cm384-200k', 'a3server-10k.derated', 'a3server-10k.predict', 'a3server-10k.abft']:
     a = ANALYSIS[name]
     cases.append({
         'id': 'byLayer.%s' % name, 'group': 'byLayer',
@@ -429,7 +479,7 @@ for name in ['native950-500k', 'native950-500k.recommended', 'cm384-200k', 'a3se
         'expected': by_layer(a['t'], a['splits'], a['form']), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
     })
 
-for name in ['native950-500k', 'native950-500k.recommended', 'cm384-200k.recommended', 'native950-500k.recommended-derated-k1']:
+for name in ['native950-500k', 'native950-500k.recommended', 'cm384-200k.recommended', 'native950-500k.recommended-derated-k1', 'a3server-10k.snapshot', 'a3server-10k.predict']:
     a = ANALYSIS[name]
     cases.append({
         'id': 'chain.%s' % name, 'group': 'chainSplit',

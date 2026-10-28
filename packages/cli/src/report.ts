@@ -29,7 +29,8 @@ export interface ScenarioReportOptions {
 export interface KpiRow {
   scale: number;
   today: { aOp: number; aOpDerated: number; mtbfHwH: number | null; mttrS: number; pWindow: number; verdict: string };
-  required: { B: number; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number };
+  /** formula (2); `reachable` false (B ≤ 0): the other event classes and φ take the whole budget, the two ends are null */
+  required: { B: number; reachable: boolean; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number | null; F: number; phi: number; totalBudget: number };
   recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; aOp: number; aOpDerated: number; mtbfHwH: number | null; mttrS: number; pWindow: number; verdict: string };
 }
 export interface ScenarioReportManifest {
@@ -90,7 +91,7 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
     return {
       scale: n,
       today: { aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS, pWindow: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict },
-      required: { B: z.required.B, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS },
+      required: { B: z.required.B, reachable: z.required.reachable, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS, F: z.today.kpiDerated.F, phi: z.today.kpiDerated.phi, totalBudget: z.required.totalBudget },
       recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict },
     };
   });

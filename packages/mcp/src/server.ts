@@ -255,7 +255,7 @@ server.registerTool(
 );
 server.registerTool(
   'scenario_mechanisms',
-  { description: 'Apply mechanisms with parameter overrides (an applied one is replaced) or remove applied ones — the Mechanism library page. Returns the scenario, the changes (+id / −id) and the summary.', inputSchema: { scenario: scenarioArg, apply: z.record(z.string(), z.record(z.string(), z.number())).optional().describe('id → parameters, e.g. { "D-HARD": { "detectSeconds": 20 }, "R-NETFAIL": {} }'), remove: z.array(z.string()).optional() } },
+  { description: 'Apply mechanisms with parameter overrides over the default mechanism set’s parameters (an applied one is replaced; refused with the missing keys when integration parameters or a required mechanism are absent) or remove applied ones — the Mechanism library page. Returns the scenario, the changes (+id / −id) and the summary.', inputSchema: { scenario: scenarioArg, apply: z.record(z.string(), z.record(z.string(), z.number())).optional().describe('id → parameters, e.g. { "D-HARD": { "detectSeconds": 20 }, "R-NETFAIL": {} }'), remove: z.array(z.string()).optional() } },
   async ({ scenario, apply, remove }) => { const r = editMechanisms(toScenario(scenario), { apply, remove }); return text({ scenario: r.scenario, changed: r.changed, summary: scenarioSummary(r.scenario) }); },
 );
 server.registerTool(

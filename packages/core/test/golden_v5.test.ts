@@ -121,6 +121,7 @@ describe('v5 golden vectors (independent Python)', () => {
         got[`${l}.sdc`] = v.sdc;
         got[`${l}.slowRate`] = v.slowRate;
         got[`${l}.sdcRate`] = v.sdcRate;
+        got[`${l}.sdcDetectedRate`] = v.sdcDetectedRate;
         got[`${l}.U`] = U[l];
         got.sumLam += v.lam;
         got.sumC += v.c;
@@ -145,9 +146,12 @@ describe('v5 golden vectors (independent Python)', () => {
         flatSplit(`class.${row.id}`, row.split as Split, got);
         // identity: the split closes on the engine's mean pause of the class
         expect.soft(Math.abs(row.split.meanS - row.meanPauseS), `${c.id}: ${row.id} Σ contributions vs engine meanPauseS`).toBeLessThanOrEqual(1e-9 * row.meanPauseS);
-        // the direct signature with the engine's chain parameters must give the same split
-        const direct = chainSplit(t.chain.detectS, t.chain.globalS, c.inputs.autoS as number, t.chain.params as ChainParams, applicable[row.id], (c.inputs.order as string[] | null) ?? undefined);
+        // the direct signature with the engine's chain parameters and the class's own global recovery / attempt (§24.2) must give the same split
+        const er = t.chain.rows.find((r) => r.id === row.id)!;
+        const direct = chainSplit(t.chain.detectS, er.globalS, er.autoS, t.chain.params as ChainParams, applicable[row.id], (c.inputs.order as string[] | null) ?? undefined);
         expect.soft(Math.abs(direct.meanS - row.split.meanS), `${c.id}: ${row.id} chainSplit vs classChainSplits`).toBeLessThanOrEqual(1e-12);
+        // a class without own stages runs on the job's values
+        if (!er.stages || Math.abs(er.autoS - (c.inputs.autoS as number)) < 1e-12) expect.soft(Math.abs(er.globalS - t.chain.globalS), `${c.id}: ${row.id} globalS vs the job's`).toBeLessThanOrEqual(1e-12);
       }
       const d = mttrDecomposition(s, t);
       for (const [k, v] of Object.entries(d.contrib)) got[`job.contrib.${k}`] = v;

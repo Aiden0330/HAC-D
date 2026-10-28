@@ -7,11 +7,19 @@
  * KPI strip in the Findings report's 口径). Edits of settings a mechanism may own (workload, recovery, FIT) go through `editBase`:
  * the applied mechanisms are removed, the base is changed and they are applied again with their recorded parameters, as on the
  * pages. Nothing here computes a reliability number from a document: values come from the caller with their provenance.
+ * v5.5 (fifth review D1, D9): a mechanism is applied with the default set's parameters merged over the library defaults — the
+ * values the Findings report evaluates its candidates with — then the caller's; the keys are the mechanism's whole vocabulary
+ * (`mechanismParameterKeys`: parameters, provisional, integration needs, read keys); a transform that would not act (integration
+ * parameters missing, a required mechanism absent) is refused with the missing keys named, never reported as applied. The
+ * scale-out network toggles go through `editBase` too, so per-class mechanism effects survive an off / on.
  */
 import type { Scenario, Superpod } from '../scenario/schema.js';
 import { parseScenario } from '../scenario/schema.js';
 import { computeCounts, resolveCountOverrides, withoutSuperpodOverrides, COUNT_OVERRIDE_ROWS, geometryCounts } from '../scenario/build.js';
-import { editBase, applyMechanisms, stripMechanisms, isStrippable, MECHANISM_LIBRARY, mechanismOwner } from '../mechanisms/index.js';
+import { editBase, applyMechanisms, stripMechanisms, isStrippable, activeMechanisms, MECHANISM_LIBRARY, mechanismOwner } from '../mechanisms/index.js';
+import { integrationStatus } from '../mechanisms/auditLibrary.js';
+import { mechanismParameterKeys } from '../ingest/fields.js';
+import { DEFAULT_MECHANISM_SET, resolveMechanismSet, type ResolvedMechanismSet } from '../records/mechanismSet.js';
 import { unitFaultLibrary, fitOverrides, resizeTopology, withFabric, applySuperpodVariant, superpodVariantOf, switchTopologyTemplate, SUPERPOD_VARIANTS, TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_EXAMPLES, topologyBom, type TopologyTemplate, type UnitFaultType } from '../topology/index.js';
 import { kpiForm, trainingOf } from '../budget/kpiForm.js';
 import { deratedOf } from '../strategy/window.js';
@@ -127,14 +135,18 @@ export function setScenarioFields(s: Scenario, sets: Record<string, unknown>): {
       const v = num(path, raw, f);
       x = { ...x, topology: { ...x.topology, superpod: { ...sp, [k]: v }, ...(k === 'nodesPerRack' ? { nodesPerRack: v } : {}), ...(k === 'npusPerNode' ? { gpusPerNode: v } : {}) } };
     } else if (path === 'topology.scaleOut') {
+      // both toggles on the bare design (editBase): the applied mechanisms are re-applied afterwards, so a rung or detector with
+      // per-class effects on the @roce classes (R-LINK-LOCAL, R-FABRIC-DEGRADE, H-CONTROL-CONTINUITY, D-NET-SDC) acts on the restored classes
       const on = bool(path, raw);
-      if (!on) x = { ...x, topology: { ...x.topology, scaleOut: undefined }, components: x.components.filter((c) => !c.id.includes('@roce')) };
+      if (!on) x = editBase(x, (b) => ({ ...b, topology: { ...b.topology, scaleOut: undefined }, components: b.components.filter((c) => !c.id.includes('@roce')) }));
       else if (!x.topology.scaleOut) {
         if (!tpl) throw new Error('topology.scaleOut: a custom topology has no template default for the scale-out network');
         const roce = LIB.filter((q) => q.unit === 'roce-switch' || q.unit === 'roce-link');
         const fresh = TOPOLOGY_EXAMPLES[`topology-${tpl}`]();
-        const add = fresh.components.filter((c) => roce.some((q) => q.id === c.id) && !x.components.some((q) => q.id === c.id));
-        x = { ...x, topology: { ...x.topology, scaleOut: TOPOLOGY_TEMPLATES[tpl].topology.scaleOut as Scenario['topology']['scaleOut'] }, components: [...x.components, ...add] };
+        x = editBase(x, (b) => {
+          const add = fresh.components.filter((c) => roce.some((q) => q.id === c.id) && !b.components.some((q) => q.id === c.id));
+          return { ...b, topology: { ...b.topology, scaleOut: TOPOLOGY_TEMPLATES[tpl].topology.scaleOut as Scenario['topology']['scaleOut'] }, components: [...b.components, ...add] };
+        });
       }
     } else if (path.startsWith('topology.scaleOut.')) {
       if (!x.topology.scaleOut) throw new Error(`${path}: the scale-out network is off (set topology.scaleOut=on first)`);
@@ -191,7 +203,26 @@ export function setFaultFit(s: Scenario, fits: Record<string, number | null>): {
   return { scenario: parseScenario(x), changed };
 }
 
-/** the mechanisms of the Mechanism library page: `apply` = library id → parameter overrides (merged over the library defaults; an applied one is replaced), `remove` = ids to strip (exact inverse) */
+let SET: ResolvedMechanismSet | undefined;
+/** the default mechanism set resolved against the library (memoised): the parameters and efforts the Findings report evaluates its candidates with */
+const defaultSet = (): ResolvedMechanismSet => (SET ??= resolveMechanismSet(DEFAULT_MECHANISM_SET));
+
+/**
+ * the parameters a mechanism is applied with before the caller's overrides: the default set's values merged over the library
+ * defaults (so `--apply D-HARD` is the report's D-HARD), the library's alone for a mechanism outside the set
+ */
+export function mechanismDefaults(id: string): Record<string, number> {
+  const m = MECHANISM_LIBRARY.find((q) => q.id === id);
+  if (!m) throw new Error(`unknown mechanism '${id}'`);
+  return { ...m.parameters, ...(defaultSet().parameters[id] ?? {}) };
+}
+
+/**
+ * the mechanisms of the Mechanism library page: `apply` = library id → parameter overrides (over `mechanismDefaults`; keys from
+ * `mechanismParameterKeys`; an applied one is replaced), `remove` = ids to strip (exact inverse). A mechanism whose transform would
+ * not act is refused with the reason: integration parameters still missing after the merge (the audit's provisional values are
+ * named), a required mechanism not applied, or a transform that left the project unchanged.
+ */
 export function editMechanisms(s: Scenario, o: { apply?: Record<string, Record<string, number>>; remove?: string[] }): { scenario: Scenario; changed: string[] } {
   const changed: string[] = [];
   let x = s;
@@ -203,17 +234,28 @@ export function editMechanisms(s: Scenario, o: { apply?: Record<string, Record<s
     changed.push(`-${id}`);
   }
   const apply = o.apply ?? {};
-  for (const [id, params] of Object.entries(apply)) {
+  const params: Record<string, Record<string, number>> = {};
+  for (const [id, given] of Object.entries(apply)) {
     const m = MECHANISM_LIBRARY.find((q) => q.id === id);
     if (!m) throw new Error(`unknown mechanism '${id}'; the library ids: ${MECHANISM_LIBRARY.filter((q) => q.apply).map((q) => q.id).join(', ')}`);
     if (!m.apply) throw new Error(`mechanism ${id} has no transform (informational): it cannot be applied`);
-    for (const [k, v] of Object.entries(params ?? {})) {
-      if (!(k in m.parameters)) throw new Error(`mechanism ${id} has no parameter '${k}' (parameters: ${Object.keys(m.parameters).join(', ') || 'none'})`);
+    const keys = mechanismParameterKeys(id);
+    for (const [k, v] of Object.entries(given ?? {})) {
+      if (!keys.includes(k)) throw new Error(`mechanism ${id} has no parameter '${k}' (parameters: ${keys.join(', ') || 'none'})`);
       if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error(`${id}.${k}: a number is required`);
     }
+    const p = { ...mechanismDefaults(id), ...(given ?? {}) };
+    const st = integrationStatus(m, p);
+    if (!st.ready) throw new Error(`mechanism ${id} needs ${st.missing.join(', ')} before its transform acts and the default set has no value for ${st.missing.length > 1 ? 'them' : 'it'}: pass ${st.missing.length > 1 ? 'them' : 'it'}, e.g. --apply ${id}:${st.missing.map((k) => `${k}=${m.provisional?.[k] ?? '<value>'}`).join(',')}${m.provisional ? ' (the audit’s provisional values, tagged assumed)' : ''}`);
+    for (const r of m.requires ?? []) if (!(r in apply) && !activeMechanisms(x).includes(r)) throw new Error(`mechanism ${id} requires ${r}, which is not applied in this project: apply ${r} first or in the same call`);
+    params[id] = p;
   }
   const ids = Object.keys(apply);
-  if (ids.length) { x = applyMechanisms(x, ids, apply); changed.push(...ids.map((id) => `+${id}`)); }
+  if (ids.length) {
+    x = applyMechanisms(x, ids, params);
+    for (const id of ids) if (!x.mechanisms.applied?.[id]) throw new Error(`mechanism ${id} was not applied: its transform left the project unchanged`);
+    changed.push(...ids.map((id) => `+${id}`));
+  }
   return { scenario: parseScenario(x), changed };
 }
 
@@ -265,13 +307,21 @@ export function scenarioSummary(s: Scenario): ScenarioSummary {
   };
 }
 
-/** the fault types of a project with their current and library FIT, and the appliable mechanisms with their parameters — what `hacd scenario fields <file>` prints */
-export function scenarioVocabulary(s?: Scenario): { fields: ScenarioField[]; classes?: { id: string; unit: string; type: string; fit: number; library: number; description: L }[]; mechanisms: { id: string; name: L; parameters: Record<string, number>; effort: number; applied: boolean }[] } {
+/**
+ * the fault types of a project with their current and library FIT, and the appliable mechanisms with the parameters they would be
+ * applied with (`mechanismDefaults`: the default set's over the library's), the keys a caller may set, the integration keys still
+ * missing (`needs`: the transform refuses until they are given) and the report's effort — what `hacd scenario fields <file>` prints
+ */
+export function scenarioVocabulary(s?: Scenario): { fields: ScenarioField[]; classes?: { id: string; unit: string; type: string; fit: number; library: number; description: L }[]; mechanisms: { id: string; name: L; parameters: Record<string, number>; keys: string[]; needs: string[]; requires: string[]; effort: number; inSet: boolean; applied: boolean }[] } {
   const LIB = unitFaultLibrary();
+  const set = defaultSet();
   const classes = s ? s.components.filter((c) => LIB.some((q) => q.id === c.id)).map((c) => { const q = LIB.find((z) => z.id === c.id)!; const over = s.topology.template ? fitOverrides(s) : {}; const fit = over[c.id] ?? (q.type === 'hard' ? toPerHour(c.failure.value, c.failure.unit) * 1e9 : q.type === 'slow' ? (c.subhealth?.ratePerHour ?? 0) * 1e9 : (c.sdc?.ratePerHour ?? 0) * 1e9); return { id: c.id, unit: q.unit, type: q.type, fit, library: q.fitPerUnit, description: q.description }; }) : undefined;
   return {
     fields: SCENARIO_FIELDS,
     ...(classes ? { classes } : {}),
-    mechanisms: MECHANISM_LIBRARY.filter((m) => m.apply && m.status !== 'informational').map((m) => ({ id: m.id, name: m.name, parameters: { ...m.parameters }, effort: m.effort, applied: !!s?.mechanisms.applied?.[m.id] })),
+    mechanisms: MECHANISM_LIBRARY.filter((m) => m.apply && m.status !== 'informational').map((m) => {
+      const parameters = mechanismDefaults(m.id);
+      return { id: m.id, name: m.name, parameters, keys: mechanismParameterKeys(m.id), needs: integrationStatus(m, parameters).missing, requires: [...(m.requires ?? [])], effort: set.efforts[m.id] ?? m.effort, inSet: m.id in set.efforts, applied: !!s?.mechanisms.applied?.[m.id] };
+    }),
   };
 }

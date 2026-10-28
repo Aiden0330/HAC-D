@@ -20,7 +20,7 @@ import {
   BUILTIN_TOPOLOGY_RECORDS, parseTopologyRecord, recordSuperpod, topologyRecordJsonSchema, type TopologyRecord,
   DEFAULT_MECHANISM_SET, parseMechanismSet, resolveMechanismSet, mechanismSetJsonSchema, type MechanismSet,
   parseFaultRateOverride, faultRateOverrideJsonSchema, type FaultRateOverride,
-  budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS,
+  budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT,
   type StoredStudy, type ArchStudy, type BudgetDocument, type MechanismVerdict,
 } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
@@ -142,6 +142,7 @@ export function findings(a: Args): void {
   const main = a.flag('main') ? Number(a.flag('main')) : undefined;
   if (main !== undefined && !sizes.includes(main)) fail(`--main ${main} is not one of --scales ${sizes.join(',')}`);
   const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), permutations = Number(a.flag('permutations') ?? 300);
+  if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
   const outDir = a.flag('out') ?? 'docs', dataOut = a.flag('data-out') ?? join(outDir, 'data'), studyDir = a.flag('study-dir') ?? dataOut;
   log(`records ${records.map((r) => r.id).join(', ')} · set ${set.id}${rates ? ` · override ${rates.id} (${rates.basis})` : ''} · ${sizes.join(' / ')} NPUs · target ${target} · ${trials} windows · seed ${seed}`);
 
@@ -312,6 +313,7 @@ export function budget(a: Args, json: boolean): void {
   if (!spec || !(scale > 0)) fail('usage: hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--trials 400] [--seed 1] [--json]');
   const rec = resolveRecord(spec), set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1);
+  if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
   const d = budgetFromRecords([rec], set, { sizes: [scale], target, trials, seed, rates, onProgress: (_x, _n, step) => log(step) });
   const z = d.archs[rec.id].sizes[String(scale)];
   if (json) { console.log(JSON.stringify(z, null, 1)); return; }
@@ -321,7 +323,7 @@ export function budget(a: Args, json: boolean): void {
   console.log('口径: A_op of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ of hard interruptions, MTTR_hw = rate-weighted mean pause (formula 1); isolation and silent corruption counted apart; P = share of 30-day windows with A_op ≥ target (formula 6)');
   const rows: (string | number)[][] = [['', 'A_op nominal', 'A_op derated', 'MTBF_hw (derated)', 'MTTR_hw (derated)', 'P(window)', 'plan'],
     ['today', p(z.today.aOp), p(z.today.aOpDerated), h(z.today.kpiDerated.mtbfHwH), s(z.today.kpiDerated.mttrS), p(z.today.window.pAtLeastTarget, 1), z.today.window.verdict],
-    ['required', '', p(target, 1), `≥ ${h(z.required.mtbfAtTodayMttrH)} at today's MTTR`, `≤ ${s(z.required.mttrAtTodayMtbfS)} at today's MTBF`, '', `B = ${z.required.B.toFixed(1)} s/h (formula 2)`],
+    ['required', '', p(target, 1), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} at today's MTTR` : '—', z.required.reachable ? `≤ ${s(z.required.mttrAtTodayMtbfS ?? 0)} at today's MTBF` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (formula 2)` : UNREACHABLE_TEXT.en(z.required, z.today.kpiDerated.F, z.today.kpiDerated.phi)],
     ['recommended', p(f.kpi.aOp), p(f.kpiDerated.aOp), h(f.kpiDerated.mtbfHwH), s(f.kpiDerated.mttrS), p(r.window.pAtLeastTarget, 1), `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · hardware k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`]];
   const w = rows[0].map((_c, j) => Math.max(...rows.map((x) => String(x[j]).length)));
   for (const x of rows) console.log(x.map((c, j) => String(c).padEnd(w[j])).join('  '));

@@ -113,29 +113,47 @@ function draftTopology(cards: EvidenceCard[], o: DraftOptions): string {
 }
 
 /* ---------------- device-fit ---------------- */
-const UNIT_LEXICON: [RegExp, DeviceRateUnit][] = [
-  [/^fits?$/, 'FIT'],
-  [/^(failures?)?(\/|per)(10\^?6|1e6|million)(h|hr|hrs|hours?|小时)$|^fpmh$|^ppm\/h$|^(10\^?-6|1e-6)\/h$|百万小时/, 'per_1e6_h'],
-  [/^(failures?|1)?\/(h|hr|hour)$|^perhour$|每小时/, 'per_h'],
-  [/^%?\/(year|yr|a|年)$|^afr|^peryear$|年/, 'afr'],
-  [/^(h|hr|hrs|hours?|小时)$|^mtbf/, 'mtbf_h'],
+/**
+ * unit as written → device-table unit and the factor the stated value is multiplied by. A rate per 10⁶ hours says "per" / "/" /
+ * "每"; a bare multiple of hours (百万小时, million hours, 10^6 h, 万小时, kh), with or without the MTBF word, is a duration — an
+ * MTBF in that many hours (recheck N2). The percent of an AFR is handled by the caller (the value text may carry it).
+ */
+const UNIT_LEXICON: [RegExp, DeviceRateUnit, number][] = [
+  [/^fits?$/, 'FIT', 1],
+  [/^(mtbf|mttf|平均无故障时间?)?(百万小时|millionh(?:ours?|rs?)?|10\^?6h(?:ours?|rs?)?|1e6h(?:ours?|rs?)?|mh)$/, 'mtbf_h', 1e6],
+  [/^(mtbf|mttf|平均无故障时间?)?十万小时$/, 'mtbf_h', 1e5],
+  [/^(mtbf|mttf|平均无故障时间?)?万小时$/, 'mtbf_h', 1e4],
+  [/^(mtbf|mttf|平均无故障时间?)?(千小时|thousandh(?:ours?|rs?)?|kh|10\^?3h(?:ours?|rs?)?)$/, 'mtbf_h', 1e3],
+  [/^(failures?)?(\/|per|每)(10\^?6|1e6|million|百万)(h|hr|hrs|hours?|小时)$|^fpmh$|^ppm\/h$|^(10\^?-6|1e-6)\/h$/, 'per_1e6_h', 1],
+  [/^(failures?|1)?\/(h|hr|hour)$|^perhour$|每小时/, 'per_h', 1],
+  [/^%?\/(year|yr|a|年)$|^afr|^peryear$|年/, 'afr', 1],
+  [/^(h|hr|hrs|hours?|小时)$|^mtbf/, 'mtbf_h', 1],
 ];
-/** the device-table unit of a unit as written (null when not recognised) */
-export function deviceRateUnit(unitText: string): DeviceRateUnit | null {
+/** the device-table unit of a unit as written and the factor to multiply the stated value by (null when not recognised) */
+export function deviceRateUnitFactor(unitText: string): { unit: DeviceRateUnit; factor: number } | null {
   const s = unitText.normalize('NFKC').toLowerCase().replace(/\s+/g, '').replace(/[()（）]/g, '');
   if (!s) return null;
-  return UNIT_LEXICON.find(([re]) => re.test(s))?.[1] ?? null;
+  const m = UNIT_LEXICON.find(([re]) => re.test(s));
+  return m ? { unit: m[1], factor: m[2] } : null;
+}
+/** the device-table unit of a unit as written (null when not recognised) */
+export function deviceRateUnit(unitText: string): DeviceRateUnit | null {
+  return deviceRateUnitFactor(unitText)?.unit ?? null;
 }
 
 function draftDeviceFit(cards: EvidenceCard[], o: DraftOptions): string {
   const notes: string[] = [];
   const rows: DeviceFitTable['rows'] = [];
   for (const c of firstPerKey(cards.filter((x) => x.field === 'unmapped'), notes).values()) {
-    const device = (c.label ?? '').trim(), v = num(c.value_text.trim().replace(/%$/, '')), unit = deviceRateUnit(c.unit_text);
+    const device = (c.label ?? '').trim(), text = c.value_text.trim(), pct = /%/.test(text), v = num(text.replace(/%/g, '')), uf = deviceRateUnitFactor(c.unit_text), unit = uf?.unit ?? null;
     if (v === null) { notes.push(`${device}: value '${c.value_text}' is not a number (${src(c)}, “${c.quote}”)`); continue; }
-    if (!unit) { notes.push(`${device}: unit '${c.unit_text}' not recognised (FIT, /10^6 h, per hour, MTBF h, AFR) (${src(c)}, “${c.quote}”)`); continue; }
+    if (!unit || !uf) { notes.push(`${device}: unit '${c.unit_text}' not recognised (FIT, /10^6 h, per hour, MTBF h, AFR) (${src(c)}, “${c.quote}”)`); continue; }
     let value = v, note = c.quote;
-    if (unit === 'afr' && /%/.test(c.unit_text + c.value_text)) { value = clean(v / 100); note = `${c.quote}; ${v} % → ${value} (÷100)`; }
+    if (pct || (unit === 'afr' && /%/.test(c.unit_text))) {
+      // a percent is an AFR's only (recheck N1): under any other unit the row is not placed
+      if (unit !== 'afr') { notes.push(`${device}: a percentage ('${c.value_text}') is not a ${unit} value (${src(c)}, “${c.quote}”)`); continue; }
+      value = clean(v / 100); note = `${c.quote}; ${v} % → ${value} (÷100)`;
+    } else if (uf.factor !== 1) { value = clean(v * uf.factor); note = `${c.quote}; ${v} ${c.unit_text} → ${value} h (×${uf.factor})`; }
     if (unit === 'afr' && value >= 1) { notes.push(`${device}: AFR ${value} is not a fraction below 1 (${src(c)}, “${c.quote}”)`); continue; }
     rows.push({ device, value, unit, source: src(c), loc: c.loc, sourceType: o.sourceType, note });
   }

@@ -29,6 +29,11 @@ const R = JSON.parse(readFileSync(join(backup, 'results.json'), 'utf8'));
 const SET = DEFAULT_MECHANISM_SET, RS = resolveMechanismSet(SET);
 const REC = BUILTIN_TOPOLOGY_RECORDS;
 
+/**
+ * fields the engine writes since the stored v4.4 data (additive, derived from stored values, so the stored block stays the
+ * reference): `required.reachable` (v5.5, fifth review D6) = B > 0 — checked against the stored B instead of flagged as extra
+ */
+const ADDED_SINCE_STORED: Record<string, (a: unknown, parent: Record<string, unknown>) => boolean> = { '.required.reachable': (a, parent) => a === ((parent.B as number) > 0) };
 /** deep comparison: numbers to 1e-9 relative, the rest exactly; returns the differences */
 function diff(a: unknown, b: unknown, path = '', out: string[] = []): string[] {
   if (typeof b === 'number') { if (typeof a !== 'number') out.push(`${path}: ${a} vs ${b}`); else if (Math.abs(a - b) > 1e-9 * Math.max(1e-3, Math.abs(b))) out.push(`${path}: ${a} vs ${b}`); return out; }
@@ -36,7 +41,12 @@ function diff(a: unknown, b: unknown, path = '', out: string[] = []): string[] {
   if (Array.isArray(b)) { if (!Array.isArray(a) || a.length !== b.length) out.push(`${path}: length`); else b.forEach((v, i) => diff(a[i], v, `${path}[${i}]`, out)); return out; }
   const A = (a ?? {}) as Record<string, unknown>, B = b as Record<string, unknown>;
   for (const k of Object.keys(B)) { if (!(k in A)) { out.push(`${path}.${k}: missing`); continue; } diff(A[k], B[k], `${path}.${k}`, out); }
-  for (const k of Object.keys(A)) if (!(k in B) && A[k] !== undefined) out.push(`${path}.${k}: extra`);
+  for (const k of Object.keys(A)) {
+    if (k in B || A[k] === undefined) continue;
+    const added = ADDED_SINCE_STORED[`${path}.${k}`];
+    if (added) { if (!added(A[k], B)) out.push(`${path}.${k}: ${JSON.stringify(A[k])} does not follow from the stored block`); continue; }
+    out.push(`${path}.${k}: extra`);
+  }
   return out;
 }
 const json = (x: unknown) => JSON.parse(JSON.stringify(x));
@@ -86,7 +96,8 @@ describe('v5 primitives: identities', () => {
     const kD = kpiForm(deratedOf(s));
     expect(q.kpiDerated.aOp).toBe(kD.aOp);
     expect(q.B).toBeCloseTo(3600 * ((1 - kD.phi) / 0.985 - 1) - kD.F, 9);
-    expect(q.mtbfAtTodayMttrH * q.B).toBeCloseTo(kD.mttrS, 9);
+    expect(q.reachable).toBe(true);
+    expect(q.mtbfAtTodayMttrH! * q.B).toBeCloseTo(kD.mttrS, 9);
     expect(q.mttrAtTodayMtbfS).toBeCloseTo(q.B * kD.mtbfHwH, 9);
     expect(requirementFromKpi(kD, 0.985).B).toBe(q.B);
   });

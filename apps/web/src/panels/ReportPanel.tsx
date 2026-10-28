@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Comlink from 'comlink';
-import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, reportCandidates, type Scenario } from '@hac-d/core';
+import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, reportCandidates, minWindowTrials, type Scenario } from '@hac-d/core';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, ComputeCancelled } from '../worker/client.js';
 import type { ReportRun } from '../worker/compute.worker.js';
@@ -23,6 +23,8 @@ import { fmtPct, fmtInt, fmtNum } from '../lib/format.js';
  * pages and the bundle in the browser (IndexedDB) across reloads; "Open" shows a page in a new tab; the downloads are the files.
  */
 const projectIdOf = (s: Scenario) => (s.meta.id ?? s.meta.name).replace(/[^a-z0-9-_]+/gi, '-');
+/** the fewest windows a supported window check can come from (35 for P ≥ 0.9 at 95 %; formula 6) */
+const MIN_TRIALS = minWindowTrials();
 
 export function ReportPanel({ s }: { s: Scenario }) {
   const { t } = useTranslation();
@@ -50,7 +52,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const busy = run?.status === 'running';
 
   const generate = async () => {
-    const settings = { sizes, trials: Math.max(1, Math.round(trials)), permutations: Math.max(1, Math.round(perms)), target };
+    const settings = { sizes, trials: Math.max(MIN_TRIALS, Math.round(trials)), permutations: Math.max(1, Math.round(perms)), target };
     const name = { zh: s.meta.name, en: s.meta.name };
     runs.start(id, s.meta.name, key, settings);
     setMsg(null);
@@ -97,7 +99,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
           <Field label={t('findingsTab.set')}><span className="mono">{DEFAULT_MECHANISM_SET.id}</span></Field>
           <Field label={t('findingsTab.reference')}><span className="mono" style={{ fontSize: 12 }}>{reference.join(' + ') || '—'}</span></Field>
           <Field label={t('findingsTab.candidates')}><span className="mono" style={{ fontSize: 12 }}>{candidates.join(' + ') || '—'}</span></Field>
-          <Field label={t('findingsTab.trials')} hint={t('strategy.budgetTrialsHint')}><NumberInput value={trials} min={1} max={5000} step={50} onChange={setTrials} /></Field>
+          <Field label={t('findingsTab.trials')} hint={t('strategy.budgetTrialsHint')}><NumberInput value={trials} min={MIN_TRIALS} max={5000} step={50} onChange={setTrials} /></Field>
           <Field label={t('findingsTab.permutations')}><NumberInput value={perms} min={1} max={2000} step={50} onChange={setPerms} /></Field>
         </div>
         <label className="check" style={{ marginTop: 6 }}>
@@ -136,7 +138,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
               const rec = z.recommended;
               return [
                 [fmtInt(n), t('strategy.rowToday'), p(z.today.aOp), p(z.today.aOpDerated), h(z.today.kpiDerated.mtbfHwH), sec(z.today.kpiDerated.mttrS), `${p(z.today.window.pAtLeastTarget, 1)} · ${verdict(z.today.window.verdict)}`, '—'],
-                ['', t('strategy.rowRequired'), '', p(run.settings.target, 1), `≥ ${h(z.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayMttr')}`, `≤ ${sec(z.required.mttrAtTodayMtbfS)} ${t('strategy.atTodayMtbf')}`, '', `B = ${z.required.B.toFixed(1)} s/h (${t('strategy.formula2')})`],
+                ['', t('strategy.rowRequired'), '', p(run.settings.target, 1), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayMttr')}` : '—', z.required.reachable ? `≤ ${sec(z.required.mttrAtTodayMtbfS ?? 0)} ${t('strategy.atTodayMtbf')}` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (${t('strategy.formula2')})` : t('strategy.unreachable', { B: z.required.B.toFixed(1), F: z.today.kpiDerated.F.toFixed(1), phi: fmtPct(z.today.kpiDerated.phi, 3) })],
                 ['', <b key="r">{t('strategy.rowRecommended')}</b>, p(rec.final.kpi.aOp), <b key="d">{p(rec.final.kpiDerated.aOp)}</b>, h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.mttrS), `${p(rec.window.pAtLeastTarget, 1)} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map((x) => LEV[x] ?? x).join(' + ') || '—'} · ${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`],
               ];
             })}

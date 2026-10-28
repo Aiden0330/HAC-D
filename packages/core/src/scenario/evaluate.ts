@@ -173,6 +173,15 @@ export interface ChainRow {
   pCustom: Record<string, number>;
   meanPauseS: number;
   localLossS: number;
+  /**
+   * v5.5 the class's own global recovery g_i (§24.2: the job's global recovery minus the stage time its per-class recovery
+   * stages save, scaled like the attempt) and the automatic attempt inside it, seconds; the job's values for a class without
+   * own stages. The MTTR split (formula 5) runs each class's chain on these, not on the job's.
+   */
+  globalS: number;
+  autoS: number;
+  /** v5.5 the class's automatic stages at this scale (startup / read / communication, seconds; Σ = autoS); absent outside the MTTR mixture */
+  stages?: { startup: number; read: number; communication: number };
 }
 
 export interface SdcKpis {
@@ -580,8 +589,13 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     for (const ci of items) {
       const rate = ci.lambda * ci.total;
       if (rate <= 0) continue;
-      const o = chainOutcome(detectS, gOf(ci, rrN), chainParams, ci.applicable, s.mechanisms.order);
-      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, pCustom: o.pCustom, meanPauseS: o.meanPauseS, localLossS: o.localLossS });
+      const g = gOf(ci, rrN);
+      const o = chainOutcome(detectS, g, chainParams, ci.applicable, s.mechanisms.order);
+      // the class's automatic attempt and stages at N (the stage saving scaled like the attempt, as in gOf), for the MTTR split
+      const fAuto = rrN.autoS !== undefined && autoDefaultS > 0 ? rrN.autoS / autoDefaultS : 1;
+      const stages = stagesDefault ? { startup: (ci.recoveryStages?.startup ?? stagesDefault.startup) * fAuto, read: (ci.recoveryStages?.read ?? stagesDefault.read) * fAuto, communication: (ci.recoveryStages?.communication ?? stagesDefault.communication) * fAuto } : undefined;
+      const autoS = stages ? stages.startup + stages.read + stages.communication : rrN.autoS ?? 0;
+      chainRows.push({ id: ci.component.id, name: ci.component.name?.en ?? ci.component.name?.zh ?? ci.component.id, ratePerHour: rate, share: hardwareRate > 0 ? rate / hardwareRate : 0, applicable: ci.applicable, pPredict: o.pPredict, pNetfail: o.pNetfail, pReplay: o.pReplay, pHotswap: o.pHotswap, pElastic: o.pElastic, pProcess: o.pProcess, pGlobal: o.pGlobal, pRollback: o.pRollback, pCustom: o.pCustom, meanPauseS: o.meanPauseS, localLossS: o.localLossS, globalS: g, autoS, ...(stages ? { stages } : {}) });
     }
     const eventRate = mixed.rollbackRatePerHour + mixed.pauseRatePerHour;
     const mtbiEventS = eventRate > 0 ? 3600 / eventRate : Infinity;

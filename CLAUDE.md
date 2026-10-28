@@ -14,6 +14,7 @@ Plan: `docs/DEVELOPMENT_PLAN.md`. Evidence base: the survey chapter at `../surve
 - First-order checkpoint formulas must check τ+δ ≪ M and R ≪ M and flag the regime.
 - Non-exponential or correlated inputs route to Monte Carlo; the closed-form result is still shown with a delta badge.
 - Parameters from the survey keep provenance and confidence (measured / paper-reported / vendor / derived / assumed / scan-level).
+- A design is its mechanisms in their recorded order of application: a derated twin or a rebuild uses `applyMechanismsInOrder`, never the library order (`MODEL_REFERENCE.md` §22.4.1). The window rule needs at least `minWindowTrials()` windows (35 for P ≥ 0.9); formula (2) has no requirement when B ≤ 0 (`reachable` false) — print the reason, never a negative MTBF.
 - Run `npm test` (goldens) before claiming a core change works; UI changes are checked at 1280 px and 375 px in light and dark.
 
 ## Model and effort routing for delegated work

@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import {
   parseScenario, topologyScenario, applySuperpodVariant, SUPERPOD_VARIANTS, TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS,
-  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary, SCENARIO_FIELDS, recordScenario, DEFAULT_MECHANISM_SET,
+  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary, SCENARIO_FIELDS, recordScenario, DEFAULT_MECHANISM_SET, UNREACHABLE_TEXT,
   type Scenario, type TopologyTemplate, type ScenarioSummary,
 } from '@hac-d/core';
 import { renderScenarioReport } from './report.js';
@@ -189,7 +189,8 @@ export async function scenario(rest: string[]): Promise<void> {
         const h = (x: number | null) => (x === null || !Number.isFinite(x) ? '—' : `${x.toFixed(3)} h`);
         for (const k of m.kpi) {
           rows.push([k.scale.toLocaleString('en-US'), 'today', pct(k.today.aOp), pct(k.today.aOpDerated), h(k.today.mtbfHwH), `${k.today.mttrS.toFixed(1)} s`, `${pct(k.today.pWindow, 1)} ${k.today.verdict}`, '—']);
-          rows.push(['', 'required', '', pct(m.target, 1), `≥ ${h(k.required.mtbfAtTodayMttrH)} at today's MTTR`, `≤ ${k.required.mttrAtTodayMtbfS.toFixed(1)} s at today's MTBF`, '', `B = ${k.required.B.toFixed(1)} s/h`]);
+          const q = k.required;
+          rows.push(['', 'required', '', pct(m.target, 1), q.reachable ? `≥ ${h(q.mtbfAtTodayMttrH)} at today's MTTR` : '—', q.reachable ? `≤ ${(q.mttrAtTodayMtbfS ?? 0).toFixed(1)} s at today's MTBF` : '—', '', q.reachable ? `B = ${q.B.toFixed(1)} s/h` : UNREACHABLE_TEXT.en({ ...q, ratioToday: 0, mtbfFactor: null, mttrFactor: null }, q.F, q.phi)]);
           rows.push(['', 'recommended', pct(k.recommended.aOp), pct(k.recommended.aOpDerated), h(k.recommended.mtbfHwH), `${k.recommended.mttrS.toFixed(1)} s`, `${pct(k.recommended.pWindow, 1)} ${k.recommended.verdict}`, `${k.recommended.mechanisms.join('+') || '—'} | ${k.recommended.levers.join('+') || '—'} · k ${k.recommended.k.toFixed(3)} (${k.recommended.binding}${k.recommended.escalated ? ', escalated' : ''})`]);
         }
         const w = rows[0].map((_c, j) => Math.max(...rows.map((r) => r[j].length)));

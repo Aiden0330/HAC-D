@@ -7,7 +7,7 @@
  * Semantics follow the audited ai-cluster-reliability engine (catalogs/review-2026-10-09/engine.cjs) so the two
  * tools can be cross-checked on one scenario. Time unit inside: hours; faults arrive on the running clock.
  */
-import { rungOrder } from '../mechanisms/chain.js';
+import { rungOrder, orderCustomRungs } from '../mechanisms/chain.js';
 import { summaryStat, proportionEstimate, type SummaryStat, type ProportionEstimate } from '../math/stats.js';
 import type { SdcTerminalRule } from '../sdc/index.js';
 import { Rng } from '../math/rng.js';
@@ -206,9 +206,9 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
       }
       failed += ch.netfail.failureSeconds;
     }
-    // v3.7 custom rungs: transparent ones before the detection-delayed rungs, delayed ones after them
+    // v3.7 custom rungs: transparent ones before the detection-delayed rungs, delayed ones after them (v5.5: in the chain's canonical order)
     const tryCustom = (position: 'transparent' | 'delayed'): boolean => {
-      for (const [id, cr] of Object.entries(ch.custom ?? {})) {
+      for (const [id, cr] of Object.entries(orderCustomRungs(ch.custom) ?? {})) {
         if ((cr.position ?? 'transparent') !== position) continue;
         const a = cls.applicable.custom?.[id] ?? 0;
         if (a <= 0 || tech.uniform() >= a) continue;

@@ -15,24 +15,29 @@
  * 口径: A_op over the 30-day job window; k multiplies the business-impact interruption FIT of every hardware class.
  */
 import type { Scenario } from '../scenario/schema.js';
-import { applyMechanisms, stripMechanisms, mechanismById } from '../mechanisms/index.js';
+import { applyMechanisms, applyMechanismsInOrder, stripMechanisms, mechanismById } from '../mechanisms/index.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
 import { buildLedgerRun, simulateLedgerReplications } from '../mc/ledgerFromScenario.js';
-import { proportionEstimate, proportionVerdict, summaryStat, type SummaryStat } from '../math/stats.js';
+import { proportionEstimate, proportionVerdict, summaryStat, minWindowTrials, type SummaryStat } from '../math/stats.js';
 import { applyLevers, withHardwareFactors, DEFAULT_LEVERS, type LeverId, type RecoveryLever } from './index.js';
 import { trainingOf } from '../budget/kpiForm.js';
 
 const aOpOf = (sc: Scenario) => trainingOf(sc).operationalAvailability;
 
+/** the message of a window check that can never be supported (fewer windows than `minWindowTrials`) */
+export const windowTrialsError = (who: string, trials: number, required: number): string => `${who}: ${trials} windows cannot support P(A_op ≥ A*) ≥ ${required} per window — the Wilson 95 % lower bound of an all-passing sample is n/(n + z²) < ${required}; use at least ${minWindowTrials(required)} windows (formula 6)`;
+
 /**
- * every applied mechanism re-applied with derated parameters (HAC-D's derated yardstick). Order when building a derated design by
- * hand: applyMechanisms → deratedOf → applyLevers(levers, derate) → withHardwareFactors — deratedOf strips and re-applies the
- * recorded mechanisms, so applied after the levers it restores the pre-lever recovery block.
+ * every applied mechanism re-applied with derated parameters (HAC-D's derated yardstick), in the design's recorded order of
+ * application (v5.5: the twin of a design whose mechanisms were applied in another order than the library's is still that
+ * design; not every pair of transforms commutes). Order when building a derated design by hand: applyMechanisms → deratedOf →
+ * applyLevers(levers, derate) → withHardwareFactors — deratedOf strips and re-applies the recorded mechanisms, so applied after
+ * the levers it restores the pre-lever recovery block.
  */
 export function deratedOf(sc: Scenario, derate: DerateSpec = DERATE_DEFAULT): Scenario {
   const ids = Object.entries(sc.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order).map(([id]) => id);
   const rec = Object.fromEntries(Object.entries(sc.mechanisms.applied ?? {}).map(([id, r]) => [id, derateParameters(r.parameters, derate)]));
-  return ids.length ? applyMechanisms(stripMechanisms(sc, ids), ids, rec) : sc;
+  return ids.length ? applyMechanismsInOrder(stripMechanisms(sc, ids), ids, rec) : sc;
 }
 
 export interface WindowCheck {
@@ -101,6 +106,7 @@ export interface WindowRulePlan {
  */
 export function recommendPlan(s: Scenario, o: WindowRuleOptions): WindowRulePlan {
   const trials = o.trials ?? 400, seed = o.seed ?? 1, required = o.required ?? 0.9;
+  if (trials < minWindowTrials(required)) throw new Error(windowTrialsError('recommendPlan', trials, required));
   const LEVERS = o.levers ?? DEFAULT_LEVERS;
   const derate = o.derate ?? DERATE_DEFAULT;
   const params = o.parameters ?? {};
@@ -169,6 +175,7 @@ export interface LeverRuleResult {
  * mean-value limit k_mean; the plan's design must be supported per window, else the cheapest unused lever is added.
  */
 export function recommendLevers(s: Scenario, optimalLevers: LeverId[], target: number, trials = 400, seed = 1, levers: RecoveryLever[] = DEFAULT_LEVERS, derate: DerateSpec = DERATE_DEFAULT, required = 0.9): LeverRuleResult {
+  if (trials < minWindowTrials(required)) throw new Error(windowTrialsError('recommendLevers', trials, required));
   const sDer = deratedOf(s, derate);
   const hw = s.components.filter((c) => c.enabled && c.failure.value > 0).map((c) => c.id);
   const design = (ids: LeverId[], k: number) => {

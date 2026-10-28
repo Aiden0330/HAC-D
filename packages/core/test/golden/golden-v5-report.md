@@ -9,9 +9,9 @@ TypeScript engine by `packages/core/test/golden_v5.test.ts`.
 | File | Role |
 |---|---|
 | `test/golden/dump_inputs_v5.mjs` | writes the input tables (`node --import tsx packages/core/test/golden/dump_inputs_v5.mjs` from the repo root); the engine is used only to build the scenarios and read back the per-class table |
-| `test/golden/inputs_v5/*.table.json` | 12 tables, 15–16 KB each: today's design nominal and derated for native950 500k, cm384 200k, a3server 10k; the recommended design nominal (at its k), derated at k = 1 and derated at results.json's k for native950 500k and cm384 200k |
+| `test/golden/inputs_v5/*.table.json` | 15 tables, 18–19 KB each: today's design nominal and derated for native950 500k, cm384 200k, a3server 10k; the recommended design nominal (at its k), derated at k = 1 and derated at results.json's k for native950 500k and cm384 200k; v5.5: a3server 10k with one mechanism each — R-RUNTIME-SNAPSHOT (`.snapshot`: per-class recovery stages), P-PREDICT (`.predict`: false alarms in F) and D-ABFT (`.abft`: a per-class silent-corruption detector) |
 | `test/golden/compute_golden_v5.py` | pure Python 3.9 (standard library), `python3 compute_golden_v5.py` → `golden_v5.json`; the derivations are documented in its docstring |
-| `test/golden/golden_v5.json` | 29 cases in seven groups (`generated_by`, `findings`, `cases[]` with id / group / inputs / expected / tolerance) |
+| `test/golden/golden_v5.json` | 36 cases in seven groups (`generated_by`, `findings`, `cases[]` with id / group / inputs / expected / tolerance) |
 | `test/golden_v5.test.ts` | vitest harness, one `it` per group (G1–G4, G5a, G5b, G6), `expect.soft` so one run lists every mismatch |
 
 Independence: the modules under test (`budget/kpiForm.ts`, `mttr/decompose.ts`, `layers/index.ts`, `strategy/requirement.ts`,
@@ -49,8 +49,8 @@ Plan inputs (recommended mechanisms, levers, k, binding) were copied by the Pyth
 | Group | Derivation (spec) | Identity parts | Tolerance | Result |
 |---|---|---|---|---|
 | G1 `kpiForm` (10 cases) | formula (1): λ_hw = Σλ_i, ΣC = Σλ_i t̄_i, MTTR_hw, MTBF_hw; other classes isolation λ×G, detected silent λ×(t_d + t_rec + t_step), false alarms λ×t_mig; F; A_run; t_d and G from §18 | A_run closure vs engine running fraction (1e-9); φ on the engine A_op | rel 1e-9, abs 1e-12 | pass |
-| G2 `byLayer` (4 cases) | formula (3) with the Methodology §3 unit → layer map; isolation / silent pauses split ∝ Σ slow_u·n_u and Σ sdc_u·n_u per layer; U_ℓ = 100·C_ℓ/(3600·D), D = 1 + (ΣC + F)/3600; Σ_ℓ λ_ℓ = λ_hw, Σ_ℓ C_ℓ = ΣC | none beyond G1's φ-free quantities | rel 1e-9, abs 1e-12 | pass (incl. `slowRate`, `sdcRate`, `hard` = Σ U_ℓ, `DEFAULT_LAYERS` mapping) |
-| G3 `chainSplit` / `mttrDecomposition` (4 cases: today's native950 500k; recommended native950 500k nominal with two custom rungs; recommended cm384 200k nominal with explicit stages; recommended native950 derated k = 1) | §19 / §19.1 / §19.2 / §24.1 rung tree enumerated recursively; per terminal the probability and the pause by contributor: `detect`, own time per rung (`custom:<id>`, elastic → t_sync), `failed:<rung>` (`failed:custom:<id>`), `globalAuto` = p_global·T_auto, `globalManual` = p_global·(G − T_auto); job level rate-weighted; stages §24.2 (thirds, or the given stages rescaled to T_auto), `manual` = globalManual. The derated design is built in the order of finding 2 (`applyMechanisms → deratedOf → applyLevers(…, DERATE_DEFAULT)`), which is the construction the engine's plan uses | Σ contributions = engine `meanPauseS` per class (1e-9 rel); `chainSplit` direct signature = `classChainSplits`; `mttrS` = `kpiForm.mttrS` | rel 1e-9, abs 1e-12 | pass (all 80 class splits, 4 job decompositions, stages, recovery echo) |
+| G2 `byLayer` (6 cases; v5.5 adds a3server 10k with P-PREDICT and with D-ABFT) | formula (3) with the Methodology §3 unit → layer map; isolation pause split ∝ Σ slow_u·n_u, detected-silent pause ∝ Σ sdc_u·n_u·q_u (§24.3 class coverage; v5.5) per layer; U_ℓ = 100·C_ℓ/(3600·D), D = 1 + (ΣC + F)/3600 with the false alarms in F; Σ_ℓ λ_ℓ = λ_hw, Σ_ℓ C_ℓ = ΣC | none beyond G1's φ-free quantities | rel 1e-9, abs 1e-12 | pass (incl. `slowRate`, `sdcRate`, `sdcDetectedRate`, `hard` = Σ U_ℓ, `DEFAULT_LAYERS` mapping) |
+| G3 `chainSplit` / `mttrDecomposition` (6 cases: today's native950 500k; recommended native950 500k nominal with two custom rungs; recommended cm384 200k nominal with explicit stages; recommended native950 derated k = 1; v5.5: a3server 10k with R-RUNTIME-SNAPSHOT — per-class stages, §24.2 — and with P-PREDICT — the predict rung) | §19 / §19.1 / §19.2 / §24.1 rung tree enumerated recursively; per terminal the probability and the pause by contributor: `detect`, own time per rung (`custom:<id>`, elastic → t_sync), `failed:<rung>` (`failed:custom:<id>`), `globalAuto` = p_global·T_auto, `globalManual` = p_global·(G − T_auto); job level rate-weighted; stages §24.2 (thirds, or the given stages rescaled to T_auto), `manual` = globalManual. The derated design is built in the order of finding 2 (`applyMechanisms → deratedOf → applyLevers(…, DERATE_DEFAULT)`), which is the construction the engine's plan uses | Σ contributions = engine `meanPauseS` per class (1e-9 rel); `chainSplit` direct signature = `classChainSplits`; `mttrS` = `kpiForm.mttrS` | rel 1e-9, abs 1e-12 | pass (all 80 class splits, 4 job decompositions, stages, recovery echo) |
 | G4 `requirementFromKpi` / `requirement` (3 cases: derated native950 500k, cm384 200k, a3server 10k, A* = 0.985) | formula (2): B = 3600·((1 − φ)/A* − 1) − F, total budget 3600·(1/A* − 1), MTTR_hw/B, B·MTBF_hw, ratio today, the two factors | φ from G1 | rel 1e-9, abs 1e-12 | pass (both entry points) |
 | G5a first-order closed-form k* (2 cases: native950 500k, cm384 200k; both `binding = 'mean'` in results.json) | formula (4): k* = (3600·((1 − φ)/A* − 1) − F)/ΣC₁ on the derated recommended design at k = 1, φ and F frozen at k = 1 — the check that the first-order form agrees with the engine's "mean binds" k (the bisection root of A_op,der(k) = A* with φ at k) to ~1e-5 | φ, F, ΣC₁ of the derated design vs `kpiForm` (rel 1e-9) | k* vs results.json `recommended.k`: rel 2e-5; engine A_op of the design at k* vs A*: abs 3e-7 (decision of 2026-10-21; see finding 1) | pass (6.6e-6 and 7.7e-6 relative on k; 9.1e-8 and 1.1e-7 on A_op) |
 | G5b exact identity at the engine's k (2 cases: the same designs at results.json's k) | formula (1) on the derated design at k: (1 − φ(k))/(1 + (ΣC(k) + F)/3600) = A*; ΣC(k) = k·ΣC₁ (only the hardware pause scales); F(k) = F(1); φ(k) − φ(1) recorded | φ(k) on that table's engine A_op (declared); the engine A_op at k vs A* | A_op abs 1e-9; ΣC(k), F, φ rel 1e-9 | pass (A* reproduced to 1e-16 on both; ΣC(k)/ΣC₁ = k to 1e-15) |
@@ -115,10 +115,29 @@ threshold edge (≥) pass.
   `unavailabilityByLayer`; `DEFAULT_LAYERS` carries the Methodology §3 unit → layer map.
 - The pruning rule reproduces the 24 published verdicts of `docs/backup/ascend-allocation/mechanisms.json`.
 
+### 4. Regeneration of 2026-10-27 (v5.5, the fifth model review)
+
+Three input tables and seven cases were added for the review's D4, M1 and M2 (`docs/markdown/MODEL_REVIEW_2026-10-27.md` §7), and the Python
+gained the two pieces of the specification those cases need, both written from the spec, not from the engine:
+
+- §24.2 per-class recovery (`class_recovery`): a class with its own stages keeps the job's stage for every stage it does not override,
+  A_i = Σ stages_i, g_i = G − (A − A_i)·(T_auto(N)/A) with T_auto(N) = A in these tables (no recovery scale law); each class's chain runs on
+  (t_d, g_i, A_i) and its global attempt is split by its own stages, p_global,i·t_stage,i, rate-weighted (`chain.a3server-10k.snapshot`:
+  11 classes with own stages, all 20 class means equal the engine's to < 1e-9).
+- §24.3 class coverage in the layer split (`by_layer`): q_u = 1 − (1 − q_abs | q)·Π(1 − c_k) from the dumped `sdcCoverage` /
+  `sdcExtraDetection` inputs; the detected-corruption pause is split by Σ sdc_u·n_u·q_u (`byLayer.a3server-10k.abft`), and D keeps F
+  with the predictor's false alarms (`byLayer.a3server-10k.predict`, false alarms 1.97 s/h).
+
+The recheck of the same day added the canonical order of custom rungs to the Python chain (`CUSTOM_RUNG_ORDER`, as `mechanisms/chain.ts`);
+the dumped tables carry the rungs in that order already, so no value changed. Every pre-existing expected value is unchanged except for floating-point reassociation: the largest relative change over the 29 old cases is
+2.5e-16 (`chain.*.job.stages.*`, now summed per class; `byLayer.*.sdc`, now weighted by q_u = 0.95 for every class), far inside the 1e-9
+tolerance. The input tables gained `sdcCoverage` / `sdcExtraDetection` per class and BOXIO-hard's `applicable.predict` became 0 (the
+catalog's scope rule, fourth review R2); no expected value depends on either in the old cases. Regenerated with `/usr/bin/python3` 3.9.6.
+
 ## Regenerating
 
 ```
 node --import tsx packages/core/test/golden/dump_inputs_v5.mjs      # inputs_v5/*.table.json (engine used for inputs only)
-python3 packages/core/test/golden/compute_golden_v5.py              # golden_v5.json (prints the findings list)
+python3 packages/core/test/golden/compute_golden_v5.py              # golden_v5.json (prints the findings list); use the system Python 3.9 — a newer Python changes the last float digits
 npm test -w @hac-d/core
 ```

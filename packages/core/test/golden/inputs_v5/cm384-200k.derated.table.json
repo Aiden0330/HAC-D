@@ -211,7 +211,7 @@
     "replay": 0,
     "process": 0,
     "elastic": 0,
-    "predict": 1,
+    "predict": 0,
     "netfail": 1,
     "hotswap": 0
    },
@@ -394,420 +394,540 @@
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "CORE-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 1.4163372859025032e-8,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "CORE-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 4.106280193236715e-8
+   "sdcPerUnitPerHour": 4.106280193236715e-8,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SRAM-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SRAM-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 8.430579082752994e-10,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SRAM-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "IOD-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "IOD-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 4.046677959721438e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "IOD-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 1.0305969095676323e-9
+   "sdcPerUnitPerHour": 1.0305969095676323e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MODULE-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MODULE-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 1.7198381328816111e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MODULE-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMT-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMT-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 1.1145779669968282e-8,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMT-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMP-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMP-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 7.24475678547938e-10,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MEMP-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "NIC-hard",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "NIC-slow",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 1.7929179740026897e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "NIC-sdc",
    "unit": "npu",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 1.0058431102498928e-9
+   "sdcPerUnitPerHour": 1.0058431102498928e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-hard",
    "unit": "ub-link",
    "count": 2800000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-hard@roce",
    "unit": "roce-link",
    "count": 1600000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-slow",
    "unit": "ub-link",
    "count": 2800000,
    "slowPerUnitPerHour": 1.7075409276216095e-10,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-slow@roce",
    "unit": "roce-link",
    "count": 1600000,
    "slowPerUnitPerHour": 1.7075409276216095e-10,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-sdc",
    "unit": "ub-link",
    "count": 2800000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "OPT-sdc@roce",
    "unit": "roce-link",
    "count": 1600000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "BOXIO-hard",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "BOXIO-slow",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 3.3467802181383544e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "BOXIO-sdc",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 3.7551476115995995e-9
+   "sdcPerUnitPerHour": 3.7551476115995995e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-hard",
    "unit": "ub-switch",
    "count": 233338,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-hard@roce",
    "unit": "roce-switch",
    "count": 43750,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-slow",
    "unit": "ub-switch",
    "count": 233338,
    "slowPerUnitPerHour": 1.0245245565729656e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-slow@roce",
    "unit": "roce-switch",
    "count": 43750,
    "slowPerUnitPerHour": 1.0245245565729656e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-sdc",
    "unit": "ub-switch",
    "count": 233338,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 5.747674915713672e-10
+   "sdcPerUnitPerHour": 5.747674915713672e-10,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "FABRIC-sdc@roce",
    "unit": "roce-switch",
    "count": 43750,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 5.747674915713672e-10
+   "sdcPerUnitPerHour": 5.747674915713672e-10,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "CPU-hard",
    "unit": "cpu",
    "count": 100000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "CPU-slow",
    "unit": "cpu",
    "count": 100000,
    "slowPerUnitPerHour": 4.891649413388544e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "CPU-sdc",
    "unit": "cpu",
    "count": 100000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "DDR-hard",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "DDR-slow",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 2.3479917184265006e-8,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "DDR-sdc",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SSD-hard",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SSD-slow",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 3.9133195307108355e-8,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "SSD-sdc",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "POWER-hard",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "POWER-slow",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 7.826639061421671e-8,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "POWER-sdc",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "COOL-hard",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "COOL-slow",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 2.3479917184265008e-7,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "COOL-sdc",
    "unit": "cabinet",
    "count": 6250,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MGMT-hard",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MGMT-slow",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 4.6959834368530015e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "MGMT-sdc",
    "unit": "node",
    "count": 25000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "STORAGE-hard",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "STORAGE-slow",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 3.913319530710835e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "STORAGE-sdc",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "UNKNOWN-hard",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "UNKNOWN-slow",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 6.0167287784679094e-9,
-   "sdcPerUnitPerHour": 0
+   "sdcPerUnitPerHour": 0,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   },
   {
    "id": "UNKNOWN-sdc",
    "unit": "job",
    "count": 200000,
    "slowPerUnitPerHour": 0,
-   "sdcPerUnitPerHour": 4.0699812668268e-9
+   "sdcPerUnitPerHour": 4.0699812668268e-9,
+   "sdcCoverage": null,
+   "sdcExtraDetection": null
   }
  ]
 }

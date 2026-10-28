@@ -132,9 +132,11 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     apply: (s, p) => {
       const c = cloneScenario(s);
       const previous: Previous = { 'sdc.detection': { ...c.sdc.detection } };
-      const raised = raiseClassCoverage(c, p.coverage);
+      // a detector never lowers the coverage already in place (as D-SDC-DMR): D-SDC and D-SDC-DMR commute whatever the order (fifth review D5)
+      const level = Math.max(c.sdc.detection.coverage, p.coverage);
+      const raised = raiseClassCoverage(c, level);
       if (Object.keys(raised).length) previous.componentSdc = raised;
-      c.sdc = { ...c.sdc, detection: { coverage: p.coverage, detectSeconds: p.detectSeconds } };
+      c.sdc = { ...c.sdc, detection: { coverage: level, detectSeconds: p.detectSeconds } };
       return recordApplied(c, 'D-SDC', p, previous);
     },
   },
@@ -542,6 +544,24 @@ export function applyMechanisms(s: Scenario, ids: string[], parameters: Record<s
     // a mechanism already applied is removed first, so that re-applying it replaces its previous application instead of compounding
     if (out.mechanisms.applied?.[m.id]) out = stripMechanisms(out, [m.id]);
     out = m.apply(out, { ...m.parameters, ...(parameters[m.id] ?? {}) });
+  }
+  return out;
+}
+
+/**
+ * v5.5 apply in the given order — a design's recorded order of application (`mechanisms.applied[].order`), which the derated
+ * twin (`deratedOf`), the strategies' derated designs and the budget's rebuild must keep: not every pair of transforms commutes
+ * (C-FAST and C-MEM both set τ and δ; same-stage reductions with a share below 1; custom rungs are tried in insertion order), so
+ * a rebuild in library order is not the same design (fifth review D5). `applyMechanisms` remains the library-order form for
+ * mechanisms added to a design. An id without a transform is skipped; an already applied one is replaced.
+ */
+export function applyMechanismsInOrder(s: Scenario, ids: string[], parameters: Record<string, Record<string, number>> = {}): Scenario {
+  let out = s;
+  for (const id of ids) {
+    const m = MECHANISM_LIBRARY.find((x) => x.id === id);
+    if (!m?.apply) continue;
+    if (out.mechanisms.applied?.[id]) out = stripMechanisms(out, [id]);
+    out = m.apply(out, { ...m.parameters, ...(parameters[id] ?? {}) });
   }
   return out;
 }

@@ -6,13 +6,15 @@
  * network = RoCE / UBoE switches and links; SuperPoD (UB domain) = UB switch chips and UB optical links; compute cabinet; node =
  * node + host CPU; NPU. A class belongs to exactly one layer (by its fault unit), so the layers' rates and pause contributions
  * add up to the job's: Σ_ℓ λ_ℓ = λ_hw and Σ_ℓ C_ℓ = Σλ_i t̄_i. The other event classes are split by each layer's own sub-health
- * (isolation) and silent (detected-corruption) rates. The unavailability share of a layer is U_ℓ = C_ℓ / (3600 · D) with
- * D = 1 + (ΣC + F)/3600 (formula (3)); MTBF per instance = instances / λ_ℓ.
+ * entry rate (isolation) and detected silent rate Σ_i λ_sdc,i q_i (detected corruption; q_i the class's immediate detection
+ * coverage, §24.3 — equal to the raw silent rate's share while every class has the same coverage). The unavailability share of a
+ * layer is U_ℓ = C_ℓ / (3600 · D) with D = 1 + (ΣC + F)/3600 (formula (3); F includes the predictor's false alarms, which no
+ * layer owns); MTBF per instance = instances / λ_ℓ.
  * 口径: job-level interruptions per hour by layer; pauses in seconds of job time; instances from the topology counts.
  */
 import type { Scenario } from '../scenario/schema.js';
 import type { TrainingKpis } from '../scenario/evaluate.js';
-import { computeCounts, componentInstances, type Counts } from '../scenario/build.js';
+import { computeCounts, componentInstances, classSdcCoverage, type Counts } from '../scenario/build.js';
 import { unitFaultLibrary, type FaultUnit, type UnitFaultType } from '../topology/index.js';
 import { kpiForm, trainingOf, type KpiForm } from '../budget/kpiForm.js';
 
@@ -83,10 +85,13 @@ export interface LayerReadout {
   c: number;
   /** the layer's share of the isolation pauses, seconds per hour (by its sub-health entry rate) */
   iso: number;
-  /** the layer's share of the detected-silent-corruption pauses, seconds per hour (by its silent rate) */
+  /** the layer's share of the detected-silent-corruption pauses, seconds per hour (by its detected silent rate Σ λ_sdc,i q_i) */
   sdc: number;
   slowRate: number;
+  /** Σ_i n_i λ_sdc,i of the layer's classes, per hour (raw silent rate) */
   sdcRate: number;
+  /** Σ_i n_i λ_sdc,i q_i: the layer's immediately detected silent rate, per hour (the weight of `sdc`) */
+  sdcDetectedRate: number;
   rows: LayerClassRow[];
 }
 export interface ByLayer { k: KpiForm; levels: Record<LayerId, LayerReadout> }
@@ -95,29 +100,31 @@ export interface ByLayer { k: KpiForm; levels: Record<LayerId, LayerReadout> }
 export function byLayer(sc: Scenario, t: TrainingKpis = trainingOf(sc), layers: LayerDef[] = DEFAULT_LAYERS): ByLayer {
   const k = kpiForm(sc, t);
   const cnt = computeCounts(sc);
-  const out = Object.fromEntries(layers.map((l) => [l.id, { lam: 0, c: 0, iso: 0, sdc: 0, slowRate: 0, sdcRate: 0, rows: [] as LayerClassRow[] }])) as Record<LayerId, LayerReadout>;
+  const out = Object.fromEntries(layers.map((l) => [l.id, { lam: 0, c: 0, iso: 0, sdc: 0, slowRate: 0, sdcRate: 0, sdcDetectedRate: 0, rows: [] as LayerClassRow[] }])) as Record<LayerId, LayerReadout>;
   for (const r of t.chain.rows) {
     const lv = out[layerOf(r.id, layers)];
     lv.lam += r.ratePerHour; lv.c += r.ratePerHour * r.meanPauseS;
     lv.rows.push({ id: r.id, unit: unitOfClass(r.id), ratePerHour: r.ratePerHour, meanPauseS: r.meanPauseS, pGlobal: r.pGlobal });
   }
-  // the other event classes, split by each layer's sub-health and silent rates (job level, per hour)
+  // the other event classes, split by each layer's sub-health entry rate and detected silent rate λ_sdc,i q_i (job level, per hour)
   for (const c of sc.components) {
     if (!c.enabled) continue;
     const ci = componentInstances(c, cnt, sc.measures.subhealthThreshold);
     if (!(ci.total > 0)) continue;
     const lv = out[layerOf(c.id, layers)];
     lv.slowRate += (c.subhealth?.ratePerHour ?? 0) * ci.total;
-    lv.sdcRate += (c.sdc?.ratePerHour ?? 0) * ci.total;
+    const sdcRate = (c.sdc?.ratePerHour ?? 0) * ci.total;
+    lv.sdcRate += sdcRate;
+    lv.sdcDetectedRate += sdcRate * classSdcCoverage(ci, sc.sdc.detection.coverage);
   }
-  const slowTot = layers.reduce((a, l) => a + out[l.id].slowRate, 0), sdcTot = layers.reduce((a, l) => a + out[l.id].sdcRate, 0);
-  for (const l of layers) { out[l.id].iso = slowTot > 0 ? k.other[0].sPerH * out[l.id].slowRate / slowTot : 0; out[l.id].sdc = sdcTot > 0 ? k.other[1].sPerH * out[l.id].sdcRate / sdcTot : 0; }
+  const slowTot = layers.reduce((a, l) => a + out[l.id].slowRate, 0), sdcTot = layers.reduce((a, l) => a + out[l.id].sdcDetectedRate, 0);
+  for (const l of layers) { out[l.id].iso = slowTot > 0 ? k.other[0].sPerH * out[l.id].slowRate / slowTot : 0; out[l.id].sdc = sdcTot > 0 ? k.other[1].sPerH * out[l.id].sdcDetectedRate / sdcTot : 0; }
   return { k, levels: out };
 }
 
-/** unavailability by layer in points of A_op (formula (3)): U_ℓ = 100 · C_ℓ / (3600 · D), D = 1 + Σ_ℓ (C_ℓ + iso_ℓ + sdc_ℓ) / 3600 */
+/** unavailability by layer in points of A_op (formula (3)): U_ℓ = 100 · C_ℓ / (3600 · D), D = 1 + (Σ_ℓ C_ℓ + F) / 3600 with F the other event classes of formula (1) (isolation, detected silent corruption, false alarms) */
 export function unavailabilityByLayer(x: ByLayer, layers: LayerDef[] = DEFAULT_LAYERS): Record<LayerId, number> & { hard: number; total: number; other: number } {
-  const D = 1 + layers.reduce((a, l) => a + x.levels[l.id].c + x.levels[l.id].iso + x.levels[l.id].sdc, 0) / 3600;
+  const D = 1 + (layers.reduce((a, l) => a + x.levels[l.id].c, 0) + x.k.F) / 3600;
   const u = Object.fromEntries(layers.map((l) => [l.id, (100 * x.levels[l.id].c) / (3600 * D)])) as Record<LayerId, number> & { hard: number; total: number; other: number };
   u.hard = layers.reduce((a, l) => a + u[l.id], 0);
   u.total = 100 * (1 - x.k.aOp);

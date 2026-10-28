@@ -7,7 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { recordPodNpus, recordSuperpod, DEFAULT_MECHANISM_SET, type EvidenceCard } from '@hac-d/core';
 import { parseWorksheetMarkdown, worksheetToTopologyRecord, worksheetToDeviceTable, worksheetToMechanismSet, parseWorksheet } from '@hac-d/importers';
-import { extractDocuments, draftWorksheet, mockAdapter, deviceRateUnit, type CompletionRequest } from '../src/index.js';
+import { extractDocuments, draftWorksheet, mockAdapter, deviceRateUnit, deviceRateUnitFactor, type CompletionRequest } from '../src/index.js';
 
 /** a model stand-in: every pattern found in the prompt's chunk becomes a card whose quote is the whole match */
 const regexModel = (patterns: [string, RegExp, string, string?][]) => (req: CompletionRequest): string => {
@@ -151,8 +151,23 @@ describe('end to end: device failure rates → draft device table', () => {
       ['FIT', 'FIT'], ['fits', 'FIT'], ['/10^6 h', 'per_1e6_h'], ['per million hours', 'per_1e6_h'], ['fpmh', 'per_1e6_h'], ['ppm/h', 'per_1e6_h'], ['/10⁶h', 'per_1e6_h'],
       ['/h', 'per_h'], ['per hour', 'per_h'], ['h', 'mtbf_h'], ['hours', 'mtbf_h'], ['MTBF', 'mtbf_h'], ['MTBF (h)', 'mtbf_h'], ['小时', 'mtbf_h'],
       ['%/year', 'afr'], ['AFR', 'afr'], ['per year', 'afr'], ['%/年', 'afr'], ['年', 'afr'], ['ppb', null], ['%', null], ['', null],
+      // recheck N2: an MTBF in a multiple of hours is MTBF; a rate per 10⁶ h says per / 每 / "/"
+      ['MTBF（百万小时）', 'mtbf_h'], ['MTBF (million hours)', 'mtbf_h'], ['万小时', 'mtbf_h'], ['MTBF (kh)', 'mtbf_h'], ['10^6 h', 'mtbf_h'], ['每百万小时', 'per_1e6_h'], ['/百万小时', 'per_1e6_h'], ['failures per million hours', 'per_1e6_h'],
     ];
     for (const [u, want] of cases) expect([u, deviceRateUnit(u)]).toEqual([u, want]);
+    for (const [u, factor] of [['MTBF（百万小时）', 1e6], ['MTBF (million hours)', 1e6], ['十万小时', 1e5], ['万小时', 1e4], ['MTBF (kh)', 1e3], ['千小时', 1e3], ['MTBF (h)', 1], ['FIT', 1]] as const) expect([u, deviceRateUnitFactor(u)?.factor]).toEqual([u, factor]);
+  });
+  it('recheck N1 / N2: a percent in the value is an AFR’s only; an MTBF in millions of hours is multiplied into hours', async () => {
+    const doc = ['SSD: AFR 0.5% per the vendor.', 'Fan: the fan tray is rated 5% FIT.', 'PSU: MTBF 2 百万小时.'].join('\n');
+    const patterns: [string, RegExp, string, string][] = [['unmapped', /AFR (0\.5%) per/, 'AFR', 'SSD'], ['unmapped', /rated (5%) FIT/, 'FIT', 'fan tray'], ['unmapped', /MTBF (2) 百万小时/, '百万小时', 'PSU']];
+    const r = await extractDocuments({ docs: [{ name: 'pct.md', text: doc }], kind: 'device-fit', adapter: mockAdapter(regexModel(patterns)) });
+    expect(r.accepted.map((c) => c.label)).toEqual(['SSD', 'fan tray', 'PSU']);
+    const text = draftWorksheet('device-fit', r.accepted, { id: 'pct', sourceType: 'vendor' });
+    const t = worksheetToDeviceTable(parseWorksheetMarkdown(text));
+    expect(t.rows.map((x) => [x.device, x.value, x.unit])).toEqual([['SSD', 0.005, 'afr'], ['PSU', 2000000, 'mtbf_h']]);
+    expect(t.rows[0].note).toContain('0.5 % → 0.005');
+    expect(t.rows[1].note).toContain('2 百万小时 → 2000000 h (×1000000)');
+    expect(text).toMatch(/## notes[\s\S]*fan tray: a percentage \('5%'\) is not a FIT value/);
   });
 });
 
