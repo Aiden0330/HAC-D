@@ -153,7 +153,9 @@ export function applyLevers(s: Scenario, levers: RecoveryLever[], derate?: Derat
   const r = c.recovery;
   for (const l of levers) {
     if (l.id === 'auto') r.automatic = { ...r.automatic, seconds: Math.min(r.automatic.seconds, derate ? l.limit * derate.timeFactor : l.limit) };
-    else if (l.id === 'success') r.automatic = { ...r.automatic, successProbability: Math.max(r.automatic.successProbability, Math.min(1, derate ? l.limit - derate.successDelta : l.limit)) };
+    // the success lever is derated on its failure probability (× timeFactor, as the manual-fallback probability of
+    // derateParameters): 1 − 0.1 % × 1.5 = 99.85 %; the former −8 pt (91.9 %) fell below today's 99 % and made the lever dead (R1)
+    else if (l.id === 'success') r.automatic = { ...r.automatic, successProbability: Math.max(r.automatic.successProbability, Math.min(1, derate ? 1 - (1 - l.limit) * derate.timeFactor : l.limit)) };
     else if (l.id === 'manual') r.manual = { seconds: Math.min(r.manual.seconds, derate ? l.limit * derate.timeFactor : l.limit) };
   }
   return staged.length ? applyMechanismsInOrder(c, staged.map(([id]) => id), Object.fromEntries(staged.map(([id, rec]) => [id, rec.parameters]))) : c;

@@ -102,7 +102,9 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
       const c = cloneScenario(s);
       if (c.recovery.mode !== 'mixture') return c;
       const previous: Previous = { 'recovery.detection': { ...c.recovery.detection } };
-      c.recovery = { ...c.recovery, detection: { ...c.recovery.detection, coverage: p.coverage, autoSeconds: p.detectSeconds } };
+      // a detector never makes the detection it replaces worse (v5.5, fourth review R4): the derated target (coverage 0.949) stays at
+      // the baseline's 0.95 instead of undercutting it; the faster detection time is kept. The nominal target is above both.
+      c.recovery = { ...c.recovery, detection: { ...c.recovery.detection, coverage: Math.max(c.recovery.detection.coverage, p.coverage), autoSeconds: Math.min(c.recovery.detection.autoSeconds, p.detectSeconds) } };
       return recordApplied(c, 'D-HARD', p, previous);
     },
   },
@@ -117,7 +119,11 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     apply: (s, p) => {
       const c = cloneScenario(s);
       const previous: Previous = { subhealthDetection: Object.fromEntries(c.components.filter((x) => x.subhealth).map((x) => [x.id, { policy: orNull(x.subhealth!.policy), detection: orNull(x.subhealth!.detection) }])) };
-      for (const comp of c.components) if (comp.subhealth) comp.subhealth = { ...comp.subhealth, policy: comp.subhealth.policy ?? 'isolate', detection: { probability: p.coverage, delayHours: p.detectSeconds / 3600 } };
+      // as D-HARD (v5.5, fourth review R4): never below the class's detection probability, never slower than its delay
+      for (const comp of c.components) if (comp.subhealth) {
+        const d = comp.subhealth.detection;
+        comp.subhealth = { ...comp.subhealth, policy: comp.subhealth.policy ?? 'isolate', detection: { probability: Math.max(d?.probability ?? 0, p.coverage), delayHours: Math.min(d?.delayHours ?? Infinity, p.detectSeconds / 3600) } };
+      }
       return recordApplied(c, 'D-SLOW', p, previous);
     },
   },

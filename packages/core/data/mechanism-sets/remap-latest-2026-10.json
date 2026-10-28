@@ -791,7 +791,7 @@
       "confidence": "assumed"
     },
     "prune.dominated": {
-      "source": "audit library overlap rule: mechanisms on one recovery stage take the minimum time (R-WARM-PROCESS 20 s and R-CANN-GRAPH 37.5 s startup vs R-RUNTIME-SNAPSHOT 15 s)",
+      "source": "audit library overlap rule: mechanisms on one recovery stage take the minimum time per event (R-WARM-PROCESS 20 s and R-CANN-GRAPH 37.5 s startup vs R-RUNTIME-SNAPSHOT 15 s); with eligible shares below 1 the dominance is approximate — the dominated mechanism keeps the events the snapshot does not cover (same-stage expectation, MODEL_REFERENCE §24.2), worth at most 3.0e-6 of A_op with all players on at 500k (second recheck N7), far below the 0.15 pt threshold",
       "confidence": "derived"
     }
   }

@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { topologyScenario, unitFaultLibrary } from '../src/topology/index.js';
 import { editMechanisms, setScenarioFields, scenarioVocabulary, mechanismDefaults } from '../src/project/edit.js';
 import { applyMechanisms, applyMechanismsInOrder, stripMechanisms, DEFAULT_PLAYERS } from '../src/mechanisms/index.js';
-import { applyLevers, DEFAULT_LEVERS } from '../src/strategy/index.js';
+import { applyLevers, allocateStrategy, DEFAULT_LEVERS } from '../src/strategy/index.js';
 import { DERATE_DEFAULT } from '../src/mechanisms/plan.js';
 import { deratedOf, recommendPlan } from '../src/strategy/window.js';
 import { requirement } from '../src/strategy/requirement.js';
@@ -339,5 +339,47 @@ describe('second recheck N4 — the automatic-attempt lever re-applies the per-c
     expect(startup(der, 'CORE-hard')).toBeCloseTo(sameStageValue(30, [{ c: cS, a: aS }, { c: cG, a: aG }]), 12);
     expect(startup(der, 'CORE-hard')!).toBeLessThan(30);
     expect(aOp(stripMechanisms(once, ['R-RUNTIME-SNAPSHOT', 'R-CANN-GRAPH']))).toBeCloseTo(aOp(applyLevers(s, auto, null)), 12);
+  });
+});
+
+/* ---------------- fourth review R1 / R4 (fixed 2026-10-28) ---------------- */
+
+describe('R1 — the automatic-success lever is derated on its failure probability', () => {
+  const s = topologyScenario('a3-ub384', 500000);
+  const success = DEFAULT_LEVERS.filter((l) => l.id === 'success');
+  const p = (x: Scenario) => (x.recovery.mode === 'mixture' ? x.recovery.automatic.successProbability : NaN);
+  it('derated 1 − 0.1 % × 1.5 = 99.85 % (not 99.9 − 8 = 91.9 %, which fell below today’s 99 % and made the lever dead); never worse than today', () => {
+    expect(p(applyLevers(s, success, null))).toBeCloseTo(0.999, 12);
+    expect(p(applyLevers(s, success, DERATE_DEFAULT))).toBeCloseTo(1 - 0.001 * DERATE_DEFAULT.timeFactor, 12);
+    expect(p(applyLevers(s, success, { ...DERATE_DEFAULT, timeFactor: 20 }))).toBeCloseTo(0.99, 12);
+  });
+  it('the lever now gains on the derated side, so a strategy with it as the only move selects it', () => {
+    const r = allocateStrategy(s, { strategy: 'mttr-first', target: 0.985, candidates: [], levers: success });
+    expect(r.levers).toEqual(['success']);
+    expect(r.steps[0].derated).toBeGreaterThan(r.baseline.derated);
+  }, 120_000);
+});
+
+describe('R4 — a derated detector never falls below the detection it replaces', () => {
+  const s = topologyScenario('a3-ub384', 100000);
+  const det = (x: Scenario) => (x.recovery.mode === 'mixture' ? x.recovery.detection : undefined);
+  it('D-HARD derated (0.949 in 1.5 s) keeps the baseline 0.95 with its faster time; the nominal target is unchanged; removal restores the baseline', () => {
+    const nom = applyMechanisms(s, ['D-HARD']);
+    expect(det(nom)).toMatchObject({ coverage: 0.999, autoSeconds: 1 });
+    const der = deratedOf(nom);
+    expect(det(der)!.coverage).toBeCloseTo(0.95, 12);
+    expect(det(der)!.autoSeconds).toBeCloseTo(1.5, 12);
+    expect(det(stripMechanisms(der, ['D-HARD']))).toMatchObject({ coverage: 0.95, autoSeconds: 10 });
+    // the derated design is never worse than the scenario without the detector
+    expect(aOp(der)).toBeGreaterThan(aOp(deratedOf(s)));
+  });
+  it('D-SLOW derated (0.94 in 45 s) keeps each class’s baseline probability 0.95 and takes the faster delay', () => {
+    const der = deratedOf(applyMechanisms(s, ['D-SLOW']));
+    for (const c of der.components.filter((x) => x.subhealth)) {
+      expect(c.subhealth!.detection!.probability).toBeCloseTo(0.95, 12);
+      expect(c.subhealth!.detection!.delayHours).toBeCloseTo(45 / 3600, 12);
+    }
+    const nom = applyMechanisms(s, ['D-SLOW']);
+    for (const c of nom.components.filter((x) => x.subhealth)) expect(c.subhealth!.detection).toMatchObject({ probability: 0.99, delayHours: 30 / 3600 });
   });
 });
