@@ -65,23 +65,23 @@ error for the new harness. The Python's own `findings` list in `golden_v5.json` 
 
 | design | k* closed form (φ, F at k = 1) | results.json `recommended.k` | relative | engine A_op of the derated design at k* | A_op − A* |
 |---|---|---|---|---|---|
-| native950 500k (D-HARD, D-RECOVERY-CLASSIFY, R-LINK-LOCAL, H-CONTROL-CONTINUITY; auto, manual) | 0.86287334934509 | 0.86286769220535 | 6.56e-6 | 0.984999908681351 | −9.13e-8 |
-| cm384 200k (C-LOSSLESS, D-HARD; auto, manual) | 1.43328692162288 | 1.43329799627835 | 7.73e-6 | 0.985000110645149 | +1.11e-7 |
+| native950 500k (D-HARD, R-LINK-LOCAL, H-CONTROL-CONTINUITY; auto, success, manual) | 0.88731874408729 | 0.88731426265397 | 5.05e-6 | 0.984999929484659 | −7.05e-8 |
+| cm384 200k (C-LOSSLESS, D-HARD; auto, manual) | 1.43436385123203 | 1.43437495487140 | 7.74e-6 | 0.985000110851429 | +1.11e-7 |
 
 The derivation is formula (4)'s ARINC form with the premise "k scales every hard class's rate and nothing else":
 A_op(k) = (1 − φ)/(1 + (k·ΣC₁ + F)/3600) with φ and F at their k = 1 values. ΣC₁ and F do scale as assumed (G5b: ΣC(k) = k·ΣC₁
 to 1e-15 and F(k) = F(1); the isolation and detected-silent rates do not move). What moves is φ: the silent-corruption time share
 depends on the hard rate through the silent-corruption window (§20: `pClearedBeforePersist(λ_rb)` and the episode rate per
 wall hour on the running clock). From the G5b tables (φ as the declared identity on the engine A_op at k): native950
-φ(1) = 4.27297e-5 → φ(k_results) = 4.28224e-5 (`phiShiftFromK1` = +9.27e-8); cm384 φ(1) = 2.34747e-5 → 2.33624e-5 (−1.12e-7).
-The predicted shift δA_op = −δφ/D (D = 1 + (k·ΣC₁ + F)/3600 ≈ 1.0152) is −9.13e-8 and +1.11e-7, which reproduces the
+φ(1) = 4.10087e-5 → φ(k_results) = 4.10803e-5 (`phiShiftFromK1` = +7.16e-8); cm384 φ(1) = 2.34749e-5 → 2.33624e-5 (−1.13e-7).
+The predicted shift δA_op = −δφ/D (D = 1 + (k·ΣC₁ + F)/3600 ≈ 1.0152) is −7.05e-8 and +1.11e-7, which reproduces the
 observed misses to three digits — the whole discrepancy is φ(k). The same effect shows in G4's a3server 10k case:
 `mttrFactor` = B·MTBF_hw/MTTR_hw = 15.935186 against `results.json`'s `kMean` = 15.935232 (2.9e-6).
 
 Decision (coordinator, 2026-10-21): the "mean binds" k is defined as the engine's bisection root of A_op,der(k) = A* with φ
 evaluated at k; formula (4)'s k* = B/ΣC₁ with φ at k = 1 is the first-order closed form and serves as the check that the two
 agree to about 1e-5 relative. G5a therefore keeps k* as derived with tolerance rel 2e-5 on k versus `recommended.k` and
-abs 3e-7 on A_op(k*) − A* (both pass at 6.6e-6 / 7.7e-6 and 9.1e-8 / 1.1e-7); G5b adds the exact identity at the engine's k
+abs 3e-7 on A_op(k*) − A* (both pass at 5.1e-6 / 7.7e-6 and 7.1e-8 / 1.1e-7); G5b adds the exact identity at the engine's k
 on the dumped tables at results.json's k: (1 − φ(k))/(1 + (ΣC(k) + F)/3600) = A* to 1e-9 (holds to 1e-16 on both designs),
 ΣC(k) = k·ΣC₁ to 1e-9 relative, and the engine A_op at k equals A* to 1e-9. No expected value was fitted to the engine; the
 Python computes every number from the tables and `results.json`'s k.
@@ -91,8 +91,10 @@ Python computes every number from the tables and `results.json`'s k.
 The task's recipe "derated via `deratedOf` and `applyLevers(…, DERATE_DEFAULT)`" has two orders. Only
 `applyMechanisms → deratedOf → applyLevers(levers, DERATE_DEFAULT)` reproduces the engine's plan (A_op = 0.985 at
 `results.json`'s k; automatic 90 s = 60 × 1.5, manual 2700 s = 1800 × 1.5). In the other order `deratedOf` restores the
-pre-lever recovery block (automatic 180 s, manual 7200 s): A_op 0.97188 instead of 0.98279 for native950 500k at k = 1,
-and k* = 0.4956 instead of 0.8629. The dump script prints this comparison; the harness and the case inputs record the
+pre-lever recovery block of a mechanism that records it (C-LOSSLESS: automatic 171.45 s, manual 7200 s): A_op 0.98135 instead
+of 0.98936 for cm384 200k at k = 1, and k* = 0.7909 instead of 1.4344. (Before the R1 fix of 2026-10-28 the native950 500k plan
+held D-RECOVERY-CLASSIFY, which records the recovery block too — A_op 0.97188 instead of 0.98279 there; its plan now uses the
+success lever instead and both orders coincide.) The dump script prints this comparison; the harness and the case inputs record the
 construction used. Not a numerical error, but anyone building derated designs from the public helpers needs the order.
 
 ### 3. `pruneByShapley` requires library ids (G6 synthetic case)
@@ -141,3 +143,5 @@ node --import tsx packages/core/test/golden/dump_inputs_v5.mjs      # inputs_v5/
 python3 packages/core/test/golden/compute_golden_v5.py              # golden_v5.json (prints the findings list); use the system Python 3.9 — a newer Python changes the last float digits
 npm test -w @hac-d/core
 ```
+
+_Values of §1 and §2 regenerated 2026-10-28 from commit 38c2c45 (fourth review R1 / R4 fixed, second recheck of the fifth review): `dump_inputs_v5.mjs` → `compute_golden_v5.py`; findings 0._

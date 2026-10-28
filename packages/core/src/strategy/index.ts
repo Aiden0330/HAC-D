@@ -458,7 +458,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
   }
   if (!feasible) notes.push(hwc.needed ? 'the target is out of reach with these candidates, levers and hardware floors: the result shows the best design found (hardware at its floors where needed)' : 'the target is out of reach with these candidates and levers');
   notes.push(`hardware split ${split}: x_i·c_i = clamp(w_i·L, floor_i·c_i, c_i) with w_i = ${split === 'min-effort' ? 'effort per halving (minimum total log2 effort)' : split === 'agree' ? 'units × importance (AGREE complexity)' : 'current contribution (ARINC, uniform factor)'}; factors act on the interruption FIT only (sub-health and silent-corruption rates stay)`);
-  notes.push(derate ? `derating: coverage −${(derate.coverageDelta * 100).toFixed(0)} pt, success −${(derate.successDelta * 100).toFixed(0)} pt, times ×${derate.timeFactor} on every mechanism (the scenario's own and the added ones) and on the levers; the target must hold nominally and derated` : 'nominal parameters only (no derating)');
+  notes.push(derate ? `derating: coverage −${(derate.coverageDelta * 100).toFixed(0)} pt, success −${(derate.successDelta * 100).toFixed(0)} pt, times ×${derate.timeFactor} on every mechanism (the scenario's own and the added ones; a derated detector never below the detection it replaces) and on the levers (the automatic-success lever on its failure probability, ×${derate.timeFactor}); the target must hold nominally and derated` : 'nominal parameters only (no derating)');
   return {
     strategy: opts.strategy, metric, target: T, hardwareSplit: split, derate: derate ?? null, npus: s0.workload.nGpus, feasible,
     baseline: { ...valuesOf(base.nom, metric), derated: mv(base.der) },

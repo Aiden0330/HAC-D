@@ -4,22 +4,22 @@
   "npus": 500000,
   "mechanisms": [
    "D-HARD",
-   "D-RECOVERY-CLASSIFY",
    "R-LINK-LOCAL",
    "H-CONTROL-CONTINUITY"
   ],
   "levers": [
    "auto",
+   "success",
    "manual"
   ],
   "k": 1,
-  "kRecommended": 0.8628676922053501,
+  "kRecommended": 0.8873142626539711,
   "binding": "mean",
   "derated": true,
   "construction": "applyMechanisms → deratedOf → applyLevers(DERATE_DEFAULT)"
  },
- "detectS": 4.483500000000003,
- "globalS": 98.03182500000007,
+ "detectS": 4.4250000000000025,
+ "globalS": 94.05000000000015,
  "params": {
   "custom": {
    "R-LINK-LOCAL": {
@@ -63,12 +63,12 @@
  "recovery": {
   "mode": "mixture",
   "detection": {
-   "coverage": 0.949,
+   "coverage": 0.95,
    "autoSeconds": 1.5,
    "timeoutSeconds": 60
   },
   "automatic": {
-   "successProbability": 0.99702525,
+   "successProbability": 0.9984999999999999,
    "seconds": 90
   },
   "manual": {
@@ -93,7 +93,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.23333333333333328,
-   "meanPauseS": 18.1501674705,
+   "meanPauseS": 18.091827,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -109,7 +109,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.0833333333333333,
-   "meanPauseS": 18.1501674705,
+   "meanPauseS": 18.091827,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -125,7 +125,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.09999999999999998,
-   "meanPauseS": 5.628554056131752,
+   "meanPauseS": 5.618431984500001,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -144,7 +144,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.08499999999999996,
-   "meanPauseS": 31.242763724999993,
+   "meanPauseS": 31.185149999999997,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -160,7 +160,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.19999999999999996,
-   "meanPauseS": 18.1501674705,
+   "meanPauseS": 18.091827,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -176,7 +176,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.08666666666666666,
-   "meanPauseS": 31.242763724999993,
+   "meanPauseS": 31.185149999999997,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -192,7 +192,7 @@
    "unit": "npu",
    "count": 500000,
    "ratePerHour": 0.05,
-   "meanPauseS": 5.628554056131752,
+   "meanPauseS": 5.618431984500001,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -211,7 +211,7 @@
    "unit": "ub-link",
    "count": 1000000,
    "ratePerHour": 0.0047619047619047615,
-   "meanPauseS": 7.8543961447500035,
+   "meanPauseS": 7.719894000000005,
    "applicable": {
     "replay": 1,
     "process": 0,
@@ -230,7 +230,7 @@
    "unit": "roce-link",
    "count": 4000000,
    "ratePerHour": 0.019047619047619046,
-   "meanPauseS": 7.8543961447500035,
+   "meanPauseS": 7.719894000000005,
    "applicable": {
     "replay": 1,
     "process": 0,
@@ -249,7 +249,7 @@
    "unit": "node",
    "count": 62500,
    "ratePerHour": 0.02333333333333333,
-   "meanPauseS": 20.265908887500018,
+   "meanPauseS": 19.56491250000003,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -268,7 +268,7 @@
    "unit": "ub-switch",
    "count": 570349,
    "ratePerHour": 0.03259137142857142,
-   "meanPauseS": 20.265908887500018,
+   "meanPauseS": 19.56491250000003,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -287,7 +287,7 @@
    "unit": "roce-switch",
    "count": 5864,
    "ratePerHour": 0.00033508571428571423,
-   "meanPauseS": 20.265908887500018,
+   "meanPauseS": 19.56491250000003,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -306,7 +306,7 @@
    "unit": "cpu",
    "count": 125000,
    "ratePerHour": 0.041666666666666664,
-   "meanPauseS": 31.242763724999993,
+   "meanPauseS": 31.185149999999997,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -322,7 +322,7 @@
    "unit": "node",
    "count": 62500,
    "ratePerHour": 0.09999999999999998,
-   "meanPauseS": 31.242763724999993,
+   "meanPauseS": 31.185149999999997,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -338,7 +338,7 @@
    "unit": "node",
    "count": 62500,
    "ratePerHour": 0.08333333333333333,
-   "meanPauseS": 31.242763724999993,
+   "meanPauseS": 31.185149999999997,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -354,7 +354,7 @@
    "unit": "cabinet",
    "count": 7813,
    "ratePerHour": 0.04166933333333333,
-   "meanPauseS": 102.51532500000008,
+   "meanPauseS": 98.47500000000015,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -370,7 +370,7 @@
    "unit": "cabinet",
    "count": 7813,
    "ratePerHour": 0.025001599999999995,
-   "meanPauseS": 102.51532500000008,
+   "meanPauseS": 98.47500000000015,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -386,7 +386,7 @@
    "unit": "node",
    "count": 62500,
    "ratePerHour": 0.06666666666666665,
-   "meanPauseS": 19.026158887500017,
+   "meanPauseS": 18.32516250000003,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -405,7 +405,7 @@
    "unit": "job",
    "count": 500000,
    "ratePerHour": 0.06666666666666665,
-   "meanPauseS": 102.51532500000008,
+   "meanPauseS": 98.47500000000015,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -421,7 +421,7 @@
    "unit": "job",
    "count": 500000,
    "ratePerHour": 0.20500000000000002,
-   "meanPauseS": 102.51532500000008,
+   "meanPauseS": 98.47500000000015,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -437,12 +437,12 @@
   "isolationPerHour": 0.029443362428485602,
   "sdcDetectedPerHour": 0.021735447152266368,
   "falseAlarmPerHour": 0,
-  "globalRecoveryS": 98.03182500000007,
+  "globalRecoveryS": 94.05000000000015,
   "predictMigrationS": null
  },
- "aOp": 0.982791347045421,
- "aRun": 0.982833343191081,
- "delivered": 0.754835833378987,
+ "aOp": 0.9832300762024327,
+ "aRun": 0.9832703988450734,
+ "delivered": 0.755125534195279,
  "slowSdcByClass": [
   {
    "id": "CORE-hard",

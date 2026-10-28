@@ -10,7 +10,7 @@
    "auto",
    "manual"
   ],
-  "k": 1.4332979962783516,
+  "k": 1.4343749548713602,
   "binding": "mean",
   "derated": false
  },
@@ -74,7 +74,7 @@
    "id": "CORE-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.13377447965264613,
+   "ratePerHour": 0.1338749957879936,
    "meanPauseS": 6.927018000000001,
    "applicable": {
     "replay": 1,
@@ -90,7 +90,7 @@
    "id": "SRAM-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.04777659987594504,
+   "ratePerHour": 0.04781249849571198,
    "meanPauseS": 6.927018000000001,
    "applicable": {
     "replay": 1,
@@ -106,7 +106,7 @@
    "id": "IOD-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.05733191985113406,
+   "ratePerHour": 0.0573749981948544,
    "meanPauseS": 6.927018000000001,
    "applicable": {
     "replay": 1,
@@ -122,7 +122,7 @@
    "id": "MODULE-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.048732131873463945,
+   "ratePerHour": 0.04876874846562623,
    "meanPauseS": 4.739180000000004,
    "applicable": {
     "replay": 0,
@@ -138,7 +138,7 @@
    "id": "MEMT-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.11466383970226812,
+   "ratePerHour": 0.1147499963897088,
    "meanPauseS": 6.927018000000001,
    "applicable": {
     "replay": 1,
@@ -154,7 +154,7 @@
    "id": "MEMP-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.049687663870982855,
+   "ratePerHour": 0.04972499843554048,
    "meanPauseS": 4.739180000000004,
    "applicable": {
     "replay": 0,
@@ -170,7 +170,7 @@
    "id": "NIC-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.028665959925567037,
+   "ratePerHour": 0.02868749909742721,
    "meanPauseS": 6.927018000000001,
    "applicable": {
     "replay": 1,
@@ -186,7 +186,7 @@
    "id": "OPT-hard",
    "unit": "ub-link",
    "count": 2800000,
-   "ratePerHour": 0.01911063995037802,
+   "ratePerHour": 0.019124999398284798,
    "meanPauseS": 14.358999999999998,
    "applicable": {
     "replay": 1,
@@ -202,7 +202,7 @@
    "id": "OPT-hard@roce",
    "unit": "roce-link",
    "count": 1600000,
-   "ratePerHour": 0.010920365685930297,
+   "ratePerHour": 0.01092857108473417,
    "meanPauseS": 14.358999999999998,
    "applicable": {
     "replay": 1,
@@ -218,7 +218,7 @@
    "id": "BOXIO-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.013377447965264615,
+   "ratePerHour": 0.013387499578799361,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -234,7 +234,7 @@
    "id": "FABRIC-hard",
    "unit": "ub-switch",
    "count": 233338,
-   "ratePerHour": 0.019111022163177022,
+   "ratePerHour": 0.019125381898272766,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -250,7 +250,7 @@
    "id": "FABRIC-hard@roce",
    "unit": "roce-switch",
    "count": 43750,
-   "ratePerHour": 0.003583244990695878,
+   "ratePerHour": 0.0035859373871783996,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -266,7 +266,7 @@
    "id": "CPU-hard",
    "unit": "cpu",
    "count": 100000,
-   "ratePerHour": 0.04777659987594505,
+   "ratePerHour": 0.047812498495712,
    "meanPauseS": 4.739180000000004,
    "applicable": {
     "replay": 0,
@@ -282,7 +282,7 @@
    "id": "DDR-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.05733191985113406,
+   "ratePerHour": 0.0573749981948544,
    "meanPauseS": 4.739180000000004,
    "applicable": {
     "replay": 0,
@@ -298,7 +298,7 @@
    "id": "SSD-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.04777659987594505,
+   "ratePerHour": 0.047812498495712,
    "meanPauseS": 4.739180000000004,
    "applicable": {
     "replay": 0,
@@ -314,7 +314,7 @@
    "id": "POWER-hard",
    "unit": "cabinet",
    "count": 6250,
-   "ratePerHour": 0.04777659987594505,
+   "ratePerHour": 0.047812498495712,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -330,7 +330,7 @@
    "id": "COOL-hard",
    "unit": "cabinet",
    "count": 6250,
-   "ratePerHour": 0.02866595992556703,
+   "ratePerHour": 0.0286874990974272,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -346,7 +346,7 @@
    "id": "MGMT-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.038221279900756036,
+   "ratePerHour": 0.0382499987965696,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -362,7 +362,7 @@
    "id": "STORAGE-hard",
    "unit": "job",
    "count": 200000,
-   "ratePerHour": 0.038221279900756036,
+   "ratePerHour": 0.0382499987965696,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -378,7 +378,7 @@
    "id": "UNKNOWN-hard",
    "unit": "job",
    "count": 200000,
-   "ratePerHour": 0.11753043569482487,
+   "ratePerHour": 0.11761874629945154,
    "meanPauseS": 79.05900000000001,
    "applicable": {
     "replay": 0,
@@ -398,9 +398,9 @@
   "globalRecoveryS": 78.00000000000001,
   "predictMigrationS": null
  },
- "aOp": 0.9918446819090863,
- "aRun": 0.9918528396478461,
- "delivered": 0.9226852331236757,
+ "aOp": 0.9918388300446935,
+ "aRun": 0.9918469876740104,
+ "delivered": 0.922677884885692,
  "slowSdcByClass": [
   {
    "id": "CORE-hard",

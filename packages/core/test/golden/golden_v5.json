@@ -118,7 +118,7 @@
    },
    "expected": {
     "lamHw": 0.6767859809523809,
-    "sumLP": 62.96948072380954,
+    "sumLP": 62.96948072380953,
     "mttrS": 93.04194013475009,
     "mtbfHwH": 1.4775719771748062,
     "other.isolation.ratePerHour": 0.013368205926552966,
@@ -291,32 +291,32 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
-     "k": 0.8628676922053501,
+     "k": 0.8873142626539711,
      "binding": "mean",
      "derated": false
     },
-    "engineAOp": 0.9928056688197622,
+    "engineAOp": 0.9926932133614979,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
     ]
    },
    "expected": {
-    "lamHw": 1.3360703007245216,
-    "sumLP": 24.119351529258758,
-    "mttrS": 18.052456907529013,
-    "mtbfHwH": 0.7484636096302133,
+    "lamHw": 1.3739235394377391,
+    "sumLP": 24.55469810688993,
+    "mttrS": 17.87195386210402,
+    "mtbfHwH": 0.7278425409388046,
     "other.isolation.ratePerHour": 0.029443362428485602,
-    "other.isolation.pauseS": 62.609999999999914,
-    "other.isolation.sPerH": 1.843448921647481,
+    "other.isolation.pauseS": 61.800000000000004,
+    "other.isolation.sPerH": 1.8195997980804104,
     "other.isolation.mtbfH": 33.96351223230295,
     "other.sdcDetected.ratePerHour": 0.02294297199405895,
     "other.sdcDetected.pauseS": 3,
@@ -325,11 +325,11 @@
     "other.falseAlarm.ratePerHour": 0,
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
-    "F": 1.9122778376296579,
-    "aRun": 0.9928209039446705,
-    "phi": 1.5345290220847296e-05,
+    "F": 1.8884287140625873,
+    "aRun": 0.9927082472008507,
+    "phi": 1.5144267608624418e-05,
     "detectS": 1.0590000000000002,
-    "globalS": 62.609999999999914
+    "globalS": 61.800000000000004
    },
    "tolerance": {
     "rel": 1e-09,
@@ -352,21 +352,21 @@
       "auto",
       "manual"
      ],
-     "k": 1.4332979962783516,
+     "k": 1.4343749548713602,
      "binding": "mean",
      "derated": false
     },
-    "engineAOp": 0.9918446819090863,
+    "engineAOp": 0.9918388300446935,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
     ]
    },
    "expected": {
-    "lamHw": 0.9700359904083263,
-    "sumLP": 28.50036648910047,
+    "lamHw": 0.9707648608861407,
+    "sumLP": 28.521781236538914,
     "mttrS": 29.380730994427893,
-    "mtbfHwH": 1.0308895854256508,
+    "mtbfHwH": 1.0301155720523019,
     "other.isolation.ratePerHour": 0.013368205926552966,
     "other.isolation.pauseS": 78.00000000000001,
     "other.isolation.sPerH": 1.0427200622711315,
@@ -379,8 +379,8 @@
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
     "F": 1.0703279681212023,
-    "aRun": 0.9918528396478461,
-    "phi": 8.224747093277252e-06,
+    "aRun": 0.9918469876740104,
+    "phi": 8.224685277280486e-06,
     "detectS": 1.0590000000000002,
     "globalS": 78.00000000000001
    },
@@ -399,21 +399,21 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
      "k": 1,
-     "kRecommended": 0.8628676922053501,
+     "kRecommended": 0.8873142626539711,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT)"
     },
-    "engineAOp": 0.982791347045421,
+    "engineAOp": 0.9832300762024327,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
@@ -421,12 +421,12 @@
    },
    "expected": {
     "lamHw": 1.548406914285714,
-    "sumLP": 59.895197415152964,
-    "mttrS": 38.68181991604116,
+    "sumLP": 58.38431578561004,
+    "mttrS": 37.70605468559468,
     "mtbfHwH": 0.6458250675413083,
     "other.isolation.ratePerHour": 0.029443362428485602,
-    "other.isolation.pauseS": 98.03182500000007,
-    "other.isolation.sPerH": 2.8863865530008774,
+    "other.isolation.pauseS": 94.05000000000015,
+    "other.isolation.sPerH": 2.7691482363990754,
     "other.isolation.mtbfH": 33.96351223230295,
     "other.sdcDetected.ratePerHour": 0.021735447152266368,
     "other.sdcDetected.pauseS": 4.5,
@@ -435,11 +435,11 @@
     "other.falseAlarm.ratePerHour": 0,
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
-    "F": 2.984196065186076,
-    "aRun": 0.9828333431910807,
-    "phi": 4.2729671261843016e-05,
-    "detectS": 4.483500000000003,
-    "globalS": 98.03182500000007
+    "F": 2.866957748584274,
+    "aRun": 0.9832703988450734,
+    "phi": 4.100870186674044e-05,
+    "detectS": 4.4250000000000025,
+    "globalS": 94.05000000000015
    },
    "tolerance": {
     "rel": 1e-09,
@@ -463,12 +463,12 @@
       "manual"
      ],
      "k": 1,
-     "kRecommended": 1.4332979962783516,
+     "kRecommended": 1.4343749548713602,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT)"
     },
-    "engineAOp": 0.9893481216982187,
+    "engineAOp": 0.9893556894617339,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
@@ -476,8 +476,8 @@
    },
    "expected": {
     "lamHw": 0.6767859809523809,
-    "sumLP": 37.070893359885716,
-    "mttrS": 54.774913197402725,
+    "sumLP": 37.04305988,
+    "mttrS": 54.733787227496336,
     "mtbfHwH": 1.4775719771748062,
     "other.isolation.ratePerHour": 0.013368205926552966,
     "other.isolation.pauseS": 117.00000000000003,
@@ -491,9 +491,9 @@
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
     "F": 1.6033123806673244,
-    "aRun": 0.989371346937426,
-    "phi": 2.3474744118234803e-05,
-    "detectS": 4.483500000000003,
+    "aRun": 0.9893789150395902,
+    "phi": 2.3474906836185028e-05,
+    "detectS": 4.4250000000000025,
     "globalS": 117.00000000000003
    },
    "tolerance": {
@@ -511,33 +511,33 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
-     "k": 0.8628676922053501,
+     "k": 0.8873142626539711,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT) \u2192 withHardwareFactors(k)"
     },
-    "engineAOp": 0.985,
+    "engineAOp": 0.9850000000000001,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
     ]
    },
    "expected": {
-    "lamHw": 1.3360703007245216,
-    "sumLP": 51.68163076779688,
-    "mttrS": 38.68181991604114,
-    "mtbfHwH": 0.7484636096302133,
+    "lamHw": 1.3739235394377391,
+    "sumLP": 51.805236111865185,
+    "mttrS": 37.70605468559467,
+    "mtbfHwH": 0.7278425409388046,
     "other.isolation.ratePerHour": 0.029443362428485602,
-    "other.isolation.pauseS": 98.03182500000007,
-    "other.isolation.sPerH": 2.8863865530008774,
+    "other.isolation.pauseS": 94.05000000000015,
+    "other.isolation.sPerH": 2.7691482363990754,
     "other.isolation.mtbfH": 33.96351223230295,
     "other.sdcDetected.ratePerHour": 0.021735447152266368,
     "other.sdcDetected.pauseS": 4.5,
@@ -546,11 +546,11 @@
     "other.falseAlarm.ratePerHour": 0,
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
-    "F": 2.984196065186076,
-    "aRun": 0.9850421818510409,
-    "phi": 4.2822380419860195e-05,
-    "detectS": 4.483500000000003,
-    "globalS": 98.03182500000007
+    "F": 2.866957748584274,
+    "aRun": 0.9850404657489408,
+    "phi": 4.108029096039356e-05,
+    "detectS": 4.4250000000000025,
+    "globalS": 94.05000000000015
    },
    "tolerance": {
     "rel": 1e-09,
@@ -573,22 +573,22 @@
       "auto",
       "manual"
      ],
-     "k": 1.4332979962783516,
+     "k": 1.4343749548713602,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT) \u2192 withHardwareFactors(k)"
     },
-    "engineAOp": 0.9850000000000001,
+    "engineAOp": 0.985,
     "identity": [
      "aRun (formula = engine running fraction)",
      "phi uses the engine A_op"
     ]
    },
    "expected": {
-    "lamHw": 0.9700359904083263,
-    "sumLP": 53.133637172972655,
-    "mttrS": 54.774913197402725,
-    "mtbfHwH": 1.0308895854256508,
+    "lamHw": 0.9707648608861407,
+    "sumLP": 53.1336373436721,
+    "mttrS": 54.73378722749633,
+    "mtbfHwH": 1.0301155720523019,
     "other.isolation.ratePerHour": 0.013368205926552966,
     "other.isolation.pauseS": 117.00000000000003,
     "other.isolation.sPerH": 1.5640800934066974,
@@ -601,9 +601,9 @@
     "other.falseAlarm.pauseS": 0.0,
     "other.falseAlarm.sPerH": 0.0,
     "F": 1.6033123806673244,
-    "aRun": 0.9850230125152166,
-    "phi": 2.3362413795524617e-05,
-    "detectS": 4.483500000000003,
+    "aRun": 0.9850230124692098,
+    "phi": 2.336236709032935e-05,
+    "detectS": 4.4250000000000025,
     "globalS": 117.00000000000003
    },
    "tolerance": {
@@ -634,8 +634,8 @@
    },
    "expected": {
     "lamHw": 0.032879295238095234,
-    "sumLP": 2.887455777380953,
-    "mttrS": 87.81988045885589,
+    "sumLP": 2.8874557773809526,
+    "mttrS": 87.81988045885588,
     "mtbfHwH": 30.414277214840087,
     "other.isolation.ratePerHour": 0.0006392587622459745,
     "other.isolation.pauseS": 252.00000000000006,
@@ -824,13 +824,13 @@
     "node.sdc": 0.0006688856683161787,
     "node.U": 0.6667061784826149,
     "npu.lam": 0.8383333333333332,
-    "npu.c": 12.39217666666667,
+    "npu.c": 12.392176666666668,
     "npu.slowRate": 0.017218060091211143,
     "npu.sdcRate": 0.021549620976092337,
     "npu.sdcDetectedRate": 0.02047213992728772,
     "npu.iso": 4.107740460043235,
     "npu.sdc": 0.061416419781863164,
-    "npu.U": 0.3309813836064396,
+    "npu.U": 0.3309813836064395,
     "sumLam": 1.548406914285714,
     "sumC": 136.58204120952382,
     "sumIso": 7.419727331978374,
@@ -853,15 +853,15 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
-     "k": 0.8628676922053501,
+     "k": 0.8873142626539711,
      "binding": "mean",
      "derated": false
     },
@@ -876,63 +876,63 @@
      "cpu": "node",
      "npu": "npu"
     },
-    "engineAOp": 0.9928056688197622
+    "engineAOp": 0.9926932133614979
    },
    "expected": {
-    "cluster.lam": 0.23441238971578682,
-    "cluster.c": 14.924802440814409,
+    "cluster.lam": 0.2410537080209955,
+    "cluster.c": 15.152395032491755,
     "cluster.slowRate": 0.004965024154589373,
     "cluster.sdcRate": 0.0020349906334134,
     "cluster.sdcDetectedRate": 0.0019332411017427297,
-    "cluster.iso": 0.29429528567915025,
+    "cluster.iso": 0.2904879197408004,
     "cluster.sdc": 0.0057997233052281905,
-    "cluster.U": 0.41160155140236065,
-    "scaleout.lam": 0.016724709726602408,
-    "scaleout.c": 0.04323259777307811,
+    "cluster.U": 0.41783076426666027,
+    "scaleout.lam": 0.017198550384049133,
+    "scaleout.c": 0.04437696218855772,
     "scaleout.slowRate": 0.0006890241830483876,
     "scaleout.sdcRate": 3.370436570574497e-06,
     "scaleout.sdcDetectedRate": 3.201914742045772e-06,
-    "scaleout.iso": 0.04084100348285995,
+    "scaleout.iso": 0.0403126340079979,
     "scaleout.sdc": 9.605744226137316e-06,
-    "scaleout.U": 0.0011922840778039933,
-    "superpod.lam": 0.03223093522278524,
-    "superpod.c": 0.15339769068661285,
+    "scaleout.U": 0.0012237048986194878,
+    "superpod.lam": 0.03314409472066251,
+    "superpod.c": 0.15655539560389437,
     "superpod.slowRate": 0.0007550906490789953,
     "superpod.sdcRate": 0.00032781806405023767,
     "superpod.sdcDetectedRate": 0.0003114271608477258,
-    "superpod.iso": 0.04475700648484284,
+    "superpod.iso": 0.044177974776605844,
     "superpod.sdc": 0.0009342814825431774,
-    "superpod.U": 0.004230456498069665,
-    "cabinet.lam": 0.05752819438251007,
-    "cabinet.c": 3.662762608140029,
+    "superpod.U": 0.004317050898882715,
+    "cabinet.lam": 0.05915807005111873,
+    "cabinet.c": 3.7186171253432723,
     "cabinet.slowRate": 0.0024459812394755,
     "cabinet.sdcRate": 0.0,
     "cabinet.sdcDetectedRate": 0.0,
-    "cabinet.iso": 0.14498232540760278,
+    "cabinet.iso": 0.14310665564909542,
     "cabinet.sdc": 0.0,
-    "cabinet.U": 0.10101298009856452,
-    "node.lam": 0.27180332304468524,
-    "node.c": 1.2572240416683207,
+    "cabinet.U": 0.10254171912529406,
+    "node.lam": 0.27950399273600085,
+    "node.c": 1.2894474526601187,
     "node.slowRate": 0.005027448435821363,
     "node.sdcRate": 0.00023469672572497496,
     "node.sdcDetectedRate": 0.0002229618894387262,
-    "node.iso": 0.2979954029608563,
+    "node.iso": 0.29414016775245083,
     "node.sdc": 0.0006688856683161787,
-    "node.U": 0.03467217526416984,
-    "npu.lam": 0.7233707486321517,
-    "npu.c": 4.0779321501763075,
+    "node.U": 0.03555680890521745,
+    "npu.lam": 0.7438651235249122,
+    "npu.c": 4.193306138602334,
     "npu.slowRate": 0.017218060091211143,
     "npu.sdcRate": 0.021549620976092337,
     "npu.sdcDetectedRate": 0.02047213992728772,
-    "npu.iso": 1.0205778976321689,
+    "npu.iso": 1.00737444615346,
     "npu.sdc": 0.061416419781863164,
-    "npu.U": 0.11246267454341875,
-    "sumLam": 1.3360703007245214,
-    "sumC": 24.119351529258758,
-    "sumIso": 1.843448921647481,
+    "npu.U": 0.1156313774119025,
+    "sumLam": 1.373923539437739,
+    "sumC": 24.554698106889933,
+    "sumIso": 1.8195997980804104,
     "sumSdc": 0.06882891598217684,
-    "D": 1.007231008157469,
-    "hardU": 0.6651721218843875
+    "D": 1.00734531300582,
+    "hardU": 0.6771014255065765
    },
    "tolerance": {
     "rel": 1e-09,
@@ -1007,16 +1007,16 @@
     "node.sdc": 0.0002675542673264714,
     "node.U": 0.27467198689809785,
     "npu.lam": 0.3353333333333333,
-    "npu.c": 4.956870666666668,
+    "npu.c": 4.956870666666667,
     "npu.slowRate": 0.006887224036484458,
     "npu.sdcRate": 0.008619848390436936,
     "npu.sdcDetectedRate": 0.008188855970915088,
     "npu.iso": 1.6430961618868716,
     "npu.sdc": 0.02456656791274526,
-    "npu.U": 0.13519847264581555,
-    "sumLam": 0.6767859809523809,
+    "npu.U": 0.13519847264581553,
+    "sumLam": 0.676785980952381,
     "sumC": 62.96948072380954,
-    "sumIso": 3.3687878934913478,
+    "sumIso": 3.368787893491348,
     "sumSdc": 0.027607905850070908,
     "D": 1.0184349657008753,
     "hardU": 1.717490366333108
@@ -1094,16 +1094,16 @@
     "node.sdc": 1.901043478372297e-05,
     "node.U": 0.01825063920570821,
     "npu.lam": 0.016766666666666666,
-    "npu.c": 0.4532683333333331,
+    "npu.c": 0.4532683333333332,
     "npu.slowRate": 0.00034436120182422287,
     "npu.sdcRate": 0.0004309924195218468,
     "npu.sdcDetectedRate": 0.00038789317756966204,
     "npu.iso": 0.08215480791491968,
     "npu.sdc": 0.0017455192990634791,
-    "npu.U": 0.012578234986649022,
-    "sumLam": 0.03287929523809524,
-    "sumC": 3.4294591619047616,
-    "sumIso": 0.16109320808598565,
+    "npu.U": 0.012578234986649025,
+    "sumLam": 0.032879295238095234,
+    "sumC": 3.429459161904762,
+    "sumIso": 0.16109320808598562,
     "sumSdc": 0.0019533706625730184,
     "D": 1.0009979182612927,
     "hardU": 0.09516778482698887
@@ -1175,27 +1175,27 @@
     "cabinet.sdc": 0.0,
     "cabinet.U": 0.019601130789115084,
     "node.lam": 0.007133333333333333,
-    "node.c": 0.969812,
+    "node.c": 0.9698119999999999,
     "node.slowRate": 0.00011277809224989862,
     "node.sdcRate": 4.693934514499499e-06,
     "node.sdcDetectedRate": 4.459237788774524e-06,
     "node.iso": 0.02690565155632983,
     "node.sdc": 1.3377713366323572e-05,
-    "node.U": 0.02690790932926968,
+    "node.U": 0.026907909329269678,
     "npu.lam": 0.016766666666666666,
-    "npu.c": 0.5480164333333333,
+    "npu.c": 0.5480164333333332,
     "npu.slowRate": 0.00034436120182422287,
     "npu.sdcRate": 0.0004309924195218468,
     "npu.sdcDetectedRate": 0.0004094427985457544,
     "npu.iso": 0.08215480791491968,
     "npu.sdc": 0.001228328395637263,
-    "npu.U": 0.015204984573384425,
-    "sumLam": 0.03287929523809524,
-    "sumC": 3.829623452380953,
-    "sumIso": 0.16109320808598565,
+    "npu.U": 0.01520498457338442,
+    "sumLam": 0.032879295238095234,
+    "sumC": 3.8296234523809525,
+    "sumIso": 0.16109320808598562,
     "sumSdc": 0.0013745941699587906,
     "D": 1.001163705904066,
-    "hardU": 0.10625477991807836
+    "hardU": 0.10625477991807834
    },
    "tolerance": {
     "rel": 1e-09,
@@ -1272,16 +1272,16 @@
     "node.sdc": 1.3377713366323572e-05,
     "node.U": 0.013974256521681475,
     "npu.lam": 0.016766666666666666,
-    "npu.c": 0.24784353333333337,
+    "npu.c": 0.24784353333333334,
     "npu.slowRate": 0.00034436120182422287,
     "npu.sdcRate": 0.0004309924195218468,
     "npu.sdcDetectedRate": 0.0004269971463718414,
     "npu.iso": 0.08215480791491968,
     "npu.sdc": 0.001280991439115524,
     "npu.U": 0.006878379406026153,
-    "sumLam": 0.03287929523809524,
+    "sumLam": 0.032879295238095234,
     "sumC": 3.063162552380953,
-    "sumIso": 0.16109320808598565,
+    "sumIso": 0.16109320808598562,
     "sumSdc": 0.0014272572134370516,
     "D": 1.0008960230604669,
     "hardU": 0.08501167625491535
@@ -1548,7 +1548,7 @@
      "STORAGE-hard": 264.50000000000006,
      "UNKNOWN-hard": 264.50000000000006
     },
-    "engineMeanPauseMaxRelDiff": 2.0578501632282414e-16,
+    "engineMeanPauseMaxRelDiff": 0.0,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
@@ -1575,7 +1575,7 @@
     "class.CORE-hard.probs.elastic": 0.09799999999999998,
     "class.CORE-hard.probs.process": 0.001900000000000001,
     "class.CORE-hard.probs.global": 0.00010000000000000015,
-    "class.CORE-hard.meanS": 17.264200000000006,
+    "class.CORE-hard.meanS": 17.264200000000002,
     "class.SRAM-hard.contrib.detect": 11.275000000000004,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
@@ -1597,7 +1597,7 @@
     "class.SRAM-hard.probs.elastic": 0.09799999999999998,
     "class.SRAM-hard.probs.process": 0.001900000000000001,
     "class.SRAM-hard.probs.global": 0.00010000000000000015,
-    "class.SRAM-hard.meanS": 17.264200000000006,
+    "class.SRAM-hard.meanS": 17.264200000000002,
     "class.IOD-hard.contrib.detect": 11.275000000000004,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
@@ -1619,7 +1619,7 @@
     "class.IOD-hard.probs.elastic": 0.09799999999999998,
     "class.IOD-hard.probs.process": 0.001900000000000001,
     "class.IOD-hard.probs.global": 0.00010000000000000015,
-    "class.IOD-hard.meanS": 17.264200000000006,
+    "class.IOD-hard.meanS": 17.264200000000002,
     "class.MODULE-hard.contrib.detect": 0.2500000000000003,
     "class.MODULE-hard.contrib.predict": 0.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
@@ -1663,7 +1663,7 @@
     "class.MEMT-hard.probs.elastic": 0.09799999999999998,
     "class.MEMT-hard.probs.process": 0.001900000000000001,
     "class.MEMT-hard.probs.global": 0.00010000000000000015,
-    "class.MEMT-hard.meanS": 17.264200000000006,
+    "class.MEMT-hard.meanS": 17.264200000000002,
     "class.MEMP-hard.contrib.detect": 0.2500000000000003,
     "class.MEMP-hard.contrib.predict": 0.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
@@ -1707,7 +1707,7 @@
     "class.NIC-hard.probs.elastic": 0.09799999999999998,
     "class.NIC-hard.probs.process": 0.001900000000000001,
     "class.NIC-hard.probs.global": 0.00010000000000000015,
-    "class.NIC-hard.meanS": 17.264200000000006,
+    "class.NIC-hard.meanS": 17.264200000000002,
     "class.OPT-hard.contrib.detect": 12.500000000000004,
     "class.OPT-hard.contrib.predict": 0.0,
     "class.OPT-hard.contrib.netfail": 0.0,
@@ -2044,20 +2044,20 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
-     "k": 0.8628676922053501,
+     "k": 0.8873142626539711,
      "binding": "mean",
      "derated": false
     },
     "detectS": 1.0590000000000002,
-    "globalS": 62.609999999999914,
+    "globalS": 61.800000000000004,
     "autoS": 60,
     "params": {
      "custom": {
@@ -2107,7 +2107,7 @@
       "timeoutSeconds": 60
      },
      "automatic": {
-      "successProbability": 0.99855,
+      "successProbability": 0.999,
       "seconds": 60
      },
      "manual": {
@@ -2301,50 +2301,50 @@
      }
     },
     "ratePerHour": {
-     "CORE-hard": 0.20133579484791497,
-     "SRAM-hard": 0.07190564101711248,
-     "IOD-hard": 0.08628676922053499,
-     "MODULE-hard": 0.07334375383745473,
-     "MEMT-hard": 0.17257353844106998,
-     "MEMP-hard": 0.07478186665779699,
-     "NIC-hard": 0.04314338461026751,
-     "OPT-hard": 0.004108893772406428,
-     "OPT-hard@roce": 0.01643557508962571,
-     "BOXIO-hard": 0.0201335794847915,
-     "FABRIC-hard": 0.028122041450378808,
-     "FABRIC-hard@roce": 0.00028913463697669554,
-     "CPU-hard": 0.03595282050855625,
-     "DDR-hard": 0.08628676922053499,
-     "SSD-hard": 0.0719056410171125,
-     "POWER-hard": 0.0359551214890688,
-     "COOL-hard": 0.021573072893441275,
-     "MGMT-hard": 0.05752451281369,
-     "STORAGE-hard": 0.05752451281369,
-     "UNKNOWN-hard": 0.1768878769020968
+     "CORE-hard": 0.2070399946192599,
+     "SRAM-hard": 0.07394285522116423,
+     "IOD-hard": 0.08873142626539708,
+     "MODULE-hard": 0.07542171232558753,
+     "MEMT-hard": 0.17746285253079416,
+     "MEMP-hard": 0.07690056943001082,
+     "NIC-hard": 0.044365713132698555,
+     "OPT-hard": 0.0042253060126379565,
+     "OPT-hard@roce": 0.016901224050551826,
+     "BOXIO-hard": 0.02070399946192599,
+     "FABRIC-hard": 0.028918788708024553,
+     "FABRIC-hard@roce": 0.0002973263334973077,
+     "CPU-hard": 0.03697142761058213,
+     "DDR-hard": 0.08873142626539708,
+     "SSD-hard": 0.07394285522116426,
+     "POWER-hard": 0.036973793781949205,
+     "COOL-hard": 0.02218427626916952,
+     "MGMT-hard": 0.059154284176931395,
+     "STORAGE-hard": 0.059154284176931395,
+     "UNKNOWN-hard": 0.1818994238440641
     },
     "engineMeanPauseS": {
-     "CORE-hard": 6.925479000000001,
-     "SRAM-hard": 6.925479000000001,
-     "IOD-hard": 2.2462739500000004,
-     "MODULE-hard": 4.723790000000004,
-     "MEMT-hard": 6.925479000000001,
-     "MEMP-hard": 4.723790000000004,
-     "NIC-hard": 2.2462739500000004,
-     "OPT-hard": 2.541,
-     "OPT-hard@roce": 2.541,
-     "BOXIO-hard": 5.083449999999998,
-     "FABRIC-hard": 5.083449999999998,
-     "FABRIC-hard@roce": 5.083449999999998,
-     "CPU-hard": 4.723790000000004,
-     "DDR-hard": 4.723790000000004,
-     "SSD-hard": 4.723790000000004,
-     "POWER-hard": 63.66899999999991,
-     "COOL-hard": 63.66899999999991,
-     "MGMT-hard": 4.133449999999998,
-     "STORAGE-hard": 63.66899999999991,
-     "UNKNOWN-hard": 63.66899999999991
+     "CORE-hard": 6.925398000000001,
+     "SRAM-hard": 6.925398000000001,
+     "IOD-hard": 2.2462699000000006,
+     "MODULE-hard": 4.722980000000004,
+     "MEMT-hard": 6.925398000000001,
+     "MEMP-hard": 4.722980000000004,
+     "NIC-hard": 2.2462699000000006,
+     "OPT-hard": 2.5369500000000005,
+     "OPT-hard@roce": 2.5369500000000005,
+     "BOXIO-hard": 5.042950000000003,
+     "FABRIC-hard": 5.042950000000003,
+     "FABRIC-hard@roce": 5.042950000000003,
+     "CPU-hard": 4.722980000000004,
+     "DDR-hard": 4.722980000000004,
+     "SSD-hard": 4.722980000000004,
+     "POWER-hard": 62.859,
+     "COOL-hard": 62.859,
+     "MGMT-hard": 4.092950000000003,
+     "STORAGE-hard": 62.859,
+     "UNKNOWN-hard": 62.859
     },
-    "engineMeanPauseMaxRelDiff": 2.1487581069085768e-16,
+    "engineMeanPauseMaxRelDiff": 1.9770073482712942e-16,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
@@ -2367,7 +2367,7 @@
     "class.CORE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.CORE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.CORE-hard.contrib.globalAuto": 0.006000000000000009,
-    "class.CORE-hard.contrib.globalManual": 0.0002609999999999918,
+    "class.CORE-hard.contrib.globalManual": 0.00018000000000000072,
     "class.CORE-hard.probs.predict": 0.0,
     "class.CORE-hard.probs.netfail": 0.0,
     "class.CORE-hard.probs.replay": 0.9,
@@ -2377,7 +2377,7 @@
     "class.CORE-hard.probs.global": 0.00010000000000000015,
     "class.CORE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.CORE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.CORE-hard.meanS": 6.925479000000001,
+    "class.CORE-hard.meanS": 6.925398,
     "class.SRAM-hard.contrib.detect": 0.9552180000000001,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
@@ -2395,7 +2395,7 @@
     "class.SRAM-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.SRAM-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.SRAM-hard.contrib.globalAuto": 0.006000000000000009,
-    "class.SRAM-hard.contrib.globalManual": 0.0002609999999999918,
+    "class.SRAM-hard.contrib.globalManual": 0.00018000000000000072,
     "class.SRAM-hard.probs.predict": 0.0,
     "class.SRAM-hard.probs.netfail": 0.0,
     "class.SRAM-hard.probs.replay": 0.9,
@@ -2405,7 +2405,7 @@
     "class.SRAM-hard.probs.global": 0.00010000000000000015,
     "class.SRAM-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.SRAM-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.SRAM-hard.meanS": 6.925479000000001,
+    "class.SRAM-hard.meanS": 6.925398,
     "class.IOD-hard.contrib.detect": 0.04776090000000006,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
@@ -2423,7 +2423,7 @@
     "class.IOD-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.IOD-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.IOD-hard.contrib.globalAuto": 0.00030000000000000073,
-    "class.IOD-hard.contrib.globalManual": 1.3049999999999602e-05,
+    "class.IOD-hard.contrib.globalManual": 9.000000000000043e-06,
     "class.IOD-hard.probs.predict": 0.0,
     "class.IOD-hard.probs.netfail": 0.0,
     "class.IOD-hard.probs.replay": 0.04500000000000004,
@@ -2433,7 +2433,7 @@
     "class.IOD-hard.probs.global": 5.000000000000012e-06,
     "class.IOD-hard.probs.custom:R-LINK-LOCAL": 0.95,
     "class.IOD-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.IOD-hard.meanS": 2.2462739500000004,
+    "class.IOD-hard.meanS": 2.2462699,
     "class.MODULE-hard.contrib.detect": 0.02118000000000002,
     "class.MODULE-hard.contrib.predict": 0.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
@@ -2451,7 +2451,7 @@
     "class.MODULE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MODULE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MODULE-hard.contrib.globalAuto": 0.06000000000000011,
-    "class.MODULE-hard.contrib.globalManual": 0.002609999999999919,
+    "class.MODULE-hard.contrib.globalManual": 0.0018000000000000073,
     "class.MODULE-hard.probs.predict": 0.0,
     "class.MODULE-hard.probs.netfail": 0.0,
     "class.MODULE-hard.probs.replay": 0.0,
@@ -2461,7 +2461,7 @@
     "class.MODULE-hard.probs.global": 0.0010000000000000018,
     "class.MODULE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MODULE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MODULE-hard.meanS": 4.723790000000004,
+    "class.MODULE-hard.meanS": 4.722980000000003,
     "class.MEMT-hard.contrib.detect": 0.9552180000000001,
     "class.MEMT-hard.contrib.predict": 0.0,
     "class.MEMT-hard.contrib.netfail": 0.0,
@@ -2479,7 +2479,7 @@
     "class.MEMT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MEMT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MEMT-hard.contrib.globalAuto": 0.006000000000000009,
-    "class.MEMT-hard.contrib.globalManual": 0.0002609999999999918,
+    "class.MEMT-hard.contrib.globalManual": 0.00018000000000000072,
     "class.MEMT-hard.probs.predict": 0.0,
     "class.MEMT-hard.probs.netfail": 0.0,
     "class.MEMT-hard.probs.replay": 0.9,
@@ -2489,7 +2489,7 @@
     "class.MEMT-hard.probs.global": 0.00010000000000000015,
     "class.MEMT-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MEMT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MEMT-hard.meanS": 6.925479000000001,
+    "class.MEMT-hard.meanS": 6.925398,
     "class.MEMP-hard.contrib.detect": 0.02118000000000002,
     "class.MEMP-hard.contrib.predict": 0.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
@@ -2507,7 +2507,7 @@
     "class.MEMP-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MEMP-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MEMP-hard.contrib.globalAuto": 0.06000000000000011,
-    "class.MEMP-hard.contrib.globalManual": 0.002609999999999919,
+    "class.MEMP-hard.contrib.globalManual": 0.0018000000000000073,
     "class.MEMP-hard.probs.predict": 0.0,
     "class.MEMP-hard.probs.netfail": 0.0,
     "class.MEMP-hard.probs.replay": 0.0,
@@ -2517,7 +2517,7 @@
     "class.MEMP-hard.probs.global": 0.0010000000000000018,
     "class.MEMP-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MEMP-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MEMP-hard.meanS": 4.723790000000004,
+    "class.MEMP-hard.meanS": 4.722980000000003,
     "class.NIC-hard.contrib.detect": 0.04776090000000006,
     "class.NIC-hard.contrib.predict": 0.0,
     "class.NIC-hard.contrib.netfail": 0.0,
@@ -2535,7 +2535,7 @@
     "class.NIC-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.NIC-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.NIC-hard.contrib.globalAuto": 0.00030000000000000073,
-    "class.NIC-hard.contrib.globalManual": 1.3049999999999602e-05,
+    "class.NIC-hard.contrib.globalManual": 9.000000000000043e-06,
     "class.NIC-hard.probs.predict": 0.0,
     "class.NIC-hard.probs.netfail": 0.0,
     "class.NIC-hard.probs.replay": 0.04500000000000004,
@@ -2545,7 +2545,7 @@
     "class.NIC-hard.probs.global": 5.000000000000012e-06,
     "class.NIC-hard.probs.custom:R-LINK-LOCAL": 0.95,
     "class.NIC-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.NIC-hard.meanS": 2.2462739500000004,
+    "class.NIC-hard.meanS": 2.2462699,
     "class.OPT-hard.contrib.detect": 0.05295000000000005,
     "class.OPT-hard.contrib.predict": 0.0,
     "class.OPT-hard.contrib.netfail": 0.0,
@@ -2563,7 +2563,7 @@
     "class.OPT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.OPT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.OPT-hard.contrib.globalAuto": 0.3000000000000002,
-    "class.OPT-hard.contrib.globalManual": 0.01304999999999958,
+    "class.OPT-hard.contrib.globalManual": 0.009000000000000027,
     "class.OPT-hard.probs.predict": 0.0,
     "class.OPT-hard.probs.netfail": 0.0,
     "class.OPT-hard.probs.replay": 0.04500000000000004,
@@ -2573,7 +2573,7 @@
     "class.OPT-hard.probs.global": 0.005000000000000004,
     "class.OPT-hard.probs.custom:R-LINK-LOCAL": 0.95,
     "class.OPT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.OPT-hard.meanS": 2.541,
+    "class.OPT-hard.meanS": 2.5369500000000005,
     "class.OPT-hard@roce.contrib.detect": 0.05295000000000005,
     "class.OPT-hard@roce.contrib.predict": 0.0,
     "class.OPT-hard@roce.contrib.netfail": 0.0,
@@ -2591,7 +2591,7 @@
     "class.OPT-hard@roce.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.OPT-hard@roce.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.OPT-hard@roce.contrib.globalAuto": 0.3000000000000002,
-    "class.OPT-hard@roce.contrib.globalManual": 0.01304999999999958,
+    "class.OPT-hard@roce.contrib.globalManual": 0.009000000000000027,
     "class.OPT-hard@roce.probs.predict": 0.0,
     "class.OPT-hard@roce.probs.netfail": 0.0,
     "class.OPT-hard@roce.probs.replay": 0.04500000000000004,
@@ -2601,7 +2601,7 @@
     "class.OPT-hard@roce.probs.global": 0.005000000000000004,
     "class.OPT-hard@roce.probs.custom:R-LINK-LOCAL": 0.95,
     "class.OPT-hard@roce.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.OPT-hard@roce.meanS": 2.541,
+    "class.OPT-hard@roce.meanS": 2.5369500000000005,
     "class.BOXIO-hard.contrib.detect": 0.05295000000000005,
     "class.BOXIO-hard.contrib.predict": 0.0,
     "class.BOXIO-hard.contrib.netfail": 0.0,
@@ -2619,7 +2619,7 @@
     "class.BOXIO-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.BOXIO-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.BOXIO-hard.contrib.globalAuto": 3.0000000000000027,
-    "class.BOXIO-hard.contrib.globalManual": 0.1304999999999958,
+    "class.BOXIO-hard.contrib.globalManual": 0.09000000000000029,
     "class.BOXIO-hard.probs.predict": 0.0,
     "class.BOXIO-hard.probs.netfail": 0.0,
     "class.BOXIO-hard.probs.replay": 0.0,
@@ -2629,7 +2629,7 @@
     "class.BOXIO-hard.probs.global": 0.050000000000000044,
     "class.BOXIO-hard.probs.custom:R-LINK-LOCAL": 0.95,
     "class.BOXIO-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.BOXIO-hard.meanS": 5.083449999999999,
+    "class.BOXIO-hard.meanS": 5.042950000000003,
     "class.FABRIC-hard.contrib.detect": 0.05295000000000005,
     "class.FABRIC-hard.contrib.predict": 0.0,
     "class.FABRIC-hard.contrib.netfail": 0.0,
@@ -2647,7 +2647,7 @@
     "class.FABRIC-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.FABRIC-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.FABRIC-hard.contrib.globalAuto": 3.0000000000000027,
-    "class.FABRIC-hard.contrib.globalManual": 0.1304999999999958,
+    "class.FABRIC-hard.contrib.globalManual": 0.09000000000000029,
     "class.FABRIC-hard.probs.predict": 0.0,
     "class.FABRIC-hard.probs.netfail": 0.0,
     "class.FABRIC-hard.probs.replay": 0.0,
@@ -2657,7 +2657,7 @@
     "class.FABRIC-hard.probs.global": 0.050000000000000044,
     "class.FABRIC-hard.probs.custom:R-LINK-LOCAL": 0.95,
     "class.FABRIC-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.FABRIC-hard.meanS": 5.083449999999999,
+    "class.FABRIC-hard.meanS": 5.042950000000003,
     "class.FABRIC-hard@roce.contrib.detect": 0.05295000000000005,
     "class.FABRIC-hard@roce.contrib.predict": 0.0,
     "class.FABRIC-hard@roce.contrib.netfail": 0.0,
@@ -2675,7 +2675,7 @@
     "class.FABRIC-hard@roce.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.FABRIC-hard@roce.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.FABRIC-hard@roce.contrib.globalAuto": 3.0000000000000027,
-    "class.FABRIC-hard@roce.contrib.globalManual": 0.1304999999999958,
+    "class.FABRIC-hard@roce.contrib.globalManual": 0.09000000000000029,
     "class.FABRIC-hard@roce.probs.predict": 0.0,
     "class.FABRIC-hard@roce.probs.netfail": 0.0,
     "class.FABRIC-hard@roce.probs.replay": 0.0,
@@ -2685,7 +2685,7 @@
     "class.FABRIC-hard@roce.probs.global": 0.050000000000000044,
     "class.FABRIC-hard@roce.probs.custom:R-LINK-LOCAL": 0.95,
     "class.FABRIC-hard@roce.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.FABRIC-hard@roce.meanS": 5.083449999999999,
+    "class.FABRIC-hard@roce.meanS": 5.042950000000003,
     "class.CPU-hard.contrib.detect": 0.02118000000000002,
     "class.CPU-hard.contrib.predict": 0.0,
     "class.CPU-hard.contrib.netfail": 0.0,
@@ -2703,7 +2703,7 @@
     "class.CPU-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.CPU-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.CPU-hard.contrib.globalAuto": 0.06000000000000011,
-    "class.CPU-hard.contrib.globalManual": 0.002609999999999919,
+    "class.CPU-hard.contrib.globalManual": 0.0018000000000000073,
     "class.CPU-hard.probs.predict": 0.0,
     "class.CPU-hard.probs.netfail": 0.0,
     "class.CPU-hard.probs.replay": 0.0,
@@ -2713,7 +2713,7 @@
     "class.CPU-hard.probs.global": 0.0010000000000000018,
     "class.CPU-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.CPU-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.CPU-hard.meanS": 4.723790000000004,
+    "class.CPU-hard.meanS": 4.722980000000003,
     "class.DDR-hard.contrib.detect": 0.02118000000000002,
     "class.DDR-hard.contrib.predict": 0.0,
     "class.DDR-hard.contrib.netfail": 0.0,
@@ -2731,7 +2731,7 @@
     "class.DDR-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.DDR-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.DDR-hard.contrib.globalAuto": 0.06000000000000011,
-    "class.DDR-hard.contrib.globalManual": 0.002609999999999919,
+    "class.DDR-hard.contrib.globalManual": 0.0018000000000000073,
     "class.DDR-hard.probs.predict": 0.0,
     "class.DDR-hard.probs.netfail": 0.0,
     "class.DDR-hard.probs.replay": 0.0,
@@ -2741,7 +2741,7 @@
     "class.DDR-hard.probs.global": 0.0010000000000000018,
     "class.DDR-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.DDR-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.DDR-hard.meanS": 4.723790000000004,
+    "class.DDR-hard.meanS": 4.722980000000003,
     "class.SSD-hard.contrib.detect": 0.02118000000000002,
     "class.SSD-hard.contrib.predict": 0.0,
     "class.SSD-hard.contrib.netfail": 0.0,
@@ -2759,7 +2759,7 @@
     "class.SSD-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.SSD-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.SSD-hard.contrib.globalAuto": 0.06000000000000011,
-    "class.SSD-hard.contrib.globalManual": 0.002609999999999919,
+    "class.SSD-hard.contrib.globalManual": 0.0018000000000000073,
     "class.SSD-hard.probs.predict": 0.0,
     "class.SSD-hard.probs.netfail": 0.0,
     "class.SSD-hard.probs.replay": 0.0,
@@ -2769,7 +2769,7 @@
     "class.SSD-hard.probs.global": 0.0010000000000000018,
     "class.SSD-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.SSD-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.SSD-hard.meanS": 4.723790000000004,
+    "class.SSD-hard.meanS": 4.722980000000003,
     "class.POWER-hard.contrib.detect": 1.0590000000000002,
     "class.POWER-hard.contrib.predict": 0.0,
     "class.POWER-hard.contrib.netfail": 0.0,
@@ -2787,7 +2787,7 @@
     "class.POWER-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.POWER-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.POWER-hard.contrib.globalAuto": 60.0,
-    "class.POWER-hard.contrib.globalManual": 2.609999999999914,
+    "class.POWER-hard.contrib.globalManual": 1.8000000000000043,
     "class.POWER-hard.probs.predict": 0.0,
     "class.POWER-hard.probs.netfail": 0.0,
     "class.POWER-hard.probs.replay": 0.0,
@@ -2797,7 +2797,7 @@
     "class.POWER-hard.probs.global": 1.0,
     "class.POWER-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.POWER-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.POWER-hard.meanS": 63.66899999999991,
+    "class.POWER-hard.meanS": 62.859,
     "class.COOL-hard.contrib.detect": 1.0590000000000002,
     "class.COOL-hard.contrib.predict": 0.0,
     "class.COOL-hard.contrib.netfail": 0.0,
@@ -2815,7 +2815,7 @@
     "class.COOL-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.COOL-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.COOL-hard.contrib.globalAuto": 60.0,
-    "class.COOL-hard.contrib.globalManual": 2.609999999999914,
+    "class.COOL-hard.contrib.globalManual": 1.8000000000000043,
     "class.COOL-hard.probs.predict": 0.0,
     "class.COOL-hard.probs.netfail": 0.0,
     "class.COOL-hard.probs.replay": 0.0,
@@ -2825,7 +2825,7 @@
     "class.COOL-hard.probs.global": 1.0,
     "class.COOL-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.COOL-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.COOL-hard.meanS": 63.66899999999991,
+    "class.COOL-hard.meanS": 62.859,
     "class.MGMT-hard.contrib.detect": 0.05295000000000005,
     "class.MGMT-hard.contrib.predict": 0.0,
     "class.MGMT-hard.contrib.netfail": 0.0,
@@ -2843,7 +2843,7 @@
     "class.MGMT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MGMT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MGMT-hard.contrib.globalAuto": 3.0000000000000027,
-    "class.MGMT-hard.contrib.globalManual": 0.1304999999999958,
+    "class.MGMT-hard.contrib.globalManual": 0.09000000000000029,
     "class.MGMT-hard.probs.predict": 0.0,
     "class.MGMT-hard.probs.netfail": 0.0,
     "class.MGMT-hard.probs.replay": 0.0,
@@ -2853,7 +2853,7 @@
     "class.MGMT-hard.probs.global": 0.050000000000000044,
     "class.MGMT-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MGMT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.95,
-    "class.MGMT-hard.meanS": 4.133449999999999,
+    "class.MGMT-hard.meanS": 4.092950000000003,
     "class.STORAGE-hard.contrib.detect": 1.0590000000000002,
     "class.STORAGE-hard.contrib.predict": 0.0,
     "class.STORAGE-hard.contrib.netfail": 0.0,
@@ -2871,7 +2871,7 @@
     "class.STORAGE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.STORAGE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.STORAGE-hard.contrib.globalAuto": 60.0,
-    "class.STORAGE-hard.contrib.globalManual": 2.609999999999914,
+    "class.STORAGE-hard.contrib.globalManual": 1.8000000000000043,
     "class.STORAGE-hard.probs.predict": 0.0,
     "class.STORAGE-hard.probs.netfail": 0.0,
     "class.STORAGE-hard.probs.replay": 0.0,
@@ -2881,7 +2881,7 @@
     "class.STORAGE-hard.probs.global": 1.0,
     "class.STORAGE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.STORAGE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.STORAGE-hard.meanS": 63.66899999999991,
+    "class.STORAGE-hard.meanS": 62.859,
     "class.UNKNOWN-hard.contrib.detect": 1.0590000000000002,
     "class.UNKNOWN-hard.contrib.predict": 0.0,
     "class.UNKNOWN-hard.contrib.netfail": 0.0,
@@ -2899,7 +2899,7 @@
     "class.UNKNOWN-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.UNKNOWN-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.UNKNOWN-hard.contrib.globalAuto": 60.0,
-    "class.UNKNOWN-hard.contrib.globalManual": 2.609999999999914,
+    "class.UNKNOWN-hard.contrib.globalManual": 1.8000000000000043,
     "class.UNKNOWN-hard.probs.predict": 0.0,
     "class.UNKNOWN-hard.probs.netfail": 0.0,
     "class.UNKNOWN-hard.probs.replay": 0.0,
@@ -2909,44 +2909,44 @@
     "class.UNKNOWN-hard.probs.global": 1.0,
     "class.UNKNOWN-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.UNKNOWN-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.UNKNOWN-hard.meanS": 63.66899999999991,
-    "job.contrib.detect": 0.5652028646456574,
+    "class.UNKNOWN-hard.meanS": 62.859,
+    "job.contrib.detect": 0.5652028646456575,
     "job.contrib.predict": 0.0,
     "job.contrib.netfail": 0.0,
-    "job.contrib.replay": 1.5267996552106033,
+    "job.contrib.replay": 1.5267996552106036,
     "job.contrib.hotswap": 0.0,
-    "job.contrib.elastic": 0.2842286886000422,
-    "job.contrib.process": 0.33063337245311064,
+    "job.contrib.elastic": 0.28422868860004225,
+    "job.contrib.process": 0.3306333724531107,
     "job.contrib.custom:R-LINK-LOCAL": 0.28231060783173234,
-    "job.contrib.custom:H-CONTROL-CONTINUITY": 0.04090225427761618,
+    "job.contrib.custom:H-CONTROL-CONTINUITY": 0.040902254277616186,
     "job.contrib.failed:netfail": 0.0,
-    "job.contrib.failed:replay": 0.33928881226902285,
+    "job.contrib.failed:replay": 0.3392888122690229,
     "job.contrib.failed:hotswap": 0.0,
-    "job.contrib.failed:elastic": 0.6960702577960223,
-    "job.contrib.failed:process": 0.03480351288980115,
+    "job.contrib.failed:elastic": 0.6960702577960225,
+    "job.contrib.failed:process": 0.03480351288980116,
     "job.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "job.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
-    "job.contrib.globalAuto": 13.37059595740817,
-    "job.contrib.globalManual": 0.5816209241472363,
+    "job.contrib.globalAuto": 13.370595957408172,
+    "job.contrib.globalManual": 0.40111787872224614,
     "job.probs.predict": 0.0,
     "job.probs.netfail": 0.0,
     "job.probs.replay": 0.3053599310421206,
     "job.probs.hotswap": 0.0,
-    "job.probs.elastic": 0.2842286886000422,
-    "job.probs.process": 0.0055105562075518436,
-    "job.probs.global": 0.22284326595680284,
+    "job.probs.elastic": 0.28422868860004225,
+    "job.probs.process": 0.005510556207551845,
+    "job.probs.global": 0.22284326595680287,
     "job.probs.custom:R-LINK-LOCAL": 0.14115530391586617,
-    "job.probs.custom:H-CONTROL-CONTINUITY": 0.04090225427761618,
+    "job.probs.custom:H-CONTROL-CONTINUITY": 0.040902254277616186,
     "job.stages.startup": 4.456865319136057,
     "job.stages.read": 4.456865319136057,
     "job.stages.communication": 4.456865319136057,
-    "job.stages.manual": 0.5816209241472363,
-    "job.mttrS": 18.052456907529017,
+    "job.stages.manual": 0.40111787872224614,
+    "job.mttrS": 17.87195386210403,
     "job.recovery.tDetS": 1.0590000000000002,
     "job.recovery.automaticS": 60,
-    "job.recovery.successProbability": 0.99855,
+    "job.recovery.successProbability": 0.999,
     "job.recovery.manualS": 1800,
-    "job.recovery.globalS": 62.609999999999914,
+    "job.recovery.globalS": 61.800000000000004,
     "job.recovery.stages.startup": 20.0,
     "job.recovery.stages.read": 20.0,
     "job.recovery.stages.communication": 20.0
@@ -2972,7 +2972,7 @@
       "auto",
       "manual"
      ],
-     "k": 1.4332979962783516,
+     "k": 1.4343749548713602,
      "binding": "mean",
      "derated": false
     },
@@ -3183,26 +3183,26 @@
      }
     },
     "ratePerHour": {
-     "CORE-hard": 0.13377447965264613,
-     "SRAM-hard": 0.04777659987594504,
-     "IOD-hard": 0.05733191985113406,
-     "MODULE-hard": 0.048732131873463945,
-     "MEMT-hard": 0.11466383970226812,
-     "MEMP-hard": 0.049687663870982855,
-     "NIC-hard": 0.028665959925567037,
-     "OPT-hard": 0.01911063995037802,
-     "OPT-hard@roce": 0.010920365685930297,
-     "BOXIO-hard": 0.013377447965264615,
-     "FABRIC-hard": 0.019111022163177022,
-     "FABRIC-hard@roce": 0.003583244990695878,
-     "CPU-hard": 0.04777659987594505,
-     "DDR-hard": 0.05733191985113406,
-     "SSD-hard": 0.04777659987594505,
-     "POWER-hard": 0.04777659987594505,
-     "COOL-hard": 0.02866595992556703,
-     "MGMT-hard": 0.038221279900756036,
-     "STORAGE-hard": 0.038221279900756036,
-     "UNKNOWN-hard": 0.11753043569482487
+     "CORE-hard": 0.1338749957879936,
+     "SRAM-hard": 0.04781249849571198,
+     "IOD-hard": 0.0573749981948544,
+     "MODULE-hard": 0.04876874846562623,
+     "MEMT-hard": 0.1147499963897088,
+     "MEMP-hard": 0.04972499843554048,
+     "NIC-hard": 0.02868749909742721,
+     "OPT-hard": 0.019124999398284798,
+     "OPT-hard@roce": 0.01092857108473417,
+     "BOXIO-hard": 0.013387499578799361,
+     "FABRIC-hard": 0.019125381898272766,
+     "FABRIC-hard@roce": 0.0035859373871783996,
+     "CPU-hard": 0.047812498495712,
+     "DDR-hard": 0.0573749981948544,
+     "SSD-hard": 0.047812498495712,
+     "POWER-hard": 0.047812498495712,
+     "COOL-hard": 0.0286874990974272,
+     "MGMT-hard": 0.0382499987965696,
+     "STORAGE-hard": 0.0382499987965696,
+     "UNKNOWN-hard": 0.11761874629945154
     },
     "engineMeanPauseS": {
      "CORE-hard": 6.927018000000001,
@@ -3226,7 +3226,7 @@
      "STORAGE-hard": 79.05900000000001,
      "UNKNOWN-hard": 79.05900000000001
     },
-    "engineMeanPauseMaxRelDiff": 0.0,
+    "engineMeanPauseMaxRelDiff": 1.2821944734373796e-16,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
@@ -3253,7 +3253,7 @@
     "class.CORE-hard.probs.elastic": 0.09799999999999998,
     "class.CORE-hard.probs.process": 0.001900000000000001,
     "class.CORE-hard.probs.global": 0.00010000000000000015,
-    "class.CORE-hard.meanS": 6.927018000000001,
+    "class.CORE-hard.meanS": 6.927018,
     "class.SRAM-hard.contrib.detect": 0.9552180000000001,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
@@ -3275,7 +3275,7 @@
     "class.SRAM-hard.probs.elastic": 0.09799999999999998,
     "class.SRAM-hard.probs.process": 0.001900000000000001,
     "class.SRAM-hard.probs.global": 0.00010000000000000015,
-    "class.SRAM-hard.meanS": 6.927018000000001,
+    "class.SRAM-hard.meanS": 6.927018,
     "class.IOD-hard.contrib.detect": 0.9552180000000001,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
@@ -3297,7 +3297,7 @@
     "class.IOD-hard.probs.elastic": 0.09799999999999998,
     "class.IOD-hard.probs.process": 0.001900000000000001,
     "class.IOD-hard.probs.global": 0.00010000000000000015,
-    "class.IOD-hard.meanS": 6.927018000000001,
+    "class.IOD-hard.meanS": 6.927018,
     "class.MODULE-hard.contrib.detect": 0.02118000000000002,
     "class.MODULE-hard.contrib.predict": 0.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
@@ -3341,7 +3341,7 @@
     "class.MEMT-hard.probs.elastic": 0.09799999999999998,
     "class.MEMT-hard.probs.process": 0.001900000000000001,
     "class.MEMT-hard.probs.global": 0.00010000000000000015,
-    "class.MEMT-hard.meanS": 6.927018000000001,
+    "class.MEMT-hard.meanS": 6.927018,
     "class.MEMP-hard.contrib.detect": 0.02118000000000002,
     "class.MEMP-hard.contrib.predict": 0.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
@@ -3385,7 +3385,7 @@
     "class.NIC-hard.probs.elastic": 0.09799999999999998,
     "class.NIC-hard.probs.process": 0.001900000000000001,
     "class.NIC-hard.probs.global": 0.00010000000000000015,
-    "class.NIC-hard.meanS": 6.927018000000001,
+    "class.NIC-hard.meanS": 6.927018,
     "class.OPT-hard.contrib.detect": 1.0590000000000002,
     "class.OPT-hard.contrib.predict": 0.0,
     "class.OPT-hard.contrib.netfail": 0.0,
@@ -3672,32 +3672,32 @@
     "class.UNKNOWN-hard.probs.process": 0.0,
     "class.UNKNOWN-hard.probs.global": 1.0,
     "class.UNKNOWN-hard.meanS": 79.05900000000001,
-    "job.contrib.detect": 0.7492423426309857,
+    "job.contrib.detect": 0.7492423426309858,
     "job.contrib.predict": 0.0,
     "job.contrib.netfail": 0.0,
     "job.contrib.replay": 1.9124003018862483,
     "job.contrib.hotswap": 0.0,
-    "job.contrib.elastic": 0.2925001486015245,
+    "job.contrib.elastic": 0.29250014860152457,
     "job.contrib.process": 0.3402552749038145,
     "job.contrib.failed:netfail": 0.0,
-    "job.contrib.failed:replay": 0.4249778448636106,
+    "job.contrib.failed:replay": 0.42497784486361073,
     "job.contrib.failed:hotswap": 0.0,
     "job.contrib.failed:elastic": 0.7163268945343464,
     "job.contrib.failed:process": 0.03581634472671735,
     "job.contrib.globalAuto": 19.160932186369728,
-    "job.contrib.globalManual": 5.748279655910923,
+    "job.contrib.globalManual": 5.748279655910924,
     "job.probs.predict": 0.0,
     "job.probs.netfail": 0.0,
-    "job.probs.replay": 0.38248006037724963,
+    "job.probs.replay": 0.3824800603772497,
     "job.probs.hotswap": 0.0,
-    "job.probs.elastic": 0.2925001486015245,
+    "job.probs.elastic": 0.29250014860152457,
     "job.probs.process": 0.005670921248396909,
     "job.probs.global": 0.3193488697728288,
-    "job.stages.startup": 7.140720069454556,
+    "job.stages.startup": 7.140720069454557,
     "job.stages.read": 4.879492047460614,
-    "job.stages.communication": 7.140720069454556,
-    "job.stages.manual": 5.748279655910923,
-    "job.mttrS": 29.380730994427896,
+    "job.stages.communication": 7.140720069454557,
+    "job.stages.manual": 5.748279655910924,
+    "job.mttrS": 29.3807309944279,
     "job.recovery.tDetS": 1.0590000000000002,
     "job.recovery.automaticS": 60,
     "job.recovery.successProbability": 0.99,
@@ -3722,22 +3722,22 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
      "k": 1,
-     "kRecommended": 0.8628676922053501,
+     "kRecommended": 0.8873142626539711,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT)"
     },
-    "detectS": 4.483500000000003,
-    "globalS": 98.03182500000007,
+    "detectS": 4.4250000000000025,
+    "globalS": 94.05000000000015,
     "autoS": 90,
     "params": {
      "custom": {
@@ -3782,12 +3782,12 @@
     "recovery": {
      "mode": "mixture",
      "detection": {
-      "coverage": 0.949,
+      "coverage": 0.95,
       "autoSeconds": 1.5,
       "timeoutSeconds": 60
      },
      "automatic": {
-      "successProbability": 0.99702525,
+      "successProbability": 0.9984999999999999,
       "seconds": 90
      },
      "manual": {
@@ -4003,34 +4003,34 @@
      "UNKNOWN-hard": 0.20500000000000002
     },
     "engineMeanPauseS": {
-     "CORE-hard": 18.1501674705,
-     "SRAM-hard": 18.1501674705,
-     "IOD-hard": 5.628554056131752,
-     "MODULE-hard": 31.242763724999993,
-     "MEMT-hard": 18.1501674705,
-     "MEMP-hard": 31.242763724999993,
-     "NIC-hard": 5.628554056131752,
-     "OPT-hard": 7.8543961447500035,
-     "OPT-hard@roce": 7.8543961447500035,
-     "BOXIO-hard": 20.265908887500018,
-     "FABRIC-hard": 20.265908887500018,
-     "FABRIC-hard@roce": 20.265908887500018,
-     "CPU-hard": 31.242763724999993,
-     "DDR-hard": 31.242763724999993,
-     "SSD-hard": 31.242763724999993,
-     "POWER-hard": 102.51532500000008,
-     "COOL-hard": 102.51532500000008,
-     "MGMT-hard": 19.026158887500017,
-     "STORAGE-hard": 102.51532500000008,
-     "UNKNOWN-hard": 102.51532500000008
+     "CORE-hard": 18.091827,
+     "SRAM-hard": 18.091827,
+     "IOD-hard": 5.618431984500001,
+     "MODULE-hard": 31.185149999999997,
+     "MEMT-hard": 18.091827,
+     "MEMP-hard": 31.185149999999997,
+     "NIC-hard": 5.618431984500001,
+     "OPT-hard": 7.719894000000005,
+     "OPT-hard@roce": 7.719894000000005,
+     "BOXIO-hard": 19.56491250000003,
+     "FABRIC-hard": 19.56491250000003,
+     "FABRIC-hard@roce": 19.56491250000003,
+     "CPU-hard": 31.185149999999997,
+     "DDR-hard": 31.185149999999997,
+     "SSD-hard": 31.185149999999997,
+     "POWER-hard": 98.47500000000015,
+     "COOL-hard": 98.47500000000015,
+     "MGMT-hard": 18.32516250000003,
+     "STORAGE-hard": 98.47500000000015,
+     "UNKNOWN-hard": 98.47500000000015
     },
-    "engineMeanPauseMaxRelDiff": 1.7530492703398117e-16,
+    "engineMeanPauseMaxRelDiff": 0.0,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
    },
    "expected": {
-    "class.CORE-hard.contrib.detect": 3.7571730000000025,
+    "class.CORE-hard.contrib.detect": 3.7081500000000025,
     "class.CORE-hard.contrib.predict": 0.0,
     "class.CORE-hard.contrib.netfail": 0.0,
     "class.CORE-hard.contrib.replay": 6.15,
@@ -4047,7 +4047,7 @@
     "class.CORE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.CORE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.CORE-hard.contrib.globalAuto": 0.2105999999999999,
-    "class.CORE-hard.contrib.globalManual": 0.01879447050000015,
+    "class.CORE-hard.contrib.globalManual": 0.009477000000000355,
     "class.CORE-hard.probs.predict": 0.0,
     "class.CORE-hard.probs.netfail": 0.0,
     "class.CORE-hard.probs.replay": 0.8200000000000001,
@@ -4057,8 +4057,8 @@
     "class.CORE-hard.probs.global": 0.0023399999999999988,
     "class.CORE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.CORE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.CORE-hard.meanS": 18.1501674705,
-    "class.SRAM-hard.contrib.detect": 3.7571730000000025,
+    "class.CORE-hard.meanS": 18.091827,
+    "class.SRAM-hard.contrib.detect": 3.7081500000000025,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
     "class.SRAM-hard.contrib.replay": 6.15,
@@ -4075,7 +4075,7 @@
     "class.SRAM-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.SRAM-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.SRAM-hard.contrib.globalAuto": 0.2105999999999999,
-    "class.SRAM-hard.contrib.globalManual": 0.01879447050000015,
+    "class.SRAM-hard.contrib.globalManual": 0.009477000000000355,
     "class.SRAM-hard.probs.predict": 0.0,
     "class.SRAM-hard.probs.netfail": 0.0,
     "class.SRAM-hard.probs.replay": 0.8200000000000001,
@@ -4085,8 +4085,8 @@
     "class.SRAM-hard.probs.global": 0.0023399999999999988,
     "class.SRAM-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.SRAM-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.SRAM-hard.meanS": 18.1501674705,
-    "class.IOD-hard.contrib.detect": 0.6518695155000006,
+    "class.SRAM-hard.meanS": 18.091827,
+    "class.IOD-hard.contrib.detect": 0.6433640250000006,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
     "class.IOD-hard.contrib.replay": 1.0670250000000003,
@@ -4103,7 +4103,7 @@
     "class.IOD-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.IOD-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.IOD-hard.contrib.globalAuto": 0.03653909999999999,
-    "class.IOD-hard.contrib.globalManual": 0.003260840631750027,
+    "class.IOD-hard.contrib.globalManual": 0.0016442595000000619,
     "class.IOD-hard.probs.predict": 0.0,
     "class.IOD-hard.probs.netfail": 0.0,
     "class.IOD-hard.probs.replay": 0.14227000000000006,
@@ -4113,8 +4113,8 @@
     "class.IOD-hard.probs.global": 0.0004059899999999999,
     "class.IOD-hard.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.IOD-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.IOD-hard.meanS": 5.628554056131751,
-    "class.MODULE-hard.contrib.detect": 0.4483500000000002,
+    "class.IOD-hard.meanS": 5.618431984500001,
+    "class.MODULE-hard.contrib.detect": 0.4425000000000001,
     "class.MODULE-hard.contrib.predict": 0.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
     "class.MODULE-hard.contrib.replay": 0.0,
@@ -4131,7 +4131,7 @@
     "class.MODULE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MODULE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MODULE-hard.contrib.globalAuto": 1.1699999999999997,
-    "class.MODULE-hard.contrib.globalManual": 0.10441372500000087,
+    "class.MODULE-hard.contrib.globalManual": 0.05265000000000199,
     "class.MODULE-hard.probs.predict": 0.0,
     "class.MODULE-hard.probs.netfail": 0.0,
     "class.MODULE-hard.probs.replay": 0.0,
@@ -4141,8 +4141,8 @@
     "class.MODULE-hard.probs.global": 0.012999999999999998,
     "class.MODULE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MODULE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MODULE-hard.meanS": 31.242763724999996,
-    "class.MEMT-hard.contrib.detect": 3.7571730000000025,
+    "class.MODULE-hard.meanS": 31.185149999999997,
+    "class.MEMT-hard.contrib.detect": 3.7081500000000025,
     "class.MEMT-hard.contrib.predict": 0.0,
     "class.MEMT-hard.contrib.netfail": 0.0,
     "class.MEMT-hard.contrib.replay": 6.15,
@@ -4159,7 +4159,7 @@
     "class.MEMT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MEMT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MEMT-hard.contrib.globalAuto": 0.2105999999999999,
-    "class.MEMT-hard.contrib.globalManual": 0.01879447050000015,
+    "class.MEMT-hard.contrib.globalManual": 0.009477000000000355,
     "class.MEMT-hard.probs.predict": 0.0,
     "class.MEMT-hard.probs.netfail": 0.0,
     "class.MEMT-hard.probs.replay": 0.8200000000000001,
@@ -4169,8 +4169,8 @@
     "class.MEMT-hard.probs.global": 0.0023399999999999988,
     "class.MEMT-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MEMT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MEMT-hard.meanS": 18.1501674705,
-    "class.MEMP-hard.contrib.detect": 0.4483500000000002,
+    "class.MEMT-hard.meanS": 18.091827,
+    "class.MEMP-hard.contrib.detect": 0.4425000000000001,
     "class.MEMP-hard.contrib.predict": 0.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
     "class.MEMP-hard.contrib.replay": 0.0,
@@ -4187,7 +4187,7 @@
     "class.MEMP-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MEMP-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MEMP-hard.contrib.globalAuto": 1.1699999999999997,
-    "class.MEMP-hard.contrib.globalManual": 0.10441372500000087,
+    "class.MEMP-hard.contrib.globalManual": 0.05265000000000199,
     "class.MEMP-hard.probs.predict": 0.0,
     "class.MEMP-hard.probs.netfail": 0.0,
     "class.MEMP-hard.probs.replay": 0.0,
@@ -4197,8 +4197,8 @@
     "class.MEMP-hard.probs.global": 0.012999999999999998,
     "class.MEMP-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MEMP-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.MEMP-hard.meanS": 31.242763724999996,
-    "class.NIC-hard.contrib.detect": 0.6518695155000006,
+    "class.MEMP-hard.meanS": 31.185149999999997,
+    "class.NIC-hard.contrib.detect": 0.6433640250000006,
     "class.NIC-hard.contrib.predict": 0.0,
     "class.NIC-hard.contrib.netfail": 0.0,
     "class.NIC-hard.contrib.replay": 1.0670250000000003,
@@ -4215,7 +4215,7 @@
     "class.NIC-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.NIC-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.NIC-hard.contrib.globalAuto": 0.03653909999999999,
-    "class.NIC-hard.contrib.globalManual": 0.003260840631750027,
+    "class.NIC-hard.contrib.globalManual": 0.0016442595000000619,
     "class.NIC-hard.probs.predict": 0.0,
     "class.NIC-hard.probs.netfail": 0.0,
     "class.NIC-hard.probs.replay": 0.14227000000000006,
@@ -4225,8 +4225,8 @@
     "class.NIC-hard.probs.global": 0.0004059899999999999,
     "class.NIC-hard.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.NIC-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.NIC-hard.meanS": 5.628554056131751,
-    "class.OPT-hard.contrib.detect": 0.7778872500000007,
+    "class.NIC-hard.meanS": 5.618431984500001,
+    "class.OPT-hard.contrib.detect": 0.7677375000000006,
     "class.OPT-hard.contrib.predict": 0.0,
     "class.OPT-hard.contrib.netfail": 0.0,
     "class.OPT-hard.contrib.replay": 1.0670250000000003,
@@ -4243,7 +4243,7 @@
     "class.OPT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.OPT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.OPT-hard.contrib.globalAuto": 2.8106999999999998,
-    "class.OPT-hard.contrib.globalManual": 0.2508338947500021,
+    "class.OPT-hard.contrib.globalManual": 0.1264815000000048,
     "class.OPT-hard.probs.predict": 0.0,
     "class.OPT-hard.probs.netfail": 0.0,
     "class.OPT-hard.probs.replay": 0.14227000000000006,
@@ -4253,8 +4253,8 @@
     "class.OPT-hard.probs.global": 0.031229999999999997,
     "class.OPT-hard.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.OPT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.OPT-hard.meanS": 7.854396144750003,
-    "class.OPT-hard@roce.contrib.detect": 0.7778872500000007,
+    "class.OPT-hard.meanS": 7.719894000000005,
+    "class.OPT-hard@roce.contrib.detect": 0.7677375000000006,
     "class.OPT-hard@roce.contrib.predict": 0.0,
     "class.OPT-hard@roce.contrib.netfail": 0.0,
     "class.OPT-hard@roce.contrib.replay": 1.0670250000000003,
@@ -4271,7 +4271,7 @@
     "class.OPT-hard@roce.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.OPT-hard@roce.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.OPT-hard@roce.contrib.globalAuto": 2.8106999999999998,
-    "class.OPT-hard@roce.contrib.globalManual": 0.2508338947500021,
+    "class.OPT-hard@roce.contrib.globalManual": 0.1264815000000048,
     "class.OPT-hard@roce.probs.predict": 0.0,
     "class.OPT-hard@roce.probs.netfail": 0.0,
     "class.OPT-hard@roce.probs.replay": 0.14227000000000006,
@@ -4281,8 +4281,8 @@
     "class.OPT-hard@roce.probs.global": 0.031229999999999997,
     "class.OPT-hard@roce.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.OPT-hard@roce.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.OPT-hard@roce.meanS": 7.854396144750003,
-    "class.BOXIO-hard.contrib.detect": 0.7778872500000007,
+    "class.OPT-hard@roce.meanS": 7.719894000000005,
+    "class.BOXIO-hard.contrib.detect": 0.7677375000000006,
     "class.BOXIO-hard.contrib.predict": 0.0,
     "class.BOXIO-hard.contrib.netfail": 0.0,
     "class.BOXIO-hard.contrib.replay": 0.0,
@@ -4299,7 +4299,7 @@
     "class.BOXIO-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.BOXIO-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.BOXIO-hard.contrib.globalAuto": 15.615000000000004,
-    "class.BOXIO-hard.contrib.globalManual": 1.3935216375000123,
+    "class.BOXIO-hard.contrib.globalManual": 0.7026750000000268,
     "class.BOXIO-hard.probs.predict": 0.0,
     "class.BOXIO-hard.probs.netfail": 0.0,
     "class.BOXIO-hard.probs.replay": 0.0,
@@ -4309,8 +4309,8 @@
     "class.BOXIO-hard.probs.global": 0.17350000000000004,
     "class.BOXIO-hard.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.BOXIO-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.BOXIO-hard.meanS": 20.265908887500014,
-    "class.FABRIC-hard.contrib.detect": 0.7778872500000007,
+    "class.BOXIO-hard.meanS": 19.56491250000003,
+    "class.FABRIC-hard.contrib.detect": 0.7677375000000006,
     "class.FABRIC-hard.contrib.predict": 0.0,
     "class.FABRIC-hard.contrib.netfail": 0.0,
     "class.FABRIC-hard.contrib.replay": 0.0,
@@ -4327,7 +4327,7 @@
     "class.FABRIC-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.FABRIC-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.FABRIC-hard.contrib.globalAuto": 15.615000000000004,
-    "class.FABRIC-hard.contrib.globalManual": 1.3935216375000123,
+    "class.FABRIC-hard.contrib.globalManual": 0.7026750000000268,
     "class.FABRIC-hard.probs.predict": 0.0,
     "class.FABRIC-hard.probs.netfail": 0.0,
     "class.FABRIC-hard.probs.replay": 0.0,
@@ -4337,8 +4337,8 @@
     "class.FABRIC-hard.probs.global": 0.17350000000000004,
     "class.FABRIC-hard.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.FABRIC-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.FABRIC-hard.meanS": 20.265908887500014,
-    "class.FABRIC-hard@roce.contrib.detect": 0.7778872500000007,
+    "class.FABRIC-hard.meanS": 19.56491250000003,
+    "class.FABRIC-hard@roce.contrib.detect": 0.7677375000000006,
     "class.FABRIC-hard@roce.contrib.predict": 0.0,
     "class.FABRIC-hard@roce.contrib.netfail": 0.0,
     "class.FABRIC-hard@roce.contrib.replay": 0.0,
@@ -4355,7 +4355,7 @@
     "class.FABRIC-hard@roce.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.FABRIC-hard@roce.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.FABRIC-hard@roce.contrib.globalAuto": 15.615000000000004,
-    "class.FABRIC-hard@roce.contrib.globalManual": 1.3935216375000123,
+    "class.FABRIC-hard@roce.contrib.globalManual": 0.7026750000000268,
     "class.FABRIC-hard@roce.probs.predict": 0.0,
     "class.FABRIC-hard@roce.probs.netfail": 0.0,
     "class.FABRIC-hard@roce.probs.replay": 0.0,
@@ -4365,8 +4365,8 @@
     "class.FABRIC-hard@roce.probs.global": 0.17350000000000004,
     "class.FABRIC-hard@roce.probs.custom:R-LINK-LOCAL": 0.8265,
     "class.FABRIC-hard@roce.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.FABRIC-hard@roce.meanS": 20.265908887500014,
-    "class.CPU-hard.contrib.detect": 0.4483500000000002,
+    "class.FABRIC-hard@roce.meanS": 19.56491250000003,
+    "class.CPU-hard.contrib.detect": 0.4425000000000001,
     "class.CPU-hard.contrib.predict": 0.0,
     "class.CPU-hard.contrib.netfail": 0.0,
     "class.CPU-hard.contrib.replay": 0.0,
@@ -4383,7 +4383,7 @@
     "class.CPU-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.CPU-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.CPU-hard.contrib.globalAuto": 1.1699999999999997,
-    "class.CPU-hard.contrib.globalManual": 0.10441372500000087,
+    "class.CPU-hard.contrib.globalManual": 0.05265000000000199,
     "class.CPU-hard.probs.predict": 0.0,
     "class.CPU-hard.probs.netfail": 0.0,
     "class.CPU-hard.probs.replay": 0.0,
@@ -4393,8 +4393,8 @@
     "class.CPU-hard.probs.global": 0.012999999999999998,
     "class.CPU-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.CPU-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.CPU-hard.meanS": 31.242763724999996,
-    "class.DDR-hard.contrib.detect": 0.4483500000000002,
+    "class.CPU-hard.meanS": 31.185149999999997,
+    "class.DDR-hard.contrib.detect": 0.4425000000000001,
     "class.DDR-hard.contrib.predict": 0.0,
     "class.DDR-hard.contrib.netfail": 0.0,
     "class.DDR-hard.contrib.replay": 0.0,
@@ -4411,7 +4411,7 @@
     "class.DDR-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.DDR-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.DDR-hard.contrib.globalAuto": 1.1699999999999997,
-    "class.DDR-hard.contrib.globalManual": 0.10441372500000087,
+    "class.DDR-hard.contrib.globalManual": 0.05265000000000199,
     "class.DDR-hard.probs.predict": 0.0,
     "class.DDR-hard.probs.netfail": 0.0,
     "class.DDR-hard.probs.replay": 0.0,
@@ -4421,8 +4421,8 @@
     "class.DDR-hard.probs.global": 0.012999999999999998,
     "class.DDR-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.DDR-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.DDR-hard.meanS": 31.242763724999996,
-    "class.SSD-hard.contrib.detect": 0.4483500000000002,
+    "class.DDR-hard.meanS": 31.185149999999997,
+    "class.SSD-hard.contrib.detect": 0.4425000000000001,
     "class.SSD-hard.contrib.predict": 0.0,
     "class.SSD-hard.contrib.netfail": 0.0,
     "class.SSD-hard.contrib.replay": 0.0,
@@ -4439,7 +4439,7 @@
     "class.SSD-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.SSD-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.SSD-hard.contrib.globalAuto": 1.1699999999999997,
-    "class.SSD-hard.contrib.globalManual": 0.10441372500000087,
+    "class.SSD-hard.contrib.globalManual": 0.05265000000000199,
     "class.SSD-hard.probs.predict": 0.0,
     "class.SSD-hard.probs.netfail": 0.0,
     "class.SSD-hard.probs.replay": 0.0,
@@ -4449,8 +4449,8 @@
     "class.SSD-hard.probs.global": 0.012999999999999998,
     "class.SSD-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.SSD-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.SSD-hard.meanS": 31.242763724999996,
-    "class.POWER-hard.contrib.detect": 4.483500000000003,
+    "class.SSD-hard.meanS": 31.185149999999997,
+    "class.POWER-hard.contrib.detect": 4.4250000000000025,
     "class.POWER-hard.contrib.predict": 0.0,
     "class.POWER-hard.contrib.netfail": 0.0,
     "class.POWER-hard.contrib.replay": 0.0,
@@ -4467,7 +4467,7 @@
     "class.POWER-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.POWER-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.POWER-hard.contrib.globalAuto": 90.0,
-    "class.POWER-hard.contrib.globalManual": 8.031825000000069,
+    "class.POWER-hard.contrib.globalManual": 4.0500000000001535,
     "class.POWER-hard.probs.predict": 0.0,
     "class.POWER-hard.probs.netfail": 0.0,
     "class.POWER-hard.probs.replay": 0.0,
@@ -4477,8 +4477,8 @@
     "class.POWER-hard.probs.global": 1.0,
     "class.POWER-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.POWER-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.POWER-hard.meanS": 102.51532500000008,
-    "class.COOL-hard.contrib.detect": 4.483500000000003,
+    "class.POWER-hard.meanS": 98.47500000000015,
+    "class.COOL-hard.contrib.detect": 4.4250000000000025,
     "class.COOL-hard.contrib.predict": 0.0,
     "class.COOL-hard.contrib.netfail": 0.0,
     "class.COOL-hard.contrib.replay": 0.0,
@@ -4495,7 +4495,7 @@
     "class.COOL-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.COOL-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.COOL-hard.contrib.globalAuto": 90.0,
-    "class.COOL-hard.contrib.globalManual": 8.031825000000069,
+    "class.COOL-hard.contrib.globalManual": 4.0500000000001535,
     "class.COOL-hard.probs.predict": 0.0,
     "class.COOL-hard.probs.netfail": 0.0,
     "class.COOL-hard.probs.replay": 0.0,
@@ -4505,8 +4505,8 @@
     "class.COOL-hard.probs.global": 1.0,
     "class.COOL-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.COOL-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.COOL-hard.meanS": 102.51532500000008,
-    "class.MGMT-hard.contrib.detect": 0.7778872500000007,
+    "class.COOL-hard.meanS": 98.47500000000015,
+    "class.MGMT-hard.contrib.detect": 0.7677375000000006,
     "class.MGMT-hard.contrib.predict": 0.0,
     "class.MGMT-hard.contrib.netfail": 0.0,
     "class.MGMT-hard.contrib.replay": 0.0,
@@ -4523,7 +4523,7 @@
     "class.MGMT-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.MGMT-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.MGMT-hard.contrib.globalAuto": 15.615000000000004,
-    "class.MGMT-hard.contrib.globalManual": 1.3935216375000123,
+    "class.MGMT-hard.contrib.globalManual": 0.7026750000000268,
     "class.MGMT-hard.probs.predict": 0.0,
     "class.MGMT-hard.probs.netfail": 0.0,
     "class.MGMT-hard.probs.replay": 0.0,
@@ -4533,8 +4533,8 @@
     "class.MGMT-hard.probs.global": 0.17350000000000004,
     "class.MGMT-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.MGMT-hard.probs.custom:H-CONTROL-CONTINUITY": 0.8265,
-    "class.MGMT-hard.meanS": 19.026158887500017,
-    "class.STORAGE-hard.contrib.detect": 4.483500000000003,
+    "class.MGMT-hard.meanS": 18.32516250000003,
+    "class.STORAGE-hard.contrib.detect": 4.4250000000000025,
     "class.STORAGE-hard.contrib.predict": 0.0,
     "class.STORAGE-hard.contrib.netfail": 0.0,
     "class.STORAGE-hard.contrib.replay": 0.0,
@@ -4551,7 +4551,7 @@
     "class.STORAGE-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.STORAGE-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.STORAGE-hard.contrib.globalAuto": 90.0,
-    "class.STORAGE-hard.contrib.globalManual": 8.031825000000069,
+    "class.STORAGE-hard.contrib.globalManual": 4.0500000000001535,
     "class.STORAGE-hard.probs.predict": 0.0,
     "class.STORAGE-hard.probs.netfail": 0.0,
     "class.STORAGE-hard.probs.replay": 0.0,
@@ -4561,8 +4561,8 @@
     "class.STORAGE-hard.probs.global": 1.0,
     "class.STORAGE-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.STORAGE-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.STORAGE-hard.meanS": 102.51532500000008,
-    "class.UNKNOWN-hard.contrib.detect": 4.483500000000003,
+    "class.STORAGE-hard.meanS": 98.47500000000015,
+    "class.UNKNOWN-hard.contrib.detect": 4.4250000000000025,
     "class.UNKNOWN-hard.contrib.predict": 0.0,
     "class.UNKNOWN-hard.contrib.netfail": 0.0,
     "class.UNKNOWN-hard.contrib.replay": 0.0,
@@ -4579,7 +4579,7 @@
     "class.UNKNOWN-hard.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "class.UNKNOWN-hard.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "class.UNKNOWN-hard.contrib.globalAuto": 90.0,
-    "class.UNKNOWN-hard.contrib.globalManual": 8.031825000000069,
+    "class.UNKNOWN-hard.contrib.globalManual": 4.0500000000001535,
     "class.UNKNOWN-hard.probs.predict": 0.0,
     "class.UNKNOWN-hard.probs.netfail": 0.0,
     "class.UNKNOWN-hard.probs.replay": 0.0,
@@ -4589,8 +4589,8 @@
     "class.UNKNOWN-hard.probs.global": 1.0,
     "class.UNKNOWN-hard.probs.custom:R-LINK-LOCAL": 0.0,
     "class.UNKNOWN-hard.probs.custom:H-CONTROL-CONTINUITY": 0.0,
-    "class.UNKNOWN-hard.meanS": 102.51532500000008,
-    "job.contrib.detect": 2.485078450711491,
+    "class.UNKNOWN-hard.meanS": 98.47500000000015,
+    "job.contrib.detect": 2.4526535395111733,
     "job.contrib.predict": 0.0,
     "job.contrib.netfail": 0.0,
     "job.contrib.replay": 2.171883292509193,
@@ -4607,7 +4607,7 @@
     "job.contrib.failed:custom:R-LINK-LOCAL": 0.0,
     "job.contrib.failed:custom:H-CONTROL-CONTINUITY": 0.0,
     "job.contrib.globalAuto": 21.322039198647712,
-    "job.contrib.globalManual": 1.9028320831853347,
+    "job.contrib.globalManual": 0.9594917639391833,
     "job.probs.predict": 0.0,
     "job.probs.netfail": 0.0,
     "job.probs.replay": 0.2895844390012258,
@@ -4620,13 +4620,13 @@
     "job.stages.startup": 7.107346399549236,
     "job.stages.read": 7.107346399549236,
     "job.stages.communication": 7.107346399549236,
-    "job.stages.manual": 1.9028320831853347,
-    "job.mttrS": 38.68181991604116,
-    "job.recovery.tDetS": 4.483500000000003,
+    "job.stages.manual": 0.9594917639391833,
+    "job.mttrS": 37.70605468559468,
+    "job.recovery.tDetS": 4.4250000000000025,
     "job.recovery.automaticS": 90,
-    "job.recovery.successProbability": 0.99702525,
+    "job.recovery.successProbability": 0.9984999999999999,
     "job.recovery.manualS": 2700,
-    "job.recovery.globalS": 98.03182500000007,
+    "job.recovery.globalS": 94.05000000000015,
     "job.recovery.stages.startup": 30.0,
     "job.recovery.stages.read": 30.0,
     "job.recovery.stages.communication": 30.0
@@ -4885,7 +4885,7 @@
      "STORAGE-hard": 264.50000000000006,
      "UNKNOWN-hard": 221.75000000000006
     },
-    "engineMeanPauseMaxRelDiff": 2.0583598589220407e-16,
+    "engineMeanPauseMaxRelDiff": 0.0,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
@@ -4912,7 +4912,7 @@
     "class.CORE-hard.probs.elastic": 0.09799999999999998,
     "class.CORE-hard.probs.process": 0.001900000000000001,
     "class.CORE-hard.probs.global": 0.00010000000000000015,
-    "class.CORE-hard.meanS": 17.259925000000006,
+    "class.CORE-hard.meanS": 17.259925000000003,
     "class.SRAM-hard.contrib.detect": 11.275000000000004,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
@@ -4934,7 +4934,7 @@
     "class.SRAM-hard.probs.elastic": 0.09799999999999998,
     "class.SRAM-hard.probs.process": 0.001900000000000001,
     "class.SRAM-hard.probs.global": 0.00010000000000000015,
-    "class.SRAM-hard.meanS": 17.259925000000006,
+    "class.SRAM-hard.meanS": 17.259925000000003,
     "class.IOD-hard.contrib.detect": 11.275000000000004,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
@@ -4956,7 +4956,7 @@
     "class.IOD-hard.probs.elastic": 0.09799999999999998,
     "class.IOD-hard.probs.process": 0.001900000000000001,
     "class.IOD-hard.probs.global": 0.00010000000000000015,
-    "class.IOD-hard.meanS": 17.259925000000006,
+    "class.IOD-hard.meanS": 17.259925000000003,
     "class.MODULE-hard.contrib.detect": 0.2500000000000003,
     "class.MODULE-hard.contrib.predict": 0.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
@@ -4978,7 +4978,7 @@
     "class.MODULE-hard.probs.elastic": 0.98,
     "class.MODULE-hard.probs.process": 0.019000000000000017,
     "class.MODULE-hard.probs.global": 0.0010000000000000018,
-    "class.MODULE-hard.meanS": 5.099250000000003,
+    "class.MODULE-hard.meanS": 5.099250000000004,
     "class.MEMT-hard.contrib.detect": 11.275000000000004,
     "class.MEMT-hard.contrib.predict": 0.0,
     "class.MEMT-hard.contrib.netfail": 0.0,
@@ -5000,7 +5000,7 @@
     "class.MEMT-hard.probs.elastic": 0.09799999999999998,
     "class.MEMT-hard.probs.process": 0.001900000000000001,
     "class.MEMT-hard.probs.global": 0.00010000000000000015,
-    "class.MEMT-hard.meanS": 17.259925000000006,
+    "class.MEMT-hard.meanS": 17.259925000000003,
     "class.MEMP-hard.contrib.detect": 0.2500000000000003,
     "class.MEMP-hard.contrib.predict": 0.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
@@ -5022,7 +5022,7 @@
     "class.MEMP-hard.probs.elastic": 0.98,
     "class.MEMP-hard.probs.process": 0.019000000000000017,
     "class.MEMP-hard.probs.global": 0.0010000000000000018,
-    "class.MEMP-hard.meanS": 5.099250000000003,
+    "class.MEMP-hard.meanS": 5.099250000000004,
     "class.NIC-hard.contrib.detect": 11.275000000000004,
     "class.NIC-hard.contrib.predict": 0.0,
     "class.NIC-hard.contrib.netfail": 0.0,
@@ -5044,7 +5044,7 @@
     "class.NIC-hard.probs.elastic": 0.09799999999999998,
     "class.NIC-hard.probs.process": 0.001900000000000001,
     "class.NIC-hard.probs.global": 0.00010000000000000015,
-    "class.NIC-hard.meanS": 17.259925000000006,
+    "class.NIC-hard.meanS": 17.259925000000003,
     "class.OPT-hard@roce.contrib.detect": 12.500000000000004,
     "class.OPT-hard@roce.contrib.predict": 0.0,
     "class.OPT-hard@roce.contrib.netfail": 0.0,
@@ -5154,7 +5154,7 @@
     "class.CPU-hard.probs.elastic": 0.98,
     "class.CPU-hard.probs.process": 0.019000000000000017,
     "class.CPU-hard.probs.global": 0.0010000000000000018,
-    "class.CPU-hard.meanS": 5.099250000000003,
+    "class.CPU-hard.meanS": 5.099250000000004,
     "class.DDR-hard.contrib.detect": 0.2500000000000003,
     "class.DDR-hard.contrib.predict": 0.0,
     "class.DDR-hard.contrib.netfail": 0.0,
@@ -5176,7 +5176,7 @@
     "class.DDR-hard.probs.elastic": 0.98,
     "class.DDR-hard.probs.process": 0.019000000000000017,
     "class.DDR-hard.probs.global": 0.0010000000000000018,
-    "class.DDR-hard.meanS": 5.099250000000003,
+    "class.DDR-hard.meanS": 5.099250000000004,
     "class.SSD-hard.contrib.detect": 0.2500000000000003,
     "class.SSD-hard.contrib.predict": 0.0,
     "class.SSD-hard.contrib.netfail": 0.0,
@@ -5198,7 +5198,7 @@
     "class.SSD-hard.probs.elastic": 0.98,
     "class.SSD-hard.probs.process": 0.019000000000000017,
     "class.SSD-hard.probs.global": 0.0010000000000000018,
-    "class.SSD-hard.meanS": 5.099250000000003,
+    "class.SSD-hard.meanS": 5.099250000000004,
     "class.POWER-hard.contrib.detect": 12.500000000000004,
     "class.POWER-hard.contrib.predict": 0.0,
     "class.POWER-hard.contrib.netfail": 0.0,
@@ -5334,7 +5334,7 @@
     "job.stages.read": 19.219850616656714,
     "job.stages.communication": 19.219850616656714,
     "job.stages.manual": 23.063820739988074,
-    "job.mttrS": 87.81988045885586,
+    "job.mttrS": 87.81988045885588,
     "job.recovery.tDetS": 12.500000000000004,
     "job.recovery.automaticS": 180,
     "job.recovery.successProbability": 0.99,
@@ -5603,7 +5603,7 @@
      "STORAGE-hard": 264.50000000000006,
      "UNKNOWN-hard": 264.50000000000006
     },
-    "engineMeanPauseMaxRelDiff": 2.0578501632282414e-16,
+    "engineMeanPauseMaxRelDiff": 0.0,
     "identity": [
      "class meanS = engine meanPauseS"
     ]
@@ -5630,7 +5630,7 @@
     "class.CORE-hard.probs.elastic": 0.09799999999999998,
     "class.CORE-hard.probs.process": 0.001900000000000001,
     "class.CORE-hard.probs.global": 0.00010000000000000015,
-    "class.CORE-hard.meanS": 17.264200000000006,
+    "class.CORE-hard.meanS": 17.264200000000002,
     "class.SRAM-hard.contrib.detect": 11.275000000000004,
     "class.SRAM-hard.contrib.predict": 0.0,
     "class.SRAM-hard.contrib.netfail": 0.0,
@@ -5652,7 +5652,7 @@
     "class.SRAM-hard.probs.elastic": 0.09799999999999998,
     "class.SRAM-hard.probs.process": 0.001900000000000001,
     "class.SRAM-hard.probs.global": 0.00010000000000000015,
-    "class.SRAM-hard.meanS": 17.264200000000006,
+    "class.SRAM-hard.meanS": 17.264200000000002,
     "class.IOD-hard.contrib.detect": 11.275000000000004,
     "class.IOD-hard.contrib.predict": 0.0,
     "class.IOD-hard.contrib.netfail": 0.0,
@@ -5674,7 +5674,7 @@
     "class.IOD-hard.probs.elastic": 0.09799999999999998,
     "class.IOD-hard.probs.process": 0.001900000000000001,
     "class.IOD-hard.probs.global": 0.00010000000000000015,
-    "class.IOD-hard.meanS": 17.264200000000006,
+    "class.IOD-hard.meanS": 17.264200000000002,
     "class.MODULE-hard.contrib.detect": 0.12500000000000014,
     "class.MODULE-hard.contrib.predict": 90.0,
     "class.MODULE-hard.contrib.netfail": 0.0,
@@ -5696,7 +5696,7 @@
     "class.MODULE-hard.probs.elastic": 0.49,
     "class.MODULE-hard.probs.process": 0.009500000000000008,
     "class.MODULE-hard.probs.global": 0.0005000000000000009,
-    "class.MODULE-hard.meanS": 92.57100000000001,
+    "class.MODULE-hard.meanS": 92.571,
     "class.MEMT-hard.contrib.detect": 11.275000000000004,
     "class.MEMT-hard.contrib.predict": 0.0,
     "class.MEMT-hard.contrib.netfail": 0.0,
@@ -5718,7 +5718,7 @@
     "class.MEMT-hard.probs.elastic": 0.09799999999999998,
     "class.MEMT-hard.probs.process": 0.001900000000000001,
     "class.MEMT-hard.probs.global": 0.00010000000000000015,
-    "class.MEMT-hard.meanS": 17.264200000000006,
+    "class.MEMT-hard.meanS": 17.264200000000002,
     "class.MEMP-hard.contrib.detect": 0.12500000000000014,
     "class.MEMP-hard.contrib.predict": 90.0,
     "class.MEMP-hard.contrib.netfail": 0.0,
@@ -5740,7 +5740,7 @@
     "class.MEMP-hard.probs.elastic": 0.49,
     "class.MEMP-hard.probs.process": 0.009500000000000008,
     "class.MEMP-hard.probs.global": 0.0005000000000000009,
-    "class.MEMP-hard.meanS": 92.57100000000001,
+    "class.MEMP-hard.meanS": 92.571,
     "class.NIC-hard.contrib.detect": 11.275000000000004,
     "class.NIC-hard.contrib.predict": 0.0,
     "class.NIC-hard.contrib.netfail": 0.0,
@@ -5762,7 +5762,7 @@
     "class.NIC-hard.probs.elastic": 0.09799999999999998,
     "class.NIC-hard.probs.process": 0.001900000000000001,
     "class.NIC-hard.probs.global": 0.00010000000000000015,
-    "class.NIC-hard.meanS": 17.264200000000006,
+    "class.NIC-hard.meanS": 17.264200000000002,
     "class.OPT-hard@roce.contrib.detect": 12.500000000000004,
     "class.OPT-hard@roce.contrib.predict": 0.0,
     "class.OPT-hard@roce.contrib.netfail": 0.0,
@@ -5872,7 +5872,7 @@
     "class.CPU-hard.probs.elastic": 0.49,
     "class.CPU-hard.probs.process": 0.009500000000000008,
     "class.CPU-hard.probs.global": 0.0005000000000000009,
-    "class.CPU-hard.meanS": 92.57100000000001,
+    "class.CPU-hard.meanS": 92.571,
     "class.DDR-hard.contrib.detect": 0.12500000000000014,
     "class.DDR-hard.contrib.predict": 90.0,
     "class.DDR-hard.contrib.netfail": 0.0,
@@ -5894,7 +5894,7 @@
     "class.DDR-hard.probs.elastic": 0.49,
     "class.DDR-hard.probs.process": 0.009500000000000008,
     "class.DDR-hard.probs.global": 0.0005000000000000009,
-    "class.DDR-hard.meanS": 92.57100000000001,
+    "class.DDR-hard.meanS": 92.571,
     "class.SSD-hard.contrib.detect": 0.12500000000000014,
     "class.SSD-hard.contrib.predict": 90.0,
     "class.SSD-hard.contrib.netfail": 0.0,
@@ -5916,7 +5916,7 @@
     "class.SSD-hard.probs.elastic": 0.49,
     "class.SSD-hard.probs.process": 0.009500000000000008,
     "class.SSD-hard.probs.global": 0.0005000000000000009,
-    "class.SSD-hard.meanS": 92.57100000000001,
+    "class.SSD-hard.meanS": 92.571,
     "class.POWER-hard.contrib.detect": 12.500000000000004,
     "class.POWER-hard.contrib.predict": 0.0,
     "class.POWER-hard.contrib.netfail": 0.0,
@@ -6052,7 +6052,7 @@
     "job.stages.read": 19.21185166174921,
     "job.stages.communication": 19.21185166174921,
     "job.stages.manual": 23.054221994099066,
-    "job.mttrS": 116.47522930916722,
+    "job.mttrS": 116.47522930916723,
     "job.recovery.tDetS": 12.500000000000004,
     "job.recovery.automaticS": 180,
     "job.recovery.successProbability": 0.99,
@@ -6167,35 +6167,35 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
      "k": 1,
-     "kRecommended": 0.8628676922053501,
+     "kRecommended": 0.8873142626539711,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT)"
     },
     "target": 0.985,
-    "resultsK": 0.8628676922053501,
+    "resultsK": 0.8873142626539711,
     "resultsBinding": "mean",
     "resultsEscalated": false,
     "construction": "applyMechanisms(base, mechanisms, REMAP_LATEST_PARAMS) \u2192 deratedOf \u2192 applyLevers(levers, DERATE_DEFAULT); then withHardwareFactors(k) on every class with failure.value > 0",
-    "phi": 4.2729671261843016e-05,
-    "F": 2.984196065186076,
-    "sumC1": 59.895197415152964,
-    "relDiffToResultsK": 6.556207622408513e-06
+    "phi": 4.100870186674044e-05,
+    "F": 2.866957748584274,
+    "sumC1": 58.38431578561004,
+    "relDiffToResultsK": 5.0505593190976425e-06
    },
    "expected": {
-    "kStar": 0.8628733493450909,
-    "sumC1": 59.895197415152964,
-    "F": 2.984196065186076,
-    "phi": 4.2729671261843016e-05,
+    "kStar": 0.8873187440872893,
+    "sumC1": 58.38431578561004,
+    "F": 2.866957748584274,
+    "phi": 4.100870186674044e-05,
     "aOpAtKStar": 0.985
    },
    "tolerance": {
@@ -6216,37 +6216,37 @@
      "npus": 500000,
      "mechanisms": [
       "D-HARD",
-      "D-RECOVERY-CLASSIFY",
       "R-LINK-LOCAL",
       "H-CONTROL-CONTINUITY"
      ],
      "levers": [
       "auto",
+      "success",
       "manual"
      ],
-     "k": 0.8628676922053501,
+     "k": 0.8873142626539711,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT) \u2192 withHardwareFactors(k)"
     },
     "target": 0.985,
-    "resultsK": 0.8628676922053501,
-    "sumC1": 59.895197415152964,
-    "phiAtK1": 4.2729671261843016e-05,
-    "engineAOp": 0.985,
+    "resultsK": 0.8873142626539711,
+    "sumC1": 58.38431578561004,
+    "phiAtK1": 4.100870186674044e-05,
+    "engineAOp": 0.9850000000000001,
     "identity": [
      "phi uses the engine A_op of the table at k"
     ],
     "construction": "applyMechanisms(base, mechanisms, REMAP_LATEST_PARAMS) \u2192 deratedOf \u2192 applyLevers(levers, DERATE_DEFAULT) \u2192 withHardwareFactors(resultsK)"
    },
    "expected": {
-    "sumCk": 51.68163076779688,
-    "kTimesSumC1": 51.68163076779689,
-    "F": 2.984196065186076,
-    "phi": 4.2822380419860195e-05,
+    "sumCk": 51.805236111865185,
+    "kTimesSumC1": 51.80523611186518,
+    "F": 2.866957748584274,
+    "phi": 4.108029096039356e-05,
     "aOpFormula": 0.985,
     "target": 0.985,
-    "phiShiftFromK1": 9.270915801717905e-08
+    "phiShiftFromK1": 7.158909365312383e-08
    },
    "tolerance": {
     "rel": 1e-09,
@@ -6272,26 +6272,26 @@
       "manual"
      ],
      "k": 1,
-     "kRecommended": 1.4332979962783516,
+     "kRecommended": 1.4343749548713602,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT)"
     },
     "target": 0.985,
-    "resultsK": 1.4332979962783516,
+    "resultsK": 1.4343749548713602,
     "resultsBinding": "mean",
     "resultsEscalated": true,
     "construction": "applyMechanisms(base, mechanisms, REMAP_LATEST_PARAMS) \u2192 deratedOf \u2192 applyLevers(levers, DERATE_DEFAULT); then withHardwareFactors(k) on every class with failure.value > 0",
-    "phi": 2.3474744118234803e-05,
+    "phi": 2.3474906836185028e-05,
     "F": 1.6033123806673244,
-    "sumC1": 37.070893359885716,
-    "relDiffToResultsK": 7.726694307574018e-06
+    "sumC1": 37.04305988,
+    "relDiffToResultsK": 7.741099555482037e-06
    },
    "expected": {
-    "kStar": 1.4332869216228827,
-    "sumC1": 37.070893359885716,
+    "kStar": 1.4343638512320347,
+    "sumC1": 37.04305988,
     "F": 1.6033123806673244,
-    "phi": 2.3474744118234803e-05,
+    "phi": 2.3474906836185028e-05,
     "aOpAtKStar": 0.985
    },
    "tolerance": {
@@ -6318,29 +6318,29 @@
       "auto",
       "manual"
      ],
-     "k": 1.4332979962783516,
+     "k": 1.4343749548713602,
      "binding": "mean",
      "derated": true,
      "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers(DERATE_DEFAULT) \u2192 withHardwareFactors(k)"
     },
     "target": 0.985,
-    "resultsK": 1.4332979962783516,
-    "sumC1": 37.070893359885716,
-    "phiAtK1": 2.3474744118234803e-05,
-    "engineAOp": 0.9850000000000001,
+    "resultsK": 1.4343749548713602,
+    "sumC1": 37.04305988,
+    "phiAtK1": 2.3474906836185028e-05,
+    "engineAOp": 0.985,
     "identity": [
      "phi uses the engine A_op of the table at k"
     ],
     "construction": "applyMechanisms(base, mechanisms, REMAP_LATEST_PARAMS) \u2192 deratedOf \u2192 applyLevers(levers, DERATE_DEFAULT) \u2192 withHardwareFactors(resultsK)"
    },
    "expected": {
-    "sumCk": 53.133637172972655,
-    "kTimesSumC1": 53.13363717297265,
+    "sumCk": 53.1336373436721,
+    "kTimesSumC1": 53.1336373436721,
     "F": 1.6033123806673244,
-    "phi": 2.3362413795524617e-05,
+    "phi": 2.336236709032935e-05,
     "aOpFormula": 0.9850000000000001,
     "target": 0.985,
-    "phiShiftFromK1": -1.1233032271018573e-07
+    "phiShiftFromK1": -1.1253974585567761e-07
    },
    "tolerance": {
     "rel": 1e-09,
@@ -6397,378 +6397,378 @@
     "values": {
      "native950": {
       "D-HARD": {
-       "aOp": 0.003039413230071269,
-       "delivered": 0.0017177061449550847
+       "aOp": 0.00303952248941948,
+       "delivered": 0.001717703590141879
       },
       "D-SLOW": {
-       "aOp": -7.182433434899697e-05,
-       "delivered": 0.0009678495146286573
+       "aOp": -7.182661865933897e-05,
+       "delivered": 0.0009678672083808598
       },
       "D-SDC": {
-       "aOp": -0.0002166848929610262,
-       "delivered": 0.37217777329725743
+       "aOp": -0.00021668516671195293,
+       "delivered": 0.3721862364027422
       },
       "R-SDC": {
-       "aOp": 0.0006978573675798442,
-       "delivered": 0.0007702565656471281
+       "aOp": 0.0006978815557638977,
+       "delivered": 0.0007702620462387097
       },
       "R-REPLAY": {
-       "aOp": 0.010880613889514779,
-       "delivered": 0.007694069213234362
+       "aOp": 0.01087699459892994,
+       "delivered": 0.007691148318236249
       },
       "R-PROCESS": {
-       "aOp": 0.013571365817741609,
-       "delivered": 0.004857401181369198
+       "aOp": 0.013566105597713127,
+       "delivered": 0.004853773457508817
       },
       "R-ELASTIC": {
-       "aOp": 0.029329997418388456,
-       "delivered": 0.019325381132096805
+       "aOp": 0.029322162389024384,
+       "delivered": 0.019319676334063507
       },
       "C-FAST": {
-       "aOp": -1.8301049496693978e-06,
-       "delivered": 0.004931438214668968
+       "aOp": -1.8301387628383291e-06,
+       "delivered": 0.0049325272933058596
       },
       "R-LINK-LOCAL": {
-       "aOp": 0.004543219257616006,
-       "delivered": 0.0046941566065281885
+       "aOp": 0.004543095732716867,
+       "delivered": 0.004694114098425426
       },
       "R-FABRIC-DEGRADE": {
-       "aOp": 0.0026914007333214184,
-       "delivered": -0.00011349553005005083
+       "aOp": 0.002691239436459958,
+       "delivered": -0.00011355978803137712
       },
       "H-CONTROL-CONTINUITY": {
-       "aOp": 0.003471811138652145,
-       "delivered": 0.0027766126619083883
+       "aOp": 0.0034719087191706598,
+       "delivered": 0.0027766200510465416
       },
       "R-WARM-PROCESS": {
-       "aOp": 0.0007509420298097621,
-       "delivered": 0.0003464453909945701
+       "aOp": 0.0007360049940707806,
+       "delivered": 0.00033258874010022956
       },
       "R-RUNTIME-SNAPSHOT": {
-       "aOp": 0.004187669867834578,
-       "delivered": 0.0015464565574283306
+       "aOp": 0.004187849666447426,
+       "delivered": 0.0015419405328305701
       },
       "C-ASYNC": {
-       "aOp": -1.5069503860691094e-08,
-       "delivered": 0.001129234933998561
+       "aOp": -1.5069615518781275e-08,
+       "delivered": 0.0011292526469276177
       },
       "C-LOSSLESS": {
-       "aOp": 0.0034358208776756748,
-       "delivered": 0.0016643020938714415
+       "aOp": 0.0034359196514875466,
+       "delivered": 0.001664349954399323
       },
       "D-RECOVERY-CLASSIFY": {
-       "aOp": 0.01064335758662478,
-       "delivered": 0.005484015689170554
+       "aOp": 0.01064378398611378,
+       "delivered": 0.00548415563133793
       },
       "D-SDC-FP8": {
-       "aOp": -7.760866499075332e-05,
-       "delivered": 0.04079591428953063
+       "aOp": -7.761040875631083e-05,
+       "delivered": 0.040796504276537936
       },
       "D-SDC-FP4": {
-       "aOp": -8.652242306338765e-05,
-       "delivered": 0.04650066408874061
+       "aOp": -8.652317050993637e-05,
+       "delivered": 0.04650134748860422
       },
       "D-ABFT": {
-       "aOp": -0.00014408275127782347,
-       "delivered": 0.13030882188134135
+       "aOp": -0.00014408416814332766,
+       "delivered": 0.13031127071444887
       },
       "D-NET-SDC": {
-       "aOp": -1.1195349430186038e-05,
-       "delivered": 0.01217885839481451
+       "aOp": -1.1195586960088822e-05,
+       "delivered": 0.012179211253967811
       },
       "H-SDC-SCREEN": {
-       "aOp": 9.17612919619204e-05,
-       "delivered": 0.032360837489100625
+       "aOp": 9.176391225032961e-05,
+       "delivered": 0.03236138922552542
       },
       "R-HCCL-ELASTIC": {
        "aOp": 0,
-       "delivered": 5.62724096982159e-05
+       "delivered": 5.627320543746928e-05
       },
       "R-CANN-GRAPH": {
-       "aOp": 0.0006943126052287681,
-       "delivered": 0.00016097567974838393
+       "aOp": 0.000728302290344387,
+       "delivered": 0.00018029080375909316
       }
      },
      "ubl128": {
       "D-HARD": {
-       "aOp": 0.003020128039986555,
-       "delivered": 0.0017340396718644798
+       "aOp": 0.0030202369444672712,
+       "delivered": 0.001734037372987022
       },
       "D-SLOW": {
-       "aOp": -7.100279531845222e-05,
-       "delivered": 0.0009595560604108613
+       "aOp": -7.100505374752782e-05,
+       "delivered": 0.0009595736908106319
       },
       "D-SDC": {
-       "aOp": -0.00021359000501625054,
-       "delivered": 0.369850691071959
+       "aOp": -0.000213590263898491,
+       "delivered": 0.36985910684001577
       },
       "R-SDC": {
-       "aOp": 0.000689949111762509,
-       "delivered": 0.0007643651664083455
+       "aOp": 0.000689973018950758,
+       "delivered": 0.0007643706877500515
       },
       "R-REPLAY": {
-       "aOp": 0.010984929018991587,
-       "delivered": 0.00784648688432782
+       "aOp": 0.010981308593013973,
+       "delivered": 0.007843549293655609
       },
       "R-PROCESS": {
-       "aOp": 0.013600460782992803,
-       "delivered": 0.004913945660183913
+       "aOp": 0.013595198129073938,
+       "delivered": 0.004910294797407218
       },
       "R-ELASTIC": {
-       "aOp": 0.02939060217729532,
-       "delivered": 0.019482293229047418
+       "aOp": 0.029382762185008484,
+       "delivered": 0.019476558629486402
       },
       "C-FAST": {
-       "aOp": -1.802614391827421e-06,
-       "delivered": 0.004864385109225045
+       "aOp": -1.802647977164895e-06,
+       "delivered": 0.004865572678050012
       },
       "R-LINK-LOCAL": {
-       "aOp": 0.003728360328600129,
-       "delivered": 0.0037644216564043974
+       "aOp": 0.0037282156739555845,
+       "delivered": 0.0037643700013835885
       },
       "R-FABRIC-DEGRADE": {
-       "aOp": 0.0019065295968008033,
-       "delivered": -0.00026119240284605734
+       "aOp": 0.0019063450769377377,
+       "delivered": -0.0002612907424145753
       },
       "H-CONTROL-CONTINUITY": {
-       "aOp": 0.0034760547961118944,
-       "delivered": 0.002807679532052586
+       "aOp": 0.0034761525051504776,
+       "delivered": 0.0028076871987755656
       },
       "R-WARM-PROCESS": {
-       "aOp": 0.0007523596844532117,
-       "delivered": 0.0003372358350908613
+       "aOp": 0.0007374206853874173,
+       "delivered": 0.00032335067131748644
       },
       "R-RUNTIME-SNAPSHOT": {
-       "aOp": 0.004196343242258017,
-       "delivered": 0.0015125385153532604
+       "aOp": 0.004196540677375863,
+       "delivered": 0.0015080535457595071
       },
       "C-ASYNC": {
-       "aOp": -1.4825778997436718e-08,
-       "delivered": 0.0011502947162525604
+       "aOp": -1.4825888481340144e-08,
+       "delivered": 0.001150312611634943
       },
       "C-LOSSLESS": {
-       "aOp": 0.0033932389828427935,
-       "delivered": 0.001656312214725108
+       "aOp": 0.003393336830358578,
+       "delivered": 0.0016563595537757519
       },
       "D-RECOVERY-CLASSIFY": {
-       "aOp": 0.010517695425753957,
-       "delivered": 0.005497732341943292
+       "aOp": 0.01051811867297379,
+       "delivered": 0.005497741992569762
       },
       "D-SDC-FP8": {
-       "aOp": -7.750754983570437e-05,
-       "delivered": 0.04151861508859185
+       "aOp": -7.750929585309134e-05,
+       "delivered": 0.0415192158372223
       },
       "D-SDC-FP4": {
-       "aOp": -8.63979775886999e-05,
-       "delivered": 0.04728441230151571
+       "aOp": -8.639872087966164e-05,
+       "delivered": 0.04728510891427803
       },
       "D-ABFT": {
-       "aOp": -0.0001431932559862011,
-       "delivered": 0.13299460538007024
+       "aOp": -0.0001431946472579356,
+       "delivered": 0.13299714888162253
       },
       "D-NET-SDC": {
-       "aOp": -7.811389126955263e-06,
-       "delivered": 0.008692390568302755
+       "aOp": -7.811553089400736e-06,
+       "delivered": 0.008692648116459598
       },
       "H-SDC-SCREEN": {
-       "aOp": 9.08902261294257e-05,
-       "delivered": 0.03232296483304309
+       "aOp": 9.089282638028032e-05,
+       "delivered": 0.032323516634846804
       },
       "R-HCCL-ELASTIC": {
        "aOp": 0,
-       "delivered": 5.6490952112967877e-05
+       "delivered": 5.6491751157696406e-05
       },
       "R-CANN-GRAPH": {
-       "aOp": 0.0006958707724061919,
-       "delivered": 0.0001909958173767177
+       "aOp": 0.0007299023541207357,
+       "delivered": 0.00021047774776333165
       }
      },
      "cm384": {
       "D-HARD": {
-       "aOp": 0.0032795926348414732,
-       "delivered": 0.0017819694933478526
+       "aOp": 0.0032797153501991187,
+       "delivered": 0.0017821106332103936
       },
       "D-SLOW": {
-       "aOp": -8.056710333224303e-05,
-       "delivered": 0.0010873773748765168
+       "aOp": -8.056975737610143e-05,
+       "delivered": 0.0010873978040636823
       },
       "D-SDC": {
-       "aOp": -0.00021347304677719761,
-       "delivered": 0.36805703800002654
+       "aOp": -0.00021347331605607535,
+       "delivered": 0.368065659086927
       },
       "R-SDC": {
-       "aOp": 0.000692167871153367,
-       "delivered": 0.0007661599448616331
+       "aOp": 0.0006921929428392784,
+       "delivered": 0.0007661660887513485
       },
       "R-REPLAY": {
-       "aOp": 0.011167415237202166,
-       "delivered": 0.007766546469259312
+       "aOp": 0.011163882773756238,
+       "delivered": 0.007763760512458302
       },
       "R-PROCESS": {
-       "aOp": 0.01402073587528408,
-       "delivered": 0.005003113094037471
+       "aOp": 0.014014468212019713,
+       "delivered": 0.004998750690038745
       },
       "R-ELASTIC": {
-       "aOp": 0.03045007308326357,
-       "delivered": 0.02028789309465963
+       "aOp": 0.03044097889140949,
+       "delivered": 0.020281156570451805
       },
       "C-FAST": {
-       "aOp": -2.0180263570531337e-06,
-       "delivered": 0.006413293980704051
+       "aOp": -2.018065917502865e-06,
+       "delivered": 0.006414573599182782
       },
       "R-LINK-LOCAL": {
-       "aOp": 0.005248614271593798,
-       "delivered": 0.005652533145650995
+       "aOp": 0.00524851697109053,
+       "delivered": 0.005652531609714818
       },
       "R-FABRIC-DEGRADE": {
-       "aOp": 0.0034358139271415725,
-       "delivered": -0.0001294814823190275
+       "aOp": 0.0034356784533190444,
+       "delivered": -0.00012960767405691058
       },
       "H-CONTROL-CONTINUITY": {
-       "aOp": 0.0034326235597200404,
-       "delivered": 0.0027956424659660944
+       "aOp": 0.0034327229817673376,
+       "delivered": 0.002795689303059568
       },
       "R-WARM-PROCESS": {
-       "aOp": 0.0007411367354914863,
-       "delivered": 0.0003434435754125529
+       "aOp": 0.0007263160632833832,
+       "delivered": 0.0003296028201961036
       },
       "R-RUNTIME-SNAPSHOT": {
-       "aOp": 0.0042517251470682565,
-       "delivered": 0.0015770413879321696
+       "aOp": 0.004252858621758416,
+       "delivered": 0.0015729473432293127
       },
       "C-ASYNC": {
-       "aOp": -1.6493136079098747e-08,
-       "delivered": 0.000948329353139148
+       "aOp": -1.6493265597346725e-08,
+       "delivered": 0.0009483468652810751
       },
       "C-LOSSLESS": {
-       "aOp": 0.003834985411130106,
-       "delivered": 0.0018568066963440078
+       "aOp": 0.003835100675252091,
+       "delivered": 0.0018569431269314437
       },
       "D-RECOVERY-CLASSIFY": {
-       "aOp": 0.011922737512654324,
-       "delivered": 0.006129735329065418
+       "aOp": 0.011923235018480008,
+       "delivered": 0.006130025489149277
       },
       "D-SDC-FP8": {
-       "aOp": -7.632430950748096e-05,
-       "delivered": 0.04024602103435822
+       "aOp": -7.632608211965616e-05,
+       "delivered": 0.04024661476273433
       },
       "D-SDC-FP4": {
-       "aOp": -8.504229934147826e-05,
-       "delivered": 0.045860392498020985
+       "aOp": -8.504303409859341e-05,
+       "delivered": 0.045861097314791585
       },
       "D-ABFT": {
-       "aOp": -0.00014167670848730496,
-       "delivered": 0.12831098123535356
+       "aOp": -0.00014167809648525155,
+       "delivered": 0.1283134854848242
       },
       "D-NET-SDC": {
-       "aOp": -1.170141999631095e-05,
-       "delivered": 0.012765270929193379
+       "aOp": -1.1701676019287473e-05,
+       "delivered": 0.012765654799459661
       },
       "H-SDC-SCREEN": {
-       "aOp": 9.09786028843566e-05,
-       "delivered": 0.03209192347376633
+       "aOp": 9.098130767486593e-05,
+       "delivered": 0.03209250127325532
       },
       "R-HCCL-ELASTIC": {
        "aOp": 0,
-       "delivered": 5.956036085731938e-05
+       "delivered": 5.9561205285966016e-05
       },
       "R-CANN-GRAPH": {
-       "aOp": 0.0007268905281311422,
-       "delivered": 0.00022343743017676646
+       "aOp": 0.0007618260397791421,
+       "delivered": 0.00024306778635748742
       }
      },
      "a3server": {
       "D-HARD": {
-       "aOp": 0.003249505888376563,
-       "delivered": 0.0017677892827716035
+       "aOp": 0.0032496280046363612,
+       "delivered": 0.001767985906836606
       },
       "D-SLOW": {
-       "aOp": -7.763746120005632e-05,
-       "delivered": 0.0010488808386613212
+       "aOp": -7.76400188971349e-05,
+       "delivered": 0.0010489006998063385
       },
       "D-SDC": {
-       "aOp": -0.00021345728999731787,
-       "delivered": 0.36809658625841657
+       "aOp": -0.0002134575650524817,
+       "delivered": 0.3681053277980645
       },
       "R-SDC": {
-       "aOp": 0.000690751285766273,
-       "delivered": 0.0007658173537923396
+       "aOp": 0.0006907763012961221,
+       "delivered": 0.0007658231713944376
       },
       "R-REPLAY": {
-       "aOp": 0.010665230765922027,
-       "delivered": 0.0075452665574522754
+       "aOp": 0.010661683349228773,
+       "delivered": 0.007542347222752052
       },
       "R-PROCESS": {
-       "aOp": 0.014064697545730824,
-       "delivered": 0.005026457248103822
+       "aOp": 0.014058427439446504,
+       "delivered": 0.00502208525268493
       },
       "R-ELASTIC": {
-       "aOp": 0.030538969097435496,
-       "delivered": 0.02034727400023174
+       "aOp": 0.030529867123597995,
+       "delivered": 0.020340523847660327
       },
       "C-FAST": {
-       "aOp": -1.9897251974643206e-06,
-       "delivered": 0.006308537937199134
+       "aOp": -1.9897645266997444e-06,
+       "delivered": 0.006309815373441918
       },
       "R-LINK-LOCAL": {
-       "aOp": 0.004343702160127309,
-       "delivered": 0.004485096037934505
+       "aOp": 0.0043435827070649365,
+       "delivered": 0.004485081220603053
       },
       "R-FABRIC-DEGRADE": {
-       "aOp": 0.0025141397072398633,
-       "delivered": -8.097837850185345e-05
+       "aOp": 0.0025139793620299095,
+       "delivered": -8.106260708181175e-05
       },
       "H-CONTROL-CONTINUITY": {
-       "aOp": 0.003437980719513288,
-       "delivered": 0.0027942249938548826
+       "aOp": 0.003438080326526487,
+       "delivered": 0.0027942996029288606
       },
       "R-WARM-PROCESS": {
-       "aOp": 0.0007430257119462824,
-       "delivered": 0.00034452876709805715
+       "aOp": 0.0007282013860252549,
+       "delivered": 0.00033067618029000603
       },
       "R-RUNTIME-SNAPSHOT": {
-       "aOp": 0.004264235470895775,
-       "delivered": 0.001543623056530293
+       "aOp": 0.004265389359153446,
+       "delivered": 0.0015396685416268934
       },
       "C-ASYNC": {
-       "aOp": -1.6217563325963507e-08,
-       "delivered": 0.0009654373834263848
+       "aOp": -1.621769077845651e-08,
+       "delivered": 0.0009654550262663251
       },
       "C-LOSSLESS": {
-       "aOp": 0.003783508404224914,
-       "delivered": 0.0018944912241280283
+       "aOp": 0.0037836225986613557,
+       "delivered": 0.0018945026400004406
       },
       "D-RECOVERY-CLASSIFY": {
-       "aOp": 0.011773256388706474,
-       "delivered": 0.006122918054988443
+       "aOp": 0.011773750357407199,
+       "delivered": 0.006123075285402205
       },
       "D-SDC-FP8": {
-       "aOp": -7.654741214452902e-05,
-       "delivered": 0.04049355217908674
+       "aOp": -7.654919219276598e-05,
+       "delivered": 0.04049414951350664
       },
       "D-SDC-FP4": {
-       "aOp": -8.531519047172198e-05,
-       "delivered": 0.04614751464333095
+       "aOp": -8.531592461813971e-05,
+       "delivered": 0.04614822639961831
       },
       "D-ABFT": {
-       "aOp": -0.00014189819239374826,
-       "delivered": 0.12922922243912788
+       "aOp": -0.00014189957780293084,
+       "delivered": 0.12923174720184677
       },
       "D-NET-SDC": {
-       "aOp": -1.0854921600711073e-05,
-       "delivered": 0.011890281090222768
+       "aOp": -1.0855157922669001e-05,
+       "delivered": 0.011890639417193948
       },
       "H-SDC-SCREEN": {
-       "aOp": 9.085585372674454e-05,
-       "delivered": 0.03211766118832265
+       "aOp": 9.085855836868606e-05,
+       "delivered": 0.032118239738899115
       },
       "R-HCCL-ELASTIC": {
        "aOp": 0,
-       "delivered": 5.9651883651476815e-05
+       "delivered": 5.96527294927864e-05
       },
       "R-CANN-GRAPH": {
-       "aOp": 0.0007292057551382717,
-       "delivered": 0.00019658615034048624
+       "aOp": 0.0007642021940326427,
+       "delivered": 0.0002162681360113276
       }
      }
     }
@@ -6777,12 +6777,12 @@
     "verdicts": {
      "D-HARD": {
       "aOp": {
-       "min": 0.003020128039986555,
-       "max": 0.0032795926348414732
+       "min": 0.0030202369444672712,
+       "max": 0.0032797153501991187
       },
       "delivered": {
-       "min": 0.0017177061449550847,
-       "max": 0.0017819694933478526
+       "min": 0.001717703590141879,
+       "max": 0.0017821106332103936
       },
       "dominatedBy": null,
       "missing": [],
@@ -6790,12 +6790,12 @@
      },
      "D-SLOW": {
       "aOp": {
-       "min": -8.056710333224303e-05,
-       "max": -7.100279531845222e-05
+       "min": -8.056975737610143e-05,
+       "max": -7.100505374752782e-05
       },
       "delivered": {
-       "min": 0.0009595560604108613,
-       "max": 0.0010873773748765168
+       "min": 0.0009595736908106319,
+       "max": 0.0010873978040636823
       },
       "dominatedBy": null,
       "missing": [],
@@ -6803,12 +6803,12 @@
      },
      "D-SDC": {
       "aOp": {
-       "min": -0.0002166848929610262,
-       "max": -0.00021345728999731787
+       "min": -0.00021668516671195293,
+       "max": -0.0002134575650524817
       },
       "delivered": {
-       "min": 0.36805703800002654,
-       "max": 0.37217777329725743
+       "min": 0.368065659086927,
+       "max": 0.3721862364027422
       },
       "dominatedBy": null,
       "missing": [],
@@ -6816,12 +6816,12 @@
      },
      "R-SDC": {
       "aOp": {
-       "min": 0.000689949111762509,
-       "max": 0.0006978573675798442
+       "min": 0.000689973018950758,
+       "max": 0.0006978815557638977
       },
       "delivered": {
-       "min": 0.0007643651664083455,
-       "max": 0.0007702565656471281
+       "min": 0.0007643706877500515,
+       "max": 0.0007702620462387097
       },
       "dominatedBy": null,
       "missing": [],
@@ -6829,12 +6829,12 @@
      },
      "R-REPLAY": {
       "aOp": {
-       "min": 0.010665230765922027,
-       "max": 0.011167415237202166
+       "min": 0.010661683349228773,
+       "max": 0.011163882773756238
       },
       "delivered": {
-       "min": 0.0075452665574522754,
-       "max": 0.00784648688432782
+       "min": 0.007542347222752052,
+       "max": 0.007843549293655609
       },
       "dominatedBy": null,
       "missing": [],
@@ -6842,12 +6842,12 @@
      },
      "R-PROCESS": {
       "aOp": {
-       "min": 0.013571365817741609,
-       "max": 0.014064697545730824
+       "min": 0.013566105597713127,
+       "max": 0.014058427439446504
       },
       "delivered": {
-       "min": 0.004857401181369198,
-       "max": 0.005026457248103822
+       "min": 0.004853773457508817,
+       "max": 0.00502208525268493
       },
       "dominatedBy": null,
       "missing": [],
@@ -6855,12 +6855,12 @@
      },
      "R-ELASTIC": {
       "aOp": {
-       "min": 0.029329997418388456,
-       "max": 0.030538969097435496
+       "min": 0.029322162389024384,
+       "max": 0.030529867123597995
       },
       "delivered": {
-       "min": 0.019325381132096805,
-       "max": 0.02034727400023174
+       "min": 0.019319676334063507,
+       "max": 0.020340523847660327
       },
       "dominatedBy": null,
       "missing": [],
@@ -6868,12 +6868,12 @@
      },
      "C-FAST": {
       "aOp": {
-       "min": -2.0180263570531337e-06,
-       "max": -1.802614391827421e-06
+       "min": -2.018065917502865e-06,
+       "max": -1.802647977164895e-06
       },
       "delivered": {
-       "min": 0.004864385109225045,
-       "max": 0.006413293980704051
+       "min": 0.004865572678050012,
+       "max": 0.006414573599182782
       },
       "dominatedBy": null,
       "missing": [],
@@ -6881,12 +6881,12 @@
      },
      "R-LINK-LOCAL": {
       "aOp": {
-       "min": 0.003728360328600129,
-       "max": 0.005248614271593798
+       "min": 0.0037282156739555845,
+       "max": 0.00524851697109053
       },
       "delivered": {
-       "min": 0.0037644216564043974,
-       "max": 0.005652533145650995
+       "min": 0.0037643700013835885,
+       "max": 0.005652531609714818
       },
       "dominatedBy": null,
       "missing": [],
@@ -6894,12 +6894,12 @@
      },
      "R-FABRIC-DEGRADE": {
       "aOp": {
-       "min": 0.0019065295968008033,
-       "max": 0.0034358139271415725
+       "min": 0.0019063450769377377,
+       "max": 0.0034356784533190444
       },
       "delivered": {
-       "min": -0.00026119240284605734,
-       "max": -8.097837850185345e-05
+       "min": -0.0002612907424145753,
+       "max": -8.106260708181175e-05
       },
       "dominatedBy": null,
       "missing": [],
@@ -6907,12 +6907,12 @@
      },
      "H-CONTROL-CONTINUITY": {
       "aOp": {
-       "min": 0.0034326235597200404,
-       "max": 0.0034760547961118944
+       "min": 0.0034327229817673376,
+       "max": 0.0034761525051504776
       },
       "delivered": {
-       "min": 0.0027766126619083883,
-       "max": 0.002807679532052586
+       "min": 0.0027766200510465416,
+       "max": 0.0028076871987755656
       },
       "dominatedBy": null,
       "missing": [],
@@ -6920,12 +6920,12 @@
      },
      "R-WARM-PROCESS": {
       "aOp": {
-       "min": 0.0007411367354914863,
-       "max": 0.0007523596844532117
+       "min": 0.0007263160632833832,
+       "max": 0.0007374206853874173
       },
       "delivered": {
-       "min": 0.0003372358350908613,
-       "max": 0.0003464453909945701
+       "min": 0.00032335067131748644,
+       "max": 0.00033258874010022956
       },
       "dominatedBy": "R-RUNTIME-SNAPSHOT",
       "missing": [],
@@ -6933,12 +6933,12 @@
      },
      "R-RUNTIME-SNAPSHOT": {
       "aOp": {
-       "min": 0.004187669867834578,
-       "max": 0.004264235470895775
+       "min": 0.004187849666447426,
+       "max": 0.004265389359153446
       },
       "delivered": {
-       "min": 0.0015125385153532604,
-       "max": 0.0015770413879321696
+       "min": 0.0015080535457595071,
+       "max": 0.0015729473432293127
       },
       "dominatedBy": null,
       "missing": [],
@@ -6946,12 +6946,12 @@
      },
      "C-ASYNC": {
       "aOp": {
-       "min": -1.6493136079098747e-08,
-       "max": -1.4825778997436718e-08
+       "min": -1.6493265597346725e-08,
+       "max": -1.4825888481340144e-08
       },
       "delivered": {
-       "min": 0.000948329353139148,
-       "max": 0.0011502947162525604
+       "min": 0.0009483468652810751,
+       "max": 0.001150312611634943
       },
       "dominatedBy": null,
       "missing": [],
@@ -6959,12 +6959,12 @@
      },
      "C-LOSSLESS": {
       "aOp": {
-       "min": 0.0033932389828427935,
-       "max": 0.003834985411130106
+       "min": 0.003393336830358578,
+       "max": 0.003835100675252091
       },
       "delivered": {
-       "min": 0.001656312214725108,
-       "max": 0.0018944912241280283
+       "min": 0.0016563595537757519,
+       "max": 0.0018945026400004406
       },
       "dominatedBy": null,
       "missing": [],
@@ -6972,12 +6972,12 @@
      },
      "D-RECOVERY-CLASSIFY": {
       "aOp": {
-       "min": 0.010517695425753957,
-       "max": 0.011922737512654324
+       "min": 0.01051811867297379,
+       "max": 0.011923235018480008
       },
       "delivered": {
-       "min": 0.005484015689170554,
-       "max": 0.006129735329065418
+       "min": 0.00548415563133793,
+       "max": 0.006130025489149277
       },
       "dominatedBy": null,
       "missing": [],
@@ -6985,12 +6985,12 @@
      },
      "D-SDC-FP8": {
       "aOp": {
-       "min": -7.760866499075332e-05,
-       "max": -7.632430950748096e-05
+       "min": -7.761040875631083e-05,
+       "max": -7.632608211965616e-05
       },
       "delivered": {
-       "min": 0.04024602103435822,
-       "max": 0.04151861508859185
+       "min": 0.04024661476273433,
+       "max": 0.0415192158372223
       },
       "dominatedBy": null,
       "missing": [],
@@ -6998,12 +6998,12 @@
      },
      "D-SDC-FP4": {
       "aOp": {
-       "min": -8.652242306338765e-05,
-       "max": -8.504229934147826e-05
+       "min": -8.652317050993637e-05,
+       "max": -8.504303409859341e-05
       },
       "delivered": {
-       "min": 0.045860392498020985,
-       "max": 0.04728441230151571
+       "min": 0.045861097314791585,
+       "max": 0.04728510891427803
       },
       "dominatedBy": null,
       "missing": [],
@@ -7011,12 +7011,12 @@
      },
      "D-ABFT": {
       "aOp": {
-       "min": -0.00014408275127782347,
-       "max": -0.00014167670848730496
+       "min": -0.00014408416814332766,
+       "max": -0.00014167809648525155
       },
       "delivered": {
-       "min": 0.12831098123535356,
-       "max": 0.13299460538007024
+       "min": 0.1283134854848242,
+       "max": 0.13299714888162253
       },
       "dominatedBy": null,
       "missing": [],
@@ -7024,12 +7024,12 @@
      },
      "D-NET-SDC": {
       "aOp": {
-       "min": -1.170141999631095e-05,
-       "max": -7.811389126955263e-06
+       "min": -1.1701676019287473e-05,
+       "max": -7.811553089400736e-06
       },
       "delivered": {
-       "min": 0.008692390568302755,
-       "max": 0.012765270929193379
+       "min": 0.008692648116459598,
+       "max": 0.012765654799459661
       },
       "dominatedBy": null,
       "missing": [],
@@ -7037,12 +7037,12 @@
      },
      "H-SDC-SCREEN": {
       "aOp": {
-       "min": 9.085585372674454e-05,
-       "max": 9.17612919619204e-05
+       "min": 9.085855836868606e-05,
+       "max": 9.176391225032961e-05
       },
       "delivered": {
-       "min": 0.03209192347376633,
-       "max": 0.032360837489100625
+       "min": 0.03209250127325532,
+       "max": 0.03236138922552542
       },
       "dominatedBy": null,
       "missing": [],
@@ -7054,8 +7054,8 @@
        "max": 0
       },
       "delivered": {
-       "min": 5.62724096982159e-05,
-       "max": 5.9651883651476815e-05
+       "min": 5.627320543746928e-05,
+       "max": 5.96527294927864e-05
       },
       "dominatedBy": null,
       "missing": [],
@@ -7063,12 +7063,12 @@
      },
      "R-CANN-GRAPH": {
       "aOp": {
-       "min": 0.0006943126052287681,
-       "max": 0.0007292057551382717
+       "min": 0.000728302290344387,
+       "max": 0.0007642021940326427
       },
       "delivered": {
-       "min": 0.00016097567974838393,
-       "max": 0.00022343743017676646
+       "min": 0.00018029080375909316,
+       "max": 0.00024306778635748742
       },
       "dominatedBy": "R-RUNTIME-SNAPSHOT",
       "missing": [],
