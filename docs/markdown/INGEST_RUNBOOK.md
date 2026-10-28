@@ -115,6 +115,9 @@ about the worksheet profile, synthetic examples. The HAC-D side returns a new bu
 - `recommendPlan: no move set meets the target with a supported window check` — too few windows for the Wilson bound: use `--trials 400`.
 - Windows: run from `cmd` with `bin\hacd.cmd`; PowerShell quoting of `--columns` values needs double quotes.
 
+The project workflow (a model changes one project — topology inputs, FIT, mechanisms — and produces its report, `AGENT_OPERATOR.md` §11)
+has its own pilot: `PILOT_2026Q3_PROJECT_WORKFLOW.md`.
+
 ## 8. Pilot: the first batch
 
 Run the pipeline once, end to end, on the smallest scope that exercises every step, before any wider use.

@@ -203,4 +203,7 @@ What stays with people is unchanged: the model copies values from the task or a 
 report. The project files live under `<work>/project/` and are written only by the commands. The CLI test
 `packages/cli/test/operate.test.ts` ("project workflow") drives the chain through the host with the mock model: template a950-ub2 at
 10,000 NPUs, nodes per cabinet 9, target 0.985, CORE-hard 500 FIT, D-HARD applied with a 20 s detection, R-ELASTIC removed, the report
-at 40 windows and 8 permutations — seven tool calls, no file written by the model, the report under `out/`.
+at 40 windows and 8 permutations — seven tool calls, no file written by the model, the report under `out/`. The pilot of this workflow
+inside the bundle, at the report preset on the worksheet pilot's inputs, is `PILOT_2026Q3_PROJECT_WORKFLOW.md`: the two input paths
+give the same report to the last digit. `hacd scenario new --record <public id>` starts a project from a record (the web app's
+built-in projects); `--template` starts from a template with the library's mechanism parameters.

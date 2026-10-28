@@ -23,8 +23,9 @@ import {
   rateFromCounts, unitRateFromCounts, type LossBudgetMethod, type LedgerLossLine,
   auditMechanisms, auditReportHtml, allocationStudy, studyReportHtml, type StudyMetric, type ReportLang,
   GPU_EXAMPLES, REFERENCE_FIXTURES, TOPOLOGY_SCALES, resizeTopology, topologyScenario, topologyBom, bomAtSizes, TOPOLOGY_TEMPLATES, SUPERPOD_VARIANTS, applySuperpodVariant, computeCounts, allocateStrategy, strategyAcrossSizes, type TopologyTemplate,
-  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary,
+  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary, recordScenario, DEFAULT_MECHANISM_SET, BUILTIN_TOPOLOGY_RECORDS, parseTopologyRecord, type TopologyRecord,
 } from '@hac-d/core';
+import { existsSync } from 'node:fs';
 // v6.4 the project report of the web app's Report tab, written to a folder (shared with `hacd scenario report`)
 import { renderScenarioReport } from '../../cli/src/report.js';
 
@@ -212,11 +213,23 @@ server.registerTool(
 /* ---------------- v6.4 the project workflow: the web pages' operations on one project and its Findings report ---------------- */
 server.registerTool(
   'scenario_new',
-  { description: 'A new project (scenario) from a topology template at N NPUs with the six default mechanisms applied — what the web app’s Projects › New does. Returns the scenario JSON and its summary; keep the scenario and pass it to scenario_set / scenario_fit / scenario_mechanisms / scenario_report.', inputSchema: { template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic']), npus: z.number().int().positive(), variant: z.string().optional(), id: z.string().regex(/^[a-z0-9-]+$/).optional(), name: z.string().optional() } },
-  async ({ template, npus, variant, id, name }) => {
-    if (variant && !SUPERPOD_VARIANTS[template as TopologyTemplate]?.some((v) => v.id === variant)) throw new Error(`variant ${variant} does not belong to ${template}`);
-    let s = topologyScenario(template as TopologyTemplate, npus, { id, name });
-    if (variant) s = applySuperpodVariant(s, variant);
+  { description: 'A new project (scenario) at N NPUs from a topology template with the six default mechanisms applied (Projects › New) or from a public topology record — its geometry and the default mechanism set’s baseline, what the web app’s built-in projects are (native950, ubl128, cm384, a3server; a record JSON path or a data-folder id also works). Returns the scenario JSON and its summary; keep the scenario and pass it to scenario_set / scenario_fit / scenario_mechanisms / scenario_report.', inputSchema: { template: z.enum(['a2-roce', 'a3-ub384', 'a950-ub2', 'a960e-ub', 'ub-generic']).optional(), record: z.string().optional(), npus: z.number().int().positive(), variant: z.string().optional(), id: z.string().regex(/^[a-z0-9-]+$/).optional(), name: z.string().optional() } },
+  async ({ template, record, npus, variant, id, name }) => {
+    if (!template && !record) throw new Error('pass a template or a record');
+    let s;
+    if (record) {
+      const built = (BUILTIN_TOPOLOGY_RECORDS as Record<string, TopologyRecord>)[record];
+      const dataDir = process.env.HACD_DATA ? process.env.HACD_DATA : join(here, '..', '..', 'core', 'data');
+      const path = existsSync(record) ? record : join(dataDir, 'records', `${record}.json`);
+      const rec = built ?? (existsSync(path) ? parseTopologyRecord(JSON.parse(readFileSync(path, 'utf8'))) : undefined);
+      if (!rec) throw new Error(`unknown topology record '${record}' (built-in: ${Object.keys(BUILTIN_TOPOLOGY_RECORDS).join(', ')}; or a JSON path)`);
+      s = recordScenario(rec, DEFAULT_MECHANISM_SET, npus);
+      s = { ...s, meta: { ...s.meta, ...(id ? { id } : {}), ...(name ? { name } : {}) } };
+    } else {
+      if (variant && !SUPERPOD_VARIANTS[template as TopologyTemplate]?.some((v) => v.id === variant)) throw new Error(`variant ${variant} does not belong to ${template}`);
+      s = topologyScenario(template as TopologyTemplate, npus, { id, name });
+      if (variant) s = applySuperpodVariant(s, variant);
+    }
     return text({ scenario: s, summary: scenarioSummary(s) });
   },
 );

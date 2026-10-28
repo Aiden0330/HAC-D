@@ -39,7 +39,7 @@ cpSync(join(REPO, 'node_modules/katex'), join(dir, 'node_modules/katex'), { recu
 cpSync(join(REPO, 'packages/core/data'), join(dir, 'data'), { recursive: true });
 // docs and templates
 mkdirSync(join(dir, 'docs'), { recursive: true });
-for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/AGENT_OPERATOR.md', 'docs/markdown/PILOT_2026Q3_MOCK.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
+for (const f of ['docs/markdown/INGEST_RUNBOOK.md', 'docs/markdown/AGENT_OPERATOR.md', 'docs/markdown/PILOT_2026Q3_MOCK.md', 'docs/markdown/PILOT_2026Q3_PROJECT_WORKFLOW.md', 'docs/markdown/PLAN_V6_INPUT_MIGRATION.md', 'docs/markdown/USER_GUIDE.md', 'docs/markdown/MODEL_REFERENCE.md']) if (existsSync(join(REPO, f))) cpSync(join(REPO, f), join(dir, 'docs', f.split('/').pop()));
 mkdirSync(join(dir, 'templates'), { recursive: true });
 for (const kind of ['topology', 'fault-rates', 'mechanisms', 'mechanism-proposal', 'device-fit', 'koujing-mapping']) {
   const text = execFileSync('node', [join(dir, 'bin/hacd.mjs'), 'ingest', 'template', kind], { encoding: 'utf8', env: { ...process.env, HACD_DATA: join(dir, 'data'), HACD_VERSION: version } });
@@ -98,7 +98,8 @@ The project workflow (v6.4; \`docs/AGENT_OPERATOR.md\` §11): the web pages' ope
     bin/hacd scenario mechanisms work/project/acme-950.json --apply D-HARD:detectSeconds=20 --remove R-ELASTIC
     bin/hacd scenario report work/project/acme-950.json --out work/out --json   # the Findings and Methodology pages, data/, the bundle
 
-The model runs the same through the tools hacd_scenario_* of the manifest: \`bin/hacd ingest operate … --task "Project workflow: template a950-ub2, npus 100000, id acme-950. Set: …"\` (the mock answers that task too).
+The model runs the same through the tools hacd_scenario_* of the manifest: \`bin/hacd ingest operate … --task "$(cat examples/pilot/project-workflow.md)"\`
+(the task of the project-workflow pilot, \`docs/PILOT_2026Q3_PROJECT_WORKFLOW.md\`; the mock answers it too).
 `);
 execFileSync('tar', ['-czf', `${name}.tgz`, name], { cwd: outRoot });
 const size = (p) => `${(execFileSync('du', ['-sk', p], { encoding: 'utf8' }).split('\t')[0] / 1024).toFixed(1)} MB`;

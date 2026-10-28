@@ -2,7 +2,7 @@
  * v6.4 `hacd scenario …`: the web pages' operations on a project file, for a program or a model (the operator tools
  * hacd_scenario_* and the MCP tools scenario_* call the same core functions, packages/core/src/project/edit.ts):
  *
- *   hacd scenario new --template <id> --npus N [--variant <id>] [--id <id>] [--name <name>] --out <file.json> [--json]
+ *   hacd scenario new (--template <id> | --record <id|path>) --npus N [--variant <id>] [--id <id>] [--name <name>] --out <file.json> [--json]
  *   hacd scenario show <file.json> [--json]                                    the inputs as set, mechanisms, FIT overrides, the KPI strip
  *   hacd scenario fields [<file.json>] [--json]                                the settable fields; with a file its fault types and mechanisms
  *   hacd scenario set <file.json> --set <path>=<value>… [--out <file.json>] [--json]
@@ -17,13 +17,14 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import {
   parseScenario, topologyScenario, applySuperpodVariant, SUPERPOD_VARIANTS, TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS,
-  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary, SCENARIO_FIELDS,
+  setScenarioFields, setFaultFit, editMechanisms, scenarioSummary, scenarioVocabulary, SCENARIO_FIELDS, recordScenario, DEFAULT_MECHANISM_SET,
   type Scenario, type TopologyTemplate, type ScenarioSummary,
 } from '@hac-d/core';
 import { renderScenarioReport } from './report.js';
+import { resolveRecord } from './pipeline.js';
 
 const USAGE = `usage: hacd scenario <new | show | fields | set | fit | mechanisms | report> …
-  new --template <${TOPOLOGY_TEMPLATE_IDS.join('|')}> --npus N [--variant <id>] [--id <id>] [--name <name>] --out <file.json>
+  new (--template <${TOPOLOGY_TEMPLATE_IDS.join('|')}> | --record <public id | path>) --npus N [--variant <id>] [--id <id>] [--name <name>] --out <file.json>
   show <file.json> [--json]
   fields [<file.json>] [--json]
   set <file.json> --set <path>=<value> [--set …] [--out <file.json>]
@@ -96,17 +97,27 @@ export async function scenario(rest: string[]): Promise<void> {
     switch (sub) {
       case 'new': {
         const tpl = flag(args, 'template') as TopologyTemplate | undefined;
-        if (!tpl || !TOPOLOGY_TEMPLATES[tpl]) fail(`--template is one of ${TOPOLOGY_TEMPLATE_IDS.join(', ')}\n${USAGE}`);
+        const rec = flag(args, 'record');
+        if ((!tpl && !rec) || (tpl && !TOPOLOGY_TEMPLATES[tpl])) fail(`--template is one of ${TOPOLOGY_TEMPLATE_IDS.join(', ')}, or --record a public record id or path\n${USAGE}`);
         const npus = Number(flag(args, 'npus') ?? 10000);
         if (!(npus >= 1)) fail('--npus must be a whole number ≥ 1');
         const o = flag(args, 'out');
         if (!o) fail('--out <file.json> is required');
         const variant = flag(args, 'variant');
-        if (variant && !SUPERPOD_VARIANTS[tpl!]?.some((v) => v.id === variant)) fail(`variant ${variant} does not belong to ${tpl} (${(SUPERPOD_VARIANTS[tpl!] ?? []).map((v) => v.id).join(', ') || 'none'})`);
-        let s = topologyScenario(tpl!, Math.round(npus), { id: flag(args, 'id'), name: flag(args, 'name') });
-        if (variant) s = applySuperpodVariant(s, variant);
-        const id = flag(args, 'id');
+        if (variant && tpl && !SUPERPOD_VARIANTS[tpl]?.some((v) => v.id === variant)) fail(`variant ${variant} does not belong to ${tpl} (${(SUPERPOD_VARIANTS[tpl] ?? []).map((v) => v.id).join(', ') || 'none'})`);
+        const id = flag(args, 'id'), name = flag(args, 'name');
         if (id && !/^[a-z0-9-]+$/.test(id)) fail('--id uses lowercase letters, digits and hyphens only');
+        let s: Scenario;
+        if (rec) {
+          // a record's scenario at N with the default set's baseline mechanisms and parameters — what the web's built-in projects are
+          if (variant) fail('--variant applies to a template; a record carries its own scale-out variants');
+          const r = resolveRecord(rec);
+          s = recordScenario(r, DEFAULT_MECHANISM_SET, Math.round(npus));
+          s = { ...s, meta: { ...s.meta, ...(id ? { id } : {}), ...(name ? { name } : {}) } };
+        } else {
+          s = topologyScenario(tpl!, Math.round(npus), { id, name });
+          if (variant) s = applySuperpodVariant(s, variant);
+        }
         const written = writeProject({ path: o!, scenario: s }, s, o);
         result({ path: o!, scenario: s }, s, ['new'], written);
         return;

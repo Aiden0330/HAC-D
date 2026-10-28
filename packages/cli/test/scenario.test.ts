@@ -68,6 +68,19 @@ describe('hacd scenario', () => {
     expect(readFileSync(join(dir, 'out3', 'ASCEND_ALLOCATION_FINDINGS_ACME-950-DEMO.html'), 'utf8')).toBe(html);
   }, 300_000);
 
+  it('new --record: the public record’s scenario with the default set’s baseline (the web’s built-in projects)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'hacd-scenario-'));
+    const f = join(dir, 'r.json');
+    const r = hacd(['scenario', 'new', '--record', 'a3server', '--npus', '100000', '--id', 'acme-a3-pw', '--name', 'ACME A3 (pw)', '--out', f, '--json']);
+    expect(r.status, r.stderr).toBe(0);
+    const sum = json(r.stdout).summary;
+    expect(sum).toMatchObject({ id: 'acme-a3-pw', name: 'ACME A3 (pw)', template: 'a3-ub384', npus: 100000 });
+    expect(sum.topology.superpod).toMatchObject({ computeRacks: 1, commRacks: 0, nodesPerRack: 4 });
+    expect(sum.topology.nvlinkDomainGpus).toBe(8);
+    expect(sum.mechanisms.map((m: { id: string }) => m.id).sort()).toEqual(['C-FAST', 'D-SDC', 'R-ELASTIC', 'R-PROCESS', 'R-REPLAY', 'R-SDC']);
+    expect(hacd(['scenario', 'new', '--record', 'nope', '--npus', '1000', '--out', join(dir, 'x.json')]).status).toBe(1);
+  }, 120_000);
+
   it('errors name what is allowed; a project bundle keeps its settings', () => {
     const dir = mkdtempSync(join(tmpdir(), 'hacd-scenario-'));
     const f = join(dir, 'p.json');

@@ -215,13 +215,14 @@ const CLASS_SYNONYMS = { HBM: 'MEMT', DRAM: 'DDR', DIMM: 'DDR', PSU: 'POWER', FA
 
 /* ---------- v6.4 the project workflow: the task names a template, the changes and the report settings ---------- */
 function parseProject(text) {
-  const m = /Project workflow: template ([a-z0-9-]+), npus (\d+)(?:, id ([a-z0-9-]+))?(?:, name "([^"]+)")?/.exec(text);
+  const m = /Project workflow: (template|record) ([a-z0-9-]+), npus (\d+)(?:, id ([a-z0-9-]+))?(?:, name "([^"]+)")?/.exec(text);
   if (!m) return null;
+  const [, kind, src, npus, id, name] = m;
   const line = (label) => g(new RegExp(`^${label}: (.*)$`, 'm'), text);
   const items = (x) => (x ?? '').split(';').map((y) => y.trim()).filter(Boolean);
   const mech = items(line('Mechanisms'));
   return {
-    template: m[1], npus: Number(m[2]), id: m[3] ?? 'project', name: m[4],
+    template: kind === 'template' ? src : undefined, record: kind === 'record' ? src : undefined, npus: Number(npus), id: id ?? 'project', name,
     sets: items(line('Set')), fits: items(line('FIT')),
     apply: mech.filter((x) => x.startsWith('apply ')).map((x) => x.slice(6).trim()), remove: mech.filter((x) => x.startsWith('remove ')).map((x) => x.slice(7).trim()),
     report: Object.fromEntries(items(line('Report')).map((kv) => { const [k, v] = kv.split(/\s+/); return [k, v]; })),
@@ -235,7 +236,7 @@ function projectTurn(W, calls, pj) {
   const tool = (name, args) => ({ name, args });
   const broken = calls.find((c) => c.hacd && c.hacd.exitCode !== 0);
   if (broken) return { content: `status: failed\nfailed: hacd ${broken.name.replace(/^hacd_/, '').replace(/_/g, ' ')} (exit ${broken.hacd.exitCode})\nstderr: ${(broken.hacd.stderr ?? '').split('\n').slice(-5).join(' ')}` };
-  if (!has('hacd_scenario_new')) return { toolCalls: [tool('hacd_scenario_new', { template: pj.template, npus: pj.npus, id: pj.id, ...(pj.name ? { name: pj.name } : {}), out: file })] };
+  if (!has('hacd_scenario_new')) return { toolCalls: [tool('hacd_scenario_new', { ...(pj.record ? { record: pj.record } : { template: pj.template }), npus: pj.npus, id: pj.id, ...(pj.name ? { name: pj.name } : {}), out: file })] };
   if (!has('hacd_scenario_fields')) return { toolCalls: [tool('hacd_scenario_fields', { scenario: file })] };
   if (pj.sets.length && !has('hacd_scenario_set')) return { toolCalls: [tool('hacd_scenario_set', { scenario: file, sets: pj.sets, out: file })] };
   if (pj.fits.length && !has('hacd_scenario_fit')) return { toolCalls: [tool('hacd_scenario_fit', { scenario: file, sets: pj.fits, out: file })] };
