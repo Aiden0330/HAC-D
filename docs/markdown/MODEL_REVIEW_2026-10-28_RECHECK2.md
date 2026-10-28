@@ -5,7 +5,7 @@
 | Scope | The fixes for the first recheck (`docs/markdown/MODEL_REVIEW_2026-10-27_RECHECK.md` §7: N1–N3 and the D5 residual), and a regression pass over D1–D9, M1–M3 and R1–R4 of `docs/markdown/MODEL_REVIEW_2026-10-27.md` |
 | Code | `main` at b43e35d ("v5.5: fifth model review and its recheck resolved …"), pushed; working tree clean apart from untracked drafts |
 | Method | both earlier recheck scripts re-run; new edge cases of the unit rules in both input paths (spreadsheet importer, agent draft); pairwise commutation of every appliable mechanism; the startup trio in all six orders; the stage mechanisms under the automatic-attempt lever; the stored Shapley studies against the current rule; the cm384 500k plan under a consistent lever treatment. Synthetic public scenarios only |
-| Status | **Reported, not fixed.** Nothing in the repository was changed by this recheck |
+| Status | Reported by the recheck without changing the repository; **resolved 2026-10-28** (section 6: N4–N7 fixed with tests, R1 and R4 fixed on the report owner’s decision; the studies, the report set and the v5 goldens regenerated) |
 
 ## 1. Summary
 

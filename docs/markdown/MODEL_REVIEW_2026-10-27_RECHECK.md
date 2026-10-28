@@ -5,7 +5,7 @@
 | Scope | The fixes for the fifth review (`docs/markdown/MODEL_REVIEW_2026-10-27.md`, findings D1–D9, M1–M3, R1–R4), made in another session; its resolution notes are §7 of that document |
 | Code | uncommitted v5.5 working tree on `main` at f903fdb: 46 changed files, the new test `packages/core/test/model_review_v55.test.ts` and three new golden input tables |
 | Method | every check of the review re-run on the fixed tree (synthetic public scenarios only); the v5 goldens regenerated from their scripts and compared; a Findings page rendered with an out-of-reach requirement; the seven reproduction snippets of the review re-run |
-| Status | Reported by the recheck without changing the repository; **resolved 2026-10-27** (section 7: N1, N2, N3 fixed with tests; the order dependence of section 5 removed for the same-stage rule and the custom rungs; R1 and R4 still decisions) |
+| Status | Reported by the recheck without changing the repository; **resolved 2026-10-27** (section 7: N1, N2, N3 fixed with tests; the order dependence of section 5 removed for the same-stage rule and the custom rungs; R1 and R4 then still decisions); **R1 and R4 fixed 2026-10-28** (`MODEL_REVIEW_2026-10-28_RECHECK2.md` §6) |
 
 ## 1. Summary
 

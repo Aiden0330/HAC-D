@@ -5,7 +5,7 @@
 | Scope | The models changed since the fourth review (2026-10-18): v5 report primitives (formulas 1–6, layers, MTTR composition, window rule, budget assembly, records), v5.4 templates, v6 input path (口径 normaliser, device-table importer, gates), v6.3 / v6.4 project report and project editing |
 | Code | `main` at f903fdb (no code change since 652c827, where the checks ran); working tree clean |
 | Method | `model-check` skill: derivation from the spec (`docs/markdown/MODEL_REFERENCE.md` §25–§27), numerical checks on the engine with synthetic public scenarios (A3 · CloudMatrix384 and the built-in records), end-to-end runs of `hierarchicalBudget` |
-| Status | Reported by the review without changing the repository; **resolved 2026-10-27** (section 7: D1–D9, M1–M3, R2, R3 fixed with tests and goldens; R1 and R4 left as decisions because they change the published designs) |
+| Status | Reported by the review without changing the repository; **resolved 2026-10-27** (section 7: D1–D9, M1–M3, R2, R3 fixed with tests and goldens; R1 and R4 left as decisions because they change the published designs); **R1 and R4 fixed 2026-10-28** on the report owner’s decision (section 7, `MODEL_REVIEW_2026-10-28_RECHECK2.md` §6; the report set regenerated) |
 
 ## 1. Summary
 
