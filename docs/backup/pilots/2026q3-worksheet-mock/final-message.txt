@@ -1,0 +1,9 @@
+status: ok
+run: hacd ingest run --worksheets /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws --staging /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging --before-record a3server --out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out --scales 100000 --trials 400 --permutations 300 --json
+KPI (SUMMARY.md):
+| scale | A_op nominal / derated | delivered | MTBF_hw | MTTR_hw | P(window) | k | recommended mechanisms \| levers |
+|---|---|---|---|---|---|---|---|
+| 100000 | 99.03 % / 98.90 % | 91.91 % | 2.63 h | 101 s | 94.50 % supported | 1.106 | — \| — |
+unresolved issues: none
+warnings noted: (acme-fit-2026q3.json: override.rates.OPT-hard@roce.fit, implausible); (acme-mech-2026q3.json: set.capability, provenance-missing)
+paths: run.json /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/run.json; SUMMARY.md /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/SUMMARY.md; report /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report/; delta /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/delta/

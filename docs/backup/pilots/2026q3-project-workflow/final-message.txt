@@ -1,0 +1,7 @@
+status: ok
+project: /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/project/acme-a3-2026q3-pw.json
+changes: (topology.superpod.nodesPerRack, 3, task); (topology.scaleOut.planes, 2, task); (topology.scaleOut.radix, 128, task); (targets.operational, 0.985, task); (fit COOL-hard, 2880, task); (fit CORE-hard, 450, task); (fit CORE-sdc, 36, task); (fit CPU-hard, 320, task); (fit DDR-hard, 560, task); (fit FABRIC-hard, 59.99999999999999, task); (fit FABRIC-hard@roce, 66.66666666666667, task); (fit MEMT-hard, 384, task); (fit MGMT-hard, 400, task); (fit MODULE-hard, 180, task); (fit NIC-hard, 59.99999999999999, task); (fit OPT-hard@roce, 120, task); (fit POWER-hard, 6000, task); (fit SSD-hard, 1378.1485427248, task); (apply R-REPLAY:success=0.92, task)
+mechanisms applied: D-SDC + R-SDC + R-PROCESS + R-ELASTIC + C-FAST + R-REPLAY
+KPI (manifest): | scale | today A_op nominal / derated | recommended A_op derated | added mechanisms | hardware k |
+| 100000 | 99.029 % / 98.897 % | 98.787 % | — | k 1.106 |
+paths: findings /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/out/ASCEND_ALLOCATION_FINDINGS_ACME-A3-2026Q3-PW.html; methodology /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/out/ASCEND_ALLOCATION_METHODOLOGY.html; bundle /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/out/acme-a3-2026q3-pw-findings-data.json; sidecar /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/out/data

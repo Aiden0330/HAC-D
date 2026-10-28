@@ -1,0 +1,2451 @@
+{
+ "generated": "2026-10-28T01:43:18.803Z",
+ "target": 0.985,
+ "sizes": [
+  100000
+ ],
+ "main": 100000,
+ "trials": 400,
+ "required": 0.9,
+ "derate": {
+  "coverageDelta": 0.05,
+  "successDelta": 0.08,
+  "timeFactor": 1.5,
+  "reductionFactor": 0.5
+ },
+ "candidates": [
+  "D-HARD",
+  "D-RECOVERY-CLASSIFY",
+  "R-LINK-LOCAL",
+  "R-RUNTIME-SNAPSHOT",
+  "H-CONTROL-CONTINUITY",
+  "C-LOSSLESS",
+  "R-FABRIC-DEGRADE"
+ ],
+ "levers": [
+  {
+   "id": "auto",
+   "limit": 60,
+   "effort": 3
+  },
+  {
+   "id": "success",
+   "limit": 0.999,
+   "effort": 3
+  },
+  {
+   "id": "manual",
+   "limit": 1800,
+   "effort": 2
+  }
+ ],
+ "reference": [
+  "D-SDC",
+  "R-SDC",
+  "R-PROCESS",
+  "R-ELASTIC",
+  "C-FAST",
+  "R-REPLAY"
+ ],
+ "layers": [
+  {
+   "id": "cluster",
+   "units": [
+    "job"
+   ],
+   "name": {
+    "zh": "集群级",
+    "en": "Cluster"
+   },
+   "instance": {
+    "zh": "整个作业",
+    "en": "the whole job"
+   }
+  },
+  {
+   "id": "scaleout",
+   "units": [
+    "roce-switch",
+    "roce-link"
+   ],
+   "name": {
+    "zh": "跨超节点网络",
+    "en": "Scale-out network"
+   },
+   "instance": {
+    "zh": "整张网络",
+    "en": "the whole network"
+   }
+  },
+  {
+   "id": "superpod",
+   "units": [
+    "ub-switch",
+    "ub-link"
+   ],
+   "name": {
+    "zh": "超节点（UB 域）",
+    "en": "SuperPoD (UB domain)"
+   },
+   "instance": {
+    "zh": "一个超节点",
+    "en": "one SuperPoD"
+   }
+  },
+  {
+   "id": "cabinet",
+   "units": [
+    "cabinet"
+   ],
+   "name": {
+    "zh": "计算柜",
+    "en": "Compute cabinet"
+   },
+   "instance": {
+    "zh": "一个计算柜",
+    "en": "one cabinet"
+   }
+  },
+  {
+   "id": "node",
+   "units": [
+    "node",
+    "cpu"
+   ],
+   "name": {
+    "zh": "节点",
+    "en": "Node"
+   },
+   "instance": {
+    "zh": "一个节点",
+    "en": "one node"
+   }
+  },
+  {
+   "id": "npu",
+   "units": [
+    "npu"
+   ],
+   "name": {
+    "zh": "NPU",
+    "en": "NPU"
+   },
+   "instance": {
+    "zh": "一张卡",
+    "en": "one card"
+   }
+  }
+ ],
+ "archs": {
+  "acme-a3-2026q3-pw": {
+   "name": {
+    "zh": "ACME A3 server cluster 2026Q3 (project workflow)",
+    "en": "ACME A3 server cluster 2026Q3 (project workflow)"
+   },
+   "short": {
+    "zh": "ACME A3 server cluster 2026Q3 (project workflow)",
+    "en": "ACME A3 server cluster 2026Q3 (project workflow)"
+   },
+   "family": "A3 · CloudMatrix384 UB supernode",
+   "assumed": [],
+   "layers": {
+    "superpod": {
+     "unit": "nodes",
+     "npus": 8
+    },
+    "cabinet": {
+     "npus": 24
+    },
+    "node": {
+     "npus": 8
+    }
+   },
+   "sizes": {
+    "100000": {
+     "npus": 100000,
+     "counts": {
+      "gpus": 100000,
+      "nodes": 12500,
+      "racks": 4167,
+      "zones": 4167,
+      "nvlinkDomains": 4167,
+      "planes": 7,
+      "workloadGpus": 100000,
+      "supernodes": 4167,
+      "commRacks": 0,
+      "l1Switches": 87500,
+      "l2Switches": 0,
+      "subPlanes": 29169,
+      "opticalLinks": 0,
+      "transceivers": 0,
+      "gpusPerNode": 8,
+      "nodesPerRack": 3,
+      "cpus": 50000,
+      "ubSwitches": 87500,
+      "fabric": "two-level",
+      "rackSwitches": 0,
+      "podSwitches": 0,
+      "meshLinks": 0,
+      "rackMeshLinks": 0,
+      "opticalEngines": 0,
+      "backupNpus": 0,
+      "scaleOutPorts": 200000,
+      "scaleOutTiers": 3,
+      "scaleOutPerTier": [
+       3126,
+       3126,
+       1564
+      ],
+      "scaleOutSwitches": 7816,
+      "scaleOutLinks": 600000,
+      "scaleOutTransceivers": 1200000
+     },
+     "instances": {
+      "cluster": 1,
+      "scaleout": 1,
+      "superpod": 12500,
+      "cabinet": 4167,
+      "node": 12500,
+      "npu": 100000
+     },
+     "bomRows": [
+      {
+       "id": "npu",
+       "name": {
+        "zh": "NPU（Ascend 910C）",
+        "en": "NPU (Ascend 910C)"
+       },
+       "level": "npu",
+       "count": 100000,
+       "perNpu": 1,
+       "faultUnit": "npu",
+       "fitHard": 1613.9999999999998,
+       "hardPerHour": 0.1614,
+       "confidence": "paper"
+      },
+      {
+       "id": "job",
+       "name": {
+        "zh": "作业级服务（按 NPU 计）",
+        "en": "Job-level services (per NPU)"
+       },
+       "level": "cluster",
+       "count": 100000,
+       "perNpu": 1,
+       "faultUnit": "job",
+       "fitHard": 543.3333333333334,
+       "hardPerHour": 0.05433333333333334,
+       "confidence": "assumed"
+      },
+      {
+       "id": "node",
+       "name": {
+        "zh": "计算节点 · 8 NPU",
+        "en": "Compute node · 8 NPUs"
+       },
+       "level": "node",
+       "count": 12500,
+       "perNpu": 0.125,
+       "faultUnit": "node",
+       "fitHard": 2711.4818760581334,
+       "hardPerHour": 0.03389352345072667,
+       "confidence": "vendor"
+      },
+      {
+       "id": "cpu",
+       "name": {
+        "zh": "鲲鹏 CPU",
+        "en": "Kunpeng CPU"
+       },
+       "level": "node",
+       "count": 50000,
+       "perNpu": 0.5,
+       "faultUnit": "cpu",
+       "fitHard": 320,
+       "hardPerHour": 0.016,
+       "confidence": "vendor"
+      },
+      {
+       "id": "qingtian",
+       "name": {
+        "zh": "擎天卡（VPC 面）",
+        "en": "Qingtian card (VPC plane)"
+       },
+       "level": "node",
+       "count": 12500,
+       "perNpu": 0.125,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "paper"
+      },
+      {
+       "id": "cabinet",
+       "name": {
+        "zh": "计算机柜（3 节点 · 24 NPU）",
+        "en": "Compute cabinet (3 nodes · 24 NPUs)"
+       },
+       "level": "cabinet",
+       "count": 4167,
+       "perNpu": 0.04167,
+       "faultUnit": "cabinet",
+       "fitHard": 8880,
+       "hardPerHour": 0.03700296000000001,
+       "confidence": "paper"
+      },
+      {
+       "id": "pod",
+       "name": {
+        "zh": "超节点（24 NPU）",
+        "en": "SuperPoD (24 NPUs)"
+       },
+       "level": "pod",
+       "count": 4167,
+       "perNpu": 0.04167,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "paper"
+      },
+      {
+       "id": "commCabinet",
+       "name": {
+        "zh": "通信机柜（L2 交换）",
+        "en": "Communication cabinet (L2 switching)"
+       },
+       "level": "pod",
+       "count": 0,
+       "perNpu": 0,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "paper"
+      },
+      {
+       "id": "ubL1",
+       "name": {
+        "zh": "UB L1 交换芯片（每节点 7）",
+        "en": "UB L1 switch chip (7 per node)"
+       },
+       "level": "fabric",
+       "count": 87500,
+       "perNpu": 0.875,
+       "faultUnit": "ub-switch",
+       "fitHard": 59.99999999999999,
+       "hardPerHour": 0.0052499999999999995,
+       "confidence": "paper"
+      },
+      {
+       "id": "ubL2",
+       "name": {
+        "zh": "UB L2 交换芯片（7 子平面）",
+        "en": "UB L2 switch chip (7 sub-planes)"
+       },
+       "level": "fabric",
+       "count": 0,
+       "perNpu": 0,
+       "faultUnit": "ub-switch",
+       "fitHard": 59.99999999999999,
+       "hardPerHour": 0,
+       "confidence": "paper"
+      },
+      {
+       "id": "ubLink",
+       "name": {
+        "zh": "UB 光链路 L1–L2（每 L1 0 条）",
+        "en": "UB optical link L1–L2 (0 per L1 chip)"
+       },
+       "level": "fabric",
+       "count": 0,
+       "perNpu": 0,
+       "faultUnit": "ub-link",
+       "fitHard": 4.761904761904761,
+       "hardPerHour": 0,
+       "confidence": "paper"
+      },
+      {
+       "id": "ubTransceiver",
+       "name": {
+        "zh": "UB 光模块（链路两端）",
+        "en": "UB transceiver (both link ends)"
+       },
+       "level": "fabric",
+       "count": 0,
+       "perNpu": 0,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "assumed"
+      },
+      {
+       "id": "rocePort",
+       "name": {
+        "zh": "RDMA 口（scale-out，每 NPU 2 个）",
+        "en": "RDMA port (scale-out, 2 per NPU)"
+       },
+       "level": "scale-out",
+       "count": 200000,
+       "perNpu": 2,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "paper"
+      },
+      {
+       "id": "roceTier1",
+       "name": {
+        "zh": "RoCE 叶交换机（第 1 层，2 平面，128 口）",
+        "en": "RoCE leaf switch (tier 1, 2 planes, 128 ports)"
+       },
+       "level": "scale-out",
+       "count": 3126,
+       "perNpu": 0.03126,
+       "faultUnit": "roce-switch",
+       "fitHard": 66.66666666666667,
+       "hardPerHour": 0.00020840000000000005,
+       "confidence": "assumed"
+      },
+      {
+       "id": "roceTier2",
+       "name": {
+        "zh": "RoCE 交换机（第 2 层，2 平面，128 口）",
+        "en": "RoCE switch (tier 2, 2 planes, 128 ports)"
+       },
+       "level": "scale-out",
+       "count": 3126,
+       "perNpu": 0.03126,
+       "faultUnit": "roce-switch",
+       "fitHard": 66.66666666666667,
+       "hardPerHour": 0.00020840000000000005,
+       "confidence": "assumed"
+      },
+      {
+       "id": "roceTier3",
+       "name": {
+        "zh": "RoCE 交换机（第 3 层，2 平面，128 口）",
+        "en": "RoCE switch (tier 3, 2 planes, 128 ports)"
+       },
+       "level": "scale-out",
+       "count": 1564,
+       "perNpu": 0.01564,
+       "faultUnit": "roce-switch",
+       "fitHard": 66.66666666666667,
+       "hardPerHour": 0.00010426666666666669,
+       "confidence": "assumed"
+      },
+      {
+       "id": "roceLink",
+       "name": {
+        "zh": "RoCE 光链路（NPU–叶 + 层间）",
+        "en": "RoCE optical link (NPU–leaf + inter-tier)"
+       },
+       "level": "scale-out",
+       "count": 600000,
+       "perNpu": 6,
+       "faultUnit": "roce-link",
+       "fitHard": 119.99999999999999,
+       "hardPerHour": 0.072,
+       "confidence": "assumed"
+      },
+      {
+       "id": "roceTransceiver",
+       "name": {
+        "zh": "RoCE 光模块（链路两端）",
+        "en": "RoCE transceiver (both link ends)"
+       },
+       "level": "scale-out",
+       "count": 1200000,
+       "perNpu": 12,
+       "faultUnit": null,
+       "fitHard": null,
+       "hardPerHour": null,
+       "confidence": "assumed"
+      }
+     ],
+     "hardFitPerNpu": {
+      "npu": 1614,
+      "job": 543.3333333333334,
+      "cpu": 160,
+      "node": 338.9352345072667,
+      "cabinet": 370.0296000000001,
+      "ub-switch": 52.49999999999999,
+      "roce-switch": 5.2106666666666674,
+      "roce-link": 720
+     },
+     "hardFitPerNpuTotal": 3804.008834507267,
+     "hardPerHour": 0.3804008834507267,
+     "today": {
+      "kpi": {
+       "aOp": 0.9902907643644036,
+       "aRun": 0.9903028089826832,
+       "phi": 0.000012162560956485713,
+       "lamHw": 0.38040088345072665,
+       "mtbfHwH": 2.628805671870975,
+       "mttrS": 88.20422733305709,
+       "sumLP": 33.55296600158365,
+       "other": [
+        {
+         "id": "isolation",
+         "ratePerHour": 0.006692357862118686,
+         "pauseS": 252.00000000000006,
+         "mtbfH": 149.42416717736864,
+         "sPerH": 1.6864741812539092
+        },
+        {
+         "id": "sdcDetected",
+         "ratePerHour": 0.004096747711434242,
+         "pauseS": 3,
+         "mtbfH": 244.0960660596567,
+         "sPerH": 0.012290243134302724
+        },
+        {
+         "id": "falseAlarm",
+         "ratePerHour": 0,
+         "pauseS": 0,
+         "mtbfH": null,
+         "sPerH": 0
+        }
+       ],
+       "F": 1.698764424388212,
+       "mtbiH": 2.583356910620428,
+       "delivered": 0.949760415944581,
+       "detectS": 12.500000000000004,
+       "globalS": 252.00000000000006
+      },
+      "kpiDerated": {
+       "aOp": 0.9889725938253819,
+       "aRun": 0.9889960882995209,
+       "phi": 0.00002375588176428689,
+       "lamHw": 0.38040088345072665,
+       "mtbfHwH": 2.628805671870975,
+       "mttrS": 100.81707081095948,
+       "sumLP": 38.35090280340345,
+       "other": [
+        {
+         "id": "isolation",
+         "ratePerHour": 0.006692357862118686,
+         "pauseS": 252.00000000000006,
+         "mtbfH": 149.42416717736864,
+         "sPerH": 1.6864741812539092
+        },
+        {
+         "id": "sdcDetected",
+         "ratePerHour": 0.003881129410832439,
+         "pauseS": 4.5,
+         "mtbfH": 257.6569586185265,
+         "sPerH": 0.017465082348745976
+        },
+        {
+         "id": "falseAlarm",
+         "ratePerHour": 0,
+         "pauseS": 0,
+         "mtbfH": null,
+         "sPerH": 0
+        }
+       ],
+       "F": 1.7039392636026551,
+       "mtbiH": 2.583356910620428,
+       "delivered": 0.9191300340408209,
+       "detectS": 12.500000000000004,
+       "globalS": 252.00000000000006
+      },
+      "layers": {
+       "cluster": {
+        "lam": 0.05433333333333333,
+        "c": 14.37116666666667,
+        "iso": 0.23690276358858237,
+        "sdc": 0.001159944661045638,
+        "mttrS": 264.5000000000001,
+        "cDerated": 14.37116666666667,
+        "isoDerated": 0.23690276358858237,
+        "sdcDerated": 0.0016483424130648541,
+        "mttrDeratedS": 264.5000000000001,
+        "instances": 1,
+        "mtbfH": 18.404907975460123,
+        "mtbfInstanceH": 18.404907975460123,
+        "rows": [
+         {
+          "id": "STORAGE-hard",
+          "unit": "job",
+          "ratePerHour": 0.01333333333333333,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         },
+         {
+          "id": "UNKNOWN-hard",
+          "unit": "job",
+          "ratePerHour": 0.041,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         }
+        ]
+       },
+       "scaleout": {
+        "lam": 0.07252106666666666,
+        "c": 2.8781421333333332,
+        "iso": 0.02635265360331792,
+        "sdc": 0.000012803290735247147,
+        "mttrS": 39.68698015105496,
+        "cDerated": 4.567262133333332,
+        "isoDerated": 0.02635265360331792,
+        "sdcDerated": 0.000018194149992193313,
+        "mttrDeratedS": 62.97841914441412,
+        "instances": 1,
+        "mtbfH": 13.789096685468866,
+        "mtbfInstanceH": 13.789096685468866,
+        "rows": [
+         {
+          "id": "OPT-hard@roce",
+          "unit": "roce-link",
+          "ratePerHour": 0.072,
+          "meanPauseS": 38.06,
+          "pGlobal": 0.07999999999999996
+         },
+         {
+          "id": "FABRIC-hard@roce",
+          "unit": "roce-switch",
+          "ratePerHour": 0.0005210666666666667,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         }
+        ]
+       },
+       "superpod": {
+        "lam": 0.0052499999999999995,
+        "c": 1.3886250000000002,
+        "iso": 0.02138696659392222,
+        "sdc": 0.00014333264321060967,
+        "mttrS": 264.50000000000006,
+        "cDerated": 1.3886250000000002,
+        "isoDerated": 0.02138696659392222,
+        "sdcDerated": 0.0002036832298256032,
+        "mttrDeratedS": 264.50000000000006,
+        "instances": 12500,
+        "mtbfH": 190.4761904761905,
+        "mtbfInstanceH": 2380952.380952381,
+        "rows": [
+         {
+          "id": "FABRIC-hard",
+          "unit": "ub-switch",
+          "ratePerHour": 0.0052499999999999995,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         }
+        ]
+       },
+       "cabinet": {
+        "lam": 0.03700296,
+        "c": 9.787282920000003,
+        "iso": 0.31122721288626526,
+        "sdc": 0,
+        "mttrS": 264.50000000000006,
+        "cDerated": 9.787282920000003,
+        "isoDerated": 0.31122721288626526,
+        "sdcDerated": 0,
+        "mttrDeratedS": 264.50000000000006,
+        "instances": 4167,
+        "mtbfH": 27.024865037824,
+        "mtbfInstanceH": 112612.6126126126,
+        "rows": [
+         {
+          "id": "POWER-hard",
+          "unit": "cabinet",
+          "ratePerHour": 0.025002,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         },
+         {
+          "id": "COOL-hard",
+          "unit": "cabinet",
+          "ratePerHour": 0.01200096,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         }
+        ]
+       },
+       "node": {
+        "lam": 0.049893523450726666,
+        "c": 2.7636798309169706,
+        "iso": 0.26905651306402056,
+        "sdc": 0.00013377713366323572,
+        "mttrS": 55.3915546503004,
+        "cDerated": 3.92639689940344,
+        "isoDerated": 0.26905651306402056,
+        "sdcDerated": 0.00019010434783722972,
+        "mttrDeratedS": 78.69552254173892,
+        "instances": 12500,
+        "mtbfH": 20.042681511310175,
+        "mtbfInstanceH": 250533.5188913772,
+        "rows": [
+         {
+          "id": "BOXIO-hard",
+          "unit": "node",
+          "ratePerHour": 0.004666666666666666,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         },
+         {
+          "id": "CPU-hard",
+          "unit": "cpu",
+          "ratePerHour": 0.016,
+          "meanPauseS": 5.142000000000004,
+          "pGlobal": 0.0010000000000000018
+         },
+         {
+          "id": "DDR-hard",
+          "unit": "node",
+          "ratePerHour": 0.007,
+          "meanPauseS": 5.142000000000004,
+          "pGlobal": 0.0010000000000000018
+         },
+         {
+          "id": "SSD-hard",
+          "unit": "node",
+          "ratePerHour": 0.01722685678406,
+          "meanPauseS": 5.142000000000004,
+          "pGlobal": 0.0010000000000000018
+         },
+         {
+          "id": "MGMT-hard",
+          "unit": "node",
+          "ratePerHour": 0.005,
+          "meanPauseS": 264.50000000000006,
+          "pGlobal": 1
+         }
+        ]
+       },
+       "npu": {
+        "lam": 0.16140000000000002,
+        "c": 2.3640694506666677,
+        "iso": 0.8215480715178008,
+        "sdc": 0.010840385405647994,
+        "mttrS": 14.647270450227184,
+        "cDerated": 4.310169183999999,
+        "isoDerated": 0.8215480715178008,
+        "sdcDerated": 0.015404758208026096,
+        "mttrDeratedS": 26.70488961586121,
+        "instances": 100000,
+        "mtbfH": 6.195786864931846,
+        "mtbfInstanceH": 619578.6864931845,
+        "rows": [
+         {
+          "id": "CORE-hard",
+          "unit": "npu",
+          "ratePerHour": 0.045,
+          "meanPauseS": 17.311360000000008,
+          "pGlobal": 0.0000800000000000001
+         },
+         {
+          "id": "SRAM-hard",
+          "unit": "npu",
+          "ratePerHour": 0.01666666666666666,
+          "meanPauseS": 17.311360000000008,
+          "pGlobal": 0.0000800000000000001
+         },
+         {
+          "id": "IOD-hard",
+          "unit": "npu",
+          "ratePerHour": 0.019999999999999997,
+          "meanPauseS": 17.311360000000008,
+          "pGlobal": 0.0000800000000000001
+         },
+         {
+          "id": "MODULE-hard",
+          "unit": "npu",
+          "ratePerHour": 0.018,
+          "meanPauseS": 5.142000000000004,
+          "pGlobal": 0.0010000000000000018
+         },
+         {
+          "id": "MEMT-hard",
+          "unit": "npu",
+          "ratePerHour": 0.0384,
+          "meanPauseS": 17.311360000000008,
+          "pGlobal": 0.0000800000000000001
+         },
+         {
+          "id": "MEMP-hard",
+          "unit": "npu",
+          "ratePerHour": 0.017333333333333333,
+          "meanPauseS": 5.142000000000004,
+          "pGlobal": 0.0010000000000000018
+         },
+         {
+          "id": "NIC-hard",
+          "unit": "npu",
+          "ratePerHour": 0.005999999999999999,
+          "meanPauseS": 17.311360000000008,
+          "pGlobal": 0.0000800000000000001
+         }
+        ]
+       }
+      },
+      "mttr": {
+       "nom": {
+        "mttrS": 88.20422733305708,
+        "contrib": {
+         "detect": 9.741968386734051,
+         "replay": 2.3951223730127915,
+         "failed:replay": 0.4165430213935286,
+         "elastic": 0.22064252906127627,
+         "failed:elastic": 0.5403490507623098,
+         "process": 0.25666579911209714,
+         "failed:process": 0.027017452538115515,
+         "globalAuto": 53.28994194317349,
+         "globalManual": 21.315976777269416
+        },
+        "probs": {
+         "replay": 0.47902447460255826,
+         "elastic": 0.22064252906127627,
+         "process": 0.004277763318534952,
+         "global": 0.29605523301763054
+        },
+        "stages": {
+         "startup": 17.763313981057827,
+         "read": 17.763313981057827,
+         "communication": 17.763313981057827,
+         "manual": 21.315976777269416
+        },
+        "recovery": {
+         "detection": {
+          "coverage": 0.95,
+          "autoSeconds": 10,
+          "timeoutSeconds": 60
+         },
+         "tDetS": 12.500000000000004,
+         "automatic": {
+          "seconds": 180,
+          "successProbability": 0.99,
+          "stages": {
+           "startup": 60,
+           "graphWithinStartup": 30,
+           "read": 60,
+           "communication": 60
+          }
+         },
+         "manualS": 7200,
+         "globalS": 252.00000000000006
+        },
+        "custom": null
+       },
+       "der": {
+        "mttrS": 100.81707081095945,
+        "contrib": {
+         "detect": 9.668849533021199,
+         "replay": 3.2802762934740404,
+         "failed:replay": 1.2496290641805858,
+         "elastic": 0.3397380560374566,
+         "failed:elastic": 4.529840747166087,
+         "process": 1.9704807250172478,
+         "failed:process": 0.5888792971315915,
+         "globalAuto": 56.563840782093735,
+         "globalManual": 22.62553631283751
+        },
+        "probs": {
+         "replay": 0.4373701724632053,
+         "elastic": 0.22649203735830442,
+         "process": 0.021894230277969422,
+         "global": 0.31424355990052083
+        },
+        "stages": {
+         "startup": 18.854613594031246,
+         "read": 18.854613594031246,
+         "communication": 18.854613594031246,
+         "manual": 22.62553631283751
+        },
+        "recovery": {
+         "detection": {
+          "coverage": 0.95,
+          "autoSeconds": 10,
+          "timeoutSeconds": 60
+         },
+         "tDetS": 12.500000000000004,
+         "automatic": {
+          "seconds": 180,
+          "successProbability": 0.99,
+          "stages": {
+           "startup": 60,
+           "graphWithinStartup": 30,
+           "read": 60,
+           "communication": 60
+          }
+         },
+         "manualS": 7200,
+         "globalS": 252.00000000000006
+        },
+        "custom": null
+       }
+      },
+      "units": [
+       {
+        "id": "npu",
+        "name": {
+         "zh": "NPU（Ascend 910C）",
+         "en": "NPU (Ascend 910C)"
+        },
+        "level": "npu",
+        "faultUnit": "npu",
+        "count": 100000,
+        "perNpu": 1,
+        "fitToday": 1613.9999999999998,
+        "fitAllowed": 1613.9999999999998,
+        "mtbfTodayH": 619578.6864931848,
+        "mtbfAllowedH": 619578.6864931848,
+        "hardPerHourToday": 0.1614,
+        "hardPerHourAllowed": 0.1614,
+        "blastRadiusNpus": 1,
+        "confidence": "paper"
+       },
+       {
+        "id": "job",
+        "name": {
+         "zh": "作业级服务（按 NPU 计）",
+         "en": "Job-level services (per NPU)"
+        },
+        "level": "cluster",
+        "faultUnit": "job",
+        "count": 100000,
+        "perNpu": 1,
+        "fitToday": 543.3333333333334,
+        "fitAllowed": 543.3333333333334,
+        "mtbfTodayH": 1840490.797546012,
+        "mtbfAllowedH": 1840490.797546012,
+        "hardPerHourToday": 0.05433333333333334,
+        "hardPerHourAllowed": 0.05433333333333334,
+        "blastRadiusNpus": 100000,
+        "confidence": "assumed"
+       },
+       {
+        "id": "node",
+        "name": {
+         "zh": "计算节点 · 8 NPU",
+         "en": "Compute node · 8 NPUs"
+        },
+        "level": "node",
+        "faultUnit": "node",
+        "count": 12500,
+        "perNpu": 0.125,
+        "fitToday": 2711.4818760581334,
+        "fitAllowed": 2711.4818760581334,
+        "mtbfTodayH": 368802.02255077154,
+        "mtbfAllowedH": 368802.02255077154,
+        "hardPerHourToday": 0.03389352345072667,
+        "hardPerHourAllowed": 0.03389352345072667,
+        "blastRadiusNpus": 8,
+        "confidence": "vendor"
+       },
+       {
+        "id": "cpu",
+        "name": {
+         "zh": "鲲鹏 CPU",
+         "en": "Kunpeng CPU"
+        },
+        "level": "node",
+        "faultUnit": "cpu",
+        "count": 50000,
+        "perNpu": 0.5,
+        "fitToday": 320,
+        "fitAllowed": 320,
+        "mtbfTodayH": 3125000,
+        "mtbfAllowedH": 3125000,
+        "hardPerHourToday": 0.016,
+        "hardPerHourAllowed": 0.016,
+        "blastRadiusNpus": 8,
+        "confidence": "vendor"
+       },
+       {
+        "id": "cabinet",
+        "name": {
+         "zh": "计算机柜（3 节点 · 24 NPU）",
+         "en": "Compute cabinet (3 nodes · 24 NPUs)"
+        },
+        "level": "cabinet",
+        "faultUnit": "cabinet",
+        "count": 4167,
+        "perNpu": 0.04167,
+        "fitToday": 8880,
+        "fitAllowed": 8880,
+        "mtbfTodayH": 112612.61261261262,
+        "mtbfAllowedH": 112612.61261261262,
+        "hardPerHourToday": 0.03700296000000001,
+        "hardPerHourAllowed": 0.03700296000000001,
+        "blastRadiusNpus": 24,
+        "confidence": "paper"
+       },
+       {
+        "id": "ubL1",
+        "name": {
+         "zh": "UB L1 交换芯片（每节点 7）",
+         "en": "UB L1 switch chip (7 per node)"
+        },
+        "level": "fabric",
+        "faultUnit": "ub-switch",
+        "count": 87500,
+        "perNpu": 0.875,
+        "fitToday": 59.99999999999999,
+        "fitAllowed": 59.99999999999999,
+        "mtbfTodayH": 16666666.666666668,
+        "mtbfAllowedH": 16666666.666666668,
+        "hardPerHourToday": 0.0052499999999999995,
+        "hardPerHourAllowed": 0.0052499999999999995,
+        "blastRadiusNpus": 8,
+        "confidence": "paper"
+       },
+       {
+        "id": "ubL2",
+        "name": {
+         "zh": "UB L2 交换芯片（7 子平面）",
+         "en": "UB L2 switch chip (7 sub-planes)"
+        },
+        "level": "fabric",
+        "faultUnit": "ub-switch",
+        "count": 0,
+        "perNpu": 0,
+        "fitToday": 59.99999999999999,
+        "fitAllowed": 59.99999999999999,
+        "mtbfTodayH": 16666666.666666668,
+        "mtbfAllowedH": 16666666.666666668,
+        "hardPerHourToday": 0,
+        "hardPerHourAllowed": 0,
+        "blastRadiusNpus": null,
+        "confidence": "paper"
+       },
+       {
+        "id": "ubLink",
+        "name": {
+         "zh": "UB 光链路 L1–L2（每 L1 0 条）",
+         "en": "UB optical link L1–L2 (0 per L1 chip)"
+        },
+        "level": "fabric",
+        "faultUnit": "ub-link",
+        "count": 0,
+        "perNpu": 0,
+        "fitToday": 4.761904761904761,
+        "fitAllowed": 4.761904761904761,
+        "mtbfTodayH": 210000000.00000003,
+        "mtbfAllowedH": 210000000.00000003,
+        "hardPerHourToday": 0,
+        "hardPerHourAllowed": 0,
+        "blastRadiusNpus": null,
+        "confidence": "paper"
+       },
+       {
+        "id": "roceTier1",
+        "name": {
+         "zh": "RoCE 叶交换机（第 1 层，2 平面，128 口）",
+         "en": "RoCE leaf switch (tier 1, 2 planes, 128 ports)"
+        },
+        "level": "scale-out",
+        "faultUnit": "roce-switch",
+        "count": 3126,
+        "perNpu": 0.03126,
+        "fitToday": 66.66666666666667,
+        "fitAllowed": 66.66666666666667,
+        "mtbfTodayH": 14999999.999999998,
+        "mtbfAllowedH": 14999999.999999998,
+        "hardPerHourToday": 0.00020840000000000005,
+        "hardPerHourAllowed": 0.00020840000000000005,
+        "blastRadiusNpus": 64,
+        "confidence": "assumed"
+       },
+       {
+        "id": "roceTier2",
+        "name": {
+         "zh": "RoCE 交换机（第 2 层，2 平面，128 口）",
+         "en": "RoCE switch (tier 2, 2 planes, 128 ports)"
+        },
+        "level": "scale-out",
+        "faultUnit": "roce-switch",
+        "count": 3126,
+        "perNpu": 0.03126,
+        "fitToday": 66.66666666666667,
+        "fitAllowed": 66.66666666666667,
+        "mtbfTodayH": 14999999.999999998,
+        "mtbfAllowedH": 14999999.999999998,
+        "hardPerHourToday": 0.00020840000000000005,
+        "hardPerHourAllowed": 0.00020840000000000005,
+        "blastRadiusNpus": null,
+        "confidence": "assumed"
+       },
+       {
+        "id": "roceTier3",
+        "name": {
+         "zh": "RoCE 交换机（第 3 层，2 平面，128 口）",
+         "en": "RoCE switch (tier 3, 2 planes, 128 ports)"
+        },
+        "level": "scale-out",
+        "faultUnit": "roce-switch",
+        "count": 1564,
+        "perNpu": 0.01564,
+        "fitToday": 66.66666666666667,
+        "fitAllowed": 66.66666666666667,
+        "mtbfTodayH": 14999999.999999998,
+        "mtbfAllowedH": 14999999.999999998,
+        "hardPerHourToday": 0.00010426666666666669,
+        "hardPerHourAllowed": 0.00010426666666666669,
+        "blastRadiusNpus": null,
+        "confidence": "assumed"
+       },
+       {
+        "id": "roceLink",
+        "name": {
+         "zh": "RoCE 光链路（NPU–叶 + 层间）",
+         "en": "RoCE optical link (NPU–leaf + inter-tier)"
+        },
+        "level": "scale-out",
+        "faultUnit": "roce-link",
+        "count": 600000,
+        "perNpu": 6,
+        "fitToday": 119.99999999999999,
+        "fitAllowed": 119.99999999999999,
+        "mtbfTodayH": 8333333.333333334,
+        "mtbfAllowedH": 8333333.333333334,
+        "hardPerHourToday": 0.072,
+        "hardPerHourAllowed": 0.072,
+        "blastRadiusNpus": null,
+        "confidence": "assumed"
+       }
+      ],
+      "k": 1,
+      "window": {
+       "trials": 400,
+       "seed": 1,
+       "value": {
+        "mean": 0.9901400045225235,
+        "sd": 0.00285830674800786,
+        "ci95": 0.00028096116280117416,
+        "p05": 0.9846506843542713,
+        "p50": 0.990386389741964,
+        "p95": 0.9936860725308595,
+        "n": 400,
+        "ciMethod": "student-t"
+       },
+       "pAtLeastTarget": 0.945,
+       "wilson": [
+        0.9181325521920267,
+        0.9634015058504493
+       ],
+       "verdict": "supported"
+      },
+      "aOp": 0.9902907643644036,
+      "aOpDerated": 0.9889725938253819
+     },
+     "required": {
+      "B": 53.03157223451807,
+      "totalBudget": 54.822335025380475,
+      "mtbfAtTodayMttrH": 1.9010764071848125,
+      "mttrAtTodayMtbfS": 139.40969787833643,
+      "ratioToday": 38.35090280340345,
+      "mtbfFactor": 0.7231711448004361,
+      "mttrFactor": 1.3827985355748074
+     },
+     "hardwareOnly": {
+      "needed": false,
+      "factor": null,
+      "slack": 1.3828081310696818,
+      "final": 0.9902907643644036,
+      "finalDerated": 0.9889725938253819,
+      "effort": 0
+     },
+     "optimal": {
+      "feasible": true,
+      "mechanisms": [],
+      "levers": [],
+      "needed": false,
+      "factor": null,
+      "slack": 1.3828081310696818,
+      "final": 0.9902907643644036,
+      "finalDerated": 0.9889725938253819,
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "verification": {
+       "trials": 400,
+       "seed": 1,
+       "value": {
+        "mean": 0.9901400045225235,
+        "sd": 0.00285830674800786,
+        "ci95": 0.00028096116280117416,
+        "p05": 0.9846506843542713,
+        "p50": 0.990386389741964,
+        "p95": 0.9936860725308595,
+        "n": 400,
+        "ciMethod": "student-t"
+       },
+       "pAtLeastTarget": 0.945,
+       "wilson": [
+        0.9181325521920267,
+        0.9634015058504493
+       ],
+       "verdict": "supported"
+      },
+      "alternatives": [
+       {
+        "mechanisms": [],
+        "levers": [],
+        "effort": 0,
+        "value": 0.9902907643644036,
+        "derated": 0.9889725938253819,
+        "feasible": true
+       },
+       {
+        "mechanisms": [],
+        "levers": [
+         "manual"
+        ],
+        "effort": 2,
+        "value": 0.9920515671558243,
+        "derated": 0.9905224934383882,
+        "feasible": true
+       },
+       {
+        "mechanisms": [
+         "D-HARD"
+        ],
+        "levers": [],
+        "effort": 2,
+        "value": 0.9912156130564337,
+        "derated": 0.9896138611077995,
+        "feasible": true
+       },
+       {
+        "mechanisms": [
+         "C-LOSSLESS"
+        ],
+        "levers": [],
+        "effort": 2,
+        "value": 0.9909095929341539,
+        "derated": 0.9892667014441722,
+        "feasible": true
+       },
+       {
+        "mechanisms": [],
+        "levers": [
+         "auto"
+        ],
+        "effort": 3,
+        "value": 0.9942121812559684,
+        "derated": 0.9920772581331263,
+        "feasible": true
+       },
+       {
+        "mechanisms": [
+         "D-RECOVERY-CLASSIFY"
+        ],
+        "levers": [],
+        "effort": 3,
+        "value": 0.9922985793392832,
+        "derated": 0.9907150816800533,
+        "feasible": true
+       }
+      ],
+      "evaluations": 2111
+     },
+     "recommended": {
+      "mechanisms": [],
+      "levers": [],
+      "k": 1.1057400393243237,
+      "kMean": 1.3828081316185739,
+      "kPlan": 1,
+      "binding": "window",
+      "escalated": false,
+      "tried": [
+       {
+        "mechanisms": [],
+        "levers": [],
+        "kMean": 1.3828081316185739,
+        "kPlan": 1,
+        "pAtLeastTarget": 0.945,
+        "verdict": "supported"
+       }
+      ],
+      "window": {
+       "trials": 400,
+       "seed": 1,
+       "value": {
+        "mean": 0.9893978979192619,
+        "sd": 0.0027798094580997208,
+        "ci95": 0.0002732451645568629,
+        "p05": 0.9839885995370319,
+        "p50": 0.9896161265432053,
+        "p95": 0.9927799768518468,
+        "n": 400,
+        "ciMethod": "student-t"
+       },
+       "pAtLeastTarget": 0.93,
+       "wilson": [
+        0.9006910535722495,
+        0.9511283733002555
+       ],
+       "verdict": "supported"
+      },
+      "windowPlan": {
+       "trials": 400,
+       "seed": 1,
+       "value": {
+        "mean": 0.9901400045225235,
+        "sd": 0.00285830674800786,
+        "ci95": 0.00028096116280117416,
+        "p05": 0.9846506843542713,
+        "p50": 0.990386389741964,
+        "p95": 0.9936860725308595,
+        "n": 400,
+        "ciMethod": "student-t"
+       },
+       "pAtLeastTarget": 0.945,
+       "wilson": [
+        0.9181325521920267,
+        0.9634015058504493
+       ],
+       "verdict": "supported"
+      },
+      "effort": {
+       "mechanisms": 0,
+       "levers": 0,
+       "hardware": 0,
+       "total": 0
+      },
+      "applied": [
+       {
+        "id": "D-SDC",
+        "order": 0,
+        "kind": "detect",
+        "effort": 5,
+        "nominal": {
+         "coverage": 0.95,
+         "detectSeconds": 1
+        },
+        "derated": {
+         "coverage": 0.8999999999999999,
+         "detectSeconds": 1.5
+        }
+       },
+       {
+        "id": "R-SDC",
+        "order": 1,
+        "kind": "recover",
+        "effort": 4,
+        "nominal": {
+         "stepSeconds": 1,
+         "recoverSeconds": 1
+        },
+        "derated": {
+         "stepSeconds": 1.5,
+         "recoverSeconds": 1.5
+        }
+       },
+       {
+        "id": "R-PROCESS",
+        "order": 2,
+        "kind": "recover",
+        "effort": 3,
+        "nominal": {
+         "success": 0.95,
+         "successSeconds": 60,
+         "failureSeconds": 120
+        },
+        "derated": {
+         "success": 0.87,
+         "successSeconds": 90,
+         "failureSeconds": 180
+        }
+       },
+       {
+        "id": "R-ELASTIC",
+        "order": 3,
+        "kind": "recover",
+        "effort": 5,
+        "nominal": {
+         "domains": 50,
+         "success": 0.98,
+         "recoverSeconds": 180,
+         "failureSeconds": 120,
+         "syncSeconds": 1
+        },
+        "derated": {
+         "domains": 50,
+         "success": 0.9,
+         "recoverSeconds": 270,
+         "failureSeconds": 180,
+         "syncSeconds": 1.5
+        }
+       },
+       {
+        "id": "C-FAST",
+        "order": 4,
+        "kind": "checkpoint",
+        "effort": 3,
+        "nominal": {
+         "computeSeconds": 60,
+         "saveSeconds": 1
+        },
+        "derated": {
+         "computeSeconds": 60,
+         "saveSeconds": 1.5
+        }
+       },
+       {
+        "id": "R-REPLAY",
+        "order": 5,
+        "kind": "recover",
+        "effort": 2,
+        "nominal": {
+         "success": 0.92,
+         "successSeconds": 5,
+         "failureSeconds": 10
+        },
+        "derated": {
+         "success": 0.8400000000000001,
+         "successSeconds": 7.5,
+         "failureSeconds": 15
+        }
+       }
+      ],
+      "leverValues": {
+       "nominal": {
+        "autoSeconds": 180,
+        "success": 0.99,
+        "manualSeconds": 7200
+       },
+       "derated": {
+        "autoSeconds": 180,
+        "success": 0.99,
+        "manualSeconds": 7200
+       }
+      },
+      "plan": {
+       "aOp": 0.9902907643644036,
+       "aOpDerated": 0.9889725938253819
+      },
+      "final": {
+       "kpi": {
+        "aOp": 0.9893252265811314,
+        "aRun": 0.9893372467854794,
+        "phi": 0.00001214975417840325,
+        "lamHw": 0.420624487825814,
+        "mtbfHwH": 2.377417456527431,
+        "mttrS": 88.20422733305708,
+        "sumLP": 37.1008579460388,
+        "other": [
+         {
+          "id": "isolation",
+          "ratePerHour": 0.006692357862118686,
+          "pauseS": 252.00000000000006,
+          "mtbfH": 149.42416717736864,
+          "sPerH": 1.6864741812539092
+         },
+         {
+          "id": "sdcDetected",
+          "ratePerHour": 0.004096747711434242,
+          "pauseS": 3,
+          "mtbfH": 244.0960660596567,
+          "sPerH": 0.012290243134302724
+         },
+         {
+          "id": "falseAlarm",
+          "ratePerHour": 0,
+          "pauseS": 0,
+          "mtbfH": null,
+          "sPerH": 0
+         }
+        ],
+        "F": 1.698764424388212,
+        "mtbiH": 2.3401838942017625,
+        "delivered": 0.9487142085282253,
+        "detectS": 12.500000000000004,
+        "globalS": 252.00000000000006
+       },
+       "kpiDerated": {
+        "aOp": 0.9878720763156144,
+        "aRun": 0.9878955170908666,
+        "phi": 0.000023727990305366653,
+        "lamHw": 0.420624487825814,
+        "mtbfHwH": 2.377417456527431,
+        "mttrS": 100.81707081095945,
+        "sumLP": 42.40612877395864,
+        "other": [
+         {
+          "id": "isolation",
+          "ratePerHour": 0.006692357862118686,
+          "pauseS": 252.00000000000006,
+          "mtbfH": 149.42416717736864,
+          "sPerH": 1.6864741812539092
+         },
+         {
+          "id": "sdcDetected",
+          "ratePerHour": 0.003881129410832439,
+          "pauseS": 4.5,
+          "mtbfH": 257.6569586185265,
+          "sPerH": 0.017465082348745976
+         },
+         {
+          "id": "falseAlarm",
+          "ratePerHour": 0,
+          "pauseS": 0,
+          "mtbfH": null,
+          "sPerH": 0
+         }
+        ],
+        "F": 1.7039392636026551,
+        "mtbiH": 2.3401838942017625,
+        "delivered": 0.9179845950395716,
+        "detectS": 12.500000000000004,
+        "globalS": 252.00000000000006
+       },
+       "layers": {
+        "cluster": {
+         "lam": 0.06007854213662159,
+         "c": 15.890774395136415,
+         "iso": 0.23690276358858237,
+         "sdc": 0.001159944661045638,
+         "mttrS": 264.50000000000006,
+         "cDerated": 15.890774395136415,
+         "isoDerated": 0.23690276358858237,
+         "sdcDerated": 0.0016483424130648541,
+         "mttrDeratedS": 264.50000000000006,
+         "instances": 1,
+         "mtbfH": 16.64487792872787,
+         "mtbfInstanceH": 16.64487792872787,
+         "rows": [
+          {
+           "id": "STORAGE-hard",
+           "unit": "job",
+           "ratePerHour": 0.014743200524324315,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          },
+          {
+           "id": "UNKNOWN-hard",
+           "unit": "job",
+           "ratePerHour": 0.04533534161229728,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          }
+         ]
+        },
+        "scaleout": {
+         "lam": 0.08018944710784191,
+         "c": 3.1824769956929932,
+         "iso": 0.02635265360331792,
+         "sdc": 0.000012803290735247147,
+         "mttrS": 39.686980151054954,
+         "cDerated": 5.050204610916494,
+         "isoDerated": 0.02635265360331792,
+         "sdcDerated": 0.000018194149992193313,
+         "mttrDeratedS": 62.97841914441411,
+         "instances": 1,
+         "mtbfH": 12.47046882185334,
+         "mtbfInstanceH": 12.47046882185334,
+         "rows": [
+          {
+           "id": "OPT-hard@roce",
+           "unit": "roce-link",
+           "ratePerHour": 0.07961328283135131,
+           "meanPauseS": 38.06,
+           "pGlobal": 0.07999999999999996
+          },
+          {
+           "id": "FABRIC-hard@roce",
+           "unit": "roce-switch",
+           "ratePerHour": 0.0005761642764905943,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          }
+         ]
+        },
+        "superpod": {
+         "lam": 0.0058051352064527,
+         "c": 1.5354582621067394,
+         "iso": 0.02138696659392222,
+         "sdc": 0.00014333264321060967,
+         "mttrS": 264.50000000000006,
+         "cDerated": 1.5354582621067394,
+         "isoDerated": 0.02138696659392222,
+         "sdcDerated": 0.0002036832298256032,
+         "mttrDeratedS": 264.50000000000006,
+         "instances": 12500,
+         "mtbfH": 172.2612763417551,
+         "mtbfInstanceH": 2153265.9542719387,
+         "rows": [
+          {
+           "id": "FABRIC-hard",
+           "unit": "ub-switch",
+           "ratePerHour": 0.0058051352064527,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          }
+         ]
+        },
+        "cabinet": {
+         "lam": 0.040915654445516376,
+         "c": 10.822190600839084,
+         "iso": 0.31122721288626526,
+         "sdc": 0,
+         "mttrS": 264.50000000000006,
+         "cDerated": 10.822190600839084,
+         "isoDerated": 0.31122721288626526,
+         "sdcDerated": 0,
+         "mttrDeratedS": 264.50000000000006,
+         "instances": 4167,
+         "mtbfH": 24.44052315799099,
+         "mtbfInstanceH": 101843.65999934846,
+         "rows": [
+          {
+           "id": "POWER-hard",
+           "unit": "cabinet",
+           "ratePerHour": 0.027645712463186742,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          },
+          {
+           "id": "COOL-hard",
+           "unit": "cabinet",
+           "ratePerHour": 0.013269941982329636,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          }
+         ]
+        },
+        "node": {
+         "lam": 0.05516926658243558,
+         "c": 3.055911444917972,
+         "iso": 0.26905651306402056,
+         "sdc": 0.00013377713366323572,
+         "mttrS": 55.3915546503004,
+         "cDerated": 4.341574261949263,
+         "isoDerated": 0.26905651306402056,
+         "sdcDerated": 0.00019010434783722972,
+         "mttrDeratedS": 78.69552254173891,
+         "instances": 12500,
+         "mtbfH": 18.126033966860334,
+         "mtbfInstanceH": 226575.42458575417,
+         "rows": [
+          {
+           "id": "BOXIO-hard",
+           "unit": "node",
+           "ratePerHour": 0.005160120183513511,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          },
+          {
+           "id": "CPU-hard",
+           "unit": "cpu",
+           "ratePerHour": 0.01769184062918918,
+           "meanPauseS": 5.142000000000004,
+           "pGlobal": 0.0010000000000000018
+          },
+          {
+           "id": "DDR-hard",
+           "unit": "node",
+           "ratePerHour": 0.007740180275270266,
+           "meanPauseS": 5.142000000000004,
+           "pGlobal": 0.0010000000000000018
+          },
+          {
+           "id": "SSD-hard",
+           "unit": "node",
+           "ratePerHour": 0.019048425297841,
+           "meanPauseS": 5.142000000000004,
+           "pGlobal": 0.0010000000000000018
+          },
+          {
+           "id": "MGMT-hard",
+           "unit": "node",
+           "ratePerHour": 0.005528700196621618,
+           "meanPauseS": 264.50000000000006,
+           "pGlobal": 1
+          }
+         ]
+        },
+        "npu": {
+         "lam": 0.17846644234694584,
+         "c": 2.6140462473455934,
+         "iso": 0.8215480715178008,
+         "sdc": 0.010840385405647994,
+         "mttrS": 14.647270450227186,
+         "cDerated": 4.765926643010649,
+         "isoDerated": 0.8215480715178008,
+         "sdcDerated": 0.015404758208026096,
+         "mttrDeratedS": 26.70488961586122,
+         "instances": 100000,
+         "mtbfH": 5.603294304796867,
+         "mtbfInstanceH": 560329.4304796867,
+         "rows": [
+          {
+           "id": "CORE-hard",
+           "unit": "npu",
+           "ratePerHour": 0.049758301769594566,
+           "meanPauseS": 17.311360000000008,
+           "pGlobal": 0.0000800000000000001
+          },
+          {
+           "id": "SRAM-hard",
+           "unit": "npu",
+           "ratePerHour": 0.01842900065540539,
+           "meanPauseS": 17.311360000000008,
+           "pGlobal": 0.0000800000000000001
+          },
+          {
+           "id": "IOD-hard",
+           "unit": "npu",
+           "ratePerHour": 0.022114800786486474,
+           "meanPauseS": 17.311360000000008,
+           "pGlobal": 0.0000800000000000001
+          },
+          {
+           "id": "MODULE-hard",
+           "unit": "npu",
+           "ratePerHour": 0.01990332070783783,
+           "meanPauseS": 5.142000000000004,
+           "pGlobal": 0.0010000000000000018
+          },
+          {
+           "id": "MEMT-hard",
+           "unit": "npu",
+           "ratePerHour": 0.04246041751005403,
+           "meanPauseS": 17.311360000000008,
+           "pGlobal": 0.0000800000000000001
+          },
+          {
+           "id": "MEMP-hard",
+           "unit": "npu",
+           "ratePerHour": 0.01916616068162161,
+           "meanPauseS": 5.142000000000004,
+           "pGlobal": 0.0010000000000000018
+          },
+          {
+           "id": "NIC-hard",
+           "unit": "npu",
+           "ratePerHour": 0.006634440235945943,
+           "meanPauseS": 17.311360000000008,
+           "pGlobal": 0.0000800000000000001
+          }
+         ]
+        }
+       },
+       "mttr": {
+        "nom": {
+         "mttrS": 88.20422733305706,
+         "contrib": {
+          "detect": 9.741968386734047,
+          "replay": 2.395122373012791,
+          "failed:replay": 0.4165430213935286,
+          "elastic": 0.22064252906127627,
+          "failed:elastic": 0.5403490507623097,
+          "process": 0.25666579911209714,
+          "failed:process": 0.027017452538115515,
+          "globalAuto": 53.28994194317349,
+          "globalManual": 21.315976777269412
+         },
+         "probs": {
+          "replay": 0.47902447460255826,
+          "elastic": 0.22064252906127627,
+          "process": 0.004277763318534951,
+          "global": 0.2960552330176305
+         },
+         "stages": {
+          "startup": 17.763313981057827,
+          "read": 17.763313981057827,
+          "communication": 17.763313981057827,
+          "manual": 21.315976777269412
+         },
+         "recovery": {
+          "detection": {
+           "coverage": 0.95,
+           "autoSeconds": 10,
+           "timeoutSeconds": 60
+          },
+          "tDetS": 12.500000000000004,
+          "automatic": {
+           "seconds": 180,
+           "successProbability": 0.99,
+           "stages": {
+            "startup": 60,
+            "graphWithinStartup": 30,
+            "read": 60,
+            "communication": 60
+           }
+          },
+          "manualS": 7200,
+          "globalS": 252.00000000000006
+         },
+         "custom": null
+        },
+        "der": {
+         "mttrS": 100.81707081095945,
+         "contrib": {
+          "detect": 9.668849533021197,
+          "replay": 3.28027629347404,
+          "failed:replay": 1.2496290641805858,
+          "elastic": 0.3397380560374566,
+          "failed:elastic": 4.529840747166087,
+          "process": 1.9704807250172478,
+          "failed:process": 0.5888792971315914,
+          "globalAuto": 56.563840782093735,
+          "globalManual": 22.62553631283751
+         },
+         "probs": {
+          "replay": 0.4373701724632053,
+          "elastic": 0.22649203735830442,
+          "process": 0.021894230277969422,
+          "global": 0.3142435599005208
+         },
+         "stages": {
+          "startup": 18.854613594031246,
+          "read": 18.854613594031246,
+          "communication": 18.854613594031246,
+          "manual": 22.62553631283751
+         },
+         "recovery": {
+          "detection": {
+           "coverage": 0.95,
+           "autoSeconds": 10,
+           "timeoutSeconds": 60
+          },
+          "tDetS": 12.500000000000004,
+          "automatic": {
+           "seconds": 180,
+           "successProbability": 0.99,
+           "stages": {
+            "startup": 60,
+            "graphWithinStartup": 30,
+            "read": 60,
+            "communication": 60
+           }
+          },
+          "manualS": 7200,
+          "globalS": 252.00000000000006
+         },
+         "custom": null
+        }
+       },
+       "units": [
+        {
+         "id": "npu",
+         "name": {
+          "zh": "NPU（Ascend 910C）",
+          "en": "NPU (Ascend 910C)"
+         },
+         "level": "npu",
+         "faultUnit": "npu",
+         "count": 100000,
+         "perNpu": 1,
+         "fitToday": 1613.9999999999998,
+         "fitAllowed": 1784.6644234694584,
+         "mtbfTodayH": 619578.6864931848,
+         "mtbfAllowedH": 560329.4304796867,
+         "hardPerHourToday": 0.1614,
+         "hardPerHourAllowed": 0.17846644234694584,
+         "blastRadiusNpus": 1,
+         "confidence": "paper"
+        },
+        {
+         "id": "job",
+         "name": {
+          "zh": "作业级服务（按 NPU 计）",
+          "en": "Job-level services (per NPU)"
+         },
+         "level": "cluster",
+         "faultUnit": "job",
+         "count": 100000,
+         "perNpu": 1,
+         "fitToday": 543.3333333333334,
+         "fitAllowed": 600.7854213662159,
+         "mtbfTodayH": 1840490.797546012,
+         "mtbfAllowedH": 1664487.7928727868,
+         "hardPerHourToday": 0.05433333333333334,
+         "hardPerHourAllowed": 0.060078542136621595,
+         "blastRadiusNpus": 100000,
+         "confidence": "assumed"
+        },
+        {
+         "id": "node",
+         "name": {
+          "zh": "计算节点 · 8 NPU",
+          "en": "Compute node · 8 NPUs"
+         },
+         "level": "node",
+         "faultUnit": "node",
+         "count": 12500,
+         "perNpu": 0.125,
+         "fitToday": 2711.4818760581334,
+         "fitAllowed": 2998.1940762597114,
+         "mtbfTodayH": 368802.02255077154,
+         "mtbfAllowedH": 333534.1123905874,
+         "hardPerHourToday": 0.03389352345072667,
+         "hardPerHourAllowed": 0.0374774259532464,
+         "blastRadiusNpus": 8,
+         "confidence": "vendor"
+        },
+        {
+         "id": "cpu",
+         "name": {
+          "zh": "鲲鹏 CPU",
+          "en": "Kunpeng CPU"
+         },
+         "level": "node",
+         "faultUnit": "cpu",
+         "count": 50000,
+         "perNpu": 0.5,
+         "fitToday": 320,
+         "fitAllowed": 353.8368125837836,
+         "mtbfTodayH": 3125000,
+         "mtbfAllowedH": 2826161.5649819192,
+         "hardPerHourToday": 0.016,
+         "hardPerHourAllowed": 0.01769184062918918,
+         "blastRadiusNpus": 8,
+         "confidence": "vendor"
+        },
+        {
+         "id": "cabinet",
+         "name": {
+          "zh": "计算机柜（3 节点 · 24 NPU）",
+          "en": "Compute cabinet (3 nodes · 24 NPUs)"
+         },
+         "level": "cabinet",
+         "faultUnit": "cabinet",
+         "count": 4167,
+         "perNpu": 0.04167,
+         "fitToday": 8880,
+         "fitAllowed": 9818.971549199994,
+         "mtbfTodayH": 112612.61261261262,
+         "mtbfAllowedH": 101843.65999934846,
+         "hardPerHourToday": 0.03700296000000001,
+         "hardPerHourAllowed": 0.04091565444551639,
+         "blastRadiusNpus": 24,
+         "confidence": "paper"
+        },
+        {
+         "id": "ubL1",
+         "name": {
+          "zh": "UB L1 交换芯片（每节点 7）",
+          "en": "UB L1 switch chip (7 per node)"
+         },
+         "level": "fabric",
+         "faultUnit": "ub-switch",
+         "count": 87500,
+         "perNpu": 0.875,
+         "fitToday": 59.99999999999999,
+         "fitAllowed": 66.34440235945942,
+         "mtbfTodayH": 16666666.666666668,
+         "mtbfAllowedH": 15072861.67990357,
+         "hardPerHourToday": 0.0052499999999999995,
+         "hardPerHourAllowed": 0.005805135206452699,
+         "blastRadiusNpus": 8,
+         "confidence": "paper"
+        },
+        {
+         "id": "ubL2",
+         "name": {
+          "zh": "UB L2 交换芯片（7 子平面）",
+          "en": "UB L2 switch chip (7 sub-planes)"
+         },
+         "level": "fabric",
+         "faultUnit": "ub-switch",
+         "count": 0,
+         "perNpu": 0,
+         "fitToday": 59.99999999999999,
+         "fitAllowed": 66.34440235945942,
+         "mtbfTodayH": 16666666.666666668,
+         "mtbfAllowedH": 15072861.67990357,
+         "hardPerHourToday": 0,
+         "hardPerHourAllowed": 0,
+         "blastRadiusNpus": null,
+         "confidence": "paper"
+        },
+        {
+         "id": "ubLink",
+         "name": {
+          "zh": "UB 光链路 L1–L2（每 L1 0 条）",
+          "en": "UB optical link L1–L2 (0 per L1 chip)"
+         },
+         "level": "fabric",
+         "faultUnit": "ub-link",
+         "count": 0,
+         "perNpu": 0,
+         "fitToday": 4.761904761904761,
+         "fitAllowed": 5.265428758687255,
+         "mtbfTodayH": 210000000.00000003,
+         "mtbfAllowedH": 189918057.166785,
+         "hardPerHourToday": 0,
+         "hardPerHourAllowed": 0,
+         "blastRadiusNpus": null,
+         "confidence": "paper"
+        },
+        {
+         "id": "roceTier1",
+         "name": {
+          "zh": "RoCE 叶交换机（第 1 层，2 平面，128 口）",
+          "en": "RoCE leaf switch (tier 1, 2 planes, 128 ports)"
+         },
+         "level": "scale-out",
+         "faultUnit": "roce-switch",
+         "count": 3126,
+         "perNpu": 0.03126,
+         "fitToday": 66.66666666666667,
+         "fitAllowed": 73.71600262162158,
+         "mtbfTodayH": 14999999.999999998,
+         "mtbfAllowedH": 13565575.511913214,
+         "hardPerHourToday": 0.00020840000000000005,
+         "hardPerHourAllowed": 0.00023043622419518912,
+         "blastRadiusNpus": 64,
+         "confidence": "assumed"
+        },
+        {
+         "id": "roceTier2",
+         "name": {
+          "zh": "RoCE 交换机（第 2 层，2 平面，128 口）",
+          "en": "RoCE switch (tier 2, 2 planes, 128 ports)"
+         },
+         "level": "scale-out",
+         "faultUnit": "roce-switch",
+         "count": 3126,
+         "perNpu": 0.03126,
+         "fitToday": 66.66666666666667,
+         "fitAllowed": 73.71600262162158,
+         "mtbfTodayH": 14999999.999999998,
+         "mtbfAllowedH": 13565575.511913214,
+         "hardPerHourToday": 0.00020840000000000005,
+         "hardPerHourAllowed": 0.00023043622419518912,
+         "blastRadiusNpus": null,
+         "confidence": "assumed"
+        },
+        {
+         "id": "roceTier3",
+         "name": {
+          "zh": "RoCE 交换机（第 3 层，2 平面，128 口）",
+          "en": "RoCE switch (tier 3, 2 planes, 128 ports)"
+         },
+         "level": "scale-out",
+         "faultUnit": "roce-switch",
+         "count": 1564,
+         "perNpu": 0.01564,
+         "fitToday": 66.66666666666667,
+         "fitAllowed": 73.71600262162158,
+         "mtbfTodayH": 14999999.999999998,
+         "mtbfAllowedH": 13565575.511913214,
+         "hardPerHourToday": 0.00010426666666666669,
+         "hardPerHourAllowed": 0.00011529182810021618,
+         "blastRadiusNpus": null,
+         "confidence": "assumed"
+        },
+        {
+         "id": "roceLink",
+         "name": {
+          "zh": "RoCE 光链路（NPU–叶 + 层间）",
+          "en": "RoCE optical link (NPU–leaf + inter-tier)"
+         },
+         "level": "scale-out",
+         "faultUnit": "roce-link",
+         "count": 600000,
+         "perNpu": 6,
+         "fitToday": 119.99999999999999,
+         "fitAllowed": 132.68880471891885,
+         "mtbfTodayH": 8333333.333333334,
+         "mtbfAllowedH": 7536430.839951785,
+         "hardPerHourToday": 0.072,
+         "hardPerHourAllowed": 0.0796132828313513,
+         "blastRadiusNpus": null,
+         "confidence": "assumed"
+        }
+       ],
+       "k": 1.1057400393243237
+      },
+      "removal": {
+       "D-SDC": {
+        "byLayer": {
+         "cluster": -0.0011599446610439657,
+         "scaleout": -0.000012803290735163841,
+         "superpod": -0.0001433326432105364,
+         "cabinet": 0,
+         "node": -0.0001337771336631377,
+         "npu": -0.010840385405647801
+        },
+        "aOp": 0.00015283974073898587,
+        "delivered": 0.2883123696321873
+       },
+       "R-SDC": {
+        "byLayer": {
+         "cluster": 0.09666205508713688,
+         "scaleout": 0.0010669408946037962,
+         "superpod": 0.01194438693421751,
+         "cabinet": 0,
+         "node": 0.011148094471936432,
+         "npu": 0.9033654504706661
+        },
+        "aOp": 0.00027837623582593896,
+        "delivered": 0.00030429003877430194
+       },
+       "R-PROCESS": {
+        "byLayer": {
+         "cluster": 0,
+         "scaleout": 0,
+         "superpod": 0,
+         "cabinet": 0,
+         "node": 0.15692701420171584,
+         "npu": 0.17718052860265399
+        },
+        "aOp": 0.0000908285102362294,
+        "delivered": 0.00008863417796856066
+       },
+       "R-ELASTIC": {
+        "byLayer": {
+         "cluster": 0,
+         "scaleout": 0,
+         "superpod": 0,
+         "cabinet": 0,
+         "node": 3.69000885605044,
+         "npu": 4.166253484075667
+        },
+        "aOp": 0.002131342559776206,
+        "delivered": 0.0027292452634717357
+       },
+       "C-FAST": {
+        "byLayer": {
+         "cluster": 0,
+         "scaleout": 0,
+         "superpod": 0,
+         "cabinet": 0,
+         "node": 0,
+         "npu": 0
+        },
+        "aOp": -4.993954783039101e-8,
+        "delivered": 0.0007716332813103577
+       },
+       "R-REPLAY": {
+        "byLayer": {
+         "cluster": 0,
+         "scaleout": 18.0276317643312,
+         "superpod": 0,
+         "cabinet": 0,
+         "node": 0,
+         "npu": -1.6963718007975972
+        },
+        "aOp": 0.00442028195873323,
+        "delivered": 0.005062691001748165
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "mechanismLibrary": {
+  "D-SDC": {
+   "name": {
+    "zh": "静默即时检测",
+    "en": "Immediate silent-corruption detection"
+   },
+   "kind": "detect",
+   "effort": 5,
+   "change": {
+    "zh": "即时检出 0 % → 95 %，检测 1 s；仅启用检测时回到现有干净 CKPT 并用全局恢复；漏检仍 120 h 后发现",
+    "en": "immediate detection 0 % → 95 % after 1 s; the job rolls back to the last checkpoint and runs the global recovery; the remaining 5 % are still found after 120 h"
+   },
+   "requires": [],
+   "nominal": {
+    "coverage": 0.95,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.8999999999999999,
+    "detectSeconds": 1.5
+   }
+  },
+  "R-SDC": {
+   "name": {
+    "zh": "干净状态恢复与 step 重算",
+    "en": "Clean step-state recovery"
+   },
+   "kind": "recover",
+   "effort": 4,
+   "change": {
+    "zh": "已即时检出的静默从全局 CKPT / 3 min 恢复 → 易失干净 step 状态 / 1 s 恢复，最多重做 1 s 计算；不缩短漏检的兜底",
+    "en": "a detected corruption recovers from the volatile clean step state in 1 s and redoes at most 1 s instead of the global checkpoint recovery; the fallback for undetected corruption is unchanged"
+   },
+   "requires": [
+    "D-SDC"
+   ],
+   "nominal": {
+    "stepSeconds": 1,
+    "recoverSeconds": 1
+   },
+   "derated": {
+    "stepSeconds": 1.5,
+    "recoverSeconds": 1.5
+   }
+  },
+  "R-PROCESS": {
+   "name": {
+    "zh": "进程 / Pod 重调度",
+    "en": "Process / pod rescheduling"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "适用中断 95 % 在 60 s 重建进程，仍全局暂停并回滚 CKPT；失败 120 s 后全局 CKPT",
+    "en": "95 % of applicable interruptions rebuild the process in 60 s (global pause, rollback to the checkpoint); a failure costs 120 s before the global recovery"
+   },
+   "requires": [],
+   "nominal": {
+    "success": 0.95,
+    "successSeconds": 60,
+    "failureSeconds": 120
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 90,
+    "failureSeconds": 180
+   }
+  },
+  "R-ELASTIC": {
+   "name": {
+    "zh": "DP 域弹性恢复",
+    "en": "DP-domain elastic recovery"
+   },
+   "kind": "recover",
+   "effort": 5,
+   "change": {
+    "zh": "适用中断 98 % 局部恢复成功：50 域中一个域 180 s 不可用，全局协调 1 s；状态冗余避免回滚；失败 120 s 后后续全局恢复",
+    "en": "98 % of applicable interruptions recover locally: one of 50 domains is out for 180 s, the job pauses 1 s to re-synchronise; redundant state avoids rollback; a failure costs 120 s before the next rung"
+   },
+   "requires": [],
+   "nominal": {
+    "domains": 50,
+    "success": 0.98,
+    "recoverSeconds": 180,
+    "failureSeconds": 120,
+    "syncSeconds": 1
+   },
+   "derated": {
+    "domains": 50,
+    "success": 0.9,
+    "recoverSeconds": 270,
+    "failureSeconds": 180,
+    "syncSeconds": 1.5
+   }
+  },
+  "C-FAST": {
+   "name": {
+    "zh": "缩短 CKPT 周期和保存阻塞",
+    "en": "Faster checkpoints"
+   },
+   "kind": "checkpoint",
+   "effort": 3,
+   "change": {
+    "zh": "每计算 300 s 保存 4 s → 每计算 60 s 保存 1 s；同时改变保存开销与回滚",
+    "en": "save 4 s every 300 s of compute → save 1 s every 60 s; both the save overhead and the rollback change"
+   },
+   "requires": [],
+   "nominal": {
+    "computeSeconds": 60,
+    "saveSeconds": 1
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 1.5
+   }
+  },
+  "R-REPLAY": {
+   "name": {
+    "zh": "通信 / 算子重执行",
+    "en": "Operator / communication replay"
+   },
+   "kind": "recover",
+   "effort": 2,
+   "change": {
+    "zh": "瞬态中断先重执行：90 % 在 5 s 成功且不回滚；失败耗时 10 s 后进入后续恢复链",
+    "en": "transient interruptions are re-executed first: 90 % succeed in 5 s without rollback; a failure costs 10 s and continues down the chain"
+   },
+   "requires": [],
+   "nominal": {
+    "success": 0.92,
+    "successSeconds": 5,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.8400000000000001,
+    "successSeconds": 7.5,
+    "failureSeconds": 15
+   }
+  },
+  "D-HARD": {
+   "name": {
+    "zh": "中断检测 / 超时兜底",
+    "en": "Interruption detection / timeout fallback"
+   },
+   "kind": "detect",
+   "effort": 2,
+   "change": {
+    "zh": "基线 95 % 在 10 s 发现、其余 60 s 超时 → 99.9 % 在 1 s 发现、其余 60 s；只改变停机中的发现时间",
+    "en": "baseline 95 % detected in 10 s, rest by a 60 s timeout → 99.9 % in 1 s, rest 60 s; only the detection part of the outage changes"
+   },
+   "requires": [],
+   "nominal": {
+    "coverage": 0.999,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.949,
+    "detectSeconds": 1.5
+   }
+  },
+  "D-RECOVERY-CLASSIFY": {
+   "name": {
+    "zh": "故障分类与恢复动作匹配",
+    "en": "Fault classification and recovery-action matching"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "自动恢复仍 180s；需要额外 2h 人工恢复的概率从 1% 降至 0.1%。",
+    "en": "The automatic attempt stays 180 s; the probability of a 2 h manual fallback drops from 1 % to 0.1 %"
+   },
+   "requires": [],
+   "nominal": {
+    "manualProbabilityTarget": 0.001,
+    "eligibleShare": 1,
+    "success": 0.95
+   },
+   "derated": {
+    "manualProbabilityTarget": 0.0015,
+    "eligibleShare": 0.95,
+    "success": 0.87
+   }
+  },
+  "R-LINK-LOCAL": {
+   "name": {
+    "zh": "链路透明恢复",
+    "en": "Link-transparent recovery"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "常规全局恢复并回滚 → 链路恢复成功后继续训练。候选总停顿 2s，包含发现、协调和恢复。",
+    "en": "Global recovery with rollback → the link recovers and training continues: 2 s total pause (detection, coordination and recovery), no rollback"
+   },
+   "requires": [],
+   "nominal": {
+    "successSeconds": 2,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "successSeconds": 3,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   }
+  },
+  "R-RUNTIME-SNAPSHOT": {
+   "name": {
+    "zh": "运行时初始化快照",
+    "en": "Runtime initialisation snapshot"
+   },
+   "kind": "recover",
+   "effort": 4,
+   "change": {
+    "zh": "相同 60s 启动预算，用初始化快照恢复至 15s；加载最新训练状态和外部重绑定仍包含在其他阶段。",
+    "en": "The same 60 s startup budget restored from an initialisation snapshot in 15 s; loading the latest training state stays in the other stages"
+   },
+   "requires": [],
+   "nominal": {
+    "startupTargetSeconds": 15,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 22.5,
+    "eligibleShare": 0.8999999999999999
+   }
+  },
+  "H-CONTROL-CONTINUITY": {
+   "name": {
+    "zh": "控制面异常下业务连续运行",
+    "en": "Data-plane continuity under control-plane faults"
+   },
+   "kind": "recover",
+   "effort": 3,
+   "change": {
+    "zh": "管理异常触发训练恢复 → 数据面维持运行，训练停顿预算 0–1s。",
+    "en": "A management fault no longer triggers training recovery: the data plane keeps running, training pause budget 0–1 s"
+   },
+   "requires": [],
+   "nominal": {
+    "pauseSeconds": 1,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "pauseSeconds": 1.5,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   }
+  },
+  "C-LOSSLESS": {
+   "name": {
+    "zh": "无损检查点压缩",
+    "en": "Lossless checkpoint compression"
+   },
+   "kind": "checkpoint",
+   "effort": 2,
+   "change": {
+    "zh": "180s 恢复暂拆为读取 60s＋其他 120s；压缩后读取 30s，再解压 10s。",
+    "en": "The checkpoint-read stage 60 s → 60/r + decompression (40 s at r = 2); the save period is unchanged"
+   },
+   "requires": [],
+   "nominal": {
+    "compressionRatio": 2,
+    "decompressSeconds": 10,
+    "share": 0.95
+   },
+   "derated": {
+    "compressionRatio": 1.6666666666666665,
+    "decompressSeconds": 15,
+    "share": 0.95
+   }
+  },
+  "R-FABRIC-DEGRADE": {
+   "name": {
+    "zh": "网络绕行与降级运行",
+    "en": "Fabric re-route and degraded running"
+   },
+   "kind": "recover",
+   "effort": 4,
+   "change": {
+    "zh": "全局恢复到满性能资源 → 2s 切换后降速运行 30min，再恢复正常。",
+    "en": "Global recovery to full resources → 2 s switch, then degraded running for the repair time (throughput η = 1/[(1 − f) + f/r]), then back to normal"
+   },
+   "requires": [],
+   "nominal": {
+    "switchSeconds": 2,
+    "exposedCommunicationFraction": 0.3,
+    "remainingBandwidthRatio": 0.75,
+    "repairSeconds": 1800,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "switchSeconds": 3,
+    "exposedCommunicationFraction": 0.35,
+    "remainingBandwidthRatio": 0.7,
+    "repairSeconds": 2700,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   }
+  }
+ }
+}

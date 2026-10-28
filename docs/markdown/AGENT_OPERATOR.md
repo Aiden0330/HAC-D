@@ -206,4 +206,5 @@ report. The project files live under `<work>/project/` and are written only by t
 at 40 windows and 8 permutations — seven tool calls, no file written by the model, the report under `out/`. The pilot of this workflow
 inside the bundle, at the report preset on the worksheet pilot's inputs, is `PILOT_2026Q3_PROJECT_WORKFLOW.md`: the two input paths
 give the same report to the last digit. `hacd scenario new --record <public id>` starts a project from a record (the web app's
-built-in projects); `--template` starts from a template with the library's mechanism parameters.
+built-in projects); `--template` starts from a template with the library's mechanism parameters. The evidence of both pilots is
+committed under `docs/backup/pilots/` (manifests, operator results, the report sidecars; the pages re-render from them).

@@ -1,0 +1,903 @@
+{
+ "generated": "2026-10-28T01:43:18.803Z",
+ "arch": "acme-a3-2026q3-pw",
+ "sizes": [
+  100000
+ ],
+ "target": 0.985,
+ "permutations": 300,
+ "players": [
+  "D-HARD",
+  "D-SLOW",
+  "D-SDC",
+  "R-SDC",
+  "R-REPLAY",
+  "R-PROCESS",
+  "R-ELASTIC",
+  "C-FAST",
+  "R-LINK-LOCAL",
+  "R-FABRIC-DEGRADE",
+  "H-CONTROL-CONTINUITY",
+  "R-WARM-PROCESS",
+  "R-RUNTIME-SNAPSHOT",
+  "C-ASYNC",
+  "C-LOSSLESS",
+  "D-RECOVERY-CLASSIFY",
+  "D-SDC-FP8",
+  "D-SDC-FP4",
+  "D-ABFT",
+  "D-NET-SDC",
+  "H-SDC-SCREEN",
+  "R-HCCL-ELASTIC",
+  "R-CANN-GRAPH"
+ ],
+ "original": [
+  "D-HARD",
+  "D-SLOW",
+  "D-SDC",
+  "R-SDC",
+  "R-REPLAY",
+  "R-PROCESS",
+  "R-ELASTIC",
+  "C-FAST"
+ ],
+ "extensions": [
+  "R-LINK-LOCAL",
+  "R-FABRIC-DEGRADE",
+  "H-CONTROL-CONTINUITY",
+  "R-WARM-PROCESS",
+  "R-RUNTIME-SNAPSHOT",
+  "C-ASYNC",
+  "C-LOSSLESS",
+  "D-RECOVERY-CLASSIFY",
+  "D-SDC-FP8",
+  "D-SDC-FP4",
+  "D-ABFT",
+  "D-NET-SDC",
+  "H-SDC-SCREEN",
+  "R-HCCL-ELASTIC",
+  "R-CANN-GRAPH"
+ ],
+ "parameters": {
+  "R-LINK-LOCAL": {
+   "successSeconds": 2,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "R-FABRIC-DEGRADE": {
+   "switchSeconds": 2,
+   "exposedCommunicationFraction": 0.3,
+   "remainingBandwidthRatio": 0.75,
+   "repairSeconds": 1800,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "H-CONTROL-CONTINUITY": {
+   "pauseSeconds": 1,
+   "eligibleShare": 1,
+   "success": 0.95,
+   "failureSeconds": 0,
+   "overhead": 0
+  },
+  "R-WARM-PROCESS": {
+   "startupTargetSeconds": 20,
+   "eligibleShare": 0.95
+  },
+  "R-RUNTIME-SNAPSHOT": {
+   "startupTargetSeconds": 15,
+   "eligibleShare": 0.95
+  },
+  "R-CANN-GRAPH": {
+   "graphTargetSeconds": 7.5,
+   "eligibleShare": 0.95
+  },
+  "C-ASYNC": {
+   "blockingTargetSeconds": 1.15,
+   "durableLagSeconds": 10
+  },
+  "C-LOSSLESS": {
+   "compressionRatio": 2,
+   "decompressSeconds": 10,
+   "share": 0.95
+  },
+  "D-RECOVERY-CLASSIFY": {
+   "manualProbabilityTarget": 0.001,
+   "eligibleShare": 1,
+   "success": 0.95
+  },
+  "D-SDC-FP8": {
+   "detectionTarget": 0.95,
+   "detectSeconds": 1,
+   "riskShare": 0.475
+  },
+  "D-SDC-FP4": {
+   "detectionTarget": 0.95,
+   "detectSeconds": 1,
+   "riskShare": 0.475
+  },
+  "D-ABFT": {
+   "upstreamDetection": 0.95,
+   "conditionalMissDetection": 0.855,
+   "overhead": 0.001
+  },
+  "D-NET-SDC": {
+   "detectionTarget": 0.9025,
+   "detectSeconds": 1
+  },
+  "H-SDC-SCREEN": {
+   "occurrenceReduction": 0.25,
+   "eligibleShare": 0.95
+  },
+  "R-HCCL-ELASTIC": {
+   "communicationBeforeSeconds": 60,
+   "communicationTargetSeconds": 15,
+   "share": 0.95
+  }
+ },
+ "set": "remap-latest-2026-10",
+ "library": {
+  "D-HARD": {
+   "name": {
+    "zh": "中断检测 / 超时兜底",
+    "en": "Interruption detection / timeout fallback"
+   },
+   "effort": 2,
+   "parameters": {
+    "coverage": 0.999,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.949,
+    "detectSeconds": 1.5
+   },
+   "confidence": "baseline USER; 99.9 % / 1 s is a target to be audited",
+   "kind": "detect",
+   "scope": "hard"
+  },
+  "D-SLOW": {
+   "name": {
+    "zh": "亚健康检测",
+    "en": "Sub-health detection"
+   },
+   "effort": 3,
+   "parameters": {
+    "coverage": 0.99,
+    "detectSeconds": 30
+   },
+   "derated": {
+    "coverage": 0.94,
+    "detectSeconds": 45
+   },
+   "confidence": "baseline USER; 99 % / 30 s is a target to be audited",
+   "kind": "detect",
+   "scope": "slow"
+  },
+  "D-SDC": {
+   "name": {
+    "zh": "静默即时检测",
+    "en": "Immediate silent-corruption detection"
+   },
+   "effort": 5,
+   "parameters": {
+    "coverage": 0.95,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "coverage": 0.8999999999999999,
+    "detectSeconds": 1.5
+   },
+   "confidence": "95 % is a user target; 1 s a provisional step-level value",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "R-SDC": {
+   "name": {
+    "zh": "干净状态恢复与 step 重算",
+    "en": "Clean step-state recovery"
+   },
+   "effort": 4,
+   "parameters": {
+    "stepSeconds": 1,
+    "recoverSeconds": 1
+   },
+   "derated": {
+    "stepSeconds": 1.5,
+    "recoverSeconds": 1.5
+   },
+   "confidence": "ideal capability target, not a vendor measurement",
+   "kind": "recover",
+   "scope": "sdc"
+  },
+  "R-REPLAY": {
+   "name": {
+    "zh": "通信 / 算子重执行",
+    "en": "Operator / communication replay"
+   },
+   "effort": 2,
+   "parameters": {
+    "success": 0.9,
+    "successSeconds": 5,
+    "failureSeconds": 10
+   },
+   "derated": {
+    "success": 0.8200000000000001,
+    "successSeconds": 7.5,
+    "failureSeconds": 15
+   },
+   "confidence": "PRIOR from the old mechanism library; not for persistent device damage",
+   "kind": "recover",
+   "scope": "replay"
+  },
+  "R-PROCESS": {
+   "name": {
+    "zh": "进程 / Pod 重调度",
+    "en": "Process / pod rescheduling"
+   },
+   "effort": 3,
+   "parameters": {
+    "success": 0.95,
+    "successSeconds": 60,
+    "failureSeconds": 120
+   },
+   "derated": {
+    "success": 0.87,
+    "successSeconds": 90,
+    "failureSeconds": 180
+   },
+   "confidence": "PRIOR from the old mechanism library",
+   "kind": "recover",
+   "scope": "process"
+  },
+  "R-ELASTIC": {
+   "name": {
+    "zh": "DP 域弹性恢复",
+    "en": "DP-domain elastic recovery"
+   },
+   "effort": 5,
+   "parameters": {
+    "domains": 50,
+    "success": 0.98,
+    "recoverSeconds": 180,
+    "failureSeconds": 120,
+    "syncSeconds": 1
+   },
+   "derated": {
+    "domains": 50,
+    "success": 0.9,
+    "recoverSeconds": 270,
+    "failureSeconds": 180,
+    "syncSeconds": 1.5
+   },
+   "confidence": "50 domains USER; 98 % and 1 s are priors to be audited; a capacity model, not a synchronous-training performance promise",
+   "kind": "recover",
+   "scope": "elastic"
+  },
+  "C-FAST": {
+   "name": {
+    "zh": "缩短 CKPT 周期和保存阻塞",
+    "en": "Faster checkpoints"
+   },
+   "effort": 3,
+   "parameters": {
+    "computeSeconds": 60,
+    "saveSeconds": 1
+   },
+   "derated": {
+    "computeSeconds": 60,
+    "saveSeconds": 1.5
+   },
+   "confidence": "target prior of this round",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "R-LINK-LOCAL": {
+   "name": {
+    "zh": "链路透明恢复",
+    "en": "Link-transparent recovery"
+   },
+   "effort": 3,
+   "parameters": {
+    "successSeconds": 2,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "successSeconds": 3,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "engineering budget (NVLink layered-resilience design), not measured",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-FABRIC-DEGRADE": {
+   "name": {
+    "zh": "网络绕行与降级运行",
+    "en": "Fabric re-route and degraded running"
+   },
+   "effort": 4,
+   "parameters": {
+    "switchSeconds": 2,
+    "exposedCommunicationFraction": 0.3,
+    "remainingBandwidthRatio": 0.75,
+    "repairSeconds": 1800,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "switchSeconds": 3,
+    "exposedCommunicationFraction": 0.35,
+    "remainingBandwidthRatio": 0.7,
+    "repairSeconds": 2700,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "official degraded-bandwidth operation exists; f, r and the repair time are example budgets",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "H-CONTROL-CONTINUITY": {
+   "name": {
+    "zh": "控制面异常下业务连续运行",
+    "en": "Data-plane continuity under control-plane faults"
+   },
+   "effort": 3,
+   "parameters": {
+    "pauseSeconds": 1,
+    "eligibleShare": 1,
+    "success": 0.95,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "derated": {
+    "pauseSeconds": 1.5,
+    "eligibleShare": 0.95,
+    "success": 0.87,
+    "failureSeconds": 0,
+    "overhead": 0
+   },
+   "confidence": "control / data plane decoupling is public design; the pause budget is a candidate",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-WARM-PROCESS": {
+   "name": {
+    "zh": "预热进程与可信状态接替",
+    "en": "Warm standby process with trusted-state takeover"
+   },
+   "effort": 3,
+   "parameters": {
+    "startupTargetSeconds": 20,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 30,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "engineering estimate; the public 7.3 s result is an inference experiment",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "R-RUNTIME-SNAPSHOT": {
+   "name": {
+    "zh": "运行时初始化快照",
+    "en": "Runtime initialisation snapshot"
+   },
+   "effort": 4,
+   "parameters": {
+    "startupTargetSeconds": 15,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "startupTargetSeconds": 22.5,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "process-snapshot principle is public; the 15 s training target and compatibility range are to be verified",
+   "kind": "recover",
+   "scope": "hard"
+  },
+  "C-ASYNC": {
+   "name": {
+    "zh": "异步检查点保存",
+    "en": "Asynchronous checkpoint saves"
+   },
+   "effort": 3,
+   "parameters": {
+    "blockingTargetSeconds": 1.15,
+    "durableLagSeconds": 10
+   },
+   "derated": {
+    "blockingTargetSeconds": 1.7249999999999999,
+    "durableLagSeconds": 15
+   },
+   "confidence": "public design (Megatron-Core async saves); 1 s blocking and 10 s lag are candidates",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "C-LOSSLESS": {
+   "name": {
+    "zh": "无损检查点压缩",
+    "en": "Lossless checkpoint compression"
+   },
+   "effort": 2,
+   "parameters": {
+    "compressionRatio": 2,
+    "decompressSeconds": 10,
+    "share": 0.95
+   },
+   "derated": {
+    "compressionRatio": 1.6666666666666665,
+    "decompressSeconds": 15,
+    "share": 0.95
+   },
+   "confidence": "public (nvCOMP); 2× ratio, 60 s read and 10 s decompression are budgets",
+   "kind": "checkpoint",
+   "scope": "all"
+  },
+  "D-RECOVERY-CLASSIFY": {
+   "name": {
+    "zh": "故障分类与恢复动作匹配",
+    "en": "Fault classification and recovery-action matching"
+   },
+   "effort": 3,
+   "parameters": {
+    "manualProbabilityTarget": 0.001,
+    "eligibleShare": 1,
+    "success": 0.95
+   },
+   "derated": {
+    "manualProbabilityTarget": 0.0015,
+    "eligibleShare": 0.95,
+    "success": 0.87
+   },
+   "confidence": "GPU error-recovery action interface is public; the 0.1 % target is a candidate",
+   "kind": "recover",
+   "scope": "all"
+  },
+  "D-SDC-FP8": {
+   "name": {
+    "zh": "FP8 计算路径 SDC 检测",
+    "en": "FP8 compute-path silent-corruption detection"
+   },
+   "effort": 4,
+   "parameters": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "confidence": "user proposal; detection target and risk share are acceptance targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-SDC-FP4": {
+   "name": {
+    "zh": "FP4 计算路径 SDC 检测",
+    "en": "FP4 compute-path silent-corruption detection"
+   },
+   "effort": 4,
+   "parameters": {
+    "detectionTarget": 0.95,
+    "detectSeconds": 1,
+    "riskShare": 0.475
+   },
+   "derated": {
+    "detectionTarget": 0.8999999999999999,
+    "detectSeconds": 1.5,
+    "riskShare": 0.425
+   },
+   "confidence": "user proposal; detection target and risk share are acceptance targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-ABFT": {
+   "name": {
+    "zh": "算子 ABFT／实时矩阵校验",
+    "en": "Operator ABFT / online matrix checks"
+   },
+   "effort": 4,
+   "parameters": {
+    "upstreamDetection": 0.95,
+    "conditionalMissDetection": 0.855,
+    "overhead": 0.001
+   },
+   "derated": {
+    "upstreamDetection": 0.8999999999999999,
+    "conditionalMissDetection": 0.8049999999999999,
+    "overhead": 0.0015
+   },
+   "confidence": "NVIDIA algorithm-based error detection research; conditional detection and overhead are targets",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "D-NET-SDC": {
+   "name": {
+    "zh": "网络端到端 SDC 检测",
+    "en": "Network end-to-end silent-corruption detection"
+   },
+   "effort": 3,
+   "parameters": {
+    "detectionTarget": 0.9025,
+    "detectSeconds": 1
+   },
+   "derated": {
+    "detectionTarget": 0.8524999999999999,
+    "detectSeconds": 1.5
+   },
+   "confidence": "user proposal; target to be verified",
+   "kind": "detect",
+   "scope": "sdc"
+  },
+  "H-SDC-SCREEN": {
+   "name": {
+    "zh": "在线压测与异常资源筛除",
+    "en": "Online stress screening and eviction"
+   },
+   "effort": 3,
+   "parameters": {
+    "occurrenceReduction": 0.25,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "occurrenceReduction": 0.125,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "user target (25 % lower occurrence); eligible share, interval and cost unknown",
+   "kind": "physical",
+   "scope": "sdc"
+  },
+  "R-HCCL-ELASTIC": {
+   "name": {
+    "zh": "HCCL 通信域弹性重建",
+    "en": "HCCL communicator elastic rebuild"
+   },
+   "effort": 3,
+   "parameters": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 15,
+    "share": 0.95
+   },
+   "derated": {
+    "communicationBeforeSeconds": 60,
+    "communicationTargetSeconds": 22.5,
+    "share": 0.95
+   },
+   "confidence": "NCCL / HCCL communicator management APIs are public; 15 s is a candidate",
+   "kind": "recover",
+   "scope": "elastic"
+  },
+  "R-CANN-GRAPH": {
+   "name": {
+    "zh": "CANN 图准备与启动缓存加速",
+    "en": "CANN graph preparation and startup caches"
+   },
+   "effort": 2,
+   "parameters": {
+    "graphTargetSeconds": 7.5,
+    "eligibleShare": 0.95
+   },
+   "derated": {
+    "graphTargetSeconds": 11.25,
+    "eligibleShare": 0.8999999999999999
+   },
+   "confidence": "CANN graph capture API is public; 7.5 s is a candidate",
+   "kind": "recover",
+   "scope": "hard"
+  }
+ },
+ "perSize": {
+  "100000": {
+   "baseline": 0.9722061740874114,
+   "plan": {
+    "ids": [
+     "R-REPLAY",
+     "R-PROCESS"
+    ],
+    "feasible": true,
+    "effort": 5,
+    "nominal": 0.9880518340320673,
+    "derated": 0.9857087724714871
+   },
+   "allOn": 0.9954454577716253,
+   "allOnDerated": 0.9937041501568121,
+   "gains": [
+    {
+     "id": "D-HARD",
+     "halfWidth": 0.000030284702867840454,
+     "aOp": {
+      "single": 0.0011440708219132567,
+      "lastAdded": 0.0005806181041350111,
+      "shapley": 0.0007646172435344763
+     },
+     "delivered": {
+      "shapley": 0.0006205880499727301
+     }
+    },
+    {
+     "id": "D-SLOW",
+     "halfWidth": 3.019198850742004e-7,
+     "aOp": {
+      "single": -0.00002008573260692259,
+      "lastAdded": -0.000014325517999402848,
+      "shapley": -0.00001762199191547113
+     },
+     "delivered": {
+      "shapley": 0.000295139217817099
+     }
+    },
+    {
+     "id": "D-SDC",
+     "halfWidth": 0.00000792154558625346,
+     "aOp": {
+      "single": -0.00012188692298520376,
+      "lastAdded": 0.000018047151671973793,
+      "shapley": -0.000007393317302181549
+     },
+     "delivered": {
+      "shapley": 0.1488770404295862
+     }
+    },
+    {
+     "id": "R-SDC",
+     "halfWidth": 0.00001007695351981227,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0.00015211230013734145,
+      "shapley": 0.0001321735357478256
+     },
+     "delivered": {
+      "shapley": 0.00017720531668414215
+     }
+    },
+    {
+     "id": "R-REPLAY",
+     "halfWidth": 0.0004782539830907534,
+     "aOp": {
+      "single": 0.011645808022501591,
+      "lastAdded": -0.00005223359727357657,
+      "shapley": 0.0035250618651901993
+     },
+     "delivered": {
+      "shapley": 0.0042533770875271635
+     }
+    },
+    {
+     "id": "R-PROCESS",
+     "halfWidth": 0.00040793582665542706,
+     "aOp": {
+      "single": 0.009429215551048586,
+      "lastAdded": 0.000027944693237191842,
+      "shapley": 0.0028724549593649638
+     },
+     "delivered": {
+      "shapley": 0.00202256658289386
+     }
+    },
+    {
+     "id": "R-ELASTIC",
+     "halfWidth": 0.0005237066453261608,
+     "aOp": {
+      "single": 0.013734074149115094,
+      "lastAdded": 0.001546915604146104,
+      "shapley": 0.006072535647605787
+     },
+     "delivered": {
+      "shapley": 0.0070881364477811265
+     }
+    },
+    {
+     "id": "C-FAST",
+     "halfWidth": 5.1334622295766225e-8,
+     "aOp": {
+      "single": -0.000001431530010087556,
+      "lastAdded": -3.178588392493964e-9,
+      "shapley": -3.327362800979265e-7
+     },
+     "delivered": {
+      "shapley": -0.0022674339481361184
+     }
+    },
+    {
+     "id": "R-LINK-LOCAL",
+     "halfWidth": 0.0003105285805859593,
+     "aOp": {
+      "single": 0.007151938766688848,
+      "lastAdded": 0.00006987408274905516,
+      "shapley": 0.002472476013524196
+     },
+     "delivered": {
+      "shapley": 0.004379114274241428
+     }
+    },
+    {
+     "id": "R-FABRIC-DEGRADE",
+     "halfWidth": 0.0002778465703687466,
+     "aOp": {
+      "single": 0.00582494825190305,
+      "lastAdded": 0.0000440831502843686,
+      "shapley": 0.0021009162464150585
+     },
+     "delivered": {
+      "shapley": 0.0005533689623806263
+     }
+    },
+    {
+     "id": "H-CONTROL-CONTINUITY",
+     "halfWidth": 0.000005228861271424885,
+     "aOp": {
+      "single": 0.0003287216130001269,
+      "lastAdded": 0.00022417632528715092,
+      "shapley": 0.0002793662349704769
+     },
+     "delivered": {
+      "shapley": 0.00032180074618611167
+     }
+    },
+    {
+     "id": "R-WARM-PROCESS",
+     "halfWidth": 0.000020259085704156764,
+     "aOp": {
+      "single": 0.0004092482754523008,
+      "lastAdded": 0.0000214417654957888,
+      "shapley": 0.0001640576188670869
+     },
+     "delivered": {
+      "shapley": 0.0001241926127972252
+     }
+    },
+    {
+     "id": "R-RUNTIME-SNAPSHOT",
+     "halfWidth": 0.00011687804181547112,
+     "aOp": {
+      "single": 0.002731051779410021,
+      "lastAdded": 0.00007582356082358466,
+      "shapley": 0.0009051052687679184
+     },
+     "delivered": {
+      "shapley": 0.0006484996301301283
+     }
+    },
+    {
+     "id": "C-ASYNC",
+     "halfWidth": 5.90913329187607e-10,
+     "aOp": {
+      "single": -1.671400984282201e-8,
+      "lastAdded": 0,
+      "shapley": -2.8740169355501165e-9
+     },
+     "delivered": {
+      "shapley": 0.003274627671732105
+     }
+    },
+    {
+     "id": "C-LOSSLESS",
+     "halfWidth": 0.00006027469572316194,
+     "aOp": {
+      "single": 0.0019471780510330605,
+      "lastAdded": 0.0005160910928050377,
+      "shapley": 0.0009358941329780149
+     },
+     "delivered": {
+      "shapley": 0.0007278625319809865
+     }
+    },
+    {
+     "id": "D-RECOVERY-CLASSIFY",
+     "halfWidth": 0.00018856707232560338,
+     "aOp": {
+      "single": 0.006337234216780674,
+      "lastAdded": 0.0016701954844766664,
+      "shapley": 0.002871929191513839
+     },
+     "delivered": {
+      "shapley": 0.0022566156723505732
+     }
+    },
+    {
+     "id": "D-SDC-FP8",
+     "halfWidth": 0.0000027100775651672123,
+     "aOp": {
+      "single": -0.00006030077801399969,
+      "lastAdded": 1.883749575215532e-7,
+      "shapley": -0.000006229544975757303
+     },
+     "delivered": {
+      "shapley": 0.026062317546156788
+     }
+    },
+    {
+     "id": "D-SDC-FP4",
+     "halfWidth": 0.0000030895294952315193,
+     "aOp": {
+      "single": -0.00006030077801399969,
+      "lastAdded": 1.883749575215532e-7,
+      "shapley": -0.000005906548886250122
+     },
+     "delivered": {
+      "shapley": 0.0315141622214849
+     }
+    },
+    {
+     "id": "D-ABFT",
+     "halfWidth": 0.000005545149030076543,
+     "aOp": {
+      "single": -0.00010215990138984221,
+      "lastAdded": 0.0000013462809508313356,
+      "shapley": -0.0000071038587458153535
+     },
+     "delivered": {
+      "shapley": 0.0680630354043691
+     }
+    },
+    {
+     "id": "D-NET-SDC",
+     "halfWidth": 4.699819899104894e-7,
+     "aOp": {
+      "single": -0.000007340187817339583,
+      "lastAdded": 2.660265587817179e-7,
+      "shapley": -5.970465797052367e-7
+     },
+     "delivered": {
+      "shapley": 0.006174554448918165
+     }
+    },
+    {
+     "id": "H-SDC-SCREEN",
+     "halfWidth": 0.000002606507676203701,
+     "aOp": {
+      "single": 0.000028612583658715884,
+      "lastAdded": 0.0000011574545876191777,
+      "shapley": 0.000024960142345377135
+     },
+     "delivered": {
+      "shapley": 0.02116573689314011
+     }
+    },
+    {
+     "id": "R-HCCL-ELASTIC",
+     "halfWidth": 0,
+     "aOp": {
+      "single": 0,
+      "lastAdded": 0,
+      "shapley": 0
+     },
+     "delivered": {
+      "shapley": 0.000013414305142135744
+     }
+    },
+    {
+     "id": "R-CANN-GRAPH",
+     "halfWidth": 0.000028754692114039125,
+     "aOp": {
+      "single": 0.0007076675937095489,
+      "lastAdded": 0,
+      "shapley": 0.0001629235020908996
+     },
+     "delivered": {
+      "shapley": 0.0001083861891247014
+     }
+    }
+   ],
+   "attribution": {
+    "method": "sampled",
+    "permutations": 300
+   }
+  }
+ }
+}

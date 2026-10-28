@@ -84,6 +84,9 @@ set) does not enter today's numbers and did not enter the recommended design at 
 
 Output of the pilot (`data-staging/pilot-project/`, kept out of git): `work/project/acme-a3-2026q3-pw.json`, `work/out/` (the Findings and
 Methodology pages, `data/`, the bundle), `work/operator-log.jsonl`, `work/operator-result.json`, `mock.out`, `operate.out`, `rerender/`.
+The evidence is committed under `docs/backup/pilots/2026q3-project-workflow/` (`operator-result.json`, the final message, the project
+file, the report sidecar `data/`; see the README there): `hacd findings --data docs/backup/pilots/2026q3-project-workflow/data --out <dir>`
+re-renders the pilot's Findings page byte for byte.
 
 ## 6. Limits of this pilot, and what it does not cover
 

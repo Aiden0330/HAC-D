@@ -1,0 +1,188 @@
+{
+ "acme-a3-2026q3": {
+  "id": "acme-a3-2026q3",
+  "name": {
+   "zh": "ACME A3 服务器集群 2026Q3",
+   "en": "ACME A3 server cluster 2026Q3"
+  },
+  "short": {
+   "zh": "ACME A3 服务器集群 2026Q3",
+   "en": "ACME A3 server cluster 2026Q3"
+  },
+  "family": "910C",
+  "template": "a3-ub384",
+  "superpod": {
+   "preset": "cloudmatrix384",
+   "npusPerNode": 8,
+   "cpusPerNode": 4,
+   "l1PerNode": 7,
+   "nodesPerRack": 3,
+   "computeRacks": 1,
+   "commRacks": 0,
+   "subPlanes": 7,
+   "l2PerSubPlane": 0,
+   "l2Ports": 48,
+   "linksPerL1": 0,
+   "transceiversPerLink": 2,
+   "rdmaPortsPerNpu": 2,
+   "vpcNicsPerNode": 1,
+   "fabric": "two-level",
+   "rackSwitches": 0,
+   "podUplinksPerNpu": 0,
+   "podSwitchRadix": 128,
+   "opticalEnginesPerNpu": 0,
+   "meshRackGrid": 0,
+   "backupNpusPerRack": 0
+  },
+  "domainNpus": 8,
+  "scaleOut": {
+   "portsPerNpu": 2,
+   "planes": 2,
+   "radix": 128,
+   "oversubscription": 1,
+   "transceiversPerLink": 2
+  },
+  "variants": [
+   {
+    "id": "main",
+    "name": {
+     "zh": "主设计",
+     "en": "main design"
+    },
+    "basis": {
+     "zh": "记录的 scale-out 设计",
+     "en": "the record's scale-out design"
+    },
+    "scaleOut": {
+     "portsPerNpu": 2,
+     "planes": 2,
+     "radix": 128,
+     "oversubscription": 1,
+     "transceiversPerLink": 2
+    }
+   }
+  ],
+  "layers": {
+   "superpod": {
+    "unit": "nodes",
+    "npus": 8
+   },
+   "cabinet": {
+    "npus": 24
+   },
+   "node": {
+    "npus": 8
+   }
+  },
+  "scenarioId": "acme-a3-2026q3",
+  "scenarioName": "{name} — {npus} NPUs",
+  "provenance": {
+   "superpod": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "starts from the cloudmatrix384 preset"
+   },
+   "superpod.npusPerNode": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "Each server carries 8 NPUs"
+   },
+   "superpod.cpusPerNode": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "and 4 Kunpeng CPUs"
+   },
+   "superpod.l1PerNode": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "has 7 on-board UB L1 switch chips"
+   },
+   "superpod.nodesPerRack": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "A cabinet holds 3 servers"
+   },
+   "superpod.computeRacks": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "1 compute cabinet and"
+   },
+   "superpod.commRacks": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "and 0 communication cabinets"
+   },
+   "superpod.l2PerSubPlane": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "0 L2 chips per sub-plane"
+   },
+   "superpod.linksPerL1": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "L1 chips have 0 uplinks"
+   },
+   "superpod.rdmaPortsPerNpu": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "Each NPU exposes 2 RDMA ports"
+   },
+   "superpod.vpcNicsPerNode": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "Each server has 1 VPC NIC"
+   },
+   "domainNpus": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "the UB domain has 8 NPUs"
+   },
+   "scaleOut.portsPerNpu": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "uses 2 RoCE ports per NPU"
+   },
+   "scaleOut.planes": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "over 2 planes"
+   },
+   "scaleOut.radix": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "of 128-port switches"
+   },
+   "scaleOut.oversubscription": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "oversubscription 1"
+   },
+   "scaleOut.transceiversPerLink": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "2 transceivers per link"
+   },
+   "layers.superpod.npus": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "The SuperPoD layer has 8 NPUs"
+   },
+   "layers.cabinet.npus": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "A cabinet layer has 24 NPUs"
+   },
+   "layers.node.npus": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "A node layer has 8 NPUs"
+   },
+   "layers.superpod.unit": {
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor",
+    "note": "SuperPoD layer is one server (nodes)"
+   }
+  },
+  "assumed": []
+ }
+}

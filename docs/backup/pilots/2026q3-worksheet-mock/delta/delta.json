@@ -1,0 +1,605 @@
+{
+ "version": "hacd-delta-1",
+ "generated": "2026-10-27",
+ "target": 0.985,
+ "scales": [
+  100000
+ ],
+ "trials": 400,
+ "seed": 1,
+ "before": {
+  "record": {
+   "id": "a3server",
+   "name": {
+    "zh": "Atlas 800T A3 服务器集群（8 NPU / 台，跨机 RoCE）",
+    "en": "Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers)"
+   }
+  },
+  "set": {
+   "id": "remap-latest-2026-10"
+  }
+ },
+ "after": {
+  "record": {
+   "id": "acme-a3-2026q3",
+   "name": {
+    "zh": "ACME A3 服务器集群 2026Q3",
+    "en": "ACME A3 server cluster 2026Q3"
+   }
+  },
+  "set": {
+   "id": "acme-mech-2026q3"
+  },
+  "rates": {
+   "id": "acme-fit-2026q3",
+   "basis": "per-unit"
+  }
+ },
+ "changes": {
+  "record": [
+   {
+    "path": "id",
+    "kind": "changed",
+    "before": "a3server",
+    "after": "acme-a3-2026q3"
+   },
+   {
+    "path": "layers.cabinet.npus",
+    "kind": "changed",
+    "before": 32,
+    "after": 24,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "name.en",
+    "kind": "changed",
+    "before": "Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers)",
+    "after": "ACME A3 server cluster 2026Q3"
+   },
+   {
+    "path": "name.zh",
+    "kind": "changed",
+    "before": "Atlas 800T A3 服务器集群（8 NPU / 台，跨机 RoCE）",
+    "after": "ACME A3 服务器集群 2026Q3"
+   },
+   {
+    "path": "scaleOut.planes",
+    "kind": "changed",
+    "before": 1,
+    "after": 2,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "scaleOut.radix",
+    "kind": "changed",
+    "before": 64,
+    "after": 128,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "scenarioId",
+    "kind": "changed",
+    "before": "scaling-a3server",
+    "after": "acme-a3-2026q3"
+   },
+   {
+    "path": "short.en",
+    "kind": "changed",
+    "before": "800T A3",
+    "after": "ACME A3 server cluster 2026Q3"
+   },
+   {
+    "path": "short.zh",
+    "kind": "changed",
+    "before": "800T A3",
+    "after": "ACME A3 服务器集群 2026Q3"
+   },
+   {
+    "path": "superpod.cpusPerNode",
+    "kind": "added",
+    "after": 4,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.l1PerNode",
+    "kind": "added",
+    "after": 7,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.nodesPerRack",
+    "kind": "added",
+    "after": 3,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.npusPerNode",
+    "kind": "added",
+    "after": 8,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.preset",
+    "kind": "removed",
+    "before": "custom",
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.rdmaPortsPerNpu",
+    "kind": "added",
+    "after": 2,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "superpod.vpcNicsPerNode",
+    "kind": "added",
+    "after": 1,
+    "source": "acme-a3-design-note-2026q3.md L1-39",
+    "confidence": "vendor"
+   },
+   {
+    "path": "variants[0].basis.en",
+    "kind": "changed",
+    "before": "paper: one RDMA port per die, 400 Gb/s per NPU; radix 64 and non-blocking assumed; the same as in the other “950 and 910C” report",
+    "after": "the record's scale-out design"
+   },
+   {
+    "path": "variants[0].basis.zh",
+    "kind": "changed",
+    "before": "论文：每 die 1 个 RDMA 口、每 NPU 400 Gb/s；端口数 64 与无收敛为假设；与另一份《950 与 910C》报告相同",
+    "after": "记录的 scale-out 设计"
+   },
+   {
+    "path": "variants[0].name.en",
+    "kind": "changed",
+    "before": "2 × 200G per NPU, 64-port switches, non-blocking folded Clos (HAC-D template default, main case)",
+    "after": "main design"
+   },
+   {
+    "path": "variants[0].name.zh",
+    "kind": "changed",
+    "before": "每 NPU 2 × 200G、64 口交换机、无收敛折叠 Clos（HAC-D 模板默认，主算例）",
+    "after": "主设计"
+   },
+   {
+    "path": "variants[0].scaleOut.planes",
+    "kind": "changed",
+    "before": 1,
+    "after": 2
+   },
+   {
+    "path": "variants[0].scaleOut.radix",
+    "kind": "changed",
+    "before": 64,
+    "after": 128
+   },
+   {
+    "path": "variants[1].basis.en",
+    "kind": "removed",
+    "before": "a current 51.2T switch chip used with 200G ports (assumed)"
+   },
+   {
+    "path": "variants[1].basis.zh",
+    "kind": "removed",
+    "before": "现行 51.2T 交换芯片按 200G 口使用（假设）"
+   },
+   {
+    "path": "variants[1].id",
+    "kind": "removed",
+    "before": "r256x200"
+   },
+   {
+    "path": "variants[1].name.en",
+    "kind": "removed",
+    "before": "2 × 200G per NPU, 51.2T switches as 256 × 200G"
+   },
+   {
+    "path": "variants[1].name.zh",
+    "kind": "removed",
+    "before": "每 NPU 2 × 200G、51.2T 交换机按 256 × 200G"
+   },
+   {
+    "path": "variants[1].scaleOut.oversubscription",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[1].scaleOut.planes",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[1].scaleOut.portsPerNpu",
+    "kind": "removed",
+    "before": 2
+   },
+   {
+    "path": "variants[1].scaleOut.radix",
+    "kind": "removed",
+    "before": 256
+   },
+   {
+    "path": "variants[1].scaleOut.transceiversPerLink",
+    "kind": "removed",
+    "before": 2
+   },
+   {
+    "path": "variants[2].basis.en",
+    "kind": "removed",
+    "before": "third-party 800I A3 listing: 8 × 400GE per server; FiberMall relaying SemiAnalysis: 1,536 scale-out modules per CM384 = 384 NIC + 768 leaf + 384 spine"
+   },
+   {
+    "path": "variants[2].basis.zh",
+    "kind": "removed",
+    "before": "第三方 800I A3 规格：每台 8 × 400GE；FiberMall 转述 SemiAnalysis：每 CM384 scale-out 1,536 只模块 = 384 网卡 + 768 叶 + 384 脊"
+   },
+   {
+    "path": "variants[2].id",
+    "kind": "removed",
+    "before": "r128x400"
+   },
+   {
+    "path": "variants[2].name.en",
+    "kind": "removed",
+    "before": "1 × 400G per NPU, 51.2T switches as 128 × 400G"
+   },
+   {
+    "path": "variants[2].name.zh",
+    "kind": "removed",
+    "before": "每 NPU 1 × 400G、51.2T 交换机按 128 × 400G"
+   },
+   {
+    "path": "variants[2].scaleOut.oversubscription",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[2].scaleOut.planes",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[2].scaleOut.portsPerNpu",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[2].scaleOut.radix",
+    "kind": "removed",
+    "before": 128
+   },
+   {
+    "path": "variants[2].scaleOut.transceiversPerLink",
+    "kind": "removed",
+    "before": 2
+   },
+   {
+    "path": "variants[3].basis.en",
+    "kind": "removed",
+    "before": "for comparison only"
+   },
+   {
+    "path": "variants[3].basis.zh",
+    "kind": "removed",
+    "before": "仅作对照"
+   },
+   {
+    "path": "variants[3].id",
+    "kind": "removed",
+    "before": "oversub2"
+   },
+   {
+    "path": "variants[3].name.en",
+    "kind": "removed",
+    "before": "main case with 2:1 at the leaves"
+   },
+   {
+    "path": "variants[3].name.zh",
+    "kind": "removed",
+    "before": "主算例 + 叶层 2:1 收敛"
+   },
+   {
+    "path": "variants[3].scaleOut.oversubscription",
+    "kind": "removed",
+    "before": 2
+   },
+   {
+    "path": "variants[3].scaleOut.planes",
+    "kind": "removed",
+    "before": 1
+   },
+   {
+    "path": "variants[3].scaleOut.portsPerNpu",
+    "kind": "removed",
+    "before": 2
+   },
+   {
+    "path": "variants[3].scaleOut.radix",
+    "kind": "removed",
+    "before": 64
+   },
+   {
+    "path": "variants[3].scaleOut.transceiversPerLink",
+    "kind": "removed",
+    "before": 2
+   }
+  ],
+  "rates": [
+   {
+    "class": "COOL-hard",
+    "unit": "cabinet",
+    "before": null,
+    "after": 2880,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_cab row 5; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "Fan module 1200 FIT = 1200 FIT/device × 8 per cabinet × impact 0.3 (over-temperature trips per fan fault (Q3 thermal log); derived) = 2880 FIT per cabinet-hour, business-impact, class COOL-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "CORE-hard",
+    "unit": "npu",
+    "before": null,
+    "after": 450,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_npu row 3; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "Ascend 910C module 900 FIT = 900 FIT/device × 1 per npu × impact 0.5 (runtime exceptions attributed to the module (Q3 incident review); derived) = 450 FIT per npu-hour, business-impact, class CORE-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "CORE-sdc",
+    "unit": "npu",
+    "before": null,
+    "after": 36,
+    "ratio": null,
+    "confidence": "assumed",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_npu row 3; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "Ascend 910C module 900 FIT = 900 FIT/device × 1 per npu × impact 0.04 (silent-result incidents per module return (Q3 incident review); assumed) = 36 FIT per npu-hour, business-impact, class CORE-sdc; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "CPU-hard",
+    "unit": "cpu",
+    "before": null,
+    "after": 320,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: CPU vendor datasheet rev C section 4.2; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "Kunpeng 920 CPU 2500000 h MTBF → 10⁹ / MTBF = 400 FIT/device × 1 per cpu × impact 0.8 (host interruptions per CPU fault (Q3 incident review); derived) = 320 FIT per cpu-hour, business-impact, class CPU-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "DDR-hard",
+    "unit": "node",
+    "before": null,
+    "after": 560,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_mem row 2; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "DDR5 DIMM 64 GB 35 FIT = 35 FIT/device × 32 per node × impact 0.5 (UCE share after ECC (Q3 memory log); derived) = 560 FIT per node-hour, business-impact, class DDR-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "FABRIC-hard",
+    "unit": "ub-switch",
+    "before": null,
+    "after": 59.99999999999999,
+    "ratio": null,
+    "confidence": "assumed",
+    "source": "acme-fit-2026q3.csv / Sheet1: FIDES prediction 2026Q2 sheet UB; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "UB L1 switch chip 60 FIT = 60 FIT/device × 1 per ub-switch × impact 1 (one L1 chip loss stalls the server fabric; assumed) = 60 FIT per ub-switch-hour, business-impact, class FABRIC-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "FABRIC-hard@roce",
+    "unit": "roce-switch",
+    "before": null,
+    "after": 66.66666666666667,
+    "ratio": null,
+    "confidence": "assumed",
+    "source": "acme-fit-2026q3.csv / Sheet1: switch vendor datasheet section 7; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "RoCE switch 128-port 300000 h MTBF → 10⁹ / MTBF = 3333.33 FIT/device × 1 per roce-switch × impact 0.02 (ECMP: share of switch faults that stall a job (Q3 network log); assumed) = 66.6667 FIT per roce-switch-hour, business-impact, class FABRIC-hard@roce; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "MEMT-hard",
+    "unit": "npu",
+    "before": null,
+    "after": 384,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_npu row 7; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "HBM3 stack 80 FIT = 80 FIT/device × 8 per npu × impact 0.6 (UCE share after ECC (Q3 memory log); derived) = 384 FIT per npu-hour, business-impact, class MEMT-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "MGMT-hard",
+    "unit": "node",
+    "before": null,
+    "after": 400,
+    "ratio": null,
+    "confidence": "assumed",
+    "source": "acme-fit-2026q3.csv / Sheet1: FIDES prediction 2026Q2 sheet MGMT; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "iBMC management module 400 FIT = 400 FIT/device × 1 per node × impact 1 (BMC loss blocks the node (ops rule); assumed) = 400 FIT per node-hour, business-impact, class MGMT-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "MODULE-hard",
+    "unit": "npu",
+    "before": null,
+    "after": 180,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_npu row 3; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "Ascend 910C module 900 FIT = 900 FIT/device × 1 per npu × impact 0.2 (share of module returns that interrupted a job (Q3 incident review); derived) = 180 FIT per npu-hour, business-impact, class MODULE-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "NIC-hard",
+    "unit": "npu",
+    "before": null,
+    "after": 59.99999999999999,
+    "ratio": null,
+    "confidence": "measured",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_net row 1; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "RoCE NIC 200G 60 FIT = 60 FIT/device × 1 per npu × impact 1 (every NIC loss interrupts the job (no NIC redundancy); measured) = 60 FIT per npu-hour, business-impact, class NIC-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "OPT-hard@roce",
+    "unit": "roce-link",
+    "before": null,
+    "after": 120,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: ACME field returns 2026Q3 tbl_net row 4; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "QSFP-DD 400G transceiver 300 FIT = 300 FIT/device × 2 per roce-link × impact 0.2 (link-loss share after retraining (Q3 network log); derived) = 120 FIT per roce-link-hour, business-impact, class OPT-hard@roce; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "POWER-hard",
+    "unit": "cabinet",
+    "before": null,
+    "after": 6000,
+    "ratio": null,
+    "confidence": "derived",
+    "source": "acme-fit-2026q3.csv / Sheet1: PSU vendor datasheet p. 12; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "PSU 3 kW 600000 h MTBF → 10⁹ / MTBF = 1666.67 FIT/device × 6 per cabinet × impact 0.6 (N+1 shelf: share of PSU faults that drop the cabinet (Q3 power log); derived) = 6000 FIT per cabinet-hour, business-impact, class POWER-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   },
+   {
+    "class": "SSD-hard",
+    "unit": "node",
+    "before": null,
+    "after": 1378.1485427248,
+    "ratio": null,
+    "confidence": "assumed",
+    "source": "acme-fit-2026q3.csv / Sheet1: SSD vendor reliability report 2026H1 p. 3; 口径 mapping acme-fit-2026q3-koujing",
+    "derivation": "NVMe SSD 3.84 TB 0.012 AFR → −ln(1 − AFR) / 8760 h × 10⁹ = 1378.15 FIT/device × 2 per node × impact 0.5 (RAID-1 pair: a single-disk loss is tolerated half the time (ops rule); assumed) = 1378.15 FIT per node-hour, business-impact, class SSD-hard; mapping acme-fit-2026q3-koujing 2026-10-27"
+   }
+  ],
+  "set": [
+   {
+    "path": "id",
+    "kind": "changed",
+    "before": "remap-latest-2026-10",
+    "after": "acme-mech-2026q3"
+   },
+   {
+    "path": "parameters.D-HARD.detectSeconds",
+    "kind": "added",
+    "after": 20,
+    "source": "ACME-FM-2026Q3 table 4 (median detection time of hard faults)",
+    "confidence": "measured"
+   },
+   {
+    "path": "parameters.R-REPLAY.success",
+    "kind": "added",
+    "after": 0.92,
+    "source": "ACME-FM-2026Q3 table 6 (step-replay success rate, Q3)",
+    "confidence": "measured"
+   },
+   {
+    "path": "source",
+    "kind": "changed",
+    "before": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic)",
+    "after": "acme-mechanisms-2026q3.md: ACME-FM-2026Q3 field report. Only the parameters that differ from the HAC-D default set are listed."
+   }
+  ]
+ },
+ "kpi": {
+  "before": [
+   {
+    "scale": 100000,
+    "aOp": 0.9910695772850983,
+    "aOpDerated": 0.9900507338379848,
+    "delivered": 0.9153168903783496,
+    "mtbfHwH": 3.029756537421101,
+    "mttrS": 104.34853669972954,
+    "windowP": 0.9575,
+    "verdict": "supported",
+    "B": 53.085773907002014,
+    "k": 1.14671086313745,
+    "mechanisms": [],
+    "levers": [],
+    "recommendedAop": 0.9898399981478209,
+    "recommendedAopDerated": 0.9886768512217542,
+    "recommendedWindowP": 0.93,
+    "effort": 0
+   }
+  ],
+  "after": [
+   {
+    "scale": 100000,
+    "aOp": 0.9902907643644036,
+    "aOpDerated": 0.9889725938253819,
+    "delivered": 0.9191300340408209,
+    "mtbfHwH": 2.628805671870975,
+    "mttrS": 100.81707081095948,
+    "windowP": 0.945,
+    "verdict": "supported",
+    "B": 53.03157223451807,
+    "k": 1.1057400393243237,
+    "mechanisms": [],
+    "levers": [],
+    "recommendedAop": 0.9893252265811314,
+    "recommendedAopDerated": 0.9878720763156144,
+    "recommendedWindowP": 0.93,
+    "effort": 0
+   }
+  ],
+  "delta": [
+   {
+    "scale": 100000,
+    "dAop": -0.0007788129206947048,
+    "dAopDerated": -0.0010781400126028684,
+    "dDelivered": 0.003813143662471319,
+    "mtbfRatio": 0.8676623482455091,
+    "mttrRatio": 0.9661570157046657,
+    "dK": -0.040970823813126334,
+    "mechanismsAdded": [],
+    "mechanismsRemoved": [],
+    "leversAdded": [],
+    "leversRemoved": [],
+    "dEffort": 0
+   }
+  ]
+ },
+ "issues": [
+  {
+   "level": "info",
+   "code": "provenance-missing",
+   "path": "record.layers",
+   "message": {
+    "zh": "层实例规则无来源（通常由几何推出）",
+    "en": "the layer rule has no provenance entry (usually derived from the geometry)"
+   }
+  },
+  {
+   "level": "warning",
+   "code": "implausible",
+   "path": "override.rates.OPT-hard@roce.fit",
+   "message": {
+    "zh": "120.0 FIT/单元·h 是单元库值 4.762 的 25.2 倍（范围 0.1–10）",
+    "en": "120.0 FIT per unit-hour is 25.2 × the unit library's 4.762 (envelope 0.1–10)"
+   }
+  },
+  {
+   "level": "info",
+   "code": "catalog-missing",
+   "path": "override.catalog",
+   "message": {
+    "zh": "无 catalog 块（版本 / 哈希 / 口径）",
+    "en": "no catalog block (revision, hash, rate basis)"
+   }
+  },
+  {
+   "level": "warning",
+   "code": "provenance-missing",
+   "path": "set.capability",
+   "message": {
+    "zh": "capability 无来源 / 置信",
+    "en": "capability has no provenance entry"
+   }
+  }
+ ],
+ "extensionRequests": [],
+ "notes": []
+}

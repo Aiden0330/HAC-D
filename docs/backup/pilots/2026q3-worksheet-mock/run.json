@@ -1,0 +1,301 @@
+{
+ "version": 1,
+ "status": "ok",
+ "exitCode": 0,
+ "startedAt": "2026-10-27T13:31:17.126Z",
+ "finishedAt": "2026-10-27T13:32:21.629Z",
+ "command": "hacd 'ingest run' --worksheets /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws --staging /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging --before-record a3server --out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out --scales 100000 --trials 400 --permutations 300 --json",
+ "options": {
+  "staging": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging",
+  "out": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out",
+  "scales": "100000",
+  "target": "0.985",
+  "trials": "400",
+  "seed": "1",
+  "permutations": "300",
+  "data": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/data",
+  "promote": false,
+  "report": true,
+  "beforeRecord": "a3server"
+ },
+ "inputs": {
+  "record": {
+   "id": "acme-a3-2026q3",
+   "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json"
+  },
+  "rates": {
+   "id": "acme-fit-2026q3",
+   "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/fault-rates/acme-fit-2026q3.json"
+  },
+  "set": {
+   "id": "acme-mech-2026q3",
+   "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json"
+  }
+ },
+ "steps": [
+  {
+   "name": "worksheets",
+   "ok": true,
+   "exitCode": 0,
+   "seconds": 0.2,
+   "command": [
+    "hacd",
+    "ingest",
+    "worksheet",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/mechanisms.md",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/topology.md",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging"
+   ],
+   "outputs": {
+    "files": [
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/mechanisms.md",
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/topology.md"
+    ],
+    "produced": [
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/koujing-mapping/acme-fit-2026q3-koujing.json",
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json",
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json"
+    ]
+   }
+  },
+  {
+   "name": "validate",
+   "ok": true,
+   "exitCode": 0,
+   "seconds": 0.1,
+   "command": [
+    "hacd",
+    "ingest",
+    "validate",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging",
+    "--json"
+   ],
+   "issues": [
+    {
+     "level": "info",
+     "code": "provenance-missing",
+     "path": "acme-a3-2026q3.json: record.layers",
+     "message": {
+      "zh": "层实例规则无来源（通常由几何推出）",
+      "en": "the layer rule has no provenance entry (usually derived from the geometry)"
+     }
+    },
+    {
+     "level": "warning",
+     "code": "implausible",
+     "path": "acme-fit-2026q3.json: override.rates.OPT-hard@roce.fit",
+     "message": {
+      "zh": "120.0 FIT/单元·h 是单元库值 4.762 的 25.2 倍（范围 0.1–10）",
+      "en": "120.0 FIT per unit-hour is 25.2 × the unit library's 4.762 (envelope 0.1–10)"
+     }
+    },
+    {
+     "level": "info",
+     "code": "catalog-missing",
+     "path": "acme-fit-2026q3.json: override.catalog",
+     "message": {
+      "zh": "无 catalog 块（版本 / 哈希 / 口径）",
+      "en": "no catalog block (revision, hash, rate basis)"
+     }
+    },
+    {
+     "level": "warning",
+     "code": "provenance-missing",
+     "path": "acme-mech-2026q3.json: set.capability",
+     "message": {
+      "zh": "capability 无来源 / 置信",
+      "en": "capability has no provenance entry"
+     }
+    }
+   ],
+   "outputs": {
+    "files": {
+     "records": 1,
+     "rates": 1,
+     "sets": 1,
+     "proposals": 0,
+     "requests": 0
+    }
+   }
+  },
+  {
+   "name": "dry-run",
+   "ok": true,
+   "exitCode": 0,
+   "seconds": 9.7,
+   "command": [
+    "hacd",
+    "ingest",
+    "dry-run",
+    "--scales",
+    "100000",
+    "--target",
+    "0.985",
+    "--trials",
+    "400",
+    "--seed",
+    "1",
+    "--json",
+    "--record",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json",
+    "--rates",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/fault-rates/acme-fit-2026q3.json",
+    "--mechanisms",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json"
+   ],
+   "issues": [
+    {
+     "level": "info",
+     "code": "provenance-missing",
+     "path": "record.layers",
+     "message": {
+      "zh": "层实例规则无来源（通常由几何推出）",
+      "en": "the layer rule has no provenance entry (usually derived from the geometry)"
+     }
+    },
+    {
+     "level": "warning",
+     "code": "implausible",
+     "path": "override.rates.OPT-hard@roce.fit",
+     "message": {
+      "zh": "120.0 FIT/单元·h 是单元库值 4.762 的 25.2 倍（范围 0.1–10）",
+      "en": "120.0 FIT per unit-hour is 25.2 × the unit library's 4.762 (envelope 0.1–10)"
+     }
+    },
+    {
+     "level": "info",
+     "code": "catalog-missing",
+     "path": "override.catalog",
+     "message": {
+      "zh": "无 catalog 块（版本 / 哈希 / 口径）",
+      "en": "no catalog block (revision, hash, rate basis)"
+     }
+    },
+    {
+     "level": "warning",
+     "code": "provenance-missing",
+     "path": "set.capability",
+     "message": {
+      "zh": "capability 无来源 / 置信",
+      "en": "capability has no provenance entry"
+     }
+    }
+   ]
+  },
+  {
+   "name": "diff",
+   "ok": true,
+   "exitCode": 0,
+   "seconds": 18.9,
+   "command": [
+    "hacd",
+    "ingest",
+    "diff",
+    "--before-record",
+    "a3server",
+    "--after-record",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json",
+    "--after-rates",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/fault-rates/acme-fit-2026q3.json",
+    "--after-set",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json",
+    "--scales",
+    "100000",
+    "--target",
+    "0.985",
+    "--trials",
+    "400",
+    "--seed",
+    "1",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/delta",
+    "--json"
+   ],
+   "outputs": {
+    "dir": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/delta"
+   }
+  },
+  {
+   "name": "findings",
+   "ok": true,
+   "exitCode": 0,
+   "seconds": 35.6,
+   "command": [
+    "hacd",
+    "findings",
+    "--scales",
+    "100000",
+    "--target",
+    "0.985",
+    "--trials",
+    "400",
+    "--seed",
+    "1",
+    "--permutations",
+    "300",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report",
+    "--data-out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report/data",
+    "--record",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json",
+    "--rates",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/fault-rates/acme-fit-2026q3.json",
+    "--mechanisms",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json"
+   ],
+   "outputs": {
+    "dir": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report",
+    "files": [
+     "ASCEND_ALLOCATION_FINDINGS_ACME-A3-2026Q3.html",
+     "ASCEND_ALLOCATION_METHODOLOGY.html"
+    ]
+   }
+  }
+ ],
+ "kpi": [
+  {
+   "scale": 100000,
+   "aOp": 0.9902907643644036,
+   "aOpDerated": 0.9889725938253819,
+   "delivered": 0.9191300340408209,
+   "mtbfHwH": 2.628805671870975,
+   "mttrS": 100.81707081095948,
+   "windowP": 0.945,
+   "verdict": "supported",
+   "B": 53.03157223451807,
+   "k": 1.1057400393243237,
+   "mechanisms": [],
+   "levers": [],
+   "recommendedAop": 0.9893252265811314,
+   "recommendedAopDerated": 0.9878720763156144,
+   "recommendedWindowP": 0.93,
+   "effort": 0
+  }
+ ],
+ "report": {
+  "dir": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report",
+  "files": [
+   "ASCEND_ALLOCATION_FINDINGS_ACME-A3-2026Q3.html",
+   "ASCEND_ALLOCATION_METHODOLOGY.html"
+  ]
+ },
+ "delta": {
+  "dir": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/delta",
+  "files": [
+   "delta.html",
+   "delta.json",
+   "delta.md",
+   "delta.zh.md",
+   "provenance.json"
+  ]
+ },
+ "promoted": [],
+ "nextAction": {
+  "zh": "完成。交给可靠性负责人签署：delta/delta.html（输入差异与 KPI 前后）与 report/ 下的 Findings 页面；run.json 列出全部步骤与 KPI 行；记录未 promote（加 --promote 才写入数据目录）。",
+  "en": "Done. Hand to the reliability owner for sign-off: delta/delta.html (input changes and KPI before / after) and the Findings page(s) under report/; run.json lists every step and the KPI rows; nothing was promoted (add --promote to write the data folder)."
+ }
+}

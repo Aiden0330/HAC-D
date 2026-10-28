@@ -1,0 +1,58 @@
+{
+ "acme-a3-2026q3-pw": {
+  "id": "acme-a3-2026q3-pw",
+  "name": {
+   "zh": "ACME A3 server cluster 2026Q3 (project workflow)",
+   "en": "ACME A3 server cluster 2026Q3 (project workflow)"
+  },
+  "short": {
+   "zh": "ACME A3 server cluster 2026Q3 (project workflow)",
+   "en": "ACME A3 server cluster 2026Q3 (project workflow)"
+  },
+  "family": "A3 · CloudMatrix384 UB supernode",
+  "template": "a3-ub384",
+  "superpod": {
+   "preset": "custom",
+   "fabric": "two-level",
+   "rackSwitches": 0,
+   "podUplinksPerNpu": 0,
+   "podSwitchRadix": 128,
+   "opticalEnginesPerNpu": 0,
+   "meshRackGrid": 0,
+   "backupNpusPerRack": 0,
+   "npusPerNode": 8,
+   "cpusPerNode": 4,
+   "l1PerNode": 7,
+   "nodesPerRack": 3,
+   "computeRacks": 1,
+   "commRacks": 0,
+   "subPlanes": 7,
+   "l2PerSubPlane": 0,
+   "l2Ports": 48,
+   "linksPerL1": 0,
+   "transceiversPerLink": 2,
+   "rdmaPortsPerNpu": 2,
+   "vpcNicsPerNode": 1
+  },
+  "scaleOut": {
+   "portsPerNpu": 2,
+   "planes": 2,
+   "radix": 128,
+   "oversubscription": 1,
+   "transceiversPerLink": 2
+  },
+  "layers": {
+   "superpod": {
+    "unit": "nodes",
+    "npus": 8
+   },
+   "cabinet": {
+    "npus": 24
+   },
+   "node": {
+    "npus": 8
+   }
+  },
+  "assumed": []
+ }
+}

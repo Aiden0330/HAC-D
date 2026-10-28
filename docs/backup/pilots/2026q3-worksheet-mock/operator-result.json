@@ -1,0 +1,350 @@
+{
+ "version": 1,
+ "startedAt": "2026-10-27T13:31:16.127Z",
+ "finishedAt": "2026-10-27T13:32:21.641Z",
+ "seconds": 65.514,
+ "baseUrl": "http://127.0.0.1:60325/v1",
+ "model": "mock-onprem",
+ "lang": "zh",
+ "work": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work",
+ "docs": [
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-a3-design-note-2026q3.md",
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-fit-2026q3.csv",
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-koujing-mapping-2026q3.csv",
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-mechanisms-2026q3.md"
+ ],
+ "brief": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/brief.md",
+ "options": {
+  "beforeRecord": "a3server",
+  "scales": "100000",
+  "trials": "400",
+  "permutations": "300"
+ },
+ "stopped": "final",
+ "error": null,
+ "steps": 8,
+ "usage": {
+  "promptTokens": 46829,
+  "completionTokens": 3877
+ },
+ "toolCalls": [
+  {
+   "step": 1,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-a3-design-note-2026q3.md"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 1,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-fit-2026q3.csv"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 1,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-koujing-mapping-2026q3.csv"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 1,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-mechanisms-2026q3.md"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 2,
+   "name": "hacd_ingest_template",
+   "args": {
+    "kind": "koujing-mapping"
+   },
+   "ok": true,
+   "seconds": 0.149,
+   "command": [
+    "ingest",
+    "template",
+    "koujing-mapping"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 2,
+   "name": "hacd_ingest_template",
+   "args": {
+    "kind": "mechanisms"
+   },
+   "ok": true,
+   "seconds": 0.148,
+   "command": [
+    "ingest",
+    "template",
+    "mechanisms"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 2,
+   "name": "hacd_ingest_import_fit",
+   "args": {
+    "file": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-fit-2026q3.csv",
+    "id": "acme-fit-2026q3",
+    "out": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws"
+   },
+   "ok": true,
+   "seconds": 0.15,
+   "command": [
+    "ingest",
+    "import-fit",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-fit-2026q3.csv",
+    "--id",
+    "acme-fit-2026q3",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 3,
+   "name": "write_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+    "content": "---\nworksheet: koujing-mapping\nversion: hacd-worksheet-1\nid: acme-fit-2026q3-koujing\nmappingVersion: 2026-10-27\nsource: \"acme-koujing-mapping-2026q3.csv (reviewed 口径 mapping, copied row for row)\"\n---\n\n# 口径 mapping — example\n\n## mapping — device → fault unit, class, devices per unit, impact factor (reviewed)\n\n| device        | unit    | class      | devicesPerUnit | impactFactor | impactBasis                           | impactConfidence | note |\n| ------------- | ------- | ---------- | -------------- | ------------ | ------------------------------------- | ---------------- | ---- |\n| Ascend 910C module | npu | MODULE-hard | 1 | 0.2 | share of module returns that interrupted a job (Q3 incident review) | derived | synthetic |\n| Ascend 910C module | npu | CORE-hard | 1 | 0.5 | runtime exceptions attributed to the module (Q3 incident review) | derived | synthetic |\n| Ascend 910C module | npu | CORE-sdc | 1 | 0.04 | silent-result incidents per module return (Q3 incident review) | assumed | few events; treated as assumed |\n| HBM3 stack | npu | MEMT-hard | 8 | 0.6 | UCE share after ECC (Q3 memory log) | derived | 8 stacks per NPU |\n| Kunpeng 920 CPU | cpu | CPU-hard | 1 | 0.8 | host interruptions per CPU fault (Q3 incident review) | derived |  |\n| DDR5 DIMM 64 GB | node | DDR-hard | 32 | 0.5 | UCE share after ECC (Q3 memory log) | derived | 32 DIMMs per server |\n| NVMe SSD 3.84 TB | node | SSD-hard | 2 | 0.5 | RAID-1 pair: a single-disk loss is tolerated half the time (ops rule) | assumed |  |\n| RoCE NIC 200G | npu | NIC-hard | 1 | 1 | every NIC loss interrupts the job (no NIC redundancy) | measured |  |\n| QSFP-DD 400G transceiver | roce-link | OPT-hard@roce | 2 | 0.2 | link-loss share after retraining (Q3 network log) | derived | 2 modules per link |\n| RoCE switch 128-port | roce-switch | FABRIC-hard@roce | 1 | 0.02 | ECMP: share of switch faults that stall a job (Q3 network log) | assumed |  |\n| UB L1 switch chip | ub-switch | FABRIC-hard | 1 | 1 | one L1 chip loss stalls the server fabric | assumed |  |\n| PSU 3 kW | cabinet | POWER-hard | 6 | 0.6 | N+1 shelf: share of PSU faults that drop the cabinet (Q3 power log) | derived | 6 PSUs per cabinet |\n| Fan module | cabinet | COOL-hard | 8 | 0.3 | over-temperature trips per fan fault (Q3 thermal log) | derived |  |\n| iBMC management module | node | MGMT-hard | 1 | 1 | BMC loss blocks the node (ops rule) | assumed |  |\n## notes\n\nWorksheet profile hacd-worksheet-1. The parser is strict: fixed table headers, one value per cell, `\\|` for a literal pipe; a blank value cell means \"not stated\". Closed vocabularies:\n\n- confidence: measured, paper-reported, vendor, derived, assumed, scan-level\n- fault unit: npu, job, cpu, node, cabinet, ub-switch, ub-link, roce-switch, roce-link\n- class ids (60): CORE-hard, CORE-slow, CORE-sdc, SRAM-hard, SRAM-slow, SRAM-sdc, IOD-hard, IOD-slow, IOD-sdc, MODULE-hard, MODULE-slow, MODULE-sdc, MEMT-hard, MEMT-slow, MEMT-sdc, MEMP-hard, MEMP-slow, MEMP-sdc, NIC-hard, NIC-slow, NIC-sdc, OPT-hard, OPT-hard@roce, OPT-slow, OPT-slow@roce, OPT-sdc, OPT-sdc@roce, BOXIO-hard, BOXIO-slow, BOXIO-sdc, FABRIC-hard, FABRIC-hard@roce, FABRIC-slow, FABRIC-slow@roce, FABRIC-sdc, FABRIC-sdc@roce, CPU-hard, CPU-slow, CPU-sdc, DDR-hard, DDR-slow, DDR-sdc, SSD-hard, SSD-slow, SSD-sdc, POWER-hard, POWER-slow, POWER-sdc, COOL-hard, COOL-slow, COOL-sdc, MGMT-hard, MGMT-slow, MGMT-sdc, STORAGE-hard, STORAGE-slow, STORAGE-sdc, UNKNOWN-hard, UNKNOWN-slow, UNKNOWN-sdc\n- impactConfidence: measured, derived, assumed\n- one row per device × class; impactFactor = share of the device's failures that become a business-impact event of the class after the existing protection\n"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 3,
+   "name": "write_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/mechanisms.md",
+    "content": "---\nworksheet: mechanisms\nversion: hacd-worksheet-1\nid: acme-mech-2026q3\nbase: remap-latest-2026-10\nsource: \"acme-mechanisms-2026q3.md: ACME-FM-2026Q3 field report. Only the parameters that differ from the HAC-D default set are listed.\"\nremap:\n  repo: https://github.com/lzq0927/remap\n  commit: f53ab7e\n  note: \"remap/remap-latest HEAD f53ab7e (2026-10-16, “feat: add bounded availability planning and decision comparisons”); packages/contracts/src/audit-extensions.ts unchanged since eaacb0578a30027c480046de6b91e6f434dfa15e (2026-10-15); reconciled field by field 2026-10-21\"\n---\n\n# Mechanism set delta — example over the default set\n\n## parameters — target parameters (merged over the library defaults)\n\n| mechanism | parameter | value | source | confidence | note |\n| --------- | --------- | ----- | ------ | ---------- | ---- |\n| D-HARD | detectSeconds | 20 | ACME-FM-2026Q3 table 4 (median detection time of hard faults) | measured |  |\n| R-REPLAY | success | 0.92 | ACME-FM-2026Q3 table 6 (step-replay success rate, Q3) | measured |  |\n\n## verdicts — which list each mechanism is in (reference / candidate / goodput / pruned / capability)\n\n| mechanism | verdict | reason zh | reason en |\n| --------- | ------- | --------- | --------- |\n\n## provenance — entries by field path not placed in a row above\n\n| path                            | source              | confidence | note                 |\n| ------------------------------- | ------------------- | ---------- | -------------------- |\n## notes\n\nWorksheet profile hacd-worksheet-1. The parser is strict: fixed table headers, one value per cell, `\\|` for a literal pipe; a blank value cell means \"not stated\". Closed vocabularies:\n\n- confidence: measured, paper-reported, vendor, derived, assumed, scan-level\n- verdict: reference, candidate, goodput, pruned, capability\n- layer: cluster, scaleout, superpod, cabinet, node, npu\n- stage: detection, rung, automatic, manual, checkpoint, sdc, rate, local, none\n- mechanism kind: detect, recover, checkpoint, physical\n- mechanism ids: D-HARD, D-SLOW, D-SDC, R-SDC, R-REPLAY, R-PROCESS, R-ELASTIC, R-CKPT, R-MANUAL, C-FAST, H-PROTECT, H-RELIABILITY, P-PREDICT, R-NETFAIL, R-HOTSWAP, C-MEM, D-SDC-DMR, H-LEMON, H-SWEEP, R-LINK-LOCAL, R-FABRIC-DEGRADE, I-CONTAIN, H-CONTROL-CONTINUITY, R-WARM-PROCESS, R-RUNTIME-SNAPSHOT, C-ASYNC, C-LOSSLESS, D-RECOVERY-CLASSIFY, D-SDC-FP8, D-SDC-FP4, D-ABFT, D-NET-SDC, H-SDC-SCREEN, R-HCCL-ELASTIC, R-CANN-GRAPH\n- a delta lists only what changes; parameter keys must be ones the mechanism reads (hacd ingest validate checks)\n"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 3,
+   "name": "hacd_ingest_normalize",
+   "args": {
+    "devices": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/device-fit/acme-fit-2026q3.md",
+    "mapping": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+    "id": "acme-fit-2026q3",
+    "out": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging"
+   },
+   "ok": true,
+   "seconds": 0.158,
+   "command": [
+    "ingest",
+    "normalize",
+    "--devices",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/device-fit/acme-fit-2026q3.md",
+    "--mapping",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+    "--id",
+    "acme-fit-2026q3",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 3,
+   "name": "hacd_ingest_extract",
+   "args": {
+    "docs": [
+     "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-a3-design-note-2026q3.md"
+    ],
+    "kind": "topology",
+    "baseUrl": "http://127.0.0.1:60325/v1",
+    "model": "mock-onprem",
+    "sourceType": "vendor",
+    "id": "acme-a3-2026q3",
+    "template": "a3-ub384",
+    "out": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/extract"
+   },
+   "ok": true,
+   "seconds": 0.215,
+   "command": [
+    "ingest",
+    "extract",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-a3-design-note-2026q3.md",
+    "--kind",
+    "topology",
+    "--provider",
+    "openai-compatible",
+    "--base-url",
+    "http://127.0.0.1:60325/v1",
+    "--model",
+    "mock-onprem",
+    "--source-type",
+    "vendor",
+    "--id",
+    "acme-a3-2026q3",
+    "--template",
+    "a3-ub384",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/extract"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 4,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/extract/topology.md"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 5,
+   "name": "write_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/topology.md",
+    "content": "---\nworksheet: topology\nversion: hacd-worksheet-1\nid: acme-a3-2026q3\nname: \n  zh: ACME A3 服务器集群 2026Q3\n  en: ACME A3 server cluster 2026Q3\nshort: \n  zh: ACME A3 服务器集群 2026Q3\n  en: ACME A3 server cluster 2026Q3\nfamily: \"910C\"\ntemplate: a3-ub384\nscenarioId: acme-a3-2026q3\n---\n\n# Topology worksheet (draft from evidence cards) — acme-a3-2026q3\n\n## geometry — SuperPoD geometry (base = preset; rows override it)\n\n| field           | value          | source                              | confidence | note                                  |\n| --------------- | -------------- | ----------------------------------- | ---------- | ------------------------------------- |\n| base            | cloudmatrix384 | acme-a3-design-note-2026q3.md L1-39 | vendor     | starts from the cloudmatrix384 preset |\n| npusPerNode     | 8              | acme-a3-design-note-2026q3.md L1-39 | vendor     | Each server carries 8 NPUs            |\n| cpusPerNode     | 4              | acme-a3-design-note-2026q3.md L1-39 | vendor     | and 4 Kunpeng CPUs                    |\n| l1PerNode       | 7              | acme-a3-design-note-2026q3.md L1-39 | vendor     | has 7 on-board UB L1 switch chips     |\n| nodesPerRack    | 3              | acme-a3-design-note-2026q3.md L1-39 | vendor     | A cabinet holds 3 servers             |\n| computeRacks    | 1              | acme-a3-design-note-2026q3.md L1-39 | vendor     | 1 compute cabinet and                 |\n| commRacks       | 0              | acme-a3-design-note-2026q3.md L1-39 | vendor     | and 0 communication cabinets          |\n| l2PerSubPlane   | 0              | acme-a3-design-note-2026q3.md L1-39 | vendor     | 0 L2 chips per sub-plane              |\n| linksPerL1      | 0              | acme-a3-design-note-2026q3.md L1-39 | vendor     | L1 chips have 0 uplinks               |\n| rdmaPortsPerNpu | 2              | acme-a3-design-note-2026q3.md L1-39 | vendor     | Each NPU exposes 2 RDMA ports         |\n| vpcNicsPerNode  | 1              | acme-a3-design-note-2026q3.md L1-39 | vendor     | Each server has 1 VPC NIC             |\n| domainNpus      | 8              | acme-a3-design-note-2026q3.md L1-39 | vendor     | the UB domain has 8 NPUs              |\n\n## scale-out — main scale-out design\n\n| field               | value | source                              | confidence | note                      |\n| ------------------- | ----- | ----------------------------------- | ---------- | ------------------------- |\n| portsPerNpu         | 2     | acme-a3-design-note-2026q3.md L1-39 | vendor     | uses 2 RoCE ports per NPU |\n| planes              | 2     | acme-a3-design-note-2026q3.md L1-39 | vendor     | over 2 planes             |\n| radix               | 128   | acme-a3-design-note-2026q3.md L1-39 | vendor     | of 128-port switches      |\n| oversubscription    | 1     | acme-a3-design-note-2026q3.md L1-39 | vendor     | oversubscription 1        |\n| transceiversPerLink | 2     | acme-a3-design-note-2026q3.md L1-39 | vendor     | 2 transceivers per link   |\n\n## layers — instance rule of the layers\n\n| layer    | unit  | npus |\n| -------- | ----- | ---- |\n| superpod | nodes | 8    |\n| cabinet  |       | 24   |\n| node     |       | 8    |\n\n## provenance — entries by field path not placed in a row above\n\n| path                 | source                              | confidence | note                                 |\n| -------------------- | ----------------------------------- | ---------- | ------------------------------------ |\n| layers.superpod.npus | acme-a3-design-note-2026q3.md L1-39 | vendor     | The SuperPoD layer has 8 NPUs        |\n| layers.cabinet.npus  | acme-a3-design-note-2026q3.md L1-39 | vendor     | A cabinet layer has 24 NPUs          |\n| layers.node.npus     | acme-a3-design-note-2026q3.md L1-39 | vendor     | A node layer has 8 NPUs              |\n| layers.superpod.unit | acme-a3-design-note-2026q3.md L1-39 | vendor     | SuperPoD layer is one server (nodes) |\n"
+   },
+   "ok": true,
+   "seconds": 0
+  },
+  {
+   "step": 6,
+   "name": "hacd_ingest_run",
+   "args": {
+    "worksheets": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws",
+    "staging": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging",
+    "beforeRecord": "a3server",
+    "out": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out",
+    "scales": "100000",
+    "trials": 400,
+    "permutations": 300
+   },
+   "ok": true,
+   "seconds": 64.643,
+   "command": [
+    "ingest",
+    "run",
+    "--worksheets",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws",
+    "--staging",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging",
+    "--before-record",
+    "a3server",
+    "--out",
+    "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out",
+    "--scales",
+    "100000",
+    "--trials",
+    "400",
+    "--permutations",
+    "300",
+    "--json"
+   ],
+   "exitCode": 0
+  },
+  {
+   "step": 7,
+   "name": "read_file",
+   "args": {
+    "path": "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/SUMMARY.md"
+   },
+   "ok": true,
+   "seconds": 0.001
+  }
+ ],
+ "writes": [
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/mechanisms.md",
+  "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/topology.md"
+ ],
+ "commands": [
+  [
+   "ingest",
+   "template",
+   "koujing-mapping"
+  ],
+  [
+   "ingest",
+   "template",
+   "mechanisms"
+  ],
+  [
+   "ingest",
+   "import-fit",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-fit-2026q3.csv",
+   "--id",
+   "acme-fit-2026q3",
+   "--out",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws"
+  ],
+  [
+   "ingest",
+   "normalize",
+   "--devices",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/device-fit/acme-fit-2026q3.md",
+   "--mapping",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/koujing-mapping.md",
+   "--id",
+   "acme-fit-2026q3",
+   "--out",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging"
+  ],
+  [
+   "ingest",
+   "extract",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/internal/acme-a3-design-note-2026q3.md",
+   "--kind",
+   "topology",
+   "--provider",
+   "openai-compatible",
+   "--base-url",
+   "http://127.0.0.1:60325/v1",
+   "--model",
+   "mock-onprem",
+   "--source-type",
+   "vendor",
+   "--id",
+   "acme-a3-2026q3",
+   "--template",
+   "a3-ub384",
+   "--out",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws/extract"
+  ],
+  [
+   "ingest",
+   "run",
+   "--worksheets",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws",
+   "--staging",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging",
+   "--before-record",
+   "a3server",
+   "--out",
+   "/Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out",
+   "--scales",
+   "100000",
+   "--trials",
+   "400",
+   "--permutations",
+   "300",
+   "--json"
+  ]
+ ],
+ "lastRun": {
+  "status": "ok",
+  "exitCode": 0
+ },
+ "finalMessage": "status: ok\nrun: hacd ingest run --worksheets /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/ws --staging /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging --before-record a3server --out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out --scales 100000 --trials 400 --permutations 300 --json\nKPI (SUMMARY.md):\n| scale | A_op nominal / derated | delivered | MTBF_hw | MTTR_hw | P(window) | k | recommended mechanisms \\| levers |\n|---|---|---|---|---|---|---|---|\n| 100000 | 99.03 % / 98.90 % | 91.91 % | 2.63 h | 101 s | 94.50 % supported | 1.106 | — \\| — |\nunresolved issues: none\nwarnings noted: (acme-fit-2026q3.json: override.rates.OPT-hard@roce.fit, implausible); (acme-mech-2026q3.json: set.capability, provenance-missing)\npaths: run.json /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/run.json; SUMMARY.md /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/SUMMARY.md; report /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report/; delta /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/delta/"
+}

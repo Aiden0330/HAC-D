@@ -116,7 +116,8 @@ about the worksheet profile, synthetic examples. The HAC-D side returns a new bu
 - Windows: run from `cmd` with `bin\hacd.cmd`; PowerShell quoting of `--columns` values needs double quotes.
 
 The project workflow (a model changes one project — topology inputs, FIT, mechanisms — and produces its report, `AGENT_OPERATOR.md` §11)
-has its own pilot: `PILOT_2026Q3_PROJECT_WORKFLOW.md`.
+has its own pilot: `PILOT_2026Q3_PROJECT_WORKFLOW.md`. The committed evidence of both pilots (manifests, operator results, report
+sidecars; no pages, no internal data) is `docs/backup/pilots/`, with its README; the working folders stay in `data-staging/`, out of git.
 
 ## 8. Pilot: the first batch
 

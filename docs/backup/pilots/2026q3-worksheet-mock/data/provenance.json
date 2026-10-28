@@ -1,0 +1,32 @@
+{
+ "command": "hacd findings --scales 100000 --target 0.985 --trials 400 --seed 1 --permutations 300 --out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report --data-out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/out/report/data --record /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/records/acme-a3-2026q3.json --rates /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/fault-rates/acme-fit-2026q3.json --mechanisms /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-2026q3/work/staging/mechanism-sets/acme-mech-2026q3.json",
+ "records": [
+  {
+   "id": "acme-a3-2026q3",
+   "name": {
+    "zh": "ACME A3 服务器集群 2026Q3",
+    "en": "ACME A3 server cluster 2026Q3"
+   }
+  }
+ ],
+ "set": {
+  "id": "acme-mech-2026q3",
+  "source": "acme-mechanisms-2026q3.md: ACME-FM-2026Q3 field report. Only the parameters that differ from the HAC-D default set are listed."
+ },
+ "rates": {
+  "id": "acme-fit-2026q3",
+  "basis": "per-unit"
+ },
+ "options": {
+  "scales": [
+   100000
+  ],
+  "target": 0.985,
+  "trials": 400,
+  "seed": 1,
+  "permutations": 300
+ },
+ "engine": {
+  "version": "0.5.0"
+ }
+}

@@ -1,0 +1,28 @@
+{
+ "command": "hacd scenario report /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/project/acme-a3-2026q3-pw.json --out /Users/liqingchuan/Documents/projects/HAC-D/data-staging/pilot-project/work/out --scales 100000 --trials 400 --permutations 300 --json",
+ "records": [
+  {
+   "id": "acme-a3-2026q3-pw",
+   "name": {
+    "zh": "ACME A3 server cluster 2026Q3 (project workflow)",
+    "en": "ACME A3 server cluster 2026Q3 (project workflow)"
+   }
+  }
+ ],
+ "set": {
+  "id": "remap-latest-2026-10",
+  "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic)"
+ },
+ "options": {
+  "scales": [
+   100000
+  ],
+  "target": 0.985,
+  "trials": 400,
+  "seed": 1,
+  "permutations": 300
+ },
+ "engine": {
+  "version": "0.5.0"
+ }
+}

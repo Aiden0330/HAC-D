@@ -1,0 +1,2500 @@
+{
+  "version": "0.2",
+  "meta": {
+    "id": "acme-a3-2026q3-pw",
+    "name": "ACME A3 server cluster 2026Q3 (project workflow)",
+    "description": "48 nodes × (8 NPUs + 4 CPUs + 7 L1 UB chips), 12 compute + 4 communication cabinets, 7 sub-planes × 16 L2 chips; RDMA plane between supernodes (2 ports per NPU). Fault types per hardware unit: the audited catalog converted under the CloudMatrix384 geometry (FIT per unit = FIT per card × cards per unit); RoCE switches and links carry the UB analogues.",
+    "basis": [
+      "Huawei, Serving LLMs on Huawei CloudMatrix384 (arXiv 2506.12708 v3) §3.3",
+      "RDMA scale-out Clos",
+      "ai-cluster-reliability audited catalog (54 events) attached per hardware unit",
+      "docs/PLAN_V4_NPU_TOPOLOGY_FIRST.md §2"
+    ]
+  },
+  "topology": {
+    "gpusPerNode": 8,
+    "nodesPerRack": 3,
+    "racksPerZone": 1,
+    "nvlinkDomainGpus": 8,
+    "networkPlanes": 7,
+    "torMode": "single",
+    "power": "2N",
+    "cooling": {
+      "modules": 6,
+      "required": 5
+    },
+    "superpod": {
+      "preset": "custom",
+      "fabric": "two-level",
+      "rackSwitches": 0,
+      "podUplinksPerNpu": 0,
+      "podSwitchRadix": 128,
+      "opticalEnginesPerNpu": 0,
+      "meshRackGrid": 0,
+      "backupNpusPerRack": 0,
+      "npusPerNode": 8,
+      "cpusPerNode": 4,
+      "l1PerNode": 7,
+      "nodesPerRack": 3,
+      "computeRacks": 1,
+      "commRacks": 0,
+      "subPlanes": 7,
+      "l2PerSubPlane": 0,
+      "l2Ports": 48,
+      "linksPerL1": 0,
+      "transceiversPerLink": 2,
+      "rdmaPortsPerNpu": 2,
+      "vpcNicsPerNode": 1
+    },
+    "template": "a3-ub384",
+    "fabricFill": "proportional",
+    "scaleOut": {
+      "portsPerNpu": 2,
+      "planes": 2,
+      "radix": 128,
+      "oversubscription": 1,
+      "transceiversPerLink": 2
+    }
+  },
+  "components": [
+    {
+      "id": "CORE-hard",
+      "name": {
+        "zh": "NPU · AI Core 计算单元 · 运行异常/算子中断",
+        "en": "NPU · AI Core compute units · runtime exception / operator abort"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 450,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CORE-hard: 466.667 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 466.667 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 1,
+        "elastic": 1,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "CORE-slow",
+      "name": {
+        "zh": "NPU · AI Core 计算单元 · 片内DVFS异常降频",
+        "en": "NPU · AI Core compute units · on-chip DVFS throttling"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CORE-slow: 14.163 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 14.163 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.4163372859025032e-8,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "CORE-sdc",
+      "name": {
+        "zh": "NPU · AI Core 计算单元 · 计算结果无告警错误",
+        "en": "NPU · AI Core compute units · wrong results without an alarm"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CORE-sdc: 41.063 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 41.063 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 3.6e-8,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CORE-sdc: 41.063 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 41.063 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "SRAM-hard",
+      "name": {
+        "zh": "NPU · 片内 SRAM / 缓存 · 不可纠正缓存异常",
+        "en": "NPU · On-chip SRAM / cache · uncorrectable cache error"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 166.6666666666666,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SRAM-hard: 166.667 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 166.667 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 1,
+        "elastic": 1,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "SRAM-slow",
+      "name": {
+        "zh": "NPU · 片内 SRAM / 缓存 · 重试导致性能下降",
+        "en": "NPU · On-chip SRAM / cache · slowdown from retries"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SRAM-slow: 0.843 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.843 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 8.430579082752994e-10,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "SRAM-sdc",
+      "name": {
+        "zh": "NPU · 片内 SRAM / 缓存 · 未检出缓存数据错误",
+        "en": "NPU · On-chip SRAM / cache · undetected cache data error"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SRAM-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SRAM-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "IOD-hard",
+      "name": {
+        "zh": "NPU · 芯片内 IO Die / D2D · D2D/IO通路失效",
+        "en": "NPU · On-chip IO die / D2D · D2D / IO path failure"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 199.99999999999997,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog IOD-hard: 200.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 200.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 1,
+        "elastic": 1,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "IOD-slow",
+      "name": {
+        "zh": "NPU · 芯片内 IO Die / D2D · 重传或通路降带宽",
+        "en": "NPU · On-chip IO die / D2D · retransmission or reduced path bandwidth"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog IOD-slow: 4.047 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.047 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 4.046677959721438e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "IOD-sdc",
+      "name": {
+        "zh": "NPU · 芯片内 IO Die / D2D · 数据通路残余静默错误",
+        "en": "NPU · On-chip IO die / D2D · residual silent error on the data path"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog IOD-sdc: 1.031 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.031 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 1.0305969095676323e-9,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog IOD-sdc: 1.031 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.031 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MODULE-hard",
+      "name": {
+        "zh": "NPU · HiAM 模组 / 板级连接 · 模组或连接故障",
+        "en": "NPU · HiAM module / board connection · module or connection fault"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 180,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MODULE-hard: 170.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 170.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 1,
+        "elastic": 1,
+        "predict": 1,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "MODULE-slow",
+      "name": {
+        "zh": "NPU · HiAM 模组 / 板级连接 · 接触/供电边缘问题导致降速",
+        "en": "NPU · HiAM module / board connection · marginal contact or supply slows the card"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MODULE-slow: 1.720 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.720 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.7198381328816111e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MODULE-sdc",
+      "name": {
+        "zh": "NPU · HiAM 模组 / 板级连接 · 未定位模组内数据异常",
+        "en": "NPU · HiAM module / board connection · unlocalised data anomaly in the module"
+      },
+      "subsystem": "compute",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MODULE-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MODULE-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMT-hard",
+      "name": {
+        "zh": "NPU · NPU 内存可恢复瞬态 · 可恢复UCE候选，须核对错误码",
+        "en": "NPU · NPU memory, recoverable transient · recoverable UCE candidate (check the error code)"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 384,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMT-hard: 400.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 400.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 1,
+        "elastic": 1,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMT-slow",
+      "name": {
+        "zh": "NPU · NPU 内存可恢复瞬态 · 纠错/访问重试造成降速",
+        "en": "NPU · NPU memory, recoverable transient · slowdown from correction / access retries"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMT-slow: 11.146 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 11.146 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.1145779669968282e-8,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMT-sdc",
+      "name": {
+        "zh": "NPU · NPU 内存可恢复瞬态 · 保护逃逸后的数据污染",
+        "en": "NPU · NPU memory, recoverable transient · corruption escaping memory protection"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMT-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMT-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMP-hard",
+      "name": {
+        "zh": "NPU · NPU 内存持续失效 · 持续UCE/器件失效",
+        "en": "NPU · NPU memory, persistent failure · persistent UCE / device failure"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 173.33333333333331,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMP-hard: 173.333 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 173.333 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 1,
+        "elastic": 1,
+        "predict": 1,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMP-slow",
+      "name": {
+        "zh": "NPU · NPU 内存持续失效 · 容量隔离后性能下降",
+        "en": "NPU · NPU memory, persistent failure · slowdown after capacity isolation"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMP-slow: 0.724 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.724 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 7.24475678547938e-10,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MEMP-sdc",
+      "name": {
+        "zh": "NPU · NPU 内存持续失效 · 持续性残余数据污染",
+        "en": "NPU · NPU memory, persistent failure · persistent residual data corruption"
+      },
+      "subsystem": "memory",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMP-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MEMP-sdc: 0.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "NIC-hard",
+      "name": {
+        "zh": "NPU · UB 网卡 / RoCE 接口 · 接口/连接中断",
+        "en": "NPU · UB NIC / RoCE interface · interface / connection loss"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 59.99999999999999,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "npu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog NIC-hard: 100.000 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 100.000 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 1,
+        "elastic": 1,
+        "predict": 0,
+        "netfail": 1,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "NIC-slow",
+      "name": {
+        "zh": "NPU · UB 网卡 / RoCE 接口 · 带宽退化与重传",
+        "en": "NPU · UB NIC / RoCE interface · bandwidth degradation and retransmission"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog NIC-slow: 1.793 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.793 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.7929179740026897e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "NIC-sdc",
+      "name": {
+        "zh": "NPU · UB 网卡 / RoCE 接口 · 端到端校验逃逸后数据污染",
+        "en": "NPU · UB NIC / RoCE interface · corruption escaping end-to-end checks"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog NIC-sdc: 1.006 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.006 FIT per npu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 1.0058431102498928e-9,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog NIC-sdc: 1.006 FIT per card-hour × 1.0000 cards per npu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.006 FIT per npu-hour (silent corruption per npu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-hard",
+      "name": {
+        "zh": "UB 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+        "en": "UB optical link · Optics / fibre protection group · link loss after the protection fails"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "optical_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 4.761904761904761,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "ub-link_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog OPT-hard: 66.667 FIT per card-hour × 0.0714 cards per ub-link in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.762 FIT per ub-link-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 1,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-hard@roce",
+      "name": {
+        "zh": "RoCE 光链路 · 光模块 / 光纤保护组 · 保护失效后的连接中断",
+        "en": "RoCE optical link · Optics / fibre protection group · link loss after the protection fails"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "roce_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 120,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "roce-link_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the OPT event on the UB L1–L2 link: 66.667 FIT per card × 0.0714 cards per unit (CloudMatrix384 geometry) = 4.762 FIT per link; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 1,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 1,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-slow",
+      "name": {
+        "zh": "UB 光链路 · 光模块 / 光纤保护组 · 2+2切换后带宽下降",
+        "en": "UB optical link · Optics / fibre protection group · bandwidth drop after a 2 + 2 switchover"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "optical_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog OPT-slow: 2.391 FIT per card-hour × 0.0714 cards per ub-link in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.171 FIT per ub-link-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.7075409276216095e-10,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-slow@roce",
+      "name": {
+        "zh": "RoCE 光链路 · 光模块 / 光纤保护组 · 2+2切换后带宽下降",
+        "en": "RoCE optical link · Optics / fibre protection group · bandwidth drop after a 2 + 2 switchover"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "roce_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the OPT event on the UB L1–L2 link: 2.391 FIT per card × 0.0714 cards per unit (CloudMatrix384 geometry) = 0.171 FIT per link; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.7075409276216095e-10,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-sdc",
+      "name": {
+        "zh": "UB 光链路 · 光模块 / 光纤保护组 · 物理误码不直接建SDC事件",
+        "en": "UB optical link · Optics / fibre protection group · physical bit errors (no SDC event)"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "optical_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog OPT-sdc: 0.000 FIT per card-hour × 0.0714 cards per ub-link in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per ub-link-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog OPT-sdc: 0.000 FIT per card-hour × 0.0714 cards per ub-link in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per ub-link-hour (silent corruption per ub-link-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "OPT-sdc@roce",
+      "name": {
+        "zh": "RoCE 光链路 · 光模块 / 光纤保护组 · 物理误码不直接建SDC事件",
+        "en": "RoCE optical link · Optics / fibre protection group · physical bit errors (no SDC event)"
+      },
+      "subsystem": "network",
+      "countRule": {
+        "per": "roce_link",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the OPT event on the UB L1–L2 link: 0.000 FIT per card × 0.0714 cards per unit (CloudMatrix384 geometry) = 0.000 FIT per link; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the OPT event on the UB L1–L2 link: 0.000 FIT per card × 0.0714 cards per unit (CloudMatrix384 geometry) = 0.000 FIT per link; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT) (silent corruption per roce-link-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "BOXIO-hard",
+      "name": {
+        "zh": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 协议转换或交换板失效",
+        "en": "Server / compute node · In-chassis IO conversion / switch board · protocol-conversion or switch-board failure"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 373.3333333333333,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "node_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog BOXIO-hard: 46.667 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 373.333 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 1,
+        "netfail": 1,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "BOXIO-slow",
+      "name": {
+        "zh": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 转发能力退化",
+        "en": "Server / compute node · In-chassis IO conversion / switch board · degraded forwarding"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog BOXIO-slow: 0.418 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 3.347 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 3.3467802181383544e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "BOXIO-sdc",
+      "name": {
+        "zh": "服务器 / 计算节点 · 框内 IO 转换 / 交换板 · 校验逃逸的数据异常",
+        "en": "Server / compute node · In-chassis IO conversion / switch board · data anomaly escaping checks"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog BOXIO-sdc: 0.469 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 3.755 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 3.7551476115995995e-9,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog BOXIO-sdc: 0.469 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 3.755 FIT per node-hour (silent corruption per node-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-hard",
+      "name": {
+        "zh": "UB 交换芯片 · L1 / L2 互联设备 · 保护后残余平面中断",
+        "en": "UB switch chip · L1 / L2 interconnect devices · residual plane outage after protection"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "ub_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 59.99999999999999,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "ub-switch_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog FABRIC-hard: 66.667 FIT per card-hour × 0.8571 cards per ub-switch in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 57.143 FIT per ub-switch-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 1,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-hard@roce",
+      "name": {
+        "zh": "RoCE 交换机 · L1 / L2 互联设备 · 保护后残余平面中断",
+        "en": "RoCE switch · L1 / L2 interconnect devices · residual plane outage after protection"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "roce_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 66.66666666666667,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "roce-switch_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the FABRIC event on the UB switch chip: 66.667 FIT per card × 0.8571 cards per unit (CloudMatrix384 geometry) = 57.143 FIT per switch; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 1,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-slow",
+      "name": {
+        "zh": "UB 交换芯片 · L1 / L2 互联设备 · 平面降容/拥塞",
+        "en": "UB switch chip · L1 / L2 interconnect devices · plane capacity loss / congestion"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "ub_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog FABRIC-slow: 1.195 FIT per card-hour × 0.8571 cards per ub-switch in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1.025 FIT per ub-switch-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.0245245565729656e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-slow@roce",
+      "name": {
+        "zh": "RoCE 交换机 · L1 / L2 互联设备 · 平面降容/拥塞",
+        "en": "RoCE switch · L1 / L2 interconnect devices · plane capacity loss / congestion"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "roce_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the FABRIC event on the UB switch chip: 1.195 FIT per card × 0.8571 cards per unit (CloudMatrix384 geometry) = 1.025 FIT per switch; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 1.0245245565729656e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-sdc",
+      "name": {
+        "zh": "UB 交换芯片 · L1 / L2 互联设备 · 交换数据残余污染",
+        "en": "UB switch chip · L1 / L2 interconnect devices · residual corruption in switched data"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "ub_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog FABRIC-sdc: 0.671 FIT per card-hour × 0.8571 cards per ub-switch in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.575 FIT per ub-switch-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 5.747674915713672e-10,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog FABRIC-sdc: 0.671 FIT per card-hour × 0.8571 cards per ub-switch in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.575 FIT per ub-switch-hour (silent corruption per ub-switch-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "FABRIC-sdc@roce",
+      "name": {
+        "zh": "RoCE 交换机 · L1 / L2 互联设备 · 交换数据残余污染",
+        "en": "RoCE switch · L1 / L2 interconnect devices · residual corruption in switched data"
+      },
+      "subsystem": "interconnect",
+      "countRule": {
+        "per": "roce_switch",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the FABRIC event on the UB switch chip: 0.671 FIT per card × 0.8571 cards per unit (CloudMatrix384 geometry) = 0.575 FIT per switch; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT)"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 5.747674915713672e-10,
+        "provenance": {
+          "source": "HAC-D v4 RoCE analogue of the audited catalog (review-2026-10-09)",
+          "confidence": "assumed",
+          "derivation": "RoCE analogue of the FABRIC event on the UB switch chip: 0.671 FIT per card × 0.8571 cards per unit (CloudMatrix384 geometry) = 0.575 FIT per switch; no public RoCE data for Ascend clusters (an unprotected Ethernet leaf is likely worse: Alibaba HPN reports 0.051 % critical ToR errors per month ≈ 708 FIT) (silent corruption per roce-switch-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "CPU-hard",
+      "name": {
+        "zh": "鲲鹏 CPU · CPU 计算刀片 · 处理器/主机中断",
+        "en": "Kunpeng CPU · CPU compute blade · processor / host interruption"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "cpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 320,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "cpu_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CPU-hard: 166.667 FIT per card-hour × 2.0000 cards per cpu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 333.333 FIT per cpu-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 1,
+        "elastic": 1,
+        "predict": 1,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "CPU-slow",
+      "name": {
+        "zh": "鲲鹏 CPU · CPU 计算刀片 · 主机降频/供给不足",
+        "en": "Kunpeng CPU · CPU compute blade · host throttling / starvation"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "cpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CPU-slow: 2.446 FIT per card-hour × 2.0000 cards per cpu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.892 FIT per cpu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 4.891649413388544e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "CPU-sdc",
+      "name": {
+        "zh": "鲲鹏 CPU · CPU 计算刀片 · 主机计算数据污染",
+        "en": "Kunpeng CPU · CPU compute blade · host computation corruption"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "cpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CPU-sdc: 0.000 FIT per card-hour × 2.0000 cards per cpu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cpu-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog CPU-sdc: 0.000 FIT per card-hour × 2.0000 cards per cpu in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cpu-hour (silent corruption per cpu-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "DDR-hard",
+      "name": {
+        "zh": "服务器 / 计算节点 · CPU DDR 内存 · 内存UCE导致进程/主机退出",
+        "en": "Server / compute node · CPU DDR memory · memory UCE stops the process / host"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 560,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "node_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog DDR-hard: 200.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1600.000 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 1,
+        "elastic": 1,
+        "predict": 1,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "DDR-slow",
+      "name": {
+        "zh": "服务器 / 计算节点 · CPU DDR 内存 · 纠错/隔离导致降速",
+        "en": "Server / compute node · CPU DDR memory · slowdown from correction / isolation"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog DDR-slow: 2.935 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 23.480 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 2.3479917184265006e-8,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "DDR-sdc",
+      "name": {
+        "zh": "服务器 / 计算节点 · CPU DDR 内存 · 内存保护逃逸后污染",
+        "en": "Server / compute node · CPU DDR memory · corruption escaping memory protection"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog DDR-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog DDR-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour (silent corruption per node-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "SSD-hard",
+      "name": {
+        "zh": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 盘故障或IO超时",
+        "en": "Server / compute node · Local SSD / system disk · disk failure or IO timeout"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 1378.1485427248,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "node_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SSD-hard: 166.667 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1333.333 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 1,
+        "elastic": 1,
+        "predict": 1,
+        "netfail": 0,
+        "hotswap": 1
+      },
+      "enabled": true
+    },
+    {
+      "id": "SSD-slow",
+      "name": {
+        "zh": "服务器 / 计算节点 · 本地 SSD / 系统盘 · IO延迟上升",
+        "en": "Server / compute node · Local SSD / system disk · rising IO latency"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SSD-slow: 4.892 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 39.133 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 3.9133195307108355e-8,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "SSD-sdc",
+      "name": {
+        "zh": "服务器 / 计算节点 · 本地 SSD / 系统盘 · 数据校验逃逸",
+        "en": "Server / compute node · Local SSD / system disk · data escaping checksums"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SSD-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog SSD-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour (silent corruption per node-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "POWER-hard",
+      "name": {
+        "zh": "计算机柜 · 柜级供电残余故障 · 保护后掉电",
+        "en": "Compute cabinet · Cabinet power (residual after protection) · power loss after protection"
+      },
+      "subsystem": "power",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 6000,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "cabinet_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog POWER-hard: 166.667 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 5333.333 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "POWER-slow",
+      "name": {
+        "zh": "计算机柜 · 柜级供电残余故障 · 供电限额导致降功率",
+        "en": "Compute cabinet · Cabinet power (residual after protection) · power capping"
+      },
+      "subsystem": "power",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog POWER-slow: 2.446 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 78.266 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 7.826639061421671e-8,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "POWER-sdc",
+      "name": {
+        "zh": "计算机柜 · 柜级供电残余故障 · 不单列直接SDC",
+        "en": "Compute cabinet · Cabinet power (residual after protection) · no direct SDC"
+      },
+      "subsystem": "power",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog POWER-sdc: 0.000 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog POWER-sdc: 0.000 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cabinet-hour (silent corruption per cabinet-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "COOL-hard",
+      "name": {
+        "zh": "计算机柜 · 液冷 / 风扇 / 热管理 · 过热保护/漏液隔离",
+        "en": "Compute cabinet · Liquid cooling / fans / thermal · over-temperature trip / leak isolation"
+      },
+      "subsystem": "cooling",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 2880,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "cabinet_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog COOL-hard: 100.000 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 3200.000 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "COOL-slow",
+      "name": {
+        "zh": "计算机柜 · 液冷 / 风扇 / 热管理 · 温度限制导致降频",
+        "en": "Compute cabinet · Liquid cooling / fans / thermal · thermal throttling"
+      },
+      "subsystem": "cooling",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog COOL-slow: 7.337 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 234.799 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 2.3479917184265008e-7,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "COOL-sdc",
+      "name": {
+        "zh": "计算机柜 · 液冷 / 风扇 / 热管理 · 不单列直接SDC",
+        "en": "Compute cabinet · Liquid cooling / fans / thermal · no direct SDC"
+      },
+      "subsystem": "cooling",
+      "countRule": {
+        "per": "rack",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog COOL-sdc: 0.000 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cabinet-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog COOL-sdc: 0.000 FIT per card-hour × 32.0000 cards per cabinet in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per cabinet-hour (silent corruption per cabinet-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MGMT-hard",
+      "name": {
+        "zh": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 控制异常影响作业",
+        "en": "Server / compute node · Management blade / BMC / UBM · control-plane fault hits the job"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 400,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "node_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MGMT-hard: 133.333 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 1066.667 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "MGMT-slow",
+      "name": {
+        "zh": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 管理异常间接阻塞",
+        "en": "Server / compute node · Management blade / BMC / UBM · management fault blocks indirectly"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MGMT-slow: 0.587 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.696 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 4.6959834368530015e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "MGMT-sdc",
+      "name": {
+        "zh": "服务器 / 计算节点 · 管理刀片 / BMC / UBM · 状态配置残余错误",
+        "en": "Server / compute node · Management blade / BMC / UBM · residual state / configuration error"
+      },
+      "subsystem": "host",
+      "countRule": {
+        "per": "node",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MGMT-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog MGMT-sdc: 0.000 FIT per card-hour × 8.0000 cards per node in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per node-hour (silent corruption per node-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "STORAGE-hard",
+      "name": {
+        "zh": "作业级服务 · 共享检查点 / 存储服务 · 存储不可用影响训练",
+        "en": "Job-level services · Shared checkpoint / storage service · storage unavailable to training"
+      },
+      "subsystem": "storage",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 133.33333333333331,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "job_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog STORAGE-hard: 133.333 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 133.333 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "STORAGE-slow",
+      "name": {
+        "zh": "作业级服务 · 共享检查点 / 存储服务 · 保存/加载性能退化",
+        "en": "Job-level services · Shared checkpoint / storage service · degraded save / load"
+      },
+      "subsystem": "storage",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog STORAGE-slow: 3.913 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 3.913 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 3.913319530710835e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "STORAGE-sdc",
+      "name": {
+        "zh": "作业级服务 · 共享检查点 / 存储服务 · 检查点校验逃逸",
+        "en": "Job-level services · Shared checkpoint / storage service · checkpoint escaping verification"
+      },
+      "subsystem": "storage",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog STORAGE-sdc: 0.000 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 0,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog STORAGE-sdc: 0.000 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 0.000 FIT per job-hour (silent corruption per job-hour)"
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "UNKNOWN-hard",
+      "name": {
+        "zh": "作业级服务 · 未知 / 软件 / 未归因 · 未归因中断",
+        "en": "Job-level services · Unknown / software / unattributed · unattributed interruption"
+      },
+      "subsystem": "software",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 410.00000000000006,
+        "unit": "FIT",
+        "koujing": {
+          "event": "hard_interruption",
+          "denominator": "job_h",
+          "level": "job"
+        },
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog UNKNOWN-hard: 410.000 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 410.000 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "auto": {
+          "coverage": 1,
+          "successProbability": 0.99,
+          "mttrHours": 0.05347222222222222
+        },
+        "manual": {
+          "mttrHours": 2
+        }
+      },
+      "mechanisms": {
+        "replay": 0,
+        "process": 0,
+        "elastic": 0,
+        "predict": 0,
+        "netfail": 0,
+        "hotswap": 0
+      },
+      "enabled": true
+    },
+    {
+      "id": "UNKNOWN-slow",
+      "name": {
+        "zh": "作业级服务 · 未知 / 软件 / 未归因 · 未归因降速",
+        "en": "Job-level services · Unknown / software / unattributed · unattributed slowdown"
+      },
+      "subsystem": "software",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog UNKNOWN-slow: 6.017 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 6.017 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "subhealth": {
+        "ratePerHour": 6.0167287784679094e-9,
+        "durationHours": 24,
+        "performance": 0.95,
+        "escalationMultiplier": 1,
+        "policy": "isolate",
+        "detection": {
+          "probability": 0.95,
+          "delayHours": 0.08333333333333333
+        }
+      },
+      "enabled": true
+    },
+    {
+      "id": "UNKNOWN-sdc",
+      "name": {
+        "zh": "作业级服务 · 未知 / 软件 / 未归因 · 未归因污染",
+        "en": "Job-level services · Unknown / software / unattributed · unattributed corruption"
+      },
+      "subsystem": "software",
+      "countRule": {
+        "per": "gpu",
+        "factor": 1
+      },
+      "failure": {
+        "value": 0,
+        "unit": "FIT",
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog UNKNOWN-sdc: 4.070 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.070 FIT per job-hour"
+        }
+      },
+      "repair": {
+        "mttrHours": 1
+      },
+      "sdc": {
+        "ratePerHour": 4.0699812668268e-9,
+        "provenance": {
+          "source": "ai-cluster-reliability audited catalog (review-2026-10-09), per-unit conversion",
+          "confidence": "assumed",
+          "derivation": "audited catalog UNKNOWN-sdc: 4.070 FIT per card-hour × 1.0000 cards per job in one CloudMatrix384 pod (arXiv 2506.12708 §3.3) = 4.070 FIT per job-hour (silent corruption per job-hour)"
+        }
+      },
+      "enabled": true
+    }
+  ],
+  "structure": {
+    "mode": "template",
+    "template": "training-series"
+  },
+  "workload": {
+    "type": "training",
+    "nGpus": 100000,
+    "durationDays": 30,
+    "deltaS": 1,
+    "intervalModel": "young",
+    "intervalS": 60,
+    "hotSpareNodes": 0,
+    "spareReplenishHours": 24,
+    "recovery": "checkpoint"
+  },
+  "recovery": {
+    "mode": "mixture",
+    "detection": {
+      "coverage": 0.95,
+      "autoSeconds": 10,
+      "timeoutSeconds": 60
+    },
+    "automatic": {
+      "successProbability": 0.99,
+      "seconds": 180
+    },
+    "manual": {
+      "seconds": 7200
+    }
+  },
+  "spares": {
+    "hardwareReplacementFraction": 0.587,
+    "turnaroundHours": 72,
+    "quantile": 0.99
+  },
+  "targets": {
+    "operational": 0.985,
+    "goodput": 0.9
+  },
+  "costs": {
+    "pricePerGpuHour": 3.662109375,
+    "extraDollarsPerDay": 0
+  },
+  "measures": {
+    "subhealthThreshold": 0.7,
+    "primary": "compensated",
+    "commShare": 0.3
+  },
+  "sdc": {
+    "detection": {
+      "coverage": 0.95,
+      "detectSeconds": 1
+    },
+    "fallbackDelayHours": 120,
+    "stepRecovery": {
+      "stepSeconds": 1,
+      "recoverSeconds": 1
+    },
+    "terminalRule": "retain-last-clean"
+  },
+  "mechanisms": {
+    "applied": {
+      "D-SDC": {
+        "order": 0,
+        "parameters": {
+          "coverage": 0.95,
+          "detectSeconds": 1
+        },
+        "previous": {
+          "sdc.detection": {
+            "coverage": 0,
+            "detectSeconds": 1
+          }
+        }
+      },
+      "R-SDC": {
+        "order": 1,
+        "parameters": {
+          "stepSeconds": 1,
+          "recoverSeconds": 1
+        },
+        "previous": {
+          "sdc.stepRecovery": null
+        }
+      },
+      "R-PROCESS": {
+        "order": 2,
+        "parameters": {
+          "success": 0.95,
+          "successSeconds": 60,
+          "failureSeconds": 120
+        },
+        "previous": {
+          "mechanisms.process": null
+        }
+      },
+      "R-ELASTIC": {
+        "order": 3,
+        "parameters": {
+          "domains": 50,
+          "success": 0.98,
+          "recoverSeconds": 180,
+          "failureSeconds": 120,
+          "syncSeconds": 1
+        },
+        "previous": {
+          "mechanisms.elastic": null
+        }
+      },
+      "C-FAST": {
+        "order": 4,
+        "parameters": {
+          "computeSeconds": 60,
+          "saveSeconds": 1
+        },
+        "previous": {
+          "workload.intervalS": 300,
+          "workload.deltaS": 4
+        }
+      },
+      "R-REPLAY": {
+        "order": 5,
+        "parameters": {
+          "success": 0.92,
+          "successSeconds": 5,
+          "failureSeconds": 10
+        },
+        "previous": {
+          "mechanisms.replay": null
+        }
+      }
+    },
+    "replay": {
+      "success": 0.92,
+      "successSeconds": 5,
+      "failureSeconds": 10
+    },
+    "elastic": {
+      "domains": 50,
+      "success": 0.98,
+      "recoverSeconds": 180,
+      "failureSeconds": 120,
+      "syncSeconds": 1
+    },
+    "process": {
+      "success": 0.95,
+      "successSeconds": 60,
+      "failureSeconds": 120
+    }
+  },
+  "assumptions": [
+    "business-impact FIT per hardware unit (after the existing protection), converted from the audited catalog under the CloudMatrix384 geometry",
+    "every hard event interrupts the synchronous job; sub-health units are isolated after detection (95 % in 5 min), silent corruption is found after 120 h unless a detector is applied",
+    "RoCE switches and links carry the per-unit FIT of the UB switch chip and the UB link (analogue)",
+    "superpod.transceiversPerLink assumed (not public)",
+    "scaleOut.radix assumed (not public)",
+    "scaleOut.oversubscription assumed (not public)",
+    "scaleOut.transceiversPerLink assumed (not public)"
+  ]
+}

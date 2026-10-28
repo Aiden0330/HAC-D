@@ -109,7 +109,9 @@ How the input changes explain the KPI changes (the runbook's fourth acceptance i
 Output of the pilot (`data-staging/pilot-2026q3/`, kept out of git): `internal/` the inputs, `work/ws` the three worksheets and the
 extraction folder, `work/staging` the records and the delta, `work/out/run.json`, `SUMMARY.md`, `report/`, `delta/`,
 `operator-log.jsonl`, `operator-result.json`, `data/` the promoted records with `CHANGELOG.md`, `promoted-report/`. Extension requests:
-none.
+none. The evidence is committed under `docs/backup/pilots/2026q3-worksheet-mock/` (`run.json`, `SUMMARY.md`, the final message,
+`operator-result.json`, the report sidecar `data/` and the delta as JSON and Markdown; see the README there):
+`hacd findings --data docs/backup/pilots/2026q3-worksheet-mock/data --out <dir>` re-renders the Findings page with the current recipes.
 
 ## 7. What the pilot found in the pipeline (fixed the same day)
 
