@@ -8,6 +8,7 @@
 import type { TopologyRecord } from '../records/topologyRecord.js';
 import type { FaultRateOverride } from '../records/faultRates.js';
 import type { MechanismSet } from '../records/mechanismSet.js';
+import type { BudgetMetric } from '../budget/kpiForm.js';
 import { budgetFromRecords, type BudgetResult } from '../budget/index.js';
 import { unitFaultLibrary } from '../topology/index.js';
 import type { Issue } from './validate.js';
@@ -86,29 +87,35 @@ export function diffRates(a: FaultRateOverride | undefined, b: FaultRateOverride
 export interface KpiRow {
   scale: number;
   aOp: number; aOpDerated: number; delivered: number;
+  /** v5.6 the effective goodput nominal / derated (the report's metric) */
+  effective: number; effectiveDerated: number;
   mtbfHwH: number; mttrS: number;
   windowP: number; verdict: string;
   /** requirement: hardware pause budget B (s per job hour, formula 2) */
   B: number;
   k: number;
   mechanisms: string[]; levers: string[];
-  recommendedAop: number; recommendedAopDerated: number; recommendedWindowP: number;
+  recommendedAop: number; recommendedAopDerated: number; recommendedEffective: number; recommendedEffectiveDerated: number; recommendedWindowP: number;
+  /** v5.6 false when no move set reaches the target (the recommended row is then every move on at k = 1) */
+  feasible: boolean;
   effort: number;
 }
 /** one row of the KPI table from a budget result (today's design and the window rule's recommendation) */
 export function kpiRow(z: BudgetResult, scale: number): KpiRow {
   const r = z.recommended, f = r.final;
   return {
-    scale, aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, delivered: z.today.kpiDerated.delivered,
+    scale, aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, delivered: z.today.kpiDerated.delivered, effective: z.today.kpi.effective, effectiveDerated: z.today.kpiDerated.effective,
     mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS,
     windowP: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict, B: z.required.B,
     k: r.k, mechanisms: [...r.mechanisms], levers: [...r.levers],
-    recommendedAop: f.kpi.aOp, recommendedAopDerated: f.kpiDerated.aOp, recommendedWindowP: r.window.pAtLeastTarget, effort: r.effort.total,
+    recommendedAop: f.kpi.aOp, recommendedAopDerated: f.kpiDerated.aOp, recommendedEffective: f.kpi.effective, recommendedEffectiveDerated: f.kpiDerated.effective, recommendedWindowP: r.window.pAtLeastTarget, feasible: r.feasible !== false, effort: r.effort.total,
   };
 }
 export interface KpiDeltaRow {
   scale: number;
   dAop: number; dAopDerated: number; dDelivered: number;
+  /** v5.6 */
+  dEffective: number; dEffectiveDerated: number;
   mtbfRatio: number; mttrRatio: number;
   dK: number;
   mechanismsAdded: string[]; mechanismsRemoved: string[]; leversAdded: string[]; leversRemoved: string[];
@@ -117,7 +124,7 @@ export interface KpiDeltaRow {
 export function kpiDelta(before: KpiRow, after: KpiRow): KpiDeltaRow {
   const minus = (a: string[], b: string[]) => a.filter((x) => !b.includes(x));
   return {
-    scale: after.scale, dAop: after.aOp - before.aOp, dAopDerated: after.aOpDerated - before.aOpDerated, dDelivered: after.delivered - before.delivered,
+    scale: after.scale, dAop: after.aOp - before.aOp, dAopDerated: after.aOpDerated - before.aOpDerated, dDelivered: after.delivered - before.delivered, dEffective: after.effective - before.effective, dEffectiveDerated: after.effectiveDerated - before.effectiveDerated,
     mtbfRatio: before.mtbfHwH > 0 ? after.mtbfHwH / before.mtbfHwH : NaN, mttrRatio: before.mttrS > 0 ? after.mttrS / before.mttrS : NaN, dK: after.k - before.k,
     mechanismsAdded: minus(after.mechanisms, before.mechanisms), mechanismsRemoved: minus(before.mechanisms, after.mechanisms),
     leversAdded: minus(after.levers, before.levers), leversRemoved: minus(before.levers, after.levers), dEffort: after.effort - before.effort,
@@ -128,6 +135,8 @@ export interface DeltaInputs { record: TopologyRecord; set: MechanismSet; rates?
 export interface DeltaIds { record?: { id: string; name: { zh: string; en: string } }; set?: { id: string }; rates?: { id: string; basis: string } }
 export interface DeltaDocument {
   version: 'hacd-delta-1';
+  /** v5.6 the acceptance metric of the KPI rows' budgets */
+  metric: BudgetMetric;
   generated: string;
   target: number; scales: number[]; trials: number; seed: number;
   before: DeltaIds; after: DeltaIds;
@@ -141,6 +150,8 @@ export interface DeltaDocument {
 export interface DeltaOptions {
   scales: number[];
   target: number;
+  /** v5.6 the acceptance metric of the budgets (default the effective goodput) */
+  metric?: BudgetMetric;
   trials?: number;
   seed?: number;
   /** the page date: supplied by the caller so that a run is reproducible */
@@ -155,10 +166,11 @@ const ids = (x: DeltaInputs | null): DeltaIds => (x ? { record: { id: x.record.i
 /** the delta document: input changes and the KPI table before (when there is a before) and after */
 export function deltaDocument(before: DeltaInputs | null, after: DeltaInputs, o: DeltaOptions): DeltaDocument {
   const trials = o.trials ?? 400, seed = o.seed ?? 1;
-  const run = (x: DeltaInputs) => { const d = budgetFromRecords([x.record], x.set, { sizes: o.scales, target: o.target, trials, seed, rates: x.rates, onProgress: o.onProgress }); return o.scales.map((n) => kpiRow(d.archs[x.record.id].sizes[String(n)], n)); };
+  const metric: BudgetMetric = o.metric ?? 'effective';
+  const run = (x: DeltaInputs) => { const d = budgetFromRecords([x.record], x.set, { sizes: o.scales, target: o.target, metric, trials, seed, rates: x.rates, onProgress: o.onProgress }); return o.scales.map((n) => kpiRow(d.archs[x.record.id].sizes[String(n)], n)); };
   const kAfter = run(after), kBefore = before ? run(before) : null;
   return {
-    version: 'hacd-delta-1', generated: o.generated, target: o.target, scales: o.scales, trials, seed,
+    version: 'hacd-delta-1', generated: o.generated, target: o.target, metric, scales: o.scales, trials, seed,
     before: ids(before), after: ids(after),
     changes: { record: diffRecords(before?.record, after.record), rates: diffRates(before?.rates, after.rates), set: diffSets(before?.set, after.set) },
     kpi: { before: kBefore, after: kAfter, delta: kBefore ? kAfter.map((r, i) => kpiDelta(kBefore[i], r)) : null },

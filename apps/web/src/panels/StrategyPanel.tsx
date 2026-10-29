@@ -30,7 +30,7 @@ export interface StrategySettings {
 }
 
 export function defaultSettings(s: Scenario): StrategySettings {
-  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })), efforts: {}, parameters: {} };
+  return { metric: 'effective', target: s.targets.effective ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })), efforts: {}, parameters: {} };
 }
 
 /** v5.3 a candidate mechanism is ready when its integration parameters are present (library defaults merged with the form's) */
@@ -46,7 +46,7 @@ export const mechanismReady = (m: MechanismDef, parameters?: Record<string, numb
 export function reportSettings(s: Scenario): StrategySettings {
   const r = resolveMechanismSet(DEFAULT_MECHANISM_SET);
   const candidates = reportCandidates(s, DEFAULT_MECHANISM_SET);
-  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'optimal', split: 'arinc', derate: true, trials: 400, candidates, efforts: { ...r.efforts }, parameters: Object.fromEntries(Object.entries(r.parameters).map(([id, p]) => [id, { ...p }])), levers: r.levers.map((l) => ({ ...l, on: true })) };
+  return { metric: 'effective', target: s.targets.effective ?? 0.985, strategy: 'optimal', split: 'arinc', derate: true, trials: 400, candidates, efforts: { ...r.efforts }, parameters: Object.fromEntries(Object.entries(r.parameters).map(([id, p]) => [id, { ...p }])), levers: r.levers.map((l) => ({ ...l, on: true })) };
 }
 
 const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -98,7 +98,7 @@ export function StrategyForm({ s, st, set }: { s: Scenario; st: StrategySettings
     <>
       <Card title={t('strategy.formTitle')} sub={t('strategy.formSub')}>
         <div className="form-grid">
-          <Field label={t('strategy.metric')}><Select value={st.metric} onChange={(v) => set((x) => ({ ...x, metric: v, target: v === 'aOp' ? s.targets.operational ?? 0.985 : s.targets.goodput ?? 0.9 }))} options={[{ value: 'aOp', label: t('mechanisms.metric_aOp') }, { value: 'delivered', label: t('mechanisms.metric_delivered') }]} /></Field>
+          <Field label={t('strategy.metric')}><Select value={st.metric} onChange={(v) => set((x) => ({ ...x, metric: v, target: v === 'aOp' ? s.targets.operational ?? 0.985 : v === 'effective' ? s.targets.effective ?? 0.985 : s.targets.goodput ?? 0.9 }))} options={[{ value: 'effective', label: t('mechanisms.metric_effective') }, { value: 'aOp', label: t('mechanisms.metric_aOp') }, { value: 'delivered', label: t('mechanisms.metric_delivered') }]} /></Field>
           <Field label={t('strategy.target')}><NumberInput value={st.target} min={0.5} max={0.99999} step={0.0005} onChange={(v) => set((x) => ({ ...x, target: v }))} /></Field>
           <Field label={t('strategy.strategy')} hint={t(`strategy.hint_${st.strategy}`)}><Select value={st.strategy} onChange={(v) => set((x) => ({ ...x, strategy: v }))} options={[{ value: 'all', label: t('strategy.compareAll') }, ...STRATEGY_IDS.map((id) => ({ value: id, label: t(`strategy.name_${id}`) }))]} /></Field>
           <Field label={t('strategy.split')} hint={t(`strategy.splitHint_${st.split}`)}><Select value={st.split} onChange={(v) => set((x) => ({ ...x, split: v }))} options={(['min-effort', 'agree', 'arinc'] as HardwareSplit[]).map((v) => ({ value: v, label: t(`strategy.split_${v}`) }))} /></Field>

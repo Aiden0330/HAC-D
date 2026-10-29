@@ -66,7 +66,7 @@ export const MechanismSetSchema = z.object({
   /** measured stage split of the automatic attempt (seconds; serial, sums to automatic.seconds); absent = equal thirds */
   stages: RecoveryStagesSchema.optional(),
   /** pruning rule: A_op / delivered Shapley threshold (fraction, 0.0015 = 0.15 pt at the largest scale on every architecture) and the dominated → dominating map */
-  prune: z.object({ threshold: z.number().nonnegative(), dominated: z.record(z.string(), z.string()).default({}), rule: BilingualSchema.optional() }),
+  prune: z.object({ threshold: z.number().nonnegative(), dominated: z.record(z.string(), z.string()).default({}), rule: BilingualSchema.optional(), /** v5.6 the metric of the candidate rule: A_op (default, the v5 sets) or the effective goodput */ metric: z.enum(['aOp', 'effective']).optional() }),
   metadata: z.record(z.string(), MechanismMetadataSchema),
   /** source and confidence by field path ('parameters', 'levers', 'derate', 'efforts', 'prune.threshold', 'baseline', 'candidates', …) */
   provenance: z.record(z.string(), z.object({ source: z.string(), confidence: ConfidenceSchema, note: z.string().optional() })).default({}),

@@ -48,7 +48,27 @@ identity check, declared below:
     perSize['500000'].gains[].{aOp,delivered}.shapley): reference set → 'reference'; absent from every study → 'capability';
     dominated on the same stage → 'pruned'; min over the four architectures of the A_op Shapley ≥ 0.0015 → 'candidate';
     else min delivered Shapley ≥ 0.0015 → 'goodput'; else 'pruned'. Plus a synthetic table that exercises every branch.
-Run: python3 compute_golden_v5.py  → golden_v5.json   (Python 3.9, standard library only)
+  v5.6 — the effective-goodput basis (docs/markdown/MODEL_REFERENCE.md §30; the report's metric since 2026-10-28):
+  * G1e the loss form of the effective goodput, formula (1′):
+        W = τ/2 + lag (or the measured / one-step value),  r_i = t̄_i + P_rb,i·W,  Q_hw = Σ λ_i P_rb,i W,  Σλr = ΣC + Q_hw,
+        R_eff = Σλr / λ_hw,  Q_other = λ_sdc,det·W without step recovery (0 with it),  save = δ/τ,
+        ℓ_local = Σ λ_i ℓ_i / 3600 (from the per-class local loss),  Φ = (1 − P_blocked)·φ_perf·(1 − ℓ_local)·(1 − o),
+        G_eff = (1 − p_sdc)·Φ·(1 − δ/τ − (Σλr + F + Q_other)/3600)   ← identity: must equal the engine's effectiveGoodput (≤ 1e-9)
+                                                                      while the headline model is the first-order one
+    P_rb,i, ℓ_i, P_blocked, φ_perf, o and p_sdc are engine outputs of the chain, the pool and the silent-corruption model
+    (covered by the v2 / v3 goldens) and enter as declared inputs; t̄_i is the Python chain mean of G3.
+  * G2e lossBreakdown — formula (3′): Q_ℓ = Σ_{i∈ℓ} λ_i P_rb,i W, U_ℓ = (downtime − p_sdc)·C_ℓ/(ΣC + F) + rollback·Q_ℓ/(ΣQ + Q_other)
+    with the engine's ledger lines (declared inputs; under the first-order model the two lines are (1 − p_sdc)(ΣC + F)/3600 and
+    (1 − p_sdc)(ΣQ + Q_other)/3600, checked), the other lines save / otherClasses / factors and the closure Σ U_ℓ + lines = 1 − G_eff.
+  * G4e requirementFromKpi on the effective basis — formula (2′): Φ′ = G_eff / (1 − S), S = δ/τ + (Σλr + F + Q_other)/3600,
+    B = 3600·(1 − δ/τ − G*/Φ′) − F − Q_other, total budget 3600·(1 − G*), the terms { 3600 δ/τ, F + Q_other, total − save − other − B },
+    MTBF needed at today's R_eff = R_eff/B, R_eff allowed at today's MTBF = B·MTBF_hw (null when B ≤ 0), the factors.
+  * G5e the all-moves identity: when no move set is feasible (results.json recommended.feasible false, k = 1) the derated
+    all-moves design's loss form reproduces the engine's effective goodput (G1e on that table) and formula (2′) says B ≤ 0;
+    the first-order k* of G5 is computed only where the mean binds (recommended.binding 'mean').
+  * G6e pruneByShapley on the effective goodput: the candidate test reads the effective-goodput Shapley (min over the
+    architectures ≥ 0.0015), the goodput test the delivered Shapley, as the set record's prune.metric = 'effective' says.
+Run: /usr/bin/python3 compute_golden_v5.py  → golden_v5.json   (Python 3.9, standard library only)
 """
 import json
 import math
@@ -275,7 +295,103 @@ def kpi_form(t, splits):
     exp['phi'] = phi
     exp['detectS'] = d_check
     exp['globalS'] = G_check
-    return exp, {'lam': lam, 'sumLP': sumLP, 'F': F, 'phi': phi, 'aRun': aRun, 'other': other}
+    form = {'lam': lam, 'sumLP': sumLP, 'F': F, 'phi': phi, 'aRun': aRun, 'other': other}
+    # v5.6 the loss form of the effective goodput (formula 1′) beside the A_op form
+    if 'tauS' in t:
+        src = t.get('recomputeSource', 'tau/2')
+        W = (t['tauS'] / 2 if src == 'tau/2' else (t['stepTimeS'] or 0.0) if src == 'step' else t['measuredRecomputeS']) + (t.get('rollbackLagS') or 0.0)
+        if abs(W - t['recomputeS']) > 1e-9 * max(1.0, W):
+            findings.append('recompute per rollback: %r from the source %s vs engine %r' % (W, src, t['recomputeS']))
+        q_hw = sum(r['ratePerHour'] * r['pRollback'] * W for r in t['rows'])
+        local = sum(r['ratePerHour'] * r['localLossS'] for r in t['rows']) / 3600
+        fac = t['factors']
+        if abs(local - fac['localLossFraction']) > 1e-9:
+            findings.append('local loss fraction: Σλℓ/3600 = %r vs engine %r' % (local, fac['localLossFraction']))
+        q_other = 0.0 if sdc.get('stepRecovery') else o['sdcDetectedPerHour'] * W
+        save = t['deltaS'] / t['tauS']
+        factor = (1 - fac['blocked']) * fac['performance'] * (1 - local) * (1 - fac['overhead'])
+        sum_loss = sumLP + q_hw
+        g_eff = (1 - fac['pauseFraction']) * factor * (1 - save - (sum_loss + F + q_other) / 3600)
+        if t.get('headlineModel') == 'first-order' and abs(g_eff - t['effective']) > 1e-9:
+            findings.append('effective goodput closure: formula %r vs engine %r' % (g_eff, t['effective']))
+        form.update({'W': W, 'qHw': q_hw, 'sumLoss': sum_loss, 'lossS': sum_loss / lam, 'qOther': q_other, 'save': save, 'factor': factor, 'pauseFrac': fac['pauseFraction'], 'effective': g_eff, 'effectiveEngine': t['effective'], 'headlineModel': t.get('headlineModel'), 'ledger': t.get('ledger')})
+    return exp, form
+
+
+def kpi_form_eff(form):
+    """the exported fields of the loss form (formula 1′); `effective` is the Python formula value (an identity on the engine while first order)"""
+    exp = OrderedDict()
+    exp['recomputeS'] = form['W']
+    exp['hardRecomputeSPerH'] = form['qHw']
+    exp['sumLoss'] = form['sumLoss']
+    exp['lossS'] = form['lossS']
+    exp['otherRecomputeSPerH'] = form['qOther']
+    exp['saveFrac'] = form['save']
+    exp['factor'] = form['factor']
+    exp['pauseFrac'] = form['pauseFrac']
+    exp['effective'] = form['effective']
+    return exp
+
+
+def requirement_eff(form, target):
+    """formula (2′) on the derated design's loss form"""
+    S = form['save'] + (form['sumLoss'] + form['F'] + form['qOther']) / 3600
+    factor = form['effective'] / (1 - S)
+    B = 3600 * (1 - form['save'] - target / factor) - form['F'] - form['qOther']
+    total = 3600 * (1 - target)
+    mtbf = 1 / form['lam']
+    loss = form['lossS']
+    reachable = B > 0
+    out = OrderedDict([
+        ('B', B), ('totalBudget', total), ('todayLossS', loss),
+        ('terms.save', 3600 * form['save']), ('terms.other', form['F'] + form['qOther']), ('terms.factors', total - 3600 * form['save'] - form['F'] - form['qOther'] - B),
+        ('ratioToday', loss / mtbf),
+    ])
+    if reachable:
+        out['mtbfAtTodayMttrH'] = loss / B
+        out['mttrAtTodayMtbfS'] = B * mtbf
+        out['mtbfFactor'] = (loss / B) / mtbf
+        out['mttrFactor'] = B * mtbf / loss
+    out['reachable'] = 1.0 if reachable else 0.0
+    return out
+
+
+def loss_breakdown(t, splits, form):
+    """formula (3′): the layers' shares of the engine ledger's downtime and rollback lines, the other lines, the closure"""
+    W = form['W']
+    c = OrderedDict((l, 0.0) for l in LAYERS)
+    q = OrderedDict((l, 0.0) for l in LAYERS)
+    for r in t['rows']:
+        l = LAYER_OF_UNIT[r['unit']]
+        c[l] += r['ratePerHour'] * splits[r['id']]['meanS']
+        q[l] += r['ratePerHour'] * r['pRollback'] * W
+    L = form['ledger']
+    pauses = sum(c.values()) + form['F']
+    recompute = sum(q.values()) + form['qOther']
+    down = max(0.0, L['downtime'] - form['pauseFrac'])
+    if t.get('headlineModel') == 'first-order':
+        if abs(down - (1 - form['pauseFrac']) * pauses / 3600) > 1e-9:
+            findings.append('ledger downtime line vs (1 − p_sdc)(ΣC + F)/3600: %r vs %r' % (down, (1 - form['pauseFrac']) * pauses / 3600))
+        if abs(L['rollback'] - (1 - form['pauseFrac']) * recompute / 3600) > 1e-9:
+            findings.append('ledger rollback line vs (1 − p_sdc)(ΣQ + Q_other)/3600: %r vs %r' % (L['rollback'], (1 - form['pauseFrac']) * recompute / 3600))
+    share = lambda cc, qq: 100 * ((down * cc / pauses if pauses > 0 else 0.0) + (L['rollback'] * qq / recompute if recompute > 0 else 0.0))
+    exp = OrderedDict()
+    hard = 0.0
+    for l in LAYERS:
+        exp['byLayer.%s' % l] = share(c[l], q[l])
+        exp['recompute.%s' % l] = q[l]
+        hard += exp['byLayer.%s' % l]
+    exp['hard'] = hard
+    exp['total'] = 100 * (1 - form['effective'])
+    exp['other'] = exp['total'] - hard
+    exp['lines.save'] = 100 * L['save']
+    exp['lines.otherClasses'] = share(form['F'], form['qOther']) + 100 * form['pauseFrac']
+    exp['lines.factors'] = 100 * (L['slowdown'] + L['local'] + L['blocked'] + L['overhead'])
+    closure = hard + exp['lines.save'] + exp['lines.otherClasses'] + exp['lines.factors'] - exp['total']
+    if t.get('headlineModel') == 'first-order' and abs(closure) > 1e-9:
+        findings.append('loss split closure: Σ U_ℓ + lines − (1 − G_eff) = %r' % closure)
+    exp['closure'] = closure
+    return exp
 
 
 def by_layer(t, splits, form):
@@ -393,8 +509,8 @@ def requirement(form, target):
 
 
 # ---------------------------------------------------------------- G6 pruning rule
-def prune(values, ids, threshold, dominated, reference):
-    """values: {arch: {id: {'aOp': x, 'delivered': y}}}; the Methodology §4 rule."""
+def prune(values, ids, threshold, dominated, reference, metric='aOp'):
+    """values: {arch: {id: {'aOp': x, 'delivered': y, 'effective': z}}}; the Methodology §4 rule on the metric (v5.6: 'effective')."""
     archs = list(values.keys())
     verdicts = OrderedDict()
     lists = {'reference': [], 'candidate': [], 'goodput': [], 'pruned': [], 'capability': []}
@@ -403,9 +519,12 @@ def prune(values, ids, threshold, dominated, reference):
         missing = [a for a in archs if mid not in values[a]]
         aop = [values[a][mid]['aOp'] for a in present]
         dlv = [values[a][mid]['delivered'] for a in present]
+        eff = [values[a][mid]['effective'] for a in present if 'effective' in values[a][mid]]
+        main = eff if metric == 'effective' else aop
         v = OrderedDict()
         v['aOp'] = {'min': min(aop), 'max': max(aop)} if aop else None
         v['delivered'] = {'min': min(dlv), 'max': max(dlv)} if dlv else None
+        v['effective'] = {'min': min(eff), 'max': max(eff)} if eff else None
         v['dominatedBy'] = dominated.get(mid)
         v['missing'] = missing
         if mid in reference:
@@ -414,7 +533,7 @@ def prune(values, ids, threshold, dominated, reference):
             verdict = 'capability'
         elif mid in dominated:
             verdict = 'pruned'
-        elif min(aop) >= threshold:
+        elif main and min(main) >= threshold:
             verdict = 'candidate'
         elif min(dlv) >= threshold:
             verdict = 'goodput'
@@ -430,7 +549,7 @@ def values_from_studies(studies, scale):
     out = OrderedDict()
     for arch, st in studies.items():
         gains = st['perSize'][str(scale)]['gains']
-        out[arch] = OrderedDict((g['id'], {'aOp': g['aOp']['shapley'], 'delivered': g['delivered']['shapley']}) for g in gains)
+        out[arch] = OrderedDict((g['id'], dict([('aOp', g['aOp']['shapley']), ('delivered', g['delivered']['shapley'])] + ([('effective', g['effective']['shapley'])] if 'effective' in g else []))) for g in gains)
     return out
 
 
@@ -499,10 +618,58 @@ for name in ['native950-500k.derated', 'cm384-200k.derated', 'a3server-10k.derat
         'expected': requirement(a['form'], TARGET), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
     })
 
+# v5.6 G1e: the loss form of the effective goodput on every table that carries its inputs
+for name in TABLES:
+    a = ANALYSIS[name]
+    if 'W' not in a['form']:
+        continue
+    cases.append({
+        'id': 'kpiFormEff.%s' % name, 'group': 'kpiFormEff',
+        'inputs': {'table': TABLES[name], 'design': a['t']['design'], 'engineEffective': a['t']['effective'], 'headlineModel': a['t'].get('headlineModel'),
+                   'identity': ['effective (formula 1′ = engine effectiveGoodput while first order)', 'P_rb,i, ℓ_i, P_blocked, φ_perf, o, p_sdc are engine outputs taken as inputs']},
+        'expected': kpi_form_eff(a['form']), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+    })
+# v5.6 G2e: the layer losses on the goodput basis
+for name in ['native950-500k', 'native950-500k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k', 'a3server-10k.derated', 'a3server-10k.predict']:
+    a = ANALYSIS[name]
+    if 'W' not in a['form']:
+        continue
+    cases.append({
+        'id': 'lossByLayer.%s' % name, 'group': 'lossByLayer',
+        'inputs': {'table': TABLES[name], 'design': a['t']['design'], 'layerOfUnit': LAYER_OF_UNIT, 'engineLedger': a['t'].get('ledger'), 'identity': ['the ledger lines are engine outputs']},
+        'expected': loss_breakdown(a['t'], a['splits'], a['form']), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+    })
+# v5.6 G4e: formula (2′) on the derated designs (today's and the all-moves design)
+for name in ['native950-500k.derated', 'cm384-200k.derated', 'a3server-10k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k.recommended-derated-k1']:
+    a = ANALYSIS[name]
+    if 'W' not in a['form']:
+        continue
+    cases.append({
+        'id': 'requirementEff.%s' % name, 'group': 'requirementEff',
+        'inputs': {'table': TABLES[name], 'design': a['t']['design'], 'target': TARGET, 'from': 'kpiFormEff.%s' % name},
+        'expected': requirement_eff(a['form'], TARGET), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+    })
+
 for name, arch in [('native950-500k.recommended-derated-k1', 'native950'), ('cm384-200k.recommended-derated-k1', 'cm384')]:
     a = ANALYSIS[name]
     f = a['form']
     rec = results['archs'][arch]['sizes'][str(a['t']['design']['npus'])]['recommended']
+    if rec.get('feasible') is False or rec['binding'] == 'none':
+        # v5.6 G5e: no move set reaches the target — the all-moves design at k = 1; the loss form must say B ≤ 0 on its derated twin
+        r_eff = requirement_eff(f, TARGET)
+        if r_eff['B'] > 0:
+            findings.append('%s: results.json says not feasible but formula (2′) gives B = %.6g > 0' % (name, r_eff['B']))
+        if abs(a['t']['design']['k'] - 1) > 0 or abs(rec['k'] - 1) > 0:
+            findings.append('%s: the all-moves design should be at k = 1 (table %r, results %r)' % (name, a['t']['design']['k'], rec['k']))
+        cases.append({
+            'id': 'allMoves.%s' % name, 'group': 'allMoves',
+            'inputs': {'table': TABLES[name], 'design': a['t']['design'], 'target': TARGET, 'resultsFeasible': rec.get('feasible'), 'resultsBinding': rec['binding'], 'resultsK': rec['k'], 'resultsCeiling': rec.get('ceiling'),
+                       'construction': 'applyMechanisms(base, every candidate, REMAP_LATEST_PARAMS) → deratedOf → applyLevers(every lever, DERATE_DEFAULT); k = 1'},
+            'expected': OrderedDict([('B', r_eff['B']), ('effective', f['effective']), ('reachable', 0.0), ('k', 1.0)]),
+            'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+            'note': 'v5.6: the 98.5 % effective-goodput goal is out of reach on the default set (the saves alone cost δ/τ = 1.67 % nominal, 2.5 % derated); the window rule returns the all-moves design at k = 1 with feasible false; the first-order k* case of G5 needs the mean to bind and is skipped here.',
+        })
+        continue
     if rec['binding'] != 'mean':
         raise RuntimeError('%s: recommended.binding is %r, the closed form needs the mean to bind' % (name, rec['binding']))
     # (a) the first-order closed form (φ, F frozen at k = 1) — the check that it agrees with the engine's bisection root to ~1e-5
@@ -557,17 +724,25 @@ ids = player_ids + ['I-CONTAIN']
 pr = prune(values, ids, THRESHOLD, DOMINATED, REFERENCE)
 cases.append({
     'id': 'prune.stored-500k', 'group': 'prune',
-    'inputs': {'studies': 'docs/backup/arch-mechanism-shapley/{%s}.json' % ','.join(ARCHS), 'scale': 500000, 'ids': ids, 'threshold': THRESHOLD, 'dominated': DOMINATED, 'reference': REFERENCE,
+    'inputs': {'studies': 'docs/backup/arch-mechanism-shapley/{%s}.json' % ','.join(ARCHS), 'scale': 500000, 'ids': ids, 'threshold': THRESHOLD, 'dominated': DOMINATED, 'reference': REFERENCE, 'metric': 'aOp',
                'values': values},
     'expected': pr, 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
+})
+# v5.6 G6e: the same studies under the effective-goodput rule (the set record's prune.metric)
+pr_eff = prune(values, ids, THRESHOLD, DOMINATED, REFERENCE, 'effective')
+cases.append({
+    'id': 'pruneEff.stored-500k', 'group': 'pruneEff',
+    'inputs': {'studies': 'docs/backup/arch-mechanism-shapley/{%s}.json' % ','.join(ARCHS), 'scale': 500000, 'ids': ids, 'threshold': THRESHOLD, 'dominated': DOMINATED, 'reference': REFERENCE, 'metric': 'effective',
+               'values': values},
+    'expected': pr_eff, 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
 })
 # cross-check against the published verdicts (mechanisms.json) — reported, never used as the expectation
 try:
     with open(os.path.join(ROOT, 'docs', 'backup', 'ascend-allocation', 'mechanisms.json'), encoding='utf-8') as f:
         published = {m['id']: m.get('verdict') for m in json.load(f)['mechanisms']}
-    for mid, v in pr['verdicts'].items():
+    for mid, v in pr_eff['verdicts'].items():
         if published.get(mid) != v['verdict']:
-            findings.append('prune: %s rule verdict %s vs published %s' % (mid, v['verdict'], published.get(mid)))
+            findings.append('prune (effective): %s rule verdict %s vs published %s' % (mid, v['verdict'], published.get(mid)))
 except (OSError, KeyError, ValueError) as e:
     findings.append('prune: could not cross-check mechanisms.json (%s)' % e)
 
@@ -592,8 +767,20 @@ syn_ids = list(SYN.keys()) + ['I-CONTAIN']                                      
 syn_values = values_from_studies(syn_studies, 500000)
 cases.append({
     'id': 'prune.synthetic', 'group': 'prune',
-    'inputs': {'studies': syn_studies, 'scale': 500000, 'ids': syn_ids, 'threshold': THRESHOLD, 'dominated': SYN_DOMINATED, 'reference': SYN_REFERENCE, 'values': syn_values},
+    'inputs': {'studies': syn_studies, 'scale': 500000, 'ids': syn_ids, 'threshold': THRESHOLD, 'dominated': SYN_DOMINATED, 'reference': SYN_REFERENCE, 'metric': 'aOp', 'values': syn_values},
     'expected': prune(syn_values, syn_ids, THRESHOLD, SYN_DOMINATED, SYN_REFERENCE), 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
+})
+# v5.6 G6e synthetic: effective values that move verdicts against the A_op ones (C-LOSSLESS falls below on the effective goodput, D-SLOW rises)
+SYN_EFF = OrderedDict([('D-SDC', [0.0, 0.0, 0.0]), ('D-HARD', [0.0015, 0.0015, 0.0015]), ('C-LOSSLESS', [0.001, 0.02, 0.03]), ('D-ABFT', [-0.001, -0.001, -0.001]),
+                       ('D-NET-SDC', [0.0, 0.0, 0.0]), ('D-SLOW', [0.0016, 0.002, 0.0015]), ('R-WARM-PROCESS', [0.01, 0.01, 0.01])])
+syn_eff_studies = OrderedDict()
+for j, arch in enumerate(SYN_ARCHS):
+    syn_eff_studies[arch] = {'perSize': {'500000': {'gains': [{'id': mid, 'aOp': {'shapley': v[0][j]}, 'delivered': {'shapley': v[1][j]}, 'effective': {'shapley': SYN_EFF[mid][j]}} for mid, v in SYN.items()]}}}
+syn_eff_values = values_from_studies(syn_eff_studies, 500000)
+cases.append({
+    'id': 'pruneEff.synthetic', 'group': 'pruneEff',
+    'inputs': {'studies': syn_eff_studies, 'scale': 500000, 'ids': syn_ids, 'threshold': THRESHOLD, 'dominated': SYN_DOMINATED, 'reference': SYN_REFERENCE, 'metric': 'effective', 'values': syn_eff_values},
+    'expected': prune(syn_eff_values, syn_ids, THRESHOLD, SYN_DOMINATED, SYN_REFERENCE, 'effective'), 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
 })
 
 out = {

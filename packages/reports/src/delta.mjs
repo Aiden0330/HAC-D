@@ -27,25 +27,37 @@ function body(lang, d, prov) {
   const hasBefore = Array.isArray(d.kpi.before) && d.kpi.before.length > 0;
   const summary = `
 <h2 class="first">${T('变化摘要', 'Summary of the change')}</h2>
-<p class="sub">${T('口径：A_op = 一个同步作业每集群小时的可运行比例；MTBF_hw = 1/Σλ（硬中断类），MTTR_hw = 速率加权平均停顿（公式 1）；P(窗口) = 30 天窗口中 A_op ≥ A* 的份额（公式 6）；k = 窗口规则允许的统一硬件 FIT 因子；交付 goodput 含静默损坏损失。每个数都由引擎计算，本页只排列。', 'Basis: A_op = running share of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ over the hard interruption classes, MTTR_hw = the rate-weighted mean pause (formula 1); P(window) = share of 30-day windows with A_op ≥ A* (formula 6); k = the uniform hardware FIT factor the window rule allows; delivered goodput includes the silent-corruption loss. The engine made every number; this page only arranges them.')}</p>
+<p class="sub">${d.metric === 'effective'
+    ? T('口径：G_eff = 一个同步作业 30 天窗口的有效 goodput（公式 1′：检查点保存、每次回滚重算与恢复暂停，乘吞吐系数），目标在降额值上成立；交付 goodput = G_eff 减去静默损坏损失（降额）；A_op = 每集群小时的可运行比例（公式 1，降额）；MTBF_hw = 1/Σλ（硬中断类），MTTR_hw = 速率加权平均停顿；P(窗口) = 30 天窗口中 G_eff ≥ G* 的份额（公式 6）；k = 窗口规则允许的统一硬件 FIT 因子（— = 无方案可达）。每个数都由引擎计算，本页只排列。', 'Basis: G_eff = the effective goodput of one synchronous job over the 30-day window (formula 1′: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), the target holding on the derated value; delivered goodput = G_eff less the silent-corruption loss (derated); A_op = the running share per cluster-hour (formula 1, derated); MTBF_hw = 1/Σλ over the hard interruption classes, MTTR_hw = the rate-weighted mean pause; P(window) = share of 30-day windows with G_eff ≥ G* (formula 6); k = the uniform hardware FIT factor the window rule allows (— = no plan reaches the target). The engine made every number; this page only arranges them.')
+    : T('口径：A_op = 一个同步作业每集群小时的可运行比例；MTBF_hw = 1/Σλ（硬中断类），MTTR_hw = 速率加权平均停顿（公式 1）；P(窗口) = 30 天窗口中 A_op ≥ A* 的份额（公式 6）；k = 窗口规则允许的统一硬件 FIT 因子；交付 goodput 含静默损坏损失。每个数都由引擎计算，本页只排列。', 'Basis: A_op = running share of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ over the hard interruption classes, MTTR_hw = the rate-weighted mean pause (formula 1); P(window) = share of 30-day windows with A_op ≥ A* (formula 6); k = the uniform hardware FIT factor the window rule allows; delivered goodput includes the silent-corruption loss. The engine made every number; this page only arranges them.')}</p>
 <ul class="kf">
   <li><b>${T('之前', 'Before')}</b>: ${hasBefore ? ids(d.before) : T('无基线（新记录）', 'no baseline (a new record)')}</li>
   <li><b>${T('之后', 'After')}</b>: ${ids(d.after)}</li>
-  <li>${T(`目标 A_op ≥ ${fmt(d.target * 100, 1)} %；规模 ${d.scales.map((n) => kNum(n, lang)).join(' / ')}；${fmt(d.trials)} 个窗口，种子 ${d.seed}`, `target A_op ≥ ${fmt(d.target * 100, 1)} %; scales ${d.scales.map((n) => kNum(n, lang)).join(' / ')}; ${fmt(d.trials)} windows, seed ${d.seed}`)}</li>
+  <li>${T(`目标 ${d.metric === 'effective' ? '有效 goodput G_eff' : 'A_op'} ≥ ${fmt(d.target * 100, 1)} %；规模 ${d.scales.map((n) => kNum(n, lang)).join(' / ')}；${fmt(d.trials)} 个窗口，种子 ${d.seed}`, `target ${d.metric === 'effective' ? 'effective goodput G_eff' : 'A_op'} ≥ ${fmt(d.target * 100, 1)} %; scales ${d.scales.map((n) => kNum(n, lang)).join(' / ')}; ${fmt(d.trials)} windows, seed ${d.seed}`)}</li>
   <li>${T(`输入变化：记录字段 ${d.changes.record.length}，失效率类 ${d.changes.rates.length}，机制集字段 ${d.changes.set.length}`, `input changes: ${d.changes.record.length} record fields, ${d.changes.rates.length} rate classes, ${d.changes.set.length} mechanism-set fields`)}</li>
   <li>${T(`校验：${counts.error} 错误、${counts.warning} 警告、${counts.info} 提示；扩展请求 ${d.extensionRequests.length}`, `validation: ${counts.error} errors, ${counts.warning} warnings, ${counts.info} notes; ${d.extensionRequests.length} extension requests`)}</li>
 </ul>`;
+  // v5.6 a delta on the effective-goodput basis shows G_eff nominal / derated (the report's metric), the delivered goodput and A_op derated
+  const EFF = d.metric === 'effective';
   const kpiRows = [];
   for (let i = 0; i < d.kpi.after.length; i++) {
     const a = d.kpi.after[i], b = hasBefore ? d.kpi.before[i] : null, dl = d.kpi.delta ? d.kpi.delta[i] : null;
-    const row = (label, x) => [label, pp(x.aOp), pp(x.aOpDerated), pp(x.delivered), h(x.mtbfHwH), s(x.mttrS), `${(x.windowP * 100).toFixed(1)} % · ${esc(x.verdict)}`, fmt(x.k, 3), `${esc(x.mechanisms.join(' + ') || '—')} | ${esc(x.levers.join(' + ') || '—')}`, pp(x.recommendedAopDerated), fmt(x.effort, 1)];
+    const kTxt = (x) => (x.feasible === false ? T('—（不可达）', '— (not feasible)') : fmt(x.k, 3));
+    const row = (label, x) => EFF
+      ? [label, pp(x.effective), pp(x.effectiveDerated), pp(x.delivered), pp(x.aOpDerated), h(x.mtbfHwH), s(x.mttrS), `${(x.windowP * 100).toFixed(1)} % · ${esc(x.verdict)}`, kTxt(x), `${esc(x.mechanisms.join(' + ') || '—')} | ${esc(x.levers.join(' + ') || '—')}`, pp(x.recommendedEffectiveDerated), fmt(x.effort, 1)]
+      : [label, pp(x.aOp), pp(x.aOpDerated), pp(x.delivered), h(x.mtbfHwH), s(x.mttrS), `${(x.windowP * 100).toFixed(1)} % · ${esc(x.verdict)}`, fmt(x.k, 3), `${esc(x.mechanisms.join(' + ') || '—')} | ${esc(x.levers.join(' + ') || '—')}`, pp(x.recommendedAopDerated), fmt(x.effort, 1)];
     if (b) kpiRows.push(row(`${kNum(a.scale, lang)} · ${T('之前', 'before')}`, b));
     kpiRows.push(row(`${kNum(a.scale, lang)} · ${T('之后', 'after')}`, a));
-    if (dl) kpiRows.push([`${kNum(a.scale, lang)} · Δ`, dpt(dl.dAop), dpt(dl.dAopDerated), dpt(dl.dDelivered), ratio(dl.mtbfRatio), ratio(dl.mttrRatio), '', `${dl.dK >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dK), 3)}`, esc([...dl.mechanismsAdded.map((m) => `+${m}`), ...dl.mechanismsRemoved.map((m) => `−${m}`), ...dl.leversAdded.map((m) => `+${m}`), ...dl.leversRemoved.map((m) => `−${m}`)].join(' ') || '—'), '', `${dl.dEffort >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dEffort), 1)}`]);
+    const moves = esc([...dl?.mechanismsAdded ?? [], ...dl?.leversAdded ?? []].map((m) => `+${m}`).concat([...dl?.mechanismsRemoved ?? [], ...dl?.leversRemoved ?? []].map((m) => `−${m}`)).join(' ') || '—');
+    if (dl) kpiRows.push(EFF
+      ? [`${kNum(a.scale, lang)} · Δ`, dpt(dl.dEffective), dpt(dl.dEffectiveDerated), dpt(dl.dDelivered), dpt(dl.dAopDerated), ratio(dl.mtbfRatio), ratio(dl.mttrRatio), '', `${dl.dK >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dK), 3)}`, moves, '', `${dl.dEffort >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dEffort), 1)}`]
+      : [`${kNum(a.scale, lang)} · Δ`, dpt(dl.dAop), dpt(dl.dAopDerated), dpt(dl.dDelivered), ratio(dl.mtbfRatio), ratio(dl.mttrRatio), '', `${dl.dK >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dK), 3)}`, esc([...dl.mechanismsAdded.map((m) => `+${m}`), ...dl.mechanismsRemoved.map((m) => `−${m}`), ...dl.leversAdded.map((m) => `+${m}`), ...dl.leversRemoved.map((m) => `−${m}`)].join(' ') || '—'), '', `${dl.dEffort >= 0 ? '+' : '−'}${fmt(Math.abs(dl.dEffort), 1)}`]);
   }
   const kpi = `
 <h2>${T('结果：今日设计与推荐设计', 'Results: today\'s design and the recommended design')}</h2>
-${table([T('规模', 'scale'), T('A_op 名义', 'A_op nominal'), T('A_op 降额', 'A_op derated'), T('交付 goodput', 'delivered'), 'MTBF_hw', 'MTTR_hw', T('P(窗口)', 'P(window)'), 'k', T('推荐机制 | 杠杆', 'recommended mechanisms | levers'), T('推荐 A_op 降额', 'recommended A_op derated'), T('工作量', 'effort')], kpiRows, [1, 2, 3, 4, 5, 6, 7, 9, 10])}
+${EFF
+    ? table([T('规模', 'scale'), T('G_eff 名义', 'G_eff nominal'), T('G_eff 降额', 'G_eff derated'), T('交付 goodput', 'delivered'), T('A_op 降额', 'A_op derated'), 'MTBF_hw', 'MTTR_hw', T('P(窗口)', 'P(window)'), 'k', T('推荐机制 | 杠杆', 'recommended mechanisms | levers'), T('推荐 G_eff 降额', 'recommended G_eff derated'), T('工作量', 'effort')], kpiRows, [1, 2, 3, 4, 5, 6, 7, 8, 10, 11])
+    : table([T('规模', 'scale'), T('A_op 名义', 'A_op nominal'), T('A_op 降额', 'A_op derated'), T('交付 goodput', 'delivered'), 'MTBF_hw', 'MTTR_hw', T('P(窗口)', 'P(window)'), 'k', T('推荐机制 | 杠杆', 'recommended mechanisms | levers'), T('推荐 A_op 降额', 'recommended A_op derated'), T('工作量', 'effort')], kpiRows, [1, 2, 3, 4, 5, 6, 7, 9, 10])}
 <p class="note">${T('“之前”行用旧输入、“之后”行用新输入在同一引擎、同一种子下计算；Δ 行是两者之差（百分点、倍数）。', 'The "before" rows use the old inputs and the "after" rows the new ones, same engine and seed; Δ rows are their difference (percentage points, ratios).')}</p>`;
 
   const conf = (c) => (c ? `<span class="tag">${esc(c)}</span>` : '');

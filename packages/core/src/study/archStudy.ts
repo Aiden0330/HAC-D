@@ -14,11 +14,13 @@
  */
 import type { Scenario } from '../scenario/schema.js';
 import { allocationStudy, type StudyGain, type StudyResult } from './index.js';
-import { stripMechanisms, mechanismById, DEFAULT_PLAYERS } from '../mechanisms/index.js';
+import { stripMechanisms, mechanismById, DEFAULT_PLAYERS, applyMechanisms } from '../mechanisms/index.js';
 import { scenarioFromRecord, type TopologyRecord } from '../records/topologyRecord.js';
 import { resolveMechanismSet, withRecoveryBaseline, type MechanismSet } from '../records/mechanismSet.js';
 import { applyFaultRates, type FaultRateOverride } from '../records/faultRates.js';
 import { HIERARCHY_DEFAULT_IDS } from './hierarchy.js';
+import { derateParameters } from '../mechanisms/plan.js';
+import { trainingOf } from '../budget/kpiForm.js';
 
 export interface ArchStudyOptions {
   sizes?: number[];
@@ -32,12 +34,19 @@ export interface ArchStudyOptions {
   parameters?: Record<string, Record<string, number>>;
   onProgress?: (n: number, done: number, total: number) => void;
 }
+/** the three value functions a study carries (v5.6: the effective goodput joins A_op and the delivered goodput) */
+export type StudyValueMetric = 'aOp' | 'effective' | 'delivered';
 export interface ArchStudySize {
+  /** A_op of the bare scenario; `baselineBy` the three metrics (v5.6) */
   baseline: number;
+  baselineBy: Record<StudyValueMetric, number>;
   plan: { ids: string[]; feasible: boolean; effort: number; nominal: number; derated: number };
+  /** A_op with every player on, nominal and derated; `allOnBy` / `allOnDeratedBy` the three metrics (v5.6) */
   allOn: number;
   allOnDerated: number;
-  gains: { id: string; halfWidth?: number; aOp: { single: number; lastAdded: number; shapley: number }; delivered: { shapley: number } }[];
+  allOnBy: Record<StudyValueMetric, number>;
+  allOnDeratedBy: Record<StudyValueMetric, number>;
+  gains: { id: string; halfWidth?: number; aOp: { single: number; lastAdded: number; shapley: number }; effective: { shapley: number }; delivered: { shapley: number } }[];
   attribution: { method: 'exact' | 'sampled'; coalitions?: number; permutations?: number };
 }
 export interface ArchStudy {
@@ -89,11 +98,16 @@ export function studyOfBuild(id: string, build: (n: number) => Scenario, set: Me
     const study = allocationStudy(bare, { sizes: [N], target, metric: 'aOp', players, parameters, trials: 0, seed, levers: false, curves: false, permutations: perms, derate: r.derate });
     const z = study.perSize[N];
     library ??= study.library;
+    // v5.6 the three metrics of the bare and the all-on designs (the study's own all-on A_op must agree with the direct evaluation)
+    const by = (sc: Scenario): Record<StudyValueMetric, number> => { const tr = trainingOf(sc); return { aOp: tr.operationalAvailability, effective: tr.effectiveGoodput, delivered: tr.deliveredGoodput }; };
+    const paramsOf = (ids: string[], derated: boolean) => Object.fromEntries(ids.map((id) => [id, derated ? derateParameters(parameters[id] ?? { ...mechanismById(id).parameters }, r.derate) : parameters[id] ?? { ...mechanismById(id).parameters }]));
+    const allOnBy = by(applyMechanisms(bare, players, paramsOf(players, false))), allOnDeratedBy = by(applyMechanisms(bare, players, paramsOf(players, true)));
+    if (Math.abs(allOnBy.aOp - z.allOn.value) > 1e-9 || Math.abs(allOnDeratedBy.aOp - z.allOnDerated.value) > 1e-9) throw new Error(`studyOfBuild ${id} at ${N}: the all-on design differs from the study's (${allOnBy.aOp} vs ${z.allOn.value}; derated ${allOnDeratedBy.aOp} vs ${z.allOnDerated.value})`);
     perSize[String(N)] = {
-      baseline: z.baseline.value,
+      baseline: z.baseline.value, baselineBy: by(bare),
       plan: { ids: z.plan.ids, feasible: z.plan.feasible, effort: z.plan.effort, nominal: z.plan.nominal, derated: z.plan.derated },
-      allOn: z.allOn.value, allOnDerated: z.allOnDerated.value,
-      gains: z.gains.map((g: StudyGain) => ({ id: g.id, halfWidth: g.halfWidth, aOp: g.byMetric.aOp, delivered: { shapley: g.byMetric.delivered.shapley } })),
+      allOn: z.allOn.value, allOnDerated: z.allOnDerated.value, allOnBy, allOnDeratedBy,
+      gains: z.gains.map((g: StudyGain) => ({ id: g.id, halfWidth: g.halfWidth, aOp: g.byMetric.aOp, effective: { shapley: g.byMetric.effective.shapley }, delivered: { shapley: g.byMetric.delivered.shapley } })),
       attribution: z.attribution,
     };
     o.onProgress?.(N, i + 1, sizes.length);

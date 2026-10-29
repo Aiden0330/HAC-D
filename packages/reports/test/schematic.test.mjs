@@ -50,6 +50,18 @@ describe('topologySchematicSvg', () => {
     expect(height).toBeGreaterThan(200);
     expect(bad(svg)).toBeNull();
   });
+  it('names the scale-out planes of a record for every template family (the A3 family too), with the counts following', () => {
+    for (const [id, want] of [['cm384', 'RDMA scale-out network'], ['native950', 'UBoE / RoCE scale-out network']]) {
+      const s = scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS[id], 10000);
+      s.topology.scaleOut = { ...s.topology.scaleOut, planes: 2 };
+      const counts = computeCounts(s);
+      const en = topologySchematicSvg(s.topology, counts, 'en').svg, zh = topologySchematicSvg(s.topology, counts, 'zh').svg;
+      expect(en).toContain(`${want} · ${counts.scaleOutTiers}-tier Clos × 2 planes · ${fmt(counts.scaleOutPorts)} ports`);
+      expect(zh).toContain(`${counts.scaleOutTiers} 层 Clos × 2 平面 · ${fmt(counts.scaleOutPorts)} 口`);
+    }
+    const one = scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.cm384, 10000);
+    expect(topologySchematicSvg(one.topology, computeCounts(one), 'en').svg).not.toContain('Clos ×'); // one plane: no plane count (the UB sub-planes of the fabric text are another thing)
+  });
   it('the web variant is a bare svg.topo-pic without an embedded style', () => {
     const s = scenarioFromRecord(BUILTIN_TOPOLOGY_RECORDS.native950, 10000);
     const { svg } = topologySchematicSvg(s.topology, computeCounts(s), 'en', { embedStyle: false });

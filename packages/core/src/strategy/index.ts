@@ -36,7 +36,8 @@ import { withSize } from '../study/index.js';
 
 export type StrategyId = 'optimal' | 'mttr-first' | 'mttf-first';
 export const STRATEGY_IDS: StrategyId[] = ['optimal', 'mttr-first', 'mttf-first'];
-export type StrategyMetric = 'aOp' | 'delivered';
+/** the value function of a strategy: A_op, the delivered goodput, or v5.6 the effective goodput (the report's metric) */
+export type StrategyMetric = 'aOp' | 'delivered' | 'effective';
 export type HardwareSplit = 'min-effort' | 'agree' | 'arinc';
 export type LeverId = 'auto' | 'success' | 'manual';
 export interface RecoveryLever { id: LeverId; limit: number; effort: number }
@@ -89,7 +90,7 @@ export interface StrategyOptions {
   onProgress?: (done: number, total: number) => void;
 }
 
-export interface StrategyValues { value: number; aOp: number; delivered: number; mtbiHours: number; meanPauseS: number; recoveryS: number }
+export interface StrategyValues { value: number; aOp: number; delivered: number; effective: number; mtbiHours: number; meanPauseS: number; recoveryS: number }
 export interface StrategyHardwareRow {
   id: string; name: string; count: number;
   /** current interruption FIT per unit, allowed FIT per unit, factor x = allowed / current */
@@ -135,7 +136,8 @@ function training(s: Scenario): TrainingResult {
   if (!t) throw new Error('allocation strategies need a training workload');
   return t;
 }
-const valuesOf = (t: TrainingResult, metric: StrategyMetric): StrategyValues => ({ value: metric === 'aOp' ? t.operationalAvailability : t.deliveredGoodput, aOp: t.operationalAvailability, delivered: t.deliveredGoodput, mtbiHours: t.mtbiHours, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS });
+const metricOf = (t: TrainingResult, metric: StrategyMetric): number => (metric === 'aOp' ? t.operationalAvailability : metric === 'effective' ? t.effectiveGoodput : t.deliveredGoodput);
+const valuesOf = (t: TrainingResult, metric: StrategyMetric): StrategyValues => ({ value: metricOf(t, metric), aOp: t.operationalAvailability, delivered: t.deliveredGoodput, effective: t.effectiveGoodput, mtbiHours: t.mtbiHours, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS });
 
 /**
  * Move the mixture recovery to the lever limits (derated limits never worse than the current value). The levers act after the
@@ -222,7 +224,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
     }
     return v;
   };
-  const mv = (t: TrainingResult) => (metric === 'aOp' ? t.operationalAvailability : t.deliveredGoodput);
+  const mv = (t: TrainingResult) => metricOf(t, metric);
   const effortOf = (st: State) => st.mechs.reduce((a, id) => a + (moves.find((m) => m.kind === 'mechanism' && m.id === id)?.effort ?? 0), 0) + st.levers.reduce((a, id) => a + (leverList.find((l) => l.id === id)?.effort ?? 0), 0);
   const mechEffort = (st: State) => st.mechs.reduce((a, id) => a + (moves.find((m) => m.kind === 'mechanism' && m.id === id)?.effort ?? 0), 0);
   const leverEffort = (st: State) => st.levers.reduce((a, id) => a + (leverList.find((l) => l.id === id)?.effort ?? 0), 0);
@@ -451,7 +453,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
     const seed = opts.verify.seed ?? 1;
     const run = buildLedgerRun(finalNom, { trials: opts.verify.trials, seed, target: T });
     const reps = simulateLedgerReplications(run.spec, 0, opts.verify.trials, seed);
-    const vals = reps.map((r) => (metric === 'aOp' ? r.operationalAvailability : r.delivered));
+    const vals = reps.map((r) => (metric === 'aOp' ? r.operationalAvailability : metric === 'effective' ? r.effective : r.delivered));
     const k = vals.filter((v) => v >= T).length;
     const est = proportionEstimate(k, opts.verify.trials);
     verification = { trials: opts.verify.trials, seed, value: summaryStat(vals), pAtLeastTarget: k / opts.verify.trials, wilson: [est.low, est.high], verdict: proportionVerdict(est, 0.9) };

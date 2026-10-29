@@ -177,7 +177,7 @@ export function runPipeline(a: Args, rest: string[]): void {
 function summary(m: Manifest): string {
   const pct = (x: unknown) => (typeof x === 'number' ? `${(100 * x).toFixed(2)} %` : '—');
   const num = (x: unknown, d = 1) => (typeof x === 'number' ? x.toFixed(d) : '—');
-  const rows = m.kpi.map((r) => `| ${r.scale} | ${pct(r.aOp)} / ${pct(r.aOpDerated)} | ${pct(r.delivered)} | ${num(r.mtbfHwH, 2)} h | ${num(r.mttrS, 0)} s | ${pct(r.windowP)} ${r.verdict ?? ''} | ${num(r.k, 3)} | ${Array.isArray(r.mechanisms) ? (r.mechanisms as string[]).join('+') || '—' : '—'} \\| ${Array.isArray(r.levers) ? (r.levers as string[]).join('+') || '—' : '—'} |`).join('\n');
+  const rows = m.kpi.map((r) => `| ${r.scale} | ${pct(r.effective)} / ${pct(r.effectiveDerated)} | ${pct(r.delivered)} | ${pct(r.aOpDerated)} | ${num(r.mtbfHwH, 2)} h | ${num(r.mttrS, 0)} s | ${pct(r.windowP)} ${r.verdict ?? ''} | ${r.feasible === false ? '— (not feasible)' : num(r.k, 3)} | ${Array.isArray(r.mechanisms) ? (r.mechanisms as string[]).join('+') || '—' : '—'} \\| ${Array.isArray(r.levers) ? (r.levers as string[]).join('+') || '—' : '—'} |`).join('\n');
   const issues = m.steps.flatMap((s) => (s.issues ?? []).map((i) => ({ step: s.name, ...i }))).filter((i) => i.level !== 'info');
   const issueLines = issues.length ? issues.map((i) => `- ${i.level} · ${i.step} · \`${i.path}\` · ${i.code} — ${i.message.en} / ${i.message.zh}`).join('\n') : '- none';
   const failed = m.steps.find((s) => !s.ok);
@@ -194,10 +194,10 @@ Next: ${m.nextAction.en}
 |---|---|---|---|
 ${stepLines}
 ${failed?.stderrTail ? `\nLast lines of the failed step:\n\`\`\`\n${failed.stderrTail}\n\`\`\`\n` : ''}
-## KPI（干跑 / dry run; 口径: A_op of one synchronous job per cluster-hour, nominal / derated; MTBF_hw and MTTR_hw of formula 1; P = share of ${m.options.trials} 30-day windows ≥ target; k = uniform hardware factor）
-| scale | A_op nominal / derated | delivered | MTBF_hw | MTTR_hw | P(window) | k | recommended mechanisms \\| levers |
-|---|---|---|---|---|---|---|---|
-${rows || '| — | | | | | | | |'}
+## KPI（干跑 / dry run; 口径: G_eff = effective goodput of one synchronous job over the 30-day window, nominal / derated (the report target, formula 2′); delivered = silent-corruption loss removed (derated); A_op derated (formula 1); MTBF_hw and MTTR_hw of formula 1; P = share of ${m.options.trials} 30-day windows ≥ target; k = uniform hardware factor, — when no move set reaches the target）
+| scale | G_eff nominal / derated | delivered | A_op derated | MTBF_hw | MTTR_hw | P(window) | k | recommended mechanisms \\| levers |
+|---|---|---|---|---|---|---|---|---|
+${rows || '| — | | | | | | | | |'}
 
 ## 门禁问题 / Gate issues (errors and warnings)
 ${issueLines}

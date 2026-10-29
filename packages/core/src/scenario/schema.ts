@@ -550,6 +550,9 @@ export const TargetsSchema = z.object({
   availability: z.number().min(0).max(1).optional(),
   /** v4 operational-availability (A_op) target of the allocation strategies */
   operational: z.number().min(0).max(1).optional(),
+  /** v5.6 effective-goodput target of the report pipeline (hacd findings, the Report tab; default 0.985) */
+  effective: z.number().min(0).max(1).optional(),
+  /** delivered-goodput target (silent corruption counted) */
   goodput: z.number().min(0).max(1).optional(),
   capacityAvailability: z.number().min(0).max(1).optional(),
 });

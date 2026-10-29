@@ -8,6 +8,10 @@
  * the per-unit sub-health / silent-corruption rates. Those are inputs of the v5 formulas.
  * The fields meanPauseS, aOp, aRun, delivered and the three `other` rates are ENGINE OUTPUTS and are used by the
  * Python only where a golden case is declared an identity check (see golden-v5-report.md).
+ * v5.6 (the effective-goodput basis, MODEL_REFERENCE §30): every table also carries the inputs of the loss form (1′) — per class
+ * the rollback probability P_rb,i and the local loss, the checkpoint interval τ and save time δ, the recompute source and lag,
+ * the throughput factors (blocked spares, sub-health performance, overhead, the silent-corruption episode pauses) and the
+ * engine's ledger lines; `effective` is the engine output the loss-form identity is declared on.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -59,7 +63,7 @@ function table(s, design) {
     order: s.mechanisms.order ?? null,
     recovery: s.recovery,
     sdc: s.sdc ?? null,
-    rows: r.chain.rows.map((x) => ({ id: x.id, unit: lib.get(x.id)?.unit ?? null, count: count.get(x.id) ?? null, ratePerHour: x.ratePerHour, meanPauseS: x.meanPauseS, applicable: x.applicable, recoveryStages: s.components.find((c) => c.id === x.id)?.recoveryStages ?? null })),
+    rows: r.chain.rows.map((x) => ({ id: x.id, unit: lib.get(x.id)?.unit ?? null, count: count.get(x.id) ?? null, ratePerHour: x.ratePerHour, meanPauseS: x.meanPauseS, pRollback: x.pRollback, localLossS: x.localLossS, applicable: x.applicable, recoveryStages: s.components.find((c) => c.id === x.id)?.recoveryStages ?? null })),
     other: {
       isolationPerHour: r.subhealth ? r.subhealth.isolationInterruptionsPerHour : 0,
       sdcDetectedPerHour: r.sdc ? r.sdc.detectedRatePerHour : 0,
@@ -70,6 +74,18 @@ function table(s, design) {
     aOp: r.operationalAvailability,
     aRun: r.runningFraction,
     delivered: r.deliveredGoodput,
+    // v5.6 the loss form of the effective goodput (formula 1′): its inputs and the engine value the identity is declared on
+    effective: r.effectiveGoodput,
+    headlineModel: r.headlineModel,
+    tauS: r.tauS,
+    deltaS: s.workload.deltaS,
+    recomputeS: r.recomputePerInterruptionS,
+    recomputeSource: r.recomputeSource,
+    rollbackLagS: s.workload.rollbackLagS ?? 0,
+    stepTimeS: s.workload.stepTimeS ?? null,
+    measuredRecomputeS: s.workload.measuredRecomputeS ?? null,
+    factors: { blocked: r.blockedProbability, performance: r.subhealth ? r.subhealth.performanceFactor : 1, localLossFraction: r.localLossFraction, overhead: r.overheadFraction, pauseFraction: r.sdc ? r.sdc.delivery.pauseFraction : 0 },
+    ledger: r.ledger,
     // v5.5: the per-class silent-corruption detection inputs of §24.3 (an absolute class coverage, the conditional detectors' gains), for the detected-rate split of formula (3)
     slowSdcByClass: s.components.map((c) => ({ id: c.id, unit: lib.get(c.id)?.unit ?? null, count: count.get(c.id) ?? null, slowPerUnitPerHour: c.subhealth ? c.subhealth.ratePerHour : 0, sdcPerUnitPerHour: c.sdc ? c.sdc.ratePerHour : 0, sdcCoverage: c.sdc?.coverage ?? null, sdcExtraDetection: c.sdc?.extraDetection ?? null })),
   };

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { kpiForm, trainingOf } from '../src/budget/kpiForm.js';
 import { chainSplit, classChainSplits, mttrDecomposition } from '../src/mttr/decompose.js';
-import { byLayer, unavailabilityByLayer, DEFAULT_LAYERS } from '../src/layers/index.js';
+import { byLayer, unavailabilityByLayer, lossBreakdown, DEFAULT_LAYERS } from '../src/layers/index.js';
 import { requirementFromKpi, requirement } from '../src/strategy/requirement.js';
 import { deratedOf } from '../src/strategy/window.js';
 import { pruneByShapley, shapleyAtScale } from '../src/study/prune.js';
@@ -206,6 +206,92 @@ describe('v5 golden vectors (independent Python)', () => {
       const engine = evaluateScenario(d, { structure: false }).training!.operationalAvailability;
       expect.soft(Math.abs(engine - target), `${c.id}: engine A_op of the derated design at results.json k = ${c.inputs.resultsK} is ${engine}, target ${target}`).toBeLessThanOrEqual(c.tolerance.aOpAbs);
       expect.soft(Math.abs(k.phi - (c.inputs.phiAtK1 as number) - (c.expected.phiShiftFromK1 as number)), `${c.id}: φ(k) − φ(1)`).toBeLessThanOrEqual(1e-12);
+    }
+  });
+
+  /* ---------------- v5.6 the effective-goodput basis (MODEL_REFERENCE §30; groups G1e, G2e, G4e, G5e, G6e of compute_golden_v5.py) ---------------- */
+
+  it('G1e kpiForm — the loss form of the effective goodput, formula (1′): r_i = t̄_i + P_rb,i W, R_eff, Q_other, δ/τ, Φ; closure on the engine', () => {
+    for (const c of byGroup('kpiFormEff')) {
+      const s = scenarioOf(c.inputs.design!);
+      const t = trainingOf(s);
+      const k = kpiForm(s, t);
+      compareNumbers(c.id, { recomputeS: k.recomputeS, hardRecomputeSPerH: k.hardRecomputeSPerH, sumLoss: k.sumLoss, lossS: k.lossS, otherRecomputeSPerH: k.otherRecomputeSPerH, saveFrac: k.saveFrac, factor: k.factor, pauseFrac: k.pauseFrac, effective: k.effective }, c.expected, c.tolerance);
+      // the identity the Python declared: the engine's effective goodput equals the loss form while the headline model is first order
+      if (t.headlineModel === 'first-order') expect.soft(Math.abs(t.effectiveGoodput - (c.expected.effective as number)), `${c.id}: engine effectiveGoodput vs the Python loss form`).toBeLessThanOrEqual(1e-9);
+      expect.soft(Math.abs(k.lossS - (k.mttrS + k.hardRecomputeSPerH / k.lamHw)), `${c.id}: R_eff = MTTR_hw + P̄_rb W`).toBeLessThanOrEqual(1e-12 * k.lossS);
+    }
+  });
+
+  it('G2e lossBreakdown — formula (3′): the layers’ shares of the ledger’s downtime and rollback lines, the other lines, Σ = 1 − G_eff', () => {
+    for (const c of byGroup('lossByLayer')) {
+      const s = scenarioOf(c.inputs.design!);
+      const x = byLayer(s);
+      const b = lossBreakdown(x, DEFAULT_LAYERS, 'effective');
+      const got: Record<string, number> = { hard: b.hard, total: b.total, other: b.other, 'lines.save': b.lines.save, 'lines.otherClasses': b.lines.otherClasses, 'lines.factors': b.lines.factors };
+      for (const [l, v] of Object.entries(b.byLayer)) { got[`byLayer.${l}`] = v; got[`recompute.${l}`] = x.levels[l as keyof typeof x.levels].recompute; }
+      got.closure = b.hard + b.lines.save + b.lines.otherClasses + b.lines.factors - b.total;
+      compareNumbers(c.id, got, c.expected, c.tolerance);
+      const U = unavailabilityByLayer(x, DEFAULT_LAYERS, 'effective') as unknown as Record<string, number>;
+      for (const l of Object.keys(b.byLayer)) expect.soft(Math.abs(U[l] - b.byLayer[l as keyof typeof b.byLayer]), `${c.id}: unavailabilityByLayer(effective) = lossBreakdown.byLayer (${l})`).toBeLessThanOrEqual(1e-12);
+      if (trainingOf(s).headlineModel === 'first-order') expect.soft(Math.abs(got.closure), `${c.id}: Σ U_ℓ + lines − (1 − G_eff)`).toBeLessThanOrEqual(1e-9);
+    }
+  });
+
+  it('G4e requirementFromKpi on the effective basis — formula (2′): B, the terms, the two ends (null when B ≤ 0)', () => {
+    for (const c of byGroup('requirementEff')) {
+      const d = c.inputs.design!;
+      const target = c.inputs.target as number;
+      const s = scenarioOf(d);
+      const r = requirementFromKpi(kpiForm(s), target, 'effective');
+      const flat = (q: typeof r): Record<string, number> => ({ B: q.B, totalBudget: q.totalBudget, todayLossS: q.todayLossS, 'terms.save': q.terms.save, 'terms.other': q.terms.other, 'terms.factors': q.terms.factors, ratioToday: q.ratioToday, reachable: q.reachable ? 1 : 0, ...(q.reachable ? { mtbfAtTodayMttrH: q.mtbfAtTodayMttrH!, mttrAtTodayMtbfS: q.mttrAtTodayMtbfS!, mtbfFactor: q.mtbfFactor!, mttrFactor: q.mttrFactor! } : {}) });
+      compareNumbers(`${c.id} (requirementFromKpi)`, flat(r), c.expected, c.tolerance);
+      expect.soft(r.metric, `${c.id}: metric`).toBe('effective');
+      if (!r.reachable) { expect.soft(r.mtbfAtTodayMttrH, `${c.id}: no MTBF end when B ≤ 0`).toBeNull(); expect.soft(r.mttrAtTodayMtbfS, `${c.id}: no loss end when B ≤ 0`).toBeNull(); }
+      expect.soft(Math.abs(r.totalBudget - r.terms.save - r.terms.other - r.terms.factors - r.B), `${c.id}: B = total − Σ terms`).toBeLessThanOrEqual(1e-9);
+      // today's design (not derated) built the same way gives the same requirement through `requirement` (the derated twin inside)
+      if (d.mechanisms.length === 0 && d.levers.length === 0) compareNumbers(`${c.id} (requirement)`, flat(requirement(base({ ...d, derated: false }), target, DERATE_DEFAULT, 'effective')), c.expected, c.tolerance);
+    }
+  });
+
+  it('G5e the all-moves design where no move set reaches the goal — B ≤ 0 on its derated twin, k = 1, feasible false in results.json', () => {
+    for (const c of byGroup('allMoves')) {
+      const s = scenarioOf(c.inputs.design!);
+      const k = kpiForm(s);
+      const r = requirementFromKpi(k, c.inputs.target as number, 'effective');
+      compareNumbers(c.id, { B: r.B, effective: k.effective, reachable: r.reachable ? 1 : 0, k: c.inputs.design!.k }, c.expected, c.tolerance);
+      expect.soft(c.inputs.resultsFeasible, `${c.id}: results.json recommended.feasible`).toBe(false);
+      expect.soft(c.inputs.resultsBinding, `${c.id}: results.json recommended.binding`).toBe('none');
+      expect.soft(c.inputs.resultsK, `${c.id}: results.json recommended.k`).toBe(1);
+      const ceiling = c.inputs.resultsCeiling as { nominal: number; derated: number };
+      expect.soft(ceiling.derated, `${c.id}: the ceiling with perfect hardware exceeds the design at k = 1`).toBeGreaterThan(k.effective);
+      expect.soft(ceiling.derated, `${c.id}: the ceiling stays below the goal`).toBeLessThan(c.inputs.target as number);
+    }
+  });
+
+  it('G6e pruneByShapley on the effective goodput — the rule of the set record (prune.metric) on the stored studies and on a synthetic table', () => {
+    type Verdict = { verdict: string; aOp: { min: number; max: number } | null; delivered: { min: number; max: number } | null; effective: { min: number; max: number } | null; dominatedBy: string | null; missing: string[] };
+    type Expected = { verdicts: Record<string, Verdict>; lists: Record<string, string[]> };
+    for (const c of byGroup('pruneEff')) {
+      const studies = typeof c.inputs.studies === 'string'
+        ? Object.fromEntries(['native950', 'ubl128', 'cm384', 'a3server'].map((a) => [a, JSON.parse(readFileSync(join(root, 'docs', 'backup', 'arch-mechanism-shapley', `${a}.json`), 'utf8'))]))
+        : (c.inputs.studies as Record<string, { perSize: Record<string, { gains: never[] }> }>);
+      const values = shapleyAtScale(studies as never, c.inputs.scale as number);
+      const r = pruneByShapley(values, c.inputs.ids as string[], { threshold: c.inputs.threshold as number, dominated: c.inputs.dominated as Record<string, string>, reference: c.inputs.reference as string[], metric: 'effective' });
+      const e = c.expected as unknown as Expected;
+      expect.soft(r.metric, `${c.id}: metric`).toBe('effective');
+      for (const [id, w] of Object.entries(e.verdicts)) {
+        const v = r.verdicts[id];
+        expect.soft(v?.verdict, `${c.id}: ${id} verdict`).toBe(w.verdict);
+        if (!v) continue;
+        for (const m of ['aOp', 'delivered', 'effective'] as const) {
+          if (!w[m]) continue;
+          for (const side of ['min', 'max'] as const) expect.soft(Math.abs((v[m]?.[side] ?? NaN) - w[m]![side]), `${c.id}: ${id} ${m}.${side}`).toBeLessThanOrEqual(c.tolerance.abs + c.tolerance.rel * Math.abs(w[m]![side]));
+        }
+      }
+      expect.soft([...r.candidates].sort(), `${c.id}: candidates list`).toEqual([...e.lists.candidate].sort());
+      expect.soft([...r.goodput].sort(), `${c.id}: goodput list`).toEqual([...e.lists.goodput].sort());
+      expect.soft([...r.pruned].sort(), `${c.id}: pruned list`).toEqual([...e.lists.pruned].sort());
     }
   });
 

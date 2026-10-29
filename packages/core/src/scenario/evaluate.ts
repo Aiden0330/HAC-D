@@ -670,6 +670,9 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     }
     // closed-form ledger over the window (fractions of T), decomposed with the headline model so that it closes on the delivered goodput
     const pauseFrac = sdc ? sdc.delivery.pauseFraction : 0;
+    // v5.6 the effective goodput KPI counts the episode pauses of silent corruption as downtime, as A_op and the ledger do (before, it
+    // excluded them: ≤ 0.006 pt at 500k); `effective` above stays the clean-time goodput the delivery model runs on
+    const effectiveKpi = effective * (1 - pauseFrac);
     const nonPause = 1 - pauseFrac;
     const dec = head.model === 'first-order'
       ? { running: 1 - fo.terms.restart, save: fo.terms.save, rollback: fo.terms.recompute, goodput: fo.goodput }
@@ -723,7 +726,10 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       row.effective = eff;
       if (sdcTotal > 0) {
         const nuRow = sdcTotal * f * (1 - sdcCoverage) * mrRow.runningFraction * (1 - pClearedBeforePersist(mx.rollbackRatePerHour, (tauRow + deltaS) / 3600));
-        row.delivered = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: rr.globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600, terminalRule: s.sdc.terminalRule }).delivered;
+        const dRow = sdcDelivery({ horizonH, nuPerWallHour: nuRow, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: rr.globalS / 3600, cleanGoodput: eff, preEpisodeLossH: ((tauRow * tauRow) / 2 + tauRow * deltaS) / (tauRow + deltaS) / 3600, terminalRule: s.sdc.terminalRule });
+        row.delivered = dRow.delivered;
+        // v5.6 as for the configured size: the episode pauses of silent corruption count as downtime of the effective goodput
+        row.effective = eff * (1 - dRow.pauseFraction);
       } else row.delivered = eff;
     }
     const nGpuEff = N;
@@ -752,11 +758,11 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       firstOrder: fo,
       dalyGoodput: dg,
       blockedProbability: blocked,
-      effectiveGoodput: effective,
+      effectiveGoodput: effectiveKpi,
       interruptionsPerDay: 24 * lambdaJob,
       expectedInterruptions: w.durationDays * 24 * lambdaJob,
       pNoInterruption24h: Math.exp(-24 * lambdaJob),
-      wallClockDays: effective > 0 ? w.durationDays / effective : Infinity,
+      wallClockDays: effectiveKpi > 0 ? w.durationDays / effectiveKpi : Infinity,
       wastedGpuHoursPerDay: wastedGpuHoursPerDay(nGpuEff, delivered),
       lostDollarsPerDay: lostDollarsPerDay({ nGpus: nGpuEff, pricePerGpuHour: s.costs.pricePerGpuHour }, delivered),
       scale,

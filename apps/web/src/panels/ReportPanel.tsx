@@ -45,7 +45,8 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const N = s.workload.nGpus;
   const hasPod = !!s.topology.superpod;
   const sizes = allScales ? [...new Set([...TOPOLOGY_SCALES, N])].sort((a, b) => a - b) : [N];
-  const target = s.targets.operational ?? 0.985;
+  // v5.6 the report's metric is the effective goodput; its target is the project's effective-goodput target (default 98.5 %)
+  const target = s.targets.effective ?? 0.985;
   const candidates = reportCandidates(s);
   const reference = Object.keys(s.mechanisms.applied ?? {});
   const stageText = (stage: string, n: number, detail: string) => t(`findingsTab.stage_${stage}`, { n: fmtInt(n), detail, defaultValue: `${stage} ${fmtInt(n)} ${detail}` });
@@ -71,7 +72,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
       const rec: SavedReport = {
         projectId: id, projectName: r.projectName, savedAt: Date.now(), scenarioKey: r.scenarioKey,
         settings: { ...r.settings, seed: 1 }, files: res.files, html: res.html, bundle: JSON.stringify(res.sidecar, null, 1),
-        kpi: res.sidecar.results.sizes.map((n) => { const z = A.sizes[String(n)]; return { scale: n, todayAop: z.today.aOp, todayAopDerated: z.today.aOpDerated, recommendedAopDerated: z.recommended.final.kpiDerated.aOp, mechanisms: z.recommended.mechanisms, k: z.recommended.k }; }),
+        kpi: res.sidecar.results.sizes.map((n) => { const z = A.sizes[String(n)]; return { scale: n, todayAop: z.today.aOp, todayAopDerated: z.today.aOpDerated, todayEffectiveDerated: z.today.kpiDerated.effective, todayDeliveredDerated: z.today.kpiDerated.delivered, recommendedAopDerated: z.recommended.final.kpiDerated.aOp, recommendedEffectiveDerated: z.recommended.final.kpiDerated.effective, recommendedDeliveredDerated: z.recommended.final.kpiDerated.delivered, feasible: z.recommended.feasible !== false, mechanisms: z.recommended.mechanisms, k: z.recommended.k }; }),
       };
       await saveReport(rec);
       setSaved(rec);
@@ -131,15 +132,16 @@ export function ReportPanel({ s }: { s: Scenario }) {
           </div>
           <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t('findingsTab.fileNote', { findings: result.files.findings, data: result.files.data })} · {t('findingsTab.dataNote')}</div>
           <DataTable
-            columns={[t('topology.npus'), '', t('strategy.colAopNom'), t('strategy.colAopDer'), t('strategy.colMtbfDer'), t('strategy.colMttrDer'), t('strategy.colWindow'), t('strategy.colPlan')]}
+            columns={[t('topology.npus'), '', t('strategy.colEffDer'), t('strategy.colDelDer'), t('strategy.colMtbfDer'), t('strategy.colLossDer'), t('strategy.colWindow'), t('strategy.colPlan')]}
             numericFrom={2}
             rows={result.sidecar.results.sizes.flatMap((n) => {
+              // v5.6 derated values (the acceptance 口径): the effective goodput against the target, the delivered goodput beside it, MTBF_hw and the loss per interruption R_eff
               const z = A.sizes[String(n)];
-              const rec = z.recommended;
+              const rec = z.recommended, infeasible = rec.feasible === false;
               return [
-                [fmtInt(n), t('strategy.rowToday'), p(z.today.aOp), p(z.today.aOpDerated), h(z.today.kpiDerated.mtbfHwH), sec(z.today.kpiDerated.mttrS), `${p(z.today.window.pAtLeastTarget, 1)} · ${verdict(z.today.window.verdict)}`, '—'],
-                ['', t('strategy.rowRequired'), '', p(run.settings.target, 1), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayMttr')}` : '—', z.required.reachable ? `≤ ${sec(z.required.mttrAtTodayMtbfS ?? 0)} ${t('strategy.atTodayMtbf')}` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (${t('strategy.formula2')})` : t('strategy.unreachable', { B: z.required.B.toFixed(1), F: z.today.kpiDerated.F.toFixed(1), phi: fmtPct(z.today.kpiDerated.phi, 3) })],
-                ['', <b key="r">{t('strategy.rowRecommended')}</b>, p(rec.final.kpi.aOp), <b key="d">{p(rec.final.kpiDerated.aOp)}</b>, h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.mttrS), `${p(rec.window.pAtLeastTarget, 1)} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map((x) => LEV[x] ?? x).join(' + ') || '—'} · ${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`],
+                [fmtInt(n), t('strategy.rowToday'), p(z.today.kpiDerated.effective), p(z.today.kpiDerated.delivered), h(z.today.kpiDerated.mtbfHwH), sec(z.today.kpiDerated.lossS), `${p(z.today.window.pAtLeastTarget, 1)} · ${verdict(z.today.window.verdict)}`, '—'],
+                ['', t('strategy.rowRequired'), p(run.settings.target, 1), '', z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayLoss')}` : '—', z.required.reachable ? `≤ ${sec(z.required.mttrAtTodayMtbfS ?? 0)} ${t('strategy.atTodayMtbf')}` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (${t('strategy.formula2e')})` : t('strategy.unreachableEff', { B: z.required.B.toFixed(1) })],
+                ['', <b key="r">{infeasible ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')}</b>, <b key="d">{p(rec.final.kpiDerated.effective)}</b>, p(rec.final.kpiDerated.delivered), h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.lossS), `${p(rec.window.pAtLeastTarget, 1)} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map((x) => LEV[x] ?? x).join(' + ') || '—'} · ${infeasible ? t('strategy.notFeasible', { ceiling: p(rec.ceiling?.derated ?? 0) }) : `${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`}`],
               ];
             })}
           />
@@ -154,7 +156,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
             <div style={{ fontSize: 13 }}><b>{saved.projectName}</b> · {t('findingsTab.savedAt', { when: when(saved.savedAt) })} · {settingsText(saved.settings)}</div>
             {stale(saved.scenarioKey) && <div className="callout warn" style={{ margin: '6px 0' }}>{t('findingsTab.stale')}</div>}
             <ul className="plain muted" style={{ fontSize: 12, margin: '4px 0' }}>
-              {saved.kpi.map((k) => <li key={k.scale}>{fmtInt(k.scale)} NPU: {t('strategy.rowToday')} A_op {p(k.todayAop)} / {p(k.todayAopDerated)} · {t('strategy.rowRecommended')} {p(k.recommendedAopDerated)} ({k.mechanisms.join(' + ') || '—'} · k {k.k.toFixed(3)})</li>)}
+              {saved.kpi.map((k) => <li key={k.scale}>{fmtInt(k.scale)} NPU: {t('strategy.rowToday')} G_eff {p(k.todayEffectiveDerated ?? k.todayAopDerated)}{k.todayDeliveredDerated !== undefined ? ` · G_del ${p(k.todayDeliveredDerated)}` : ''} · {k.feasible === false ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')} {p(k.recommendedEffectiveDerated ?? k.recommendedAopDerated)} ({k.mechanisms.join(' + ') || '—'}{k.feasible === false ? '' : ` · k ${k.k.toFixed(3)}`})</li>)}
             </ul>
             <div className="btn-row">
               <button type="button" className="btn primary" onClick={() => open(saved.html.findings, saved.files.findings)}>{t('findingsTab.open')}</button>

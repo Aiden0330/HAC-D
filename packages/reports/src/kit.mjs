@@ -212,7 +212,7 @@ export function provenanceFooter(p, lang, files, date) {
   const opts = [
     o.npus !== undefined ? T(`${fmt(o.npus)} NPU`, `${fmt(o.npus)} NPUs`) : null,
     o.scales?.length ? T(`规模 ${list(o.scales)}`, `scales ${list(o.scales)}`) : null,
-    o.target !== undefined ? T(`目标 A_op ≥ ${fmt(o.target * 100, 1)} %`, `target A_op ≥ ${fmt(o.target * 100, 1)} %`) : null,
+    o.target !== undefined ? T(`目标 ${o.metric === 'effective' ? '有效 goodput' : 'A_op'} ≥ ${fmt(o.target * 100, 1)} %`, `target ${o.metric === 'effective' ? 'effective goodput' : 'A_op'} ≥ ${fmt(o.target * 100, 1)} %`) : null,
     o.trials !== undefined ? T(`${fmt(o.trials)} 个 30 天窗口`, `${fmt(o.trials)} 30-day windows`) : null,
     o.seed !== undefined ? T(`种子 ${o.seed}`, `seed ${o.seed}`) : null,
     o.permutations !== undefined ? T(`Shapley ${fmt(o.permutations)} 次置换`, `Shapley ${fmt(o.permutations)} permutations`) : null,

@@ -7,7 +7,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { reportFromScenario, DEFAULT_MECHANISM_SET, type Scenario, type ScenarioReport } from '@hac-d/core';
+import { reportFromScenario, DEFAULT_MECHANISM_SET, type Scenario, type ScenarioReport, type BudgetMetric } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 import { engine } from './pipeline.js';
 
@@ -19,6 +19,8 @@ export interface ScenarioReportOptions {
   sizes?: number[];
   main?: number;
   target?: number;
+  /** v5.6 the acceptance metric (default the effective goodput; the target then defaults to targets.effective) */
+  metric?: BudgetMetric;
   trials?: number;
   seed?: number;
   permutations?: number;
@@ -28,10 +30,11 @@ export interface ScenarioReportOptions {
 }
 export interface KpiRow {
   scale: number;
-  today: { aOp: number; aOpDerated: number; mtbfHwH: number | null; mttrS: number; pWindow: number; verdict: string };
-  /** formula (2); `reachable` false (B ≤ 0): the other event classes and φ take the whole budget, the two ends are null */
-  required: { B: number; reachable: boolean; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number | null; F: number; phi: number; totalBudget: number };
-  recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; aOp: number; aOpDerated: number; mtbfHwH: number | null; mttrS: number; pWindow: number; verdict: string };
+  /** v5.6 `effective` / `effectiveDerated` and `delivered` (derated) beside A_op; `lossS` = R_eff of the derated design */
+  today: { aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string };
+  /** formula (2) / (2′); `reachable` false (B ≤ 0): the non-hardware terms take the whole budget, the two ends are null */
+  required: { metric: BudgetMetric; B: number; reachable: boolean; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number | null; F: number; phi: number; totalBudget: number; terms: { save: number; other: number; factors: number } };
+  recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; feasible: boolean; ceiling: { nominal: number; derated: number } | null; aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string };
 }
 export interface ScenarioReportManifest {
   status: 'ok';
@@ -41,6 +44,8 @@ export interface ScenarioReportManifest {
   sizes: number[];
   main: number;
   target: number;
+  /** v5.6 the acceptance metric of the report */
+  metric: BudgetMetric;
   trials: number;
   permutations: number;
   seed: number;
@@ -62,11 +67,12 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
   const sizes = o.sizes?.length ? [...new Set(o.sizes)].sort((a, b) => a - b) : [N];
   const main = o.main ?? (sizes.includes(N) ? N : sizes[sizes.length - 1]);
   if (!sizes.includes(main)) throw new Error(`main ${main} is not one of the sizes ${sizes.join(', ')}`);
-  const target = o.target ?? s.targets.operational ?? 0.985, trials = o.trials ?? 400, seed = o.seed ?? 1, permutations = o.permutations ?? 300;
+  const metric: BudgetMetric = o.metric ?? 'effective';
+  const target = o.target ?? (metric === 'aOp' ? s.targets.operational : s.targets.effective) ?? 0.985, trials = o.trials ?? 400, seed = o.seed ?? 1, permutations = o.permutations ?? 300;
   const bil = { zh: name, en: name };
-  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, trials, seed, permutations, onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
+  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, metric, trials, seed, permutations, onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
   const set = DEFAULT_MECHANISM_SET;
-  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, trials, seed, permutations }, engine: engine() };
+  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, metric, trials, seed, permutations }, engine: engine() };
   const asFile = (v: unknown): Record<string, unknown> => JSON.parse(JSON.stringify(v));
   const R = asFile(r.results), MX = asFile(r.mechanisms), study = asFile(r.studies[id]), record = asFile(r.records[id]);
   o.onProgress?.('render');
@@ -90,14 +96,16 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
     const z = A.sizes[String(n)], rec = z.recommended, f = rec.final;
     return {
       scale: n,
-      today: { aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS, pWindow: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict },
-      required: { B: z.required.B, reachable: z.required.reachable, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS, F: z.today.kpiDerated.F, phi: z.today.kpiDerated.phi, totalBudget: z.required.totalBudget },
-      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict },
+      today: { aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, effective: z.today.kpi.effective, effectiveDerated: z.today.kpiDerated.effective, delivered: z.today.kpiDerated.delivered, mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS, lossS: z.today.kpiDerated.lossS, pWindow: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict },
+      required: { metric: z.required.metric, B: z.required.B, reachable: z.required.reachable, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS, F: z.today.kpiDerated.F, phi: z.today.kpiDerated.phi, totalBudget: z.required.totalBudget, terms: z.required.terms },
+      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, feasible: rec.feasible, ceiling: rec.ceiling, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, effective: f.kpi.effective, effectiveDerated: f.kpiDerated.effective, delivered: f.kpiDerated.delivered, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, lossS: f.kpiDerated.lossS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict },
     };
   });
   return {
-    status: 'ok', id, name, npus: N, sizes, main, target, trials, permutations, seed, files, kpi,
-    koujing: 'A_op of one synchronous job per cluster-hour (formula 1), nominal and derated; MTBF_hw and MTTR_hw of the derated design; P = share of 30-day windows with A_op ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side',
+    status: 'ok', id, name, npus: N, sizes, main, target, metric, trials, permutations, seed, files, kpi,
+    koujing: metric === 'effective'
+      ? 'effective goodput G_eff of one synchronous job over the 30-day window (formula 1′: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), nominal and derated, against the target; delivered goodput (silent-corruption loss removed), A_op (formula 1), MTBF_hw and the loss per interruption R_eff = MTTR_hw + P̄_rb·W of the derated design; P = share of 30-day windows with G_eff ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side; feasible false = no move set reaches the target (every move on, ceiling at perfect hardware)'
+      : 'A_op of one synchronous job per cluster-hour (formula 1), nominal and derated; MTBF_hw and MTTR_hw of the derated design; P = share of 30-day windows with A_op ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side',
     seconds: (Date.now() - t0) / 1000,
   };
 }

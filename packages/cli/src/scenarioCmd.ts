@@ -73,8 +73,8 @@ function printSummary(sum: ScenarioSummary, file?: string): void {
   const fo = Object.entries(sum.fit.overrides);
   console.log(`FIT overrides: ${fo.length ? fo.map(([id, v]) => `${id} ${v.fit} (library ${Number(v.library.toPrecision(4))})`).join(', ') : 'none'} · hard FIT per NPU ${sum.fit.hardFitPerNpuTotal.toFixed(1)} · ${sum.fit.classes} fault types`);
   console.log(`mechanisms: ${sum.mechanisms.length ? sum.mechanisms.map((m) => `${m.id}{${Object.entries(m.parameters).map(([k, v]) => `${k}=${v}`).join(',')}}`).join(' ') : 'none'}`);
-  if (sum.workload) console.log(`workload: ${sum.workload.durationDays} d · τ ${sum.workload.intervalS ?? 'optimal'} s · δ ${sum.workload.deltaS} s${sum.workload.ownedBy ? ` (owned by ${sum.workload.ownedBy})` : ''} · targets A_op ${sum.targets.operational ?? 0.985}, delivered ${sum.targets.goodput ?? 0.9}`);
-  if (sum.kpi) console.log(`KPI: A_op ${pct(sum.kpi.aOp)} / ${pct(sum.kpi.aOpDerated)} derated (target ${pct(sum.kpi.target, 1)}) · delivered ${pct(sum.kpi.delivered, 2)} · MTBF_hw ${sum.kpi.mtbfHwH.toFixed(3)} h · MTTR_hw ${sum.kpi.mttrS.toFixed(1)} / ${sum.kpi.mttrDeratedS.toFixed(1)} s`);
+  if (sum.workload) console.log(`workload: ${sum.workload.durationDays} d · τ ${sum.workload.intervalS ?? 'optimal'} s · δ ${sum.workload.deltaS} s${sum.workload.ownedBy ? ` (owned by ${sum.workload.ownedBy})` : ''} · targets effective goodput ${sum.targets.effective ?? 0.985} (report), A_op ${sum.targets.operational ?? 0.985}, delivered ${sum.targets.goodput ?? 0.9}`);
+  if (sum.kpi) console.log(`KPI: effective goodput ${pct(sum.kpi.effective)} / ${pct(sum.kpi.effectiveDerated)} derated (target ${pct(sum.kpi.targetEffective, 1)}) · delivered ${pct(sum.kpi.delivered, 2)} / ${pct(sum.kpi.deliveredDerated, 2)} derated · A_op ${pct(sum.kpi.aOp)} / ${pct(sum.kpi.aOpDerated)} derated · MTBF_hw ${sum.kpi.mtbfHwH.toFixed(3)} h · MTTR_hw ${sum.kpi.mttrS.toFixed(1)} / ${sum.kpi.mttrDeratedS.toFixed(1)} s`);
   console.log(`口径: ${sum.koujing}`);
 }
 
@@ -185,13 +185,16 @@ export async function scenario(rest: string[]): Promise<void> {
         console.log(`# ${m.name} — report written to ${m.files.dir} in ${m.seconds.toFixed(1)} s`);
         console.log(`files: ${m.files.findings}; ${m.files.methodology}; bundle ${m.files.bundle}; sidecar ${m.files.data}`);
         console.log(`口径: ${m.koujing}`);
-        const rows: string[][] = [['scale', 'row', 'A_op nominal', 'A_op derated', 'MTBF_hw (derated)', 'MTTR_hw (derated)', 'P(window)', 'plan']];
+        // v5.6 the table on the report's metric: the effective goodput (derated values, the delivered goodput beside it, R_eff) or A_op
+        const E = m.metric === 'effective';
+        const rows: string[][] = [E ? ['scale', 'row', 'G_eff derated', 'G_del derated', 'MTBF_hw (derated)', 'R_eff (derated)', 'P(window)', 'plan'] : ['scale', 'row', 'A_op nominal', 'A_op derated', 'MTBF_hw (derated)', 'MTTR_hw (derated)', 'P(window)', 'plan']];
         const h = (x: number | null) => (x === null || !Number.isFinite(x) ? '—' : `${x.toFixed(3)} h`);
         for (const k of m.kpi) {
-          rows.push([k.scale.toLocaleString('en-US'), 'today', pct(k.today.aOp), pct(k.today.aOpDerated), h(k.today.mtbfHwH), `${k.today.mttrS.toFixed(1)} s`, `${pct(k.today.pWindow, 1)} ${k.today.verdict}`, '—']);
+          rows.push([k.scale.toLocaleString('en-US'), 'today', pct(E ? k.today.effectiveDerated : k.today.aOp), pct(E ? k.today.delivered : k.today.aOpDerated), h(k.today.mtbfHwH), `${(E ? k.today.lossS : k.today.mttrS).toFixed(1)} s`, `${pct(k.today.pWindow, 1)} ${k.today.verdict}`, '—']);
           const q = k.required;
-          rows.push(['', 'required', '', pct(m.target, 1), q.reachable ? `≥ ${h(q.mtbfAtTodayMttrH)} at today's MTTR` : '—', q.reachable ? `≤ ${(q.mttrAtTodayMtbfS ?? 0).toFixed(1)} s at today's MTBF` : '—', '', q.reachable ? `B = ${q.B.toFixed(1)} s/h` : UNREACHABLE_TEXT.en({ ...q, ratioToday: 0, mtbfFactor: null, mttrFactor: null }, q.F, q.phi)]);
-          rows.push(['', 'recommended', pct(k.recommended.aOp), pct(k.recommended.aOpDerated), h(k.recommended.mtbfHwH), `${k.recommended.mttrS.toFixed(1)} s`, `${pct(k.recommended.pWindow, 1)} ${k.recommended.verdict}`, `${k.recommended.mechanisms.join('+') || '—'} | ${k.recommended.levers.join('+') || '—'} · k ${k.recommended.k.toFixed(3)} (${k.recommended.binding}${k.recommended.escalated ? ', escalated' : ''})`]);
+          rows.push(['', 'required', E ? pct(m.target, 1) : '', E ? '' : pct(m.target, 1), q.reachable ? `≥ ${h(q.mtbfAtTodayMttrH)} at today's ${E ? 'R_eff' : 'MTTR'}` : '—', q.reachable ? `≤ ${(q.mttrAtTodayMtbfS ?? 0).toFixed(1)} s at today's MTBF` : '—', '', q.reachable ? `B = ${q.B.toFixed(1)} s/h` : UNREACHABLE_TEXT.en({ ...q, ratioToday: 0, mtbfFactor: null, mttrFactor: null, todayLossS: E ? k.today.lossS : k.today.mttrS }, q.F, q.phi)]);
+          const r = k.recommended;
+          rows.push(['', r.feasible === false ? 'all moves (not feasible)' : 'recommended', pct(E ? r.effectiveDerated : r.aOp), pct(E ? r.delivered : r.aOpDerated), h(r.mtbfHwH), `${(E ? r.lossS : r.mttrS).toFixed(1)} s`, `${pct(r.pWindow, 1)} ${r.verdict}`, `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · ${r.feasible === false ? `no factor meets the target; ceiling with perfect hardware ${pct(r.ceiling?.derated ?? 0)} derated` : `k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`}`]);
         }
         const w = rows[0].map((_c, j) => Math.max(...rows.map((r) => r[j].length)));
         for (const r of rows) console.log(r.map((c, j) => c.padEnd(w[j])).join('  '));

@@ -22,6 +22,7 @@ import {
   parseFaultRateOverride, faultRateOverrideJsonSchema, type FaultRateOverride,
   budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT,
   type StoredStudy, type ArchStudy, type BudgetDocument, type MechanismVerdict,
+  type BudgetMetric,
 } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 
@@ -91,6 +92,12 @@ function provenanceOf(a: Args, records: TopologyRecord[], set: MechanismSet, rat
 
 /* ---------------- Shapley studies: reuse a stored one when it fits, else compute ---------------- */
 const canon = (v: unknown): string => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([p], [q]) => (p < q ? -1 : 1))) : x));
+/** the acceptance metric of the pipeline: --metric effective (default, v5.6) | aOp */
+function metricFlag(a: Args): BudgetMetric {
+  const m = a.flag('metric') ?? 'effective';
+  if (m !== 'effective' && m !== 'aOp') fail(`--metric ${m}: use effective (the effective goodput, default) or aOp`);
+  return m;
+}
 /** null when the stored study was computed for this record, set (players and parameters), override, target and the given sizes; else why not */
 function studyMismatch(st: ArchStudy & { rates?: string | null }, rec: TopologyRecord, set: MechanismSet, rates: FaultRateOverride | undefined, sizes: number[], target: number): string | null {
   const players = resolveMechanismSet(set).players;
@@ -101,6 +108,8 @@ function studyMismatch(st: ArchStudy & { rates?: string | null }, rec: TopologyR
   if (st.target !== target) return `target ${st.target}`;
   const miss = sizes.filter((n) => !st.perSize[String(n)]);
   if (miss.length) return `no values at ${miss.join(', ')}`;
+  // v5.6 the effective-goodput Shapley values and the all-on values by metric (a study written before them must be recomputed)
+  if (sizes.some((n) => !st.perSize[String(n)].allOnDeratedBy || st.perSize[String(n)].gains.some((g) => !g.effective))) return 'no effective-goodput values (written before v5.6)';
   return null;
 }
 /** the study restricted to the report's sizes (Findings Table 7 needs sizes = results.sizes) */
@@ -119,7 +128,7 @@ function pruneOf(set: MechanismSet, studies: Record<string, StoredStudy>, scale?
   const ids = [...HIERARCHY_DEFAULT_IDS.filter((id) => listed.includes(id)), ...listed.filter((id) => !HIERARCHY_DEFAULT_IDS.includes(id))];
   const scales = [...new Set(Object.values(studies).flatMap((s) => Object.keys(s.perSize).map(Number)))].sort((a, b) => a - b);
   const at = scale ?? scales[scales.length - 1];
-  const p = pruneByShapley(shapleyAtScale(studies, at), ids, { threshold: set.prune.threshold, dominated: set.prune.dominated, reference: set.baseline });
+  const p = pruneByShapley(shapleyAtScale(studies, at), ids, { threshold: set.prune.threshold, dominated: set.prune.dominated, reference: set.baseline, metric: set.prune.metric ?? 'aOp' });
   const listOf = (id: string): MechanismVerdict => set.baseline.includes(id) ? 'reference' : set.candidates.includes(id) ? 'candidate' : set.goodputOnly.includes(id) ? 'goodput' : set.pruned.includes(id) ? 'pruned' : 'capability';
   const mismatches = ids.filter((id) => p.verdicts[id].verdict !== listOf(id)).map((id) => ({ id, rule: p.verdicts[id].verdict, set: listOf(id), v: p.verdicts[id] }));
   return { ids, scale: at, result: p, mismatches, listOf };
@@ -135,16 +144,16 @@ const pt = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(3)} pt` : '
 export function findings(a: Args): void {
   if (a.flag('data')) { renderFindings(a); return; }
   const specs = list(a.flag('record') ?? a.flag('records'));
-  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
+  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
   const records = specs.map(resolveRecord);
   const set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const sizes = nums(a.flag('scales'), DEFAULT_SCALES);
   const main = a.flag('main') ? Number(a.flag('main')) : undefined;
   if (main !== undefined && !sizes.includes(main)) fail(`--main ${main} is not one of --scales ${sizes.join(',')}`);
-  const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), permutations = Number(a.flag('permutations') ?? 300);
+  const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), permutations = Number(a.flag('permutations') ?? 300), metric = metricFlag(a);
   if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
   const outDir = a.flag('out') ?? 'docs', dataOut = a.flag('data-out') ?? join(outDir, 'data'), studyDir = a.flag('study-dir') ?? dataOut;
-  log(`records ${records.map((r) => r.id).join(', ')} · set ${set.id}${rates ? ` · override ${rates.id} (${rates.basis})` : ''} · ${sizes.join(' / ')} NPUs · target ${target} · ${trials} windows · seed ${seed}`);
+  log(`records ${records.map((r) => r.id).join(', ')} · set ${set.id}${rates ? ` · override ${rates.id} (${rates.basis})` : ''} · ${sizes.join(' / ')} NPUs · ${metric === 'aOp' ? 'A_op' : 'effective goodput'} ≥ ${target} · ${trials} windows · seed ${seed}`);
 
   // 1. Shapley studies (Table 7 and the hierarchy): stored when it fits, else computed and written to the data dir
   const studies: Record<string, ArchStudy> = {};
@@ -165,10 +174,10 @@ export function findings(a: Args): void {
   }
 
   // 2. the hierarchical budget of every record at every scale
-  const results = budgetFromRecords(records, set, { sizes, target, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`budget ${arch} ${n}`); } }) as BudgetDocument;
+  const results = budgetFromRecords(records, set, { sizes, target, metric, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`budget ${arch} ${n}`); } }) as BudgetDocument;
   for (const [arch, A] of Object.entries(results.archs)) for (const [n, z] of Object.entries(A.sizes)) {
     const r = z.recommended;
-    log(`${arch} ${n}: today A_op ${(z.today.aOp * 100).toFixed(3)} / ${(z.today.aOpDerated * 100).toFixed(3)} % · recommended ${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} k ${r.k.toFixed(3)} → ${(r.final.kpiDerated.aOp * 100).toFixed(2)} % derated, P ${(r.window.pAtLeastTarget * 100).toFixed(1)} %`);
+    log(`${arch} ${n}: today ${metric === 'aOp' ? 'A_op' : 'G_eff'} ${(z.today.value * 100).toFixed(3)} / ${(z.today.valueDerated * 100).toFixed(3)} % · ${r.feasible === false ? 'NOT FEASIBLE (every move on)' : 'recommended'} ${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} k ${r.k.toFixed(3)} → ${((metric === 'aOp' ? r.final.kpiDerated.aOp : r.final.kpiDerated.effective) * 100).toFixed(2)} % derated, P ${(r.window.pAtLeastTarget * 100).toFixed(1)} %`);
   }
 
   // 3. the mechanism hierarchy (verdict lists of the set, checked against the pruning rule on these studies)
@@ -182,7 +191,7 @@ export function findings(a: Args): void {
   const mechanisms = mechanismHierarchy(set, studies as unknown as Record<string, StoredStudy>, { permutations: perms.length === 1 ? perms[0] : undefined, basis: `bare architecture scenario, ${rates ? `failure-rate override ${rates.id}` : 'HAC-D per-unit FIT'}, ${set.id}`, check: false });
 
   // 4. sidecar JSON and the reports
-  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations });
+  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, metric, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations });
   writeJson(join(dataOut, 'results.json'), results);
   writeJson(join(dataOut, 'mechanisms.json'), { ...mechanisms, source: { dir: studyDir, ...mechanisms.source } });
   writeJson(join(dataOut, 'provenance.json'), prov);
@@ -310,21 +319,25 @@ export function bom(a: Args): void {
 /** hacd budget --record <id|path> --scale N [--rates] [--mechanisms] [--target] [--trials] [--seed] [--json] */
 export function budget(a: Args, json: boolean): void {
   const spec = a.flag('record'), scale = Number(a.flag('scale') ?? NaN);
-  if (!spec || !(scale > 0)) fail('usage: hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--trials 400] [--seed 1] [--json]');
+  if (!spec || !(scale > 0)) fail('usage: hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--json]');
   const rec = resolveRecord(spec), set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
-  const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1);
+  const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), metric = metricFlag(a);
   if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
-  const d = budgetFromRecords([rec], set, { sizes: [scale], target, trials, seed, rates, onProgress: (_x, _n, step) => log(step) });
+  const d = budgetFromRecords([rec], set, { sizes: [scale], target, metric, trials, seed, rates, onProgress: (_x, _n, step) => log(step) });
   const z = d.archs[rec.id].sizes[String(scale)];
   if (json) { console.log(JSON.stringify(z, null, 1)); return; }
   const p = (x: number, k = 3) => `${(x * 100).toFixed(k)} %`, h = (x: number | null) => (x === null ? '—' : `${x.toFixed(3)} h`), s = (x: number) => `${x.toFixed(1)} s`;
   const r = z.recommended, f = r.final;
-  console.log(`# ${rec.name.en} — ${scale.toLocaleString('en-US')} NPUs · target A_op ≥ ${p(target, 1)} · set ${set.id}${rates ? ` · override ${rates.id}` : ''}`);
-  console.log('口径: A_op of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ of hard interruptions, MTTR_hw = rate-weighted mean pause (formula 1); isolation and silent corruption counted apart; P = share of 30-day windows with A_op ≥ target (formula 6)');
-  const rows: (string | number)[][] = [['', 'A_op nominal', 'A_op derated', 'MTBF_hw (derated)', 'MTTR_hw (derated)', 'P(window)', 'plan'],
-    ['today', p(z.today.aOp), p(z.today.aOpDerated), h(z.today.kpiDerated.mtbfHwH), s(z.today.kpiDerated.mttrS), p(z.today.window.pAtLeastTarget, 1), z.today.window.verdict],
-    ['required', '', p(target, 1), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} at today's MTTR` : '—', z.required.reachable ? `≤ ${s(z.required.mttrAtTodayMtbfS ?? 0)} at today's MTBF` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (formula 2)` : UNREACHABLE_TEXT.en(z.required, z.today.kpiDerated.F, z.today.kpiDerated.phi)],
-    ['recommended', p(f.kpi.aOp), p(f.kpiDerated.aOp), h(f.kpiDerated.mtbfHwH), s(f.kpiDerated.mttrS), p(r.window.pAtLeastTarget, 1), `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · hardware k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`]];
+  const E = metric === 'effective', M = E ? 'G_eff' : 'A_op', LOSS = E ? 'R_eff' : 'MTTR_hw';
+  console.log(`# ${rec.name.en} — ${scale.toLocaleString('en-US')} NPUs · target ${M} ≥ ${p(target, 1)} · set ${set.id}${rates ? ` · override ${rates.id}` : ''}`);
+  console.log(E
+    ? '口径: G_eff = effective goodput of one synchronous job over the 30-day window (formula 1′: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), G_del = delivered goodput (silent-corruption loss removed); MTBF_hw = 1/Σλ of hard interruptions, R_eff = MTTR_hw + P̄_rb·W the loss per interruption; derated values unless named nominal; P = share of 30-day windows with G_eff ≥ target (formula 6)'
+    : '口径: A_op of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ of hard interruptions, MTTR_hw = rate-weighted mean pause (formula 1); isolation and silent corruption counted apart; P = share of 30-day windows with A_op ≥ target (formula 6)');
+  const v = (k: typeof f.kpi) => (E ? k.effective : k.aOp), loss = (k: typeof f.kpi) => (E ? k.lossS : k.mttrS);
+  const rows: (string | number)[][] = [['', `${M} nominal`, `${M} derated`, ...(E ? ['G_del derated'] : []), 'MTBF_hw (derated)', `${LOSS} (derated)`, 'P(window)', 'plan'],
+    ['today', p(v(z.today.kpi)), p(v(z.today.kpiDerated)), ...(E ? [p(z.today.kpiDerated.delivered)] : []), h(z.today.kpiDerated.mtbfHwH), s(loss(z.today.kpiDerated)), p(z.today.window.pAtLeastTarget, 1), z.today.window.verdict],
+    ['required', '', p(target, 1), ...(E ? [''] : []), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} at today's ${LOSS}` : '—', z.required.reachable ? `≤ ${s(z.required.mttrAtTodayMtbfS ?? 0)} at today's MTBF` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (formula ${E ? '2′' : '2'})` : UNREACHABLE_TEXT.en(z.required, z.today.kpiDerated.F, z.today.kpiDerated.phi)],
+    [r.feasible === false ? 'all moves (not feasible)' : 'recommended', p(v(f.kpi)), p(v(f.kpiDerated)), ...(E ? [p(f.kpiDerated.delivered)] : []), h(f.kpiDerated.mtbfHwH), s(loss(f.kpiDerated)), p(r.window.pAtLeastTarget, 1), `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · ${r.feasible === false ? `no factor meets the target; ceiling with perfect hardware ${p(r.ceiling!.derated)} derated` : `hardware k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`}`]];
   const w = rows[0].map((_c, j) => Math.max(...rows.map((x) => String(x[j]).length)));
   for (const x of rows) console.log(x.map((c, j) => String(c).padEnd(w[j])).join('  '));
 }
@@ -336,7 +349,8 @@ export function studyRecord(a: Args): void {
   const st = computeStudy(rec, set, rates, sizes, Number(a.flag('target') ?? 0.985), Number(a.flag('permutations') ?? 300), Number(a.flag('seed') ?? 1));
   for (const [n, z] of Object.entries(st.perSize)) {
     const top = z.gains.slice().sort((x, y) => y.aOp.shapley - x.aOp.shapley).slice(0, 4).map((g) => `${g.id} ${(g.aOp.shapley * 100).toFixed(2)}`).join(', ');
-    log(`${n}: baseline (bare) ${(z.baseline * 100).toFixed(3)} % · all on ${(z.allOn * 100).toFixed(3)} / ${(z.allOnDerated * 100).toFixed(3)} % · top A_op Shapley (pt) ${top}`);
+    const topEff = z.gains.slice().sort((x, y) => y.effective.shapley - x.effective.shapley).slice(0, 4).map((g) => `${g.id} ${(g.effective.shapley * 100).toFixed(2)}`).join(', ');
+    log(`${n}: baseline (bare) A_op ${(z.baseline * 100).toFixed(3)} % · G_eff ${(z.baselineBy.effective * 100).toFixed(3)} % · all on A_op ${(z.allOn * 100).toFixed(3)} / ${(z.allOnDerated * 100).toFixed(3)} %, G_eff ${(z.allOnBy.effective * 100).toFixed(3)} / ${(z.allOnDeratedBy.effective * 100).toFixed(3)} % · top G_eff Shapley (pt) ${topEff} · top A_op Shapley (pt) ${top}`);
   }
   const p = join(a.flag('out-dir') ?? 'docs/data', `${rec.id}.json`);
   writeJson(p, st);
@@ -356,7 +370,8 @@ export function prune(a: Args, json: boolean): void {
   const ruleList: Record<'candidates' | 'goodputOnly' | 'pruned', MechanismVerdict> = { candidates: 'candidate', goodputOnly: 'goodput', pruned: 'pruned' };
   const movable = pr.ids.filter((id) => !set.baseline.includes(id) && !set.capability.includes(id));
   const newList = (L: keyof typeof ruleList) => [...set[L].filter((id) => P.verdicts[id].verdict === ruleList[L]), ...movable.filter((id) => P.verdicts[id].verdict === ruleList[L] && !set[L].includes(id))];
-  const VN: Record<MechanismVerdict, { zh: string; en: string }> = { reference: { zh: '参考', en: 'reference' }, candidate: { zh: 'A_op 候选', en: 'A_op candidate' }, goodput: { zh: '只保有效产出', en: 'goodput-only' }, pruned: { zh: '剪除', en: 'pruned' }, capability: { zh: '能力', en: 'capability' } };
+  const MS = (set.prune.metric ?? 'aOp') === 'effective' ? 'G_eff' : 'A_op';
+  const VN: Record<MechanismVerdict, { zh: string; en: string }> = { reference: { zh: '参考', en: 'reference' }, candidate: { zh: `${MS} 候选`, en: `${MS} candidate` }, goodput: { zh: '只保交付 goodput', en: 'delivered-goodput-only' }, pruned: { zh: '剪除', en: 'pruned' }, capability: { zh: '能力', en: 'capability' } };
   const archs = P.archs.join(', ');
   const reason = (id: string) => {
     const v = P.verdicts[id], th = `${(P.threshold * 100).toFixed(2)}`;

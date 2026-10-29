@@ -21,6 +21,7 @@ import { integrationStatus } from '../mechanisms/auditLibrary.js';
 import { TOPOLOGY_TEMPLATES } from '../topology/index.js';
 import { minWindowTrials } from '../math/stats.js';
 import type { LayerModelSpec } from '../layers/index.js';
+import type { BudgetMetric } from './kpiForm.js';
 
 type L = { zh: string; en: string };
 
@@ -36,6 +37,8 @@ export interface ScenarioReportOptions {
   sizes: number[];
   main?: number;
   target: number;
+  /** v5.6 the acceptance metric (default the effective goodput) */
+  metric?: BudgetMetric;
   trials?: number;
   seed?: number;
   permutations?: number;
@@ -106,7 +109,7 @@ export function reportFromScenario(s: Scenario, o: ScenarioReportOptions): Scena
   const study = studyOfBuild(o.id, build, set, { sizes, target: o.target, permutations, seed, parameters, onProgress: (n, i, k) => o.onProgress?.('study', n, `${i} / ${k}`) });
   const results = budgetDocument(
     { [o.id]: { name: o.name, short: o.short, family, assumed, build, layerSpec } },
-    { sizes, target: o.target, main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
+    { sizes, target: o.target, metric: o.metric, main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
   );
   o.onProgress?.('hierarchy', main, '');
   const custom = Object.keys(study.projectParameters ?? {});

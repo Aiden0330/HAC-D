@@ -111,13 +111,14 @@ export function topologySchematicSvg(geom, counts, lang, opts = {}) {
   let g = '';
   let y = 8;
   const ubFamily = t.template === 'a950-ub2' || t.template === 'a960e-ub' || t.template === 'ub-generic';
+  // the plane count of the scale-out design is part of the drawn geometry for every family (a record may state several planes on the A3 / A2 templates too)
   const planes = t.scaleOut?.planes ?? 1;
   const planeTxt = planes > 1 ? (zh ? ` × ${planes} 平面` : ` × ${planes} planes`) : '';
   const soLabel = ubFamily
     ? (zh ? `UBoE / RoCE scale-out 网络 · ${counts.scaleOutTiers} 层 Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `UBoE / RoCE scale-out network · ${counts.scaleOutTiers}-tier Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`)
     : sp
-      ? (zh ? `RDMA scale-out 网络 · ${counts.scaleOutTiers} 层 Clos · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RDMA scale-out network · ${counts.scaleOutTiers}-tier Clos · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`)
-      : zh ? `RoCE 参数面 · ${counts.scaleOutTiers} 层 Clos · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RoCE parameter plane · ${counts.scaleOutTiers}-tier Clos · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`;
+      ? (zh ? `RDMA scale-out 网络 · ${counts.scaleOutTiers} 层 Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RDMA scale-out network · ${counts.scaleOutTiers}-tier Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`)
+      : zh ? `RoCE 参数面 · ${counts.scaleOutTiers} 层 Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} 口 · ${fmt(counts.scaleOutLinks)} 条链路` : `RoCE parameter plane · ${counts.scaleOutTiers}-tier Clos${planeTxt} · ${fmt(counts.scaleOutPorts)} ports · ${fmt(counts.scaleOutLinks)} links`;
   if (t.scaleOut) {
     const c = closTiers(counts, lang, 16, y, 520, soLabel);
     g += c.svg;

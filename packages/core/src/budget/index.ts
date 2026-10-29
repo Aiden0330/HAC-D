@@ -25,12 +25,17 @@ import { requirementFromKpi, type Requirement } from '../strategy/requirement.js
 import { applyMechanismsInOrder, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
 import { minWindowTrials } from '../math/stats.js';
-import { kpiForm, trainingOf, type KpiForm } from './kpiForm.js';
+import { kpiForm, trainingOf, metricValue, type KpiForm, type BudgetMetric } from './kpiForm.js';
 import { mttrDecomposition, type MttrDecomposition } from '../mttr/decompose.js';
-import { byLayer, layerModel, DEFAULT_LAYERS, type LayerDef, type LayerId, type LayerModel, type LayerModelSpec, type LayerClassRow } from '../layers/index.js';
+import { byLayer, layerModel, lossBreakdown, DEFAULT_LAYERS, type LayerDef, type LayerId, type LayerModel, type LayerModelSpec, type LayerClassRow, type LossBreakdown } from '../layers/index.js';
 
 export interface BudgetOptions {
   target: number;
+  /**
+   * v5.6 the acceptance metric the target, the requirement (formula 2 / 2′), the k search, the window rule and the layer split run on:
+   * the effective goodput (default since 2026-10-28, the report's 口径) or A_op (the v4.4–v5.5 reports)
+   */
+  metric?: BudgetMetric;
   /** candidate mechanisms of the allocation (library ids) and their parameter overrides */
   candidates: string[];
   parameters?: Record<string, Record<string, number>>;
@@ -53,6 +58,8 @@ export interface BudgetOptions {
 export interface LayerBudget {
   lam: number; c: number; iso: number; sdc: number; mttrS: number;
   cDerated: number; isoDerated: number; sdcDerated: number; mttrDeratedS: number;
+  /** v5.6 the recompute the layer's rollbacks cause (Σλ_i P_rb,i W, s/h) and the loss per interruption r_ℓ = (C_ℓ + Q_ℓ)/λ_ℓ (s), nominal and derated */
+  recompute: number; recomputeDerated: number; lossS: number; lossDeratedS: number;
   instances: number; mtbfH: number | null; mtbfInstanceH: number | null;
   rows: LayerClassRow[];
 }
@@ -74,6 +81,9 @@ export interface DesignSummary {
   mttr: { nom: MttrDecomposition; der: MttrDecomposition };
   units: UnitBudgetRow[];
   k: number;
+  /** v5.6 the split of 1 − metric into the layers' shares and the non-hardware lines (formula 3 / 3′), nominal and derated */
+  metric: BudgetMetric;
+  loss: LossBreakdown; lossDerated: LossBreakdown;
 }
 export interface AppliedMechanism { id: string; order: number; kind: MechanismKind; effort: number; nominal: Record<string, number>; derated: Record<string, number> }
 export interface LeverValues { autoSeconds: number; success: number; manualSeconds: number }
@@ -85,7 +95,7 @@ export interface BudgetResult {
   hardFitPerNpu: Partial<Record<FaultUnit, number>>;
   hardFitPerNpuTotal: number;
   hardPerHour: number;
-  today: DesignSummary & { window: WindowCheck; aOp: number; aOpDerated: number };
+  today: DesignSummary & { window: WindowCheck; aOp: number; aOpDerated: number; /** v5.6 the acceptance metric nominal / derated, and both goodputs */ value: number; valueDerated: number; effective: number; effectiveDerated: number; delivered: number; deliveredDerated: number };
   required: Requirement;
   hardwareOnly: { needed: boolean; factor: number | null; slack: number | null; final: number; finalDerated: number; effort: number };
   optimal: {
@@ -94,14 +104,16 @@ export interface BudgetResult {
     alternatives: { mechanisms: string[]; levers: LeverId[]; effort: number; value: number; derated: number; feasible: boolean }[]; evaluations: number;
   };
   recommended: {
-    mechanisms: string[]; levers: LeverId[]; k: number; kMean: number; kPlan: number; binding: 'window' | 'mean'; escalated: boolean; tried: WindowRuleTrial[];
+    mechanisms: string[]; levers: LeverId[]; k: number; kMean: number | null; kPlan: number | null; binding: 'window' | 'mean' | 'none'; escalated: boolean; tried: WindowRuleTrial[];
+    /** v5.6 false when no move set meets the target: every move is on at k = 1 and `ceiling` is the metric with perfect hardware */
+    feasible: boolean; ceiling: { nominal: number; derated: number } | null;
     window: WindowCheck; windowPlan: WindowCheck | null; effort: WindowRulePlan['effort'];
     applied: AppliedMechanism[];
     leverValues: { nominal: LeverValues | null; derated: LeverValues | null };
-    plan: { aOp: number; aOpDerated: number };
+    plan: { aOp: number; aOpDerated: number; value: number; valueDerated: number };
     final: DesignSummary;
-    /** pause each applied mechanism removes per layer (seconds per hour, nominal, removed from the final design) and its A_op / goodput value */
-    removal: Record<string, { byLayer: Record<LayerId, number>; aOp: number; delivered: number }>;
+    /** pause each applied mechanism removes per layer (seconds per hour, nominal, removed from the final design) and its A_op / effective / delivered goodput value */
+    removal: Record<string, { byLayer: Record<LayerId, number>; aOp: number; delivered: number; effective: number }>;
   };
 }
 
@@ -137,14 +149,14 @@ export function unitTable(sc: Scenario, k: number): UnitBudgetRow[] {
 }
 
 /** per-layer summary of a design (nominal and derated twins); `base` is the bare hardware for the unit table */
-export function designSummary(n: number, base: Scenario, nom: Scenario, der: Scenario, counts: Counts, k: number, model: LayerModel, tNom?: TrainingKpis, tDer?: TrainingKpis): DesignSummary {
+export function designSummary(n: number, base: Scenario, nom: Scenario, der: Scenario, counts: Counts, k: number, model: LayerModel, tNom?: TrainingKpis, tDer?: TrainingKpis, metric: BudgetMetric = 'aOp'): DesignSummary {
   const N = byLayer(nom, tNom, model.layers), D = byLayer(der, tDer, model.layers);
   const inst = model.instances(n, counts);
   const layers = Object.fromEntries(model.layers.map((l) => {
     const a = N.levels[l.id], d = D.levels[l.id];
-    return [l.id, { lam: a.lam, c: a.c, iso: a.iso, sdc: a.sdc, mttrS: a.lam > 0 ? a.c / a.lam : 0, cDerated: d.c, isoDerated: d.iso, sdcDerated: d.sdc, mttrDeratedS: d.lam > 0 ? d.c / d.lam : 0, instances: inst[l.id], mtbfH: a.lam > 0 ? 1 / a.lam : null, mtbfInstanceH: a.lam > 0 ? inst[l.id] / a.lam : null, rows: a.rows }];
+    return [l.id, { lam: a.lam, c: a.c, iso: a.iso, sdc: a.sdc, mttrS: a.lam > 0 ? a.c / a.lam : 0, cDerated: d.c, isoDerated: d.iso, sdcDerated: d.sdc, mttrDeratedS: d.lam > 0 ? d.c / d.lam : 0, recompute: a.recompute, recomputeDerated: d.recompute, lossS: a.lam > 0 ? (a.c + a.recompute) / a.lam : 0, lossDeratedS: d.lam > 0 ? (d.c + d.recompute) / d.lam : 0, instances: inst[l.id], mtbfH: a.lam > 0 ? 1 / a.lam : null, mtbfInstanceH: a.lam > 0 ? inst[l.id] / a.lam : null, rows: a.rows }];
   })) as Record<LayerId, LayerBudget>;
-  return { kpi: N.k, kpiDerated: D.k, layers, mttr: { nom: mttrDecomposition(nom, tNom), der: mttrDecomposition(der, tDer) }, units: unitTable(base, k), k };
+  return { kpi: N.k, kpiDerated: D.k, layers, mttr: { nom: mttrDecomposition(nom, tNom), der: mttrDecomposition(der, tDer) }, units: unitTable(base, k), k, metric, loss: lossBreakdown(N, model.layers, metric), lossDerated: lossBreakdown(D, model.layers, metric) };
 }
 
 const planRow = (p: StrategyPlan) => ({ mechanisms: p.mechanisms, levers: p.levers, effort: p.effort.total, value: p.value, derated: p.derated, feasible: p.feasible });
@@ -153,7 +165,7 @@ const planRow = (p: StrategyPlan) => ({ mechanisms: p.mechanisms, levers: p.leve
 export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult {
   if (s.workload.type !== 'training') throw new Error('hierarchicalBudget needs a training workload');
   const n = s.workload.nGpus;
-  const TARGET = o.target, TRIALS = o.trials ?? 400, SEED = o.seed ?? 1, REQUIRED = o.required ?? 0.9;
+  const TARGET = o.target, TRIALS = o.trials ?? 400, SEED = o.seed ?? 1, REQUIRED = o.required ?? 0.9, METRIC: BudgetMetric = o.metric ?? 'effective';
   // fewer windows than the Wilson bound allows can never be 'supported': the window rule would escalate through every move and fail (fifth review D7)
   if (TRIALS < minWindowTrials(REQUIRED)) throw new Error(`hierarchicalBudget: ${TRIALS} windows cannot support P(A_op ≥ A*) ≥ ${REQUIRED} per window (Wilson 95 % lower bound n/(n + z²)); use at least ${minWindowTrials(REQUIRED)} windows (formula 6)`);
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT, params = o.parameters ?? {};
@@ -164,20 +176,20 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   const t = trainingOf(s), sDer = deratedOf(s, derate);
   const bom = topologyBom(s), counts = bom.counts;
   log('today');
-  const today = designSummary(n, s, s, sDer, counts, 1, model, t);
+  const today = designSummary(n, s, s, sDer, counts, 1, model, t, undefined, METRIC);
   const kD = today.kpiDerated;
-  const required = requirementFromKpi(kD, TARGET);
+  const required = requirementFromKpi(kD, TARGET, METRIC);
   log('window check of today');
-  const todayWindow = windowCheck(s, TARGET, TRIALS, SEED, REQUIRED);
+  const todayWindow = windowCheck(s, TARGET, TRIALS, SEED, REQUIRED, METRIC);
   log('hardware alone');
-  const hwOnly = allocateStrategy(s, { strategy: 'mttf-first', target: TARGET, candidates: [], levers: false, hardwareSplit: 'arinc', derate });
+  const hwOnly = allocateStrategy(s, { strategy: 'mttf-first', metric: METRIC, target: TARGET, candidates: [], levers: false, hardwareSplit: 'arinc', derate });
   const hwFactor = hwOnly.hardware.needed ? Math.min(...hwOnly.hardware.rows.map((h) => h.factor)) : null;
   log('optimal plan');
-  const opt = allocateStrategy(s, { strategy: 'optimal', target: TARGET, candidates: o.candidates, parameters: params, efforts: o.efforts, levers: LEVERS, hardwareSplit: 'arinc', derate, verify: { trials: TRIALS, seed: SEED } });
+  const opt = allocateStrategy(s, { strategy: 'optimal', metric: METRIC, target: TARGET, candidates: o.candidates, parameters: params, efforts: o.efforts, levers: LEVERS, hardwareSplit: 'arinc', derate, verify: { trials: TRIALS, seed: SEED } });
   const optFactor = opt.hardware.needed ? Math.min(...opt.hardware.rows.map((h) => h.factor)) : null;
   log('window rule');
-  const rec = recommendPlan(s, { candidates: o.candidates, parameters: params, efforts: o.efforts, mechanisms: opt.mechanisms, leverIds: opt.levers, levers: LEVERS, derate, target: TARGET, trials: TRIALS, seed: SEED, required: REQUIRED, onProgress: log });
-  const fin = designSummary(n, s, rec.nom, rec.der, counts, rec.k, model);
+  const rec = recommendPlan(s, { candidates: o.candidates, parameters: params, efforts: o.efforts, mechanisms: opt.mechanisms, leverIds: opt.levers, levers: LEVERS, derate, target: TARGET, trials: TRIALS, seed: SEED, required: REQUIRED, metric: METRIC, onInfeasible: 'best', onProgress: log });
+  const fin = designSummary(n, s, rec.nom, rec.der, counts, rec.k, model, undefined, undefined, METRIC);
   // the design's mechanisms with their parameters, nominal and derated
   const applied: AppliedMechanism[] = Object.entries(rec.nom.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order).map(([id, r]) => ({ id, order: r.order, kind: mechanismById(id).kind, effort: o.efforts?.[id] ?? mechanismById(id).effort, nominal: r.parameters, derated: rec.der.mechanisms.applied?.[id]?.parameters ?? derateParameters(r.parameters, derate) }));
   const leverValuesOf = (d: Scenario): LeverValues | null => (d.recovery.mode === 'mixture' ? { autoSeconds: d.recovery.automatic.seconds, success: d.recovery.automatic.successProbability, manualSeconds: d.recovery.manual.seconds } : null);
@@ -190,22 +202,22 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   // rebuilt in the final design's recorded order (`allIds` is sorted by it; a `keep` subset keeps that order): the reference set as the
   // project applied it, then the plan's additions — a library-order rebuild is not the same design when transforms do not commute (v5.5)
   const rebuild = (keep: string[]) => withHardwareFactors(applyLevers(applyMechanismsInOrder(bare, keep, paramsOf(keep)), LEVERS.filter((l) => rec.levers.includes(l.id)), null), kFactors);
-  { const a = trainingOf(rebuild(allIds)).operationalAvailability; if (Math.abs(a - fin.kpi.aOp) > 1e-9) throw new Error(`rebuilt final design differs: ${a} vs ${fin.kpi.aOp}`); }
+  { const tr = trainingOf(rebuild(allIds)); if (Math.abs(tr.operationalAvailability - fin.kpi.aOp) > 1e-9 || Math.abs(metricValue(tr, METRIC) - metricValue(trainingOf(rec.nom), METRIC)) > 1e-9) throw new Error(`rebuilt final design differs: ${tr.operationalAvailability} vs ${fin.kpi.aOp}`); }
   const removal = Object.fromEntries(allIds.map((id) => {
     const keep = allIds.filter((x) => x !== id && !(id === 'D-SDC' && x === 'R-SDC'));
     const lv = byLayer(rebuild(keep), undefined, model.layers);
     const base = fin.layers;
-    return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, (lv.levels[l.id].c + lv.levels[l.id].iso + lv.levels[l.id].sdc) - (base[l.id].c + base[l.id].iso + base[l.id].sdc)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered }];
+    return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, (lv.levels[l.id].c + lv.levels[l.id].iso + lv.levels[l.id].sdc) - (base[l.id].c + base[l.id].iso + base[l.id].sdc)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered, effective: fin.kpi.effective - lv.k.effective }];
   }));
   return {
     npus: n, counts, instances: model.instances(n, counts),
     bomRows: bom.rows.map((r) => ({ id: r.id, name: r.name, level: r.level, count: r.count, perNpu: r.perNpu, faultUnit: r.faultUnit ?? null, fitHard: r.fit?.hard ?? null, hardPerHour: r.hardPerHour ?? null, confidence: r.confidence })),
     hardFitPerNpu: bom.hardFitPerNpu, hardFitPerNpuTotal: bom.hardFitPerNpuTotal, hardPerHour: bom.hardPerHour,
-    today: { ...today, window: todayWindow, aOp: today.kpi.aOp, aOpDerated: today.kpiDerated.aOp },
+    today: { ...today, window: todayWindow, aOp: today.kpi.aOp, aOpDerated: today.kpiDerated.aOp, value: METRIC === 'aOp' ? today.kpi.aOp : today.kpi.effective, valueDerated: METRIC === 'aOp' ? today.kpiDerated.aOp : today.kpiDerated.effective, effective: today.kpi.effective, effectiveDerated: today.kpiDerated.effective, delivered: today.kpi.delivered, deliveredDerated: today.kpiDerated.delivered },
     required,
     hardwareOnly: { needed: hwOnly.hardware.needed, factor: hwFactor, slack: hwOnly.hardware.slackFactor ?? null, final: hwOnly.final.value, finalDerated: hwOnly.final.derated, effort: hwOnly.effort.total },
     optimal: { feasible: opt.feasible, mechanisms: opt.mechanisms, levers: opt.levers, needed: opt.hardware.needed, factor: optFactor, slack: opt.hardware.slackFactor ?? null, final: opt.final.value, finalDerated: opt.final.derated, effort: opt.effort, verification: opt.verification ?? null, alternatives: (opt.alternatives ?? []).slice(0, 6).map(planRow), evaluations: opt.evaluations },
-    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, window: rec.window, windowPlan: rec.windowPlan, effort: rec.effort, applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability }, final: fin, removal },
+    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, feasible: rec.feasible, ceiling: rec.ceiling, window: rec.window, windowPlan: rec.windowPlan, effort: rec.effort, applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability, value: metricValue(trainingOf(rec.planNom), METRIC), valueDerated: metricValue(trainingOf(rec.planDer), METRIC) }, final: fin, removal },
   };
 }
 
@@ -231,6 +243,8 @@ export interface BudgetDocumentOptions extends Omit<BudgetOptions, 'layerSpec' |
 }
 export interface BudgetDocument {
   generated: string;
+  /** v5.6 the acceptance metric of the whole document */
+  metric: BudgetMetric;
   target: number; sizes: number[]; main: number; trials: number;
   /** required P(A_op ≥ A*) per window of the window rule (Wilson lower bound) */
   required: number;
@@ -241,7 +255,7 @@ export interface BudgetDocument {
 /** the budget of several architectures at several scales: the shape of docs/backup/ascend-allocation/results.json */
 export function budgetDocument(archs: Record<string, BudgetArchInput>, o: BudgetDocumentOptions): BudgetDocument {
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT;
-  const out: BudgetDocument = { generated: new Date().toISOString(), target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}) };
+  const out: BudgetDocument = { generated: new Date().toISOString(), metric: o.metric ?? 'effective', target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}) };
   for (const [arch, A] of Object.entries(archs)) {
     const sizes: Record<string, BudgetResult> = {};
     for (const n of o.sizes) sizes[String(n)] = hierarchicalBudget(A.build(n), { ...o, layerSpec: A.layerSpec, onProgress: (step) => o.onProgress?.(arch, n, step) });
@@ -258,6 +272,8 @@ import { applyFaultRates, type FaultRateOverride } from '../records/faultRates.j
 export interface BudgetRunOptions {
   sizes: number[];
   target: number;
+  /** v5.6 the acceptance metric (default the effective goodput) */
+  metric?: BudgetMetric;
   main?: number;
   trials?: number;
   seed?: number;
@@ -284,5 +300,5 @@ export function recordScenario(record: TopologyRecord, set: MechanismSet, n: num
 export function budgetFromRecords(records: TopologyRecord[], set: MechanismSet, o: BudgetRunOptions): BudgetDocument {
   const r = resolveMechanismSet(set);
   const archs: Record<string, BudgetArchInput> = Object.fromEntries(records.map((rec) => [rec.id, { name: rec.name, short: rec.short, family: rec.family, assumed: rec.assumed, build: (n: number) => recordScenario(rec, set, n, o.rates, o.variantId), layerSpec: rec.layers }]));
-  return budgetDocument(archs, { sizes: o.sizes, target: o.target, main: o.main, trials: o.trials, seed: o.seed, required: o.required, candidates: r.candidates, parameters: r.parameters, efforts: set.efforts, levers: r.levers, reference: r.baseline, derate: r.derate, onProgress: o.onProgress });
+  return budgetDocument(archs, { sizes: o.sizes, target: o.target, metric: o.metric, main: o.main, trials: o.trials, seed: o.seed, required: o.required, candidates: r.candidates, parameters: r.parameters, efforts: set.efforts, levers: r.levers, reference: r.baseline, derate: r.derate, onProgress: o.onProgress });
 }

@@ -65,8 +65,10 @@ export interface LedgerAccount {
   rollback: number;
   /** hard-interruption rollbacks (part of rollback) */
   rollbackHard: number;
-  /** silent-corruption rollbacks at discovery (part of rollback) */
+  /** silent-corruption rollbacks (part of rollback): at immediate detection (one step or to the checkpoint) and at the discovery of an episode */
   rollbackSdc: number;
+  /** v5.6 the part of rollbackSdc booked at the discovery of an undetected episode (the dirty window returned to the last clean checkpoint): a loss of the delivered goodput only */
+  rollbackSdcDiscovery: number;
   terminalInvalid: number;
   localLoss: number;
   /** fault-free overhead of mechanisms */
@@ -90,6 +92,12 @@ export interface LedgerReplication {
   correctH: number;
   /** 1 − downtime/T */
   operationalAvailability: number;
+  /**
+   * v5.6 the window's effective (performance) goodput: 1 − (downtime + saves + rollbacks other than an episode's discovery + slowdown +
+   * local loss + overhead)/T = delivered + (discovery rollback + terminal discard)/T — the per-window value of the closed-form
+   * `effectiveGoodput`, which the window rule tests against the target on the effective-goodput basis
+   */
+  effective: number;
   ledger: LedgerAccount;
   counts: { hard: number; slow: number; sdc: number; manual: number; sdcEpisodes: number; replay: number; elastic: number; process: number; global: number; isolations: number; predicted: number; falseAlarms: number; netfail: number; hotswap: number; custom: number };
   byClass: Record<string, LedgerClassAccount>;
@@ -142,7 +150,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const locals: { domain: number; until: number; cls: number }[] = [];
   // v3.7 degraded running after a custom rung (fabric re-route): a throughput factor until the repair ends
   const degrades: { factor: number; until: number; cls: number }[] = [];
-  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, terminalInvalid: 0, localLoss: 0, overhead: 0 };
+  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, rollbackSdcDiscovery: 0, terminalInvalid: 0, localLoss: 0, overhead: 0 };
   const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0, predicted: 0, falseAlarms: 0, netfail: 0, hotswap: 0, custom: 0 };
   const lagH = Math.max(0, spec.rollbackLagH ?? 0);
   const overheadFrac = Math.min(0.99, Math.max(0, spec.overhead ?? 0));
@@ -174,12 +182,12 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     globalPause(delayS + s);
   };
   /** rollback to `to0`; the durable lag of asynchronous saves applies to rollback events (hard, detected corruption), not to a fallback discovery that returns to the clean checkpoint itself */
-  const rollback = (to0: number, kind: 'hard' | 'sdc', withLag = true) => {
+  const rollback = (to0: number, kind: 'hard' | 'sdc' | 'sdc-discovery', withLag = true) => {
     const to = Math.max(0, to0 - (withLag ? lagH : 0));
     const loss = Math.max(0, progress - to);
     ledger.rollback += loss;
     if (kind === 'hard') ledger.rollbackHard += loss;
-    else ledger.rollbackSdc += loss;
+    else { ledger.rollbackSdc += loss; if (kind === 'sdc-discovery') ledger.rollbackSdcDiscovery += loss; }
     acct(current).rollback += loss;
     progress = to;
     phase = 0;
@@ -347,7 +355,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     }
     if (dirty && dirty.discover <= t + 1e-9) {
       current = dirty.cls;
-      rollback(cleanCp, 'sdc', false);
+      rollback(cleanCp, 'sdc-discovery', false);
       cp = cleanCp;
       cpDirty = false;
       dirty = null;
@@ -426,6 +434,7 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     delivered: correct / T,
     correctH: correct,
     operationalAvailability: 1 - ledger.downtime / T,
+    effective: 1 - (ledger.downtime + ledger.save + ledger.slowdown + ledger.localLoss + ledger.overhead + ledger.rollback - ledger.rollbackSdcDiscovery) / T,
     ledger,
     counts,
     byClass,
@@ -442,6 +451,8 @@ export interface LedgerSummary {
   horizonH: number;
   delivered: LedgerStat;
   operationalAvailability: LedgerStat;
+  /** v5.6 per-window effective goodput (see LedgerReplication.effective) */
+  effective: LedgerStat;
   /** mean ledger as fractions of T */
   ledger: Record<keyof LedgerAccount, number> & { delivered: number };
   counts: Record<keyof LedgerReplication['counts'], number>;
@@ -475,7 +486,7 @@ export function simulateLedgerReplications(spec: LedgerSpec, from: number, count
 export function summarizeLedger(rows: LedgerReplication[], seed: number | string, target?: number): LedgerSummary {
   const n = rows.length;
   const T = rows[0]?.horizonH ?? 0;
-  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'terminalInvalid', 'localLoss', 'overhead'];
+  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'rollbackSdcDiscovery', 'terminalInvalid', 'localLoss', 'overhead'];
   const ledger = Object.fromEntries(keys.map((k) => [k, rows.reduce((a, r) => a + r.ledger[k], 0) / (n * T || 1)])) as LedgerSummary['ledger'];
   ledger.delivered = rows.reduce((a, r) => a + r.delivered, 0) / (n || 1);
   const countKeys = Object.keys(rows[0]?.counts ?? {}) as (keyof LedgerReplication['counts'])[];
@@ -499,6 +510,7 @@ export function summarizeLedger(rows: LedgerReplication[], seed: number | string
     horizonH: T,
     delivered: statOf(values),
     operationalAvailability: statOf(rows.map((r) => r.operationalAvailability)),
+    effective: statOf(rows.map((r) => r.effective)),
     ledger,
     counts,
     byClass,

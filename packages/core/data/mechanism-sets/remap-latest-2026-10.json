@@ -21,7 +21,7 @@
     "R-RUNTIME-SNAPSHOT",
     "H-CONTROL-CONTINUITY",
     "C-LOSSLESS",
-    "R-FABRIC-DEGRADE"
+    "C-ASYNC"
   ],
   "goodputOnly": [
     "D-SDC-FP8",
@@ -35,7 +35,7 @@
     "R-CANN-GRAPH",
     "R-HCCL-ELASTIC",
     "D-SLOW",
-    "C-ASYNC"
+    "R-FABRIC-DEGRADE"
   ],
   "capability": [
     "I-CONTAIN"
@@ -169,9 +169,10 @@
       "R-CANN-GRAPH": "R-RUNTIME-SNAPSHOT"
     },
     "rule": {
-      "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除（同阶段取最小值，不相加）；其余在判定规模（研究中最大的规模）上各拓扑的 A_op Shapley 均 ≥ 阈值 → A_op 候选，有效产出 Shapley 均 ≥ 阈值 → 只保有效产出，否则剪除",
-      "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned (minimum on a stage, never the sum); otherwise A_op Shapley ≥ threshold at the decision scale (the largest scale studied) on every architecture → A_op candidate, delivered Shapley ≥ threshold → goodput-only, else pruned"
-    }
+      "zh": "参考集原样保留；同一恢复阶段上被更短机制支配的剪除（同阶段取最小值，不相加）；其余在判定规模（研究中最大的规模）上各拓扑的有效 goodput Shapley 均 ≥ 阈值 → G_eff 候选（进入分配），交付 goodput Shapley 均 ≥ 阈值 → 只保交付 goodput，否则剪除（v5.6，2026-10-29：规则指标从 A_op 改为有效 goodput）",
+      "en": "reference set kept as is; a mechanism dominated by a shorter one on the same recovery stage is pruned (minimum on a stage, never the sum); otherwise effective-goodput Shapley ≥ threshold at the decision scale (the largest scale studied) on every architecture → G_eff candidate (enters the allocation), delivered-goodput Shapley ≥ threshold → delivered-only, else pruned (v5.6, 2026-10-29: the rule’s metric moved from A_op to the effective goodput)"
+    },
+    "metric": "effective"
   },
   "metadata": {
     "D-HARD": {
@@ -586,162 +587,162 @@
     "D-SDC": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；对 A_op −0.02 点（检出的静默变成暂停），对有效产出 +37 点",
-        "en": "reference set; −0.02 pt on A_op (detected corruption becomes pauses), +37 pt on delivered goodput"
+        "zh": "参考集；对有效 goodput −0.04 点（检出的静默变成暂停），对交付 goodput +37 点",
+        "en": "reference set; −0.04 pt on the effective goodput (detected corruption becomes pauses), +37 pt on the delivered goodput"
       }
     },
     "R-SDC": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；需 D-SDC；A_op +0.07 点",
-        "en": "reference set; needs D-SDC; +0.07 pt on A_op"
+        "zh": "参考集；需 D-SDC；有效 goodput +0.10 点",
+        "en": "reference set; needs D-SDC; +0.10 pt on the effective goodput"
       }
     },
     "R-REPLAY": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；A_op +1.1 点（50 万卡）",
-        "en": "reference set; +1.1 pt on A_op (500k)"
+        "zh": "参考集；有效 goodput +1.8–1.9 点（50 万卡）",
+        "en": "reference set; +1.8–1.9 pt on the effective goodput (500k)"
       }
     },
     "R-PROCESS": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；A_op +1.4 点",
-        "en": "reference set; +1.4 pt on A_op"
+        "zh": "参考集；有效 goodput +1.3 点",
+        "en": "reference set; +1.3 pt on the effective goodput"
       }
     },
     "R-ELASTIC": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；最大的单项，A_op +2.9–3.1 点",
-        "en": "reference set; the largest single gain, +2.9–3.1 pt on A_op"
+        "zh": "参考集；最大的单项，有效 goodput +4.8–5.0 点",
+        "en": "reference set; the largest single gain, +4.8–5.0 pt on the effective goodput"
       }
     },
     "C-FAST": {
       "verdict": "reference",
       "reason": {
-        "zh": "参考集；只影响回滚损失（有效产出 +0.5 点）",
-        "en": "reference set; rollback loss only (+0.5 pt delivered goodput)"
+        "zh": "参考集；有效 goodput +1.4–1.8 点（回滚损失），对 A_op 无影响",
+        "en": "reference set; +1.4–1.8 pt on the effective goodput (rollback loss), none on A_op"
       }
     },
     "D-HARD": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +0.30 点（50 万卡），每层都受益",
-        "en": "+0.30 pt on A_op (500k), every layer benefits"
+        "zh": "有效 goodput +0.30 点（50 万卡），每层都受益",
+        "en": "+0.30 pt on the effective goodput (500k), every layer benefits"
       }
     },
     "D-RECOVERY-CLASSIFY": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +1.1–1.2 点；降额后仍有效（人工概率 ×1.5），而“自动成功率”杠杆降额后无效",
-        "en": "+1.1–1.2 pt on A_op; survives derating (manual probability ×1.5) where the automatic-success lever does not"
+        "zh": "有效 goodput +1.0–1.2 点；与“自动成功率”杠杆作用于同一概率（取较高者）：降额时人工概率 ×1.5，杠杆的失败概率 ×1.5（99.85 %）",
+        "en": "+1.0–1.2 pt on the effective goodput; acts on the same probability as the automatic-success lever (the higher one applies): derated, the manual probability ×1.5 against the lever’s failure probability ×1.5 (99.85 %)"
       }
     },
     "R-LINK-LOCAL": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +0.37–0.53 点；光链路、交换与 NIC 的瞬态事件不再走全局恢复",
-        "en": "+0.37–0.53 pt on A_op; transient optics, switch and NIC events skip the global recovery"
+        "zh": "有效 goodput +0.8–1.1 点；光链路、交换与 NIC 的瞬态事件不再走全局恢复",
+        "en": "+0.8–1.1 pt on the effective goodput; transient optics, switch and NIC events skip the global recovery"
       }
     },
     "R-RUNTIME-SNAPSHOT": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +0.42 点；启动阶段三个机制中最短（15 s），同阶段取最小值",
-        "en": "+0.42 pt on A_op; the shortest of the three startup-stage mechanisms (15 s), minimum rule on the stage"
+        "zh": "有效 goodput +0.39–0.40 点；启动阶段三个机制中最短（15 s），同阶段取最小值",
+        "en": "+0.39–0.40 pt on the effective goodput; the shortest of the three startup-stage mechanisms (15 s), minimum rule on the stage"
       }
     },
     "H-CONTROL-CONTINUITY": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +0.35 点；唯一作用于管理面事件的机制",
-        "en": "+0.35 pt on A_op; the only mechanism acting on management-plane events"
+        "zh": "有效 goodput +0.49 点；唯一作用于管理面事件的机制",
+        "en": "+0.49 pt on the effective goodput; the only mechanism acting on management-plane events"
       }
     },
     "C-LOSSLESS": {
       "verdict": "candidate",
       "reason": {
-        "zh": "A_op +0.34–0.38 点；缩短每次全局恢复的读取阶段",
-        "en": "+0.34–0.38 pt on A_op; shortens the read stage of every global recovery"
+        "zh": "有效 goodput +0.33–0.37 点；缩短每次全局恢复的读取阶段",
+        "en": "+0.33–0.37 pt on the effective goodput; shortens the read stage of every global recovery"
       }
     },
     "R-FABRIC-DEGRADE": {
-      "verdict": "candidate",
+      "verdict": "pruned",
       "reason": {
-        "zh": "A_op +0.19–0.34 点；降级运行的损失只计入有效产出",
-        "en": "+0.19–0.34 pt on A_op; the degraded-running loss counts against goodput only"
+        "zh": "有效 goodput +0.07–0.17 点（50 万卡，四种拓扑），至少一种拓扑低于 0.15 点阈值；降级运行的损失进入吞吐系数，交付 goodput −0.01–−0.03 点",
+        "en": "+0.07–0.17 pt on the effective goodput at 500k over the four topologies, below the 0.15-pt threshold on at least one; the degraded-running loss enters the throughput factors, −0.01 to −0.03 pt on the delivered goodput"
       }
     },
     "R-WARM-PROCESS": {
       "verdict": "pruned",
       "reason": {
-        "zh": "与 R-RUNTIME-SNAPSHOT 同为启动阶段，20 s > 15 s，被支配（同阶段取最小值）；单独 +0.075 点",
-        "en": "same startup stage as R-RUNTIME-SNAPSHOT, 20 s > 15 s: dominated (minimum rule); +0.075 pt alone"
+        "zh": "与 R-RUNTIME-SNAPSHOT 同为启动阶段，20 s > 15 s，被支配（同阶段取最小值）；单独有效 goodput +0.07 点",
+        "en": "same startup stage as R-RUNTIME-SNAPSHOT, 20 s > 15 s: dominated (minimum rule); +0.07 pt effective goodput alone"
       }
     },
     "R-CANN-GRAPH": {
       "verdict": "pruned",
       "reason": {
-        "zh": "启动阶段内的图准备 30 → 7.5 s，启动 60 → 37.5 s，被 15 s 的快照支配；单独 +0.07 点",
-        "en": "graph share of startup 30 → 7.5 s (startup 60 → 37.5 s), dominated by the 15 s snapshot; +0.07 pt alone"
+        "zh": "启动阶段内的图准备 30 → 7.5 s，启动 60 → 37.5 s，被 15 s 的快照支配；单独有效 goodput +0.06–0.07 点",
+        "en": "graph share of startup 30 → 7.5 s (startup 60 → 37.5 s), dominated by the 15 s snapshot; +0.06–0.07 pt effective goodput alone"
       }
     },
     "R-HCCL-ELASTIC": {
       "verdict": "pruned",
       "reason": {
-        "zh": "只缩短弹性局部恢复（作业不停），A_op 0.000、有效产出 +0.01 点",
-        "en": "shortens only the local elastic recovery (no job pause): 0.000 pt A_op, +0.01 pt goodput"
+        "zh": "只缩短弹性局部恢复（作业不停）：有效 goodput +0.01 点、交付 +0.01 点",
+        "en": "shortens only the local elastic recovery (no job pause): +0.01 pt effective, +0.01 pt delivered goodput"
       }
     },
     "D-SLOW": {
       "verdict": "pruned",
       "reason": {
-        "zh": "A_op −0.007 点（更多隔离暂停），有效产出 +0.1 点：两项都在噪声内",
-        "en": "−0.007 pt A_op (more isolation pauses), +0.1 pt goodput: both within noise"
+        "zh": "有效 goodput +0.13–0.15 点（部分拓扑低于 0.15 点阈值），交付 +0.10–0.11 点；更多隔离暂停使 A_op −0.01 点",
+        "en": "+0.13–0.15 pt effective goodput (below the 0.15-pt threshold on some topologies), +0.10–0.11 pt delivered; −0.01 pt A_op from more isolation pauses"
       }
     },
     "D-SDC-FP8": {
       "verdict": "goodput",
       "reason": {
-        "zh": "A_op −0.008 点，有效产出 +4.1 点",
-        "en": "−0.008 pt A_op, +4.1 pt delivered goodput"
+        "zh": "有效 goodput −0.01 点，交付 goodput +4.0–4.2 点",
+        "en": "−0.01 pt effective goodput, +4.0–4.2 pt delivered goodput"
       }
     },
     "D-SDC-FP4": {
       "verdict": "goodput",
       "reason": {
-        "zh": "A_op −0.009 点，有效产出 +4.6 点",
-        "en": "−0.009 pt A_op, +4.6 pt delivered goodput"
+        "zh": "有效 goodput −0.01 点，交付 goodput +4.6–4.7 点",
+        "en": "−0.01 pt effective goodput, +4.6–4.7 pt delivered goodput"
       }
     },
     "D-ABFT": {
       "verdict": "goodput",
       "reason": {
-        "zh": "A_op −0.014 点，有效产出 +13 点",
-        "en": "−0.014 pt A_op, +13 pt delivered goodput"
+        "zh": "有效 goodput −0.12 点（0.1 % 吞吐开销），交付 goodput +13 点",
+        "en": "−0.12 pt effective goodput (0.1 % throughput overhead), +13 pt delivered goodput"
       }
     },
     "D-NET-SDC": {
       "verdict": "goodput",
       "reason": {
-        "zh": "A_op −0.001 点，有效产出 +0.9–1.3 点",
-        "en": "−0.001 pt A_op, +0.9–1.3 pt delivered goodput"
+        "zh": "有效 goodput −0.00 点，交付 goodput +0.9–1.3 点",
+        "en": "−0.00 pt effective goodput, +0.9–1.3 pt delivered goodput"
       }
     },
     "H-SDC-SCREEN": {
       "verdict": "goodput",
       "reason": {
-        "zh": "A_op +0.009 点，有效产出 +3.2 点",
-        "en": "+0.009 pt A_op, +3.2 pt delivered goodput"
+        "zh": "有效 goodput +0.01 点，交付 goodput +3.2 点",
+        "en": "+0.01 pt effective goodput, +3.2 pt delivered goodput"
       }
     },
     "C-ASYNC": {
-      "verdict": "pruned",
+      "verdict": "candidate",
       "reason": {
-        "zh": "A_op 0.000 点，有效产出 +0.1 点（50 万卡）：阻塞少 3 s，每次回滚多 10 s 滞后，低于 0.15 点阈值",
-        "en": "0.000 pt A_op, +0.1 pt goodput at 500k: 3 s less blocking against a 10 s lag on every rollback, below the 0.15-pt threshold"
+        "zh": "有效 goodput +0.17–0.20 点（50 万卡，四种拓扑均 ≥ 0.15 点阈值）：更短的保存阻塞超过每次回滚多 10 s 的持久化滞后；交付 goodput +0.09–0.12 点；对 A_op 无影响",
+        "en": "+0.17–0.20 pt on the effective goodput at 500k (≥ the 0.15-pt threshold on all four topologies): the shorter save blocking outweighs the 10 s durable lag on every rollback; +0.09–0.12 pt delivered; none on A_op"
       }
     },
     "I-CONTAIN": {
@@ -763,15 +764,15 @@
       "confidence": "assumed"
     },
     "candidates": {
-      "source": "pruning rule on the four built-in records’ Shapley studies at 500k (docs/backup/arch-mechanism-shapley, 300 permutations): A_op Shapley ≥ 0.15 pt on every architecture, not dominated on a shared stage (hacd prune reproduces the lists)",
+      "source": "pruning rule on the four built-in records’ Shapley studies at 500k (docs/backup/arch-mechanism-shapley, 300 permutations, regenerated 2026-10-29 with the effective-goodput values): effective-goodput Shapley ≥ 0.15 pt on every architecture, not dominated on a shared stage (hacd prune reproduces the lists); v5.6 moved C-ASYNC in (+0.17–0.20 pt) and R-FABRIC-DEGRADE out (+0.07–0.17 pt)",
       "confidence": "derived"
     },
     "goodputOnly": {
-      "source": "pruning rule: delivered-goodput Shapley ≥ 0.15 pt on every architecture, A_op below the threshold",
+      "source": "pruning rule: delivered-goodput Shapley ≥ 0.15 pt on every architecture, effective-goodput Shapley below the threshold",
       "confidence": "derived"
     },
     "pruned": {
-      "source": "pruning rule: dominated on the startup stage (R-WARM-PROCESS, R-CANN-GRAPH by R-RUNTIME-SNAPSHOT) or below the threshold on both metrics",
+      "source": "pruning rule: dominated on the startup stage (R-WARM-PROCESS, R-CANN-GRAPH by R-RUNTIME-SNAPSHOT) or below the threshold on both metrics (effective and delivered goodput); v5.6: R-FABRIC-DEGRADE below the effective-goodput threshold on at least one topology",
       "confidence": "derived"
     },
     "levers": {
@@ -779,7 +780,7 @@
       "confidence": "assumed"
     },
     "derate": {
-      "source": "HAC-D derated yardstick (packages/core/src/mechanisms/plan.ts DERATE_DEFAULT): coverage, detection targets and shares −5 pt, success −8 pt, times and overheads × 1.5, rate reductions × 0.5 — engineering margins",
+      "source": "HAC-D derated yardstick (packages/core/src/mechanisms/plan.ts DERATE_DEFAULT): coverage, detection targets and shares −5 pt, success −8 pt, times and overheads × 1.5, rate reductions × 0.5 — engineering margins; the automatic-success lever is derated on its failure probability × 1.5 (99.9 % → 99.85 %, v5.5 R1), the checkpoint period of C-FAST / C-MEM is not derated (the save time is)",
       "confidence": "assumed"
     },
     "efforts": {
@@ -787,11 +788,19 @@
       "confidence": "assumed"
     },
     "prune.threshold": {
-      "source": "0.15 pt chosen above the sampled Shapley 95 % half-width at 500k (≤ 0.25 pt per the stored studies, ≤ 0.12 pt on most mechanisms); borderline verdicts (R-FABRIC-DEGRADE, min 0.19 pt) are re-checked by hacd prune when parameters change",
+      "source": "0.15 pt chosen above the sampled Shapley 95 % half-width at 500k (≤ 0.25 pt per the stored studies, ≤ 0.12 pt on most mechanisms); borderline verdicts (C-ASYNC min 0.17 pt, D-SLOW max 0.15 pt, R-FABRIC-DEGRADE max 0.17 pt on the effective goodput) are re-checked by hacd prune when parameters change",
       "confidence": "assumed"
     },
     "prune.dominated": {
       "source": "audit library overlap rule: mechanisms on one recovery stage take the minimum time per event (R-WARM-PROCESS 20 s and R-CANN-GRAPH 37.5 s startup vs R-RUNTIME-SNAPSHOT 15 s); with eligible shares below 1 the dominance is approximate — the dominated mechanism keeps the events the snapshot does not cover (same-stage expectation, MODEL_REFERENCE §24.2), worth at most 3.0e-6 of A_op with all players on at 500k (second recheck N7), far below the 0.15 pt threshold",
+      "confidence": "derived"
+    },
+    "prune.metric": {
+      "source": "v5.6 (user’s decision 2026-10-28): the report’s acceptance metric is the effective goodput, so the candidate rule reads the effective-goodput Shapley; the A_op verdicts of v5.5 are in the git history",
+      "confidence": "derived"
+    },
+    "verdicts": {
+      "source": "reasons restated on the effective-goodput basis 2026-10-29 from the regenerated studies (ranges over the four topologies at 500k, delivered goodput where the mechanism counts for it); the bespoke clauses of v5 kept",
       "confidence": "derived"
     }
   }

@@ -55,6 +55,11 @@ Plan inputs (recommended mechanisms, levers, k, binding) were copied by the Pyth
 | G5a first-order closed-form k* (2 cases: native950 500k, cm384 200k; both `binding = 'mean'` in results.json) | formula (4): k* = (3600·((1 − φ)/A* − 1) − F)/ΣC₁ on the derated recommended design at k = 1, φ and F frozen at k = 1 — the check that the first-order form agrees with the engine's "mean binds" k (the bisection root of A_op,der(k) = A* with φ at k) to ~1e-5 | φ, F, ΣC₁ of the derated design vs `kpiForm` (rel 1e-9) | k* vs results.json `recommended.k`: rel 2e-5; engine A_op of the design at k* vs A*: abs 3e-7 (decision of 2026-10-21; see finding 1) | pass (6.6e-6 and 7.7e-6 relative on k; 9.1e-8 and 1.1e-7 on A_op) |
 | G5b exact identity at the engine's k (2 cases: the same designs at results.json's k) | formula (1) on the derated design at k: (1 − φ(k))/(1 + (ΣC(k) + F)/3600) = A*; ΣC(k) = k·ΣC₁ (only the hardware pause scales); F(k) = F(1); φ(k) − φ(1) recorded | φ(k) on that table's engine A_op (declared); the engine A_op at k vs A* | A_op abs 1e-9; ΣC(k), F, φ rel 1e-9 | pass (A* reproduced to 1e-16 on both; ΣC(k)/ΣC₁ = k to 1e-15) |
 | G6 `pruneByShapley` (2 cases: stored 23-player study at 500k + I-CONTAIN; synthetic table) | Methodology §4 rule: reference → `reference`; absent from every study → `capability`; dominated → `pruned`; min A_op Shapley ≥ 0.0015 → `candidate`; min delivered ≥ 0.0015 → `goodput`; else `pruned`; min / max per metric; `missing` | none | exact (rel 1e-12) | pass; verdicts also equal the published `mechanisms.json` |
+| G1e `kpiForm` loss form (15 cases, v5.6) | formula (1′), MODEL_REFERENCE §30: W = τ/2 + lag (the dumped source), r_i = t̄_i + P_rb,i·W, Q_hw = Σλ_i P_rb,i W, Σλr, R_eff = Σλr/λ_hw, Q_other (0 with step recovery), δ/τ, ℓ_local = Σλ_i ℓ_i/3600, Φ = (1 − P_blocked)·φ_perf·(1 − ℓ_local)·(1 − o); G_eff = (1 − p_sdc)·Φ·(1 − δ/τ − (Σλr + F + Q_other)/3600) | P_rb,i, ℓ_i, P_blocked, φ_perf, o, p_sdc are engine outputs taken as inputs; G_eff closure vs the engine's effectiveGoodput (1e-9) while first order; R_eff = MTTR_hw + P̄_rb W | rel 1e-9, abs 1e-12 | pass (15 of 15 tables first order; closure ≤ 1e-9) |
+| G2e `lossBreakdown` / `unavailabilityByLayer(effective)` (6 cases, v5.6) | formula (3′): Q_ℓ = Σ_{i∈ℓ} λ_i P_rb,i W; U_ℓ = (downtime − p_sdc)·C_ℓ/(ΣC + F) + rollback·Q_ℓ/(ΣQ + Q_other) with the engine's ledger lines; lines save / otherClasses / factors; Σ U_ℓ + lines = 1 − G_eff | the ledger lines (declared); under the first-order model the two lines equal (1 − p_sdc)(ΣC + F)/3600 and (1 − p_sdc)(ΣQ + Q_other)/3600 (checked) | rel 1e-9, abs 1e-12 | pass (closure 0 on every table) |
+| G4e `requirementFromKpi(…, 'effective')` / `requirement` (5 cases, v5.6: derated today's designs and the derated all-moves designs, G* = 0.985) | formula (2′): Φ′ = G_eff/(1 − S), B = 3600·(1 − δ/τ − G*/Φ′) − F − Q_other, total 3600·(1 − G*), terms { 3600 δ/τ, F + Q_other, total − save − other − B }, the ends null when B ≤ 0 | G_eff from G1e | rel 1e-9, abs 1e-12 | pass (B ≤ 0 on every table: −36 to −55 s/h) |
+| G5e all-moves identity (2 cases, v5.6: native950 500k, cm384 200k, `feasible = false` in results.json) | the derated all-moves design at k = 1: formula (2′) says B ≤ 0, the ceiling with perfect hardware lies between the design and the goal | — | rel 1e-9 | pass; G5a / G5b skipped (the mean does not bind anywhere) |
+| G6e `pruneByShapley(…, { metric: 'effective' })` (2 cases, v5.6: the regenerated studies at 500k; a synthetic table with effective values) | the §4 rule on the effective-goodput Shapley (min ≥ 0.0015 → `candidate`), delivered for `goodput`, min / max of the three metrics | none | exact (rel 1e-12) | pass; verdicts equal the regenerated `mechanisms.json` (C-ASYNC candidate, R-FABRIC-DEGRADE pruned) |
 
 `npm test -w @hac-d/core`: 36 files, 799 tests — 799 passed, 0 failed. `tsc -p packages/core/tsconfig.json` reports no
 error for the new harness. The Python's own `findings` list in `golden_v5.json` is empty.
@@ -136,6 +141,21 @@ the dumped tables carry the rungs in that order already, so no value changed. Ev
 tolerance. The input tables gained `sdcCoverage` / `sdcExtraDetection` per class and BOXIO-hard's `applicable.predict` became 0 (the
 catalog's scope rule, fourth review R2); no expected value depends on either in the old cases. Regenerated with `/usr/bin/python3` 3.9.6.
 
+### 5. Regeneration of 2026-10-29 (v5.6, the effective-goodput basis)
+
+The report pipeline moved to the effective goodput as its acceptance metric (user's decision 2026-10-28; `docs/markdown/MODEL_REFERENCE.md` §30). The
+input tables gained the inputs of the loss form (1′) — per class the rollback probability and the local loss, τ, δ, the recompute source and lag,
+the throughput factors, the engine's ledger lines and `effective` — and the Python gained `kpi_form_eff`, `requirement_eff`, `loss_breakdown` and
+the metric of `prune`, each written from §30, not from the engine. Findings of the run: none — the loss form closes on the engine's effective goodput
+on all 15 tables (first-order headline everywhere), the layer split closes exactly, and formula (2′) gives B between −36 and −55 s/h on every
+derated design: the checkpoint saves of C-FAST (δ/τ = 1.67 % nominal, 2.5 % derated = 90 s/h) exceed the whole loss budget 1 − G* = 54 s/h, so no
+hardware or mechanism of the set reaches 98.5 % and `results.json` carries every scale as the all-moves design at k = 1 (`feasible` false). The old
+G5a / G5b cases need a binding mean and are skipped on this data (the A_op basis, `--metric aOp`, still produces them). The studies were regenerated
+with the effective-goodput Shapley values (`generated` 2026-10-29); under the effective rule C-ASYNC enters the candidates (+0.17–0.20 pt) and
+R-FABRIC-DEGRADE leaves (+0.07–0.17 pt), which the set record now states (`prune.metric`). Every pre-existing expected value of G1–G4 is unchanged
+except where the recommended designs changed with the data (the `recommended*` tables are now the all-moves designs). Regenerated with
+`/usr/bin/python3` 3.9.6.
+
 ## Regenerating
 
 ```
@@ -144,4 +164,4 @@ python3 packages/core/test/golden/compute_golden_v5.py              # golden_v5.
 npm test -w @hac-d/core
 ```
 
-_Values of §1 and §2 regenerated 2026-10-28 from commit 38c2c45 (fourth review R1 / R4 fixed, second recheck of the fifth review): `dump_inputs_v5.mjs` → `compute_golden_v5.py`; findings 0._
+_Values of §1 and §2 regenerated 2026-10-28 from commit 38c2c45 (fourth review R1 / R4 fixed, second recheck of the fifth review): `dump_inputs_v5.mjs` → `compute_golden_v5.py`; findings 0. Regenerated again 2026-10-29 for v5.6 (§5, the effective-goodput basis; 62 cases): findings 0._

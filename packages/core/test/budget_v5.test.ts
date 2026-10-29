@@ -122,7 +122,9 @@ describe('v5 pruning rule and hierarchy on the stored studies', () => {
   const MJ = JSON.parse(readFileSync(join(backup, 'mechanisms.json'), 'utf8'));
   it('pruneByShapley reproduces the 24 verdicts and the candidate list of mechanisms.json', () => {
     const ids = MJ.mechanisms.map((m: { id: string }) => m.id);
-    const p = pruneByShapley(shapleyAtScale(studies, 500000), ids, { threshold: SET.prune.threshold, dominated: SET.prune.dominated, reference: SET.baseline });
+    // v5.6: the rule reads the set's metric (the effective goodput since 2026-10-29)
+    const p = pruneByShapley(shapleyAtScale(studies, 500000), ids, { threshold: SET.prune.threshold, dominated: SET.prune.dominated, reference: SET.baseline, metric: SET.prune.metric ?? 'aOp' });
+    expect(MJ.metric).toBe(SET.prune.metric ?? 'aOp');
     for (const m of MJ.mechanisms as { id: string; verdict: string }[]) expect(p.verdicts[m.id].verdict, m.id).toBe(m.verdict);
     expect(p.candidates).toEqual(MJ.candidates);
     expect([...p.candidates].sort()).toEqual([...SET.candidates].sort());
@@ -170,7 +172,9 @@ describe('v5 reproduction of the v4.4 data from the records', () => {
       const a = z.recommended.tried[i - 1], b = z.recommended.tried[i];
       expect(a.mechanisms.every((m: string) => b.mechanisms.includes(m)) && a.levers.every((l: string) => b.levers.includes(l))).toBe(true);
     }
-    expect(['window', 'mean']).toContain(z.recommended.binding);
+    // v5.6: 'none' when no move set reaches the target (the all-moves design at k = 1, feasible false)
+    expect(['window', 'mean', 'none']).toContain(z.recommended.binding);
+    if (z.recommended.binding === 'none') { expect(z.recommended.feasible).toBe(false); expect(z.recommended.k).toBe(1); expect(z.recommended.ceiling.derated).toBeGreaterThan(z.recommended.final.kpiDerated.effective); }
   });
   it('budgetFromRecords carries the set and the records into the document header', () => {
     // header only: a 1-size, 1-record document at a small scale with few trials

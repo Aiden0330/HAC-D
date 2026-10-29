@@ -63,6 +63,8 @@
    "count": 500000,
    "ratePerHour": 0.23333333333333328,
    "meanPauseS": 25.22828,
+   "pRollback": 0.017999999999999988,
+   "localLossS": 0.9104399999999997,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -79,6 +81,8 @@
    "count": 500000,
    "ratePerHour": 0.0833333333333333,
    "meanPauseS": 25.22828,
+   "pRollback": 0.017999999999999988,
+   "localLossS": 0.9104399999999997,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -95,6 +99,8 @@
    "count": 500000,
    "ratePerHour": 0.09999999999999998,
    "meanPauseS": 25.22828,
+   "pRollback": 0.017999999999999988,
+   "localLossS": 0.9104399999999997,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -111,6 +117,8 @@
    "count": 500000,
    "ratePerHour": 0.08499999999999996,
    "meanPauseS": 34.04599999999999,
+   "pRollback": 0.09999999999999998,
+   "localLossS": 5.058,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -127,6 +135,8 @@
    "count": 500000,
    "ratePerHour": 0.19999999999999996,
    "meanPauseS": 25.22828,
+   "pRollback": 0.017999999999999988,
+   "localLossS": 0.9104399999999997,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -143,6 +153,8 @@
    "count": 500000,
    "ratePerHour": 0.08666666666666666,
    "meanPauseS": 34.04599999999999,
+   "pRollback": 0.09999999999999998,
+   "localLossS": 5.058,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -159,6 +171,8 @@
    "count": 500000,
    "ratePerHour": 0.05,
    "meanPauseS": 25.22828,
+   "pRollback": 0.017999999999999988,
+   "localLossS": 0.9104399999999997,
    "applicable": {
     "replay": 1,
     "process": 1,
@@ -175,6 +189,8 @@
    "count": 1000000,
    "ratePerHour": 0.0047619047619047615,
    "meanPauseS": 66.71000000000001,
+   "pRollback": 0.17999999999999994,
+   "localLossS": 0,
    "applicable": {
     "replay": 1,
     "process": 0,
@@ -191,6 +207,8 @@
    "count": 4000000,
    "ratePerHour": 0.019047619047619046,
    "meanPauseS": 66.71000000000001,
+   "pRollback": 0.17999999999999994,
+   "localLossS": 0,
    "applicable": {
     "replay": 1,
     "process": 0,
@@ -207,6 +225,8 @@
    "count": 62500,
    "ratePerHour": 0.02333333333333333,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -223,6 +243,8 @@
    "count": 570349,
    "ratePerHour": 0.03259137142857142,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -239,6 +261,8 @@
    "count": 5864,
    "ratePerHour": 0.00033508571428571423,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -255,6 +279,8 @@
    "count": 125000,
    "ratePerHour": 0.041666666666666664,
    "meanPauseS": 34.04599999999999,
+   "pRollback": 0.09999999999999998,
+   "localLossS": 5.058,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -271,6 +297,8 @@
    "count": 62500,
    "ratePerHour": 0.09999999999999998,
    "meanPauseS": 34.04599999999999,
+   "pRollback": 0.09999999999999998,
+   "localLossS": 5.058,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -287,6 +315,8 @@
    "count": 62500,
    "ratePerHour": 0.08333333333333333,
    "meanPauseS": 34.04599999999999,
+   "pRollback": 0.09999999999999998,
+   "localLossS": 5.058,
    "applicable": {
     "replay": 0,
     "process": 1,
@@ -303,6 +333,8 @@
    "count": 7813,
    "ratePerHour": 0.04166933333333333,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -319,6 +351,8 @@
    "count": 7813,
    "ratePerHour": 0.025001599999999995,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -335,6 +369,8 @@
    "count": 62500,
    "ratePerHour": 0.06666666666666665,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -351,6 +387,8 @@
    "count": 500000,
    "ratePerHour": 0.06666666666666665,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -367,6 +405,8 @@
    "count": 500000,
    "ratePerHour": 0.20500000000000002,
    "meanPauseS": 264.50000000000006,
+   "pRollback": 1,
+   "localLossS": 0,
    "applicable": {
     "replay": 0,
     "process": 0,
@@ -388,6 +428,34 @@
  "aOp": 0.9569789615887387,
  "aRun": 0.9570817989047271,
  "delivered": 0.736514838740333,
+ "effective": 0.9232719856283059,
+ "headlineModel": "first-order",
+ "tauS": 60,
+ "deltaS": 1.5,
+ "recomputeS": 30,
+ "recomputeSource": "tau/2",
+ "rollbackLagS": 0,
+ "stepTimeS": null,
+ "measuredRecomputeS": null,
+ "factors": {
+  "blocked": 0,
+  "performance": 0.9980503124432585,
+  "localLossFraction": 0.0007259166666666665,
+  "overhead": 0,
+  "pauseFraction": 0.00010744882632398732
+ },
+ "ledger": {
+  "downtime": 0.04494540273376117,
+  "save": 0.024997313779341904,
+  "rollback": 0.004309673864966743,
+  "slowdown": 0.001804918595163083,
+  "local": 0.0006707053984611805,
+  "blocked": 0,
+  "overhead": 0,
+  "sdcRollback": 0.1701059333235295,
+  "terminal": 0.01665121356444335,
+  "delivered": 0.736514838740333
+ },
  "slowSdcByClass": [
   {
    "id": "CORE-hard",

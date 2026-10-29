@@ -248,9 +248,9 @@ function projectTurn(W, calls, pj) {
   if (!man) return { content: 'status: failed\nfailed: hacd scenario report (no manifest on stdout)' };
   const show = safeJson(last('hacd_scenario_show').hacd?.stdout ?? '', {})?.summary ?? {};
   const pct = (x) => `${(100 * x).toFixed(3)} %`;
-  const kpi = (man.kpi ?? []).map((k) => `| ${k.scale} | ${pct(k.today.aOp)} / ${pct(k.today.aOpDerated)} | ${pct(k.recommended.aOpDerated)} | ${k.recommended.mechanisms.join('+') || '—'} | k ${k.recommended.k.toFixed(3)} |`);
+  const kpi = (man.kpi ?? []).map((k) => `| ${k.scale} | ${pct(k.today.effective ?? k.today.aOp)} / ${pct(k.today.effectiveDerated ?? k.today.aOpDerated)} | ${pct(k.recommended.effectiveDerated ?? k.recommended.aOpDerated)} | ${k.recommended.mechanisms.join('+') || '—'} | ${k.recommended.feasible === false ? 'k — (not feasible)' : `k ${k.recommended.k.toFixed(3)}`} |`);
   const changes = [...pj.sets.map((x) => `(${x.replace('=', ', ')}, task)`), ...pj.fits.map((x) => `(fit ${x.replace('=', ', ')}, task)`), ...pj.apply.map((x) => `(apply ${x}, task)`), ...pj.remove.map((x) => `(remove ${x}, task)`)];
-  return { content: ['status: ok', `project: ${file}`, `changes: ${changes.join('; ') || 'none'}`, `mechanisms applied: ${(show.mechanisms ?? []).map((m) => m.id).join(' + ')}`, 'KPI (manifest): | scale | today A_op nominal / derated | recommended A_op derated | added mechanisms | hardware k |', ...kpi, `paths: findings ${man.files?.findings}; methodology ${man.files?.methodology}; bundle ${man.files?.bundle}; sidecar ${man.files?.data}`].join('\n') };
+  return { content: ['status: ok', `project: ${file}`, `changes: ${changes.join('; ') || 'none'}`, `mechanisms applied: ${(show.mechanisms ?? []).map((m) => m.id).join(' + ')}`, 'KPI (manifest): | scale | today effective goodput nominal / derated | recommended effective goodput derated | added mechanisms | hardware k |', ...kpi, `paths: findings ${man.files?.findings}; methodology ${man.files?.methodology}; bundle ${man.files?.bundle}; sidecar ${man.files?.data}`].join('\n') };
 }
 
 /** the next turn of the operator: { toolCalls: [{name, args}] } or { content } */

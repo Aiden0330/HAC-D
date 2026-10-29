@@ -69,7 +69,7 @@ the same CLI, so every step keeps its own exit code and JSON output.
 | `exitCode` | 0 / 2 / 3; usage errors exit 1 before a manifest exists |
 | `inputs` | the record, override and mechanism set used (id and path); resolved from the flags or from the single file of each kind in staging |
 | `steps[]` | `name`, `ok`, `exitCode`, `seconds`, `command`, `issues[]` (validate and dry-run: `level`, `code`, `path` = `file: field`, bilingual `message`), `stderrTail` of a failed step |
-| `kpi[]` | the dry run's rows per scale: A_op nominal / derated, delivered goodput, MTBF_hw, MTTR_hw, P(window) with verdict, k, recommended mechanisms and levers, effort |
+| `kpi[]` | the dry run's rows per scale: v5.6 effective goodput nominal / derated (the report's metric, `MODEL_REFERENCE.md` §30), delivered goodput, A_op nominal / derated, MTBF_hw, MTTR_hw, P(window) with verdict, k (`feasible` false when no plan reaches the target), recommended mechanisms and levers, effort |
 | `report`, `delta`, `promoted` | paths of the Findings pages (+ Methodology) and their sidecar `data/`, of the delta files, and the promoted ids (empty without `--promote`) |
 | `nextAction` | one bilingual sentence telling the operator what to do next |
 
