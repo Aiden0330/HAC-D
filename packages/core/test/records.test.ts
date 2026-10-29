@@ -17,7 +17,7 @@ import { toPerHour } from '../src/units/index.js';
 import * as A950 from '../../../scripts/ascend950-archs.js';
 import * as A910 from '../../../scripts/ascend910c-archs.js';
 /** CANDIDATES of scripts/ascend-allocation-data.ts (that script runs on import, so the list is copied) */
-const CANDIDATES = ['D-HARD', 'D-RECOVERY-CLASSIFY', 'R-LINK-LOCAL', 'R-RUNTIME-SNAPSHOT', 'H-CONTROL-CONTINUITY', 'C-LOSSLESS', 'C-ASYNC']; // v5.6: the effective-goodput rule (C-ASYNC in, R-FABRIC-DEGRADE out)
+const CANDIDATES = ['D-HARD', 'D-RECOVERY-CLASSIFY', 'R-LINK-LOCAL', 'R-RUNTIME-SNAPSHOT', 'H-CONTROL-CONTINUITY', 'C-LOSSLESS']; // v5.6: the effective-goodput rule (R-FABRIC-DEGRADE out); v5.7: C-ASYNC out (no gain on top of the reference set)
 
 const tr = (s: Parameters<typeof evaluateScenario>[0]) => evaluateScenario(s, { structure: false }).training!;
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -213,7 +213,7 @@ describe('v5 mechanism set', () => {
     expect(set.baseline).toEqual(DEFAULT_PLAYERS);
     expect(set.candidates).toEqual(CANDIDATES);
     expect(set.goodputOnly).toEqual(['D-SDC-FP8', 'D-SDC-FP4', 'D-ABFT', 'D-NET-SDC', 'H-SDC-SCREEN']);
-    expect([...set.pruned].sort()).toEqual(['D-SLOW', 'R-CANN-GRAPH', 'R-FABRIC-DEGRADE', 'R-HCCL-ELASTIC', 'R-WARM-PROCESS']);
+    expect([...set.pruned].sort()).toEqual(['C-ASYNC', 'D-SLOW', 'R-CANN-GRAPH', 'R-FABRIC-DEGRADE', 'R-HCCL-ELASTIC', 'R-WARM-PROCESS']);
     expect(set.prune.metric).toBe('effective');
     expect(set.capability).toEqual(['I-CONTAIN']);
     expect(r.players).toHaveLength(23);
