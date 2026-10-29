@@ -110,6 +110,8 @@ function studyMismatch(st: ArchStudy & { rates?: string | null }, rec: TopologyR
   if (miss.length) return `no values at ${miss.join(', ')}`;
   // v5.6 the effective-goodput Shapley values and the all-on values by metric (a study written before them must be recomputed)
   if (sizes.some((n) => !st.perSize[String(n)].allOnDeratedBy || st.perSize[String(n)].gains.some((g) => !g.effective))) return 'no effective-goodput values (written before v5.6)';
+  // v5.7 the reference-set gains, the half-widths of every metric and the exact-renewal goodputs (sixth review F3, F4, F6)
+  if (sizes.some((n) => st.perSize[String(n)].gains.some((g) => g.onReference === undefined || !g.halfWidthBy))) return 'no reference-set gains or half-widths by metric (written before v5.7)';
   return null;
 }
 /** the study restricted to the report's sizes (Findings Table 7 needs sizes = results.sizes) */
@@ -331,7 +333,7 @@ export function budget(a: Args, json: boolean): void {
   const E = metric === 'effective', M = E ? 'G_eff' : 'A_op', LOSS = E ? 'R_eff' : 'MTTR_hw';
   console.log(`# ${rec.name.en} — ${scale.toLocaleString('en-US')} NPUs · target ${M} ≥ ${p(target, 1)} · set ${set.id}${rates ? ` · override ${rates.id}` : ''}`);
   console.log(E
-    ? '口径: G_eff = effective goodput of one synchronous job over the 30-day window (formula 1′: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), G_del = delivered goodput (silent-corruption loss removed); MTBF_hw = 1/Σλ of hard interruptions, R_eff = MTTR_hw + P̄_rb·W the loss per interruption; derated values unless named nominal; P = share of 30-day windows with G_eff ≥ target (formula 6)'
+    ? '口径: G_eff = effective goodput of one synchronous job over the 30-day window (exact renewal model, the window ledger’s; formula 1′ is its first-order loss form: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), G_del = delivered goodput (silent-corruption loss removed); MTBF_hw = 1/Σλ of hard interruptions, R_eff = MTTR_hw + P̄_rb·W the loss per interruption; derated values unless named nominal; P = share of 30-day windows with G_eff ≥ target (formula 6)'
     : '口径: A_op of one synchronous job per cluster-hour; MTBF_hw = 1/Σλ of hard interruptions, MTTR_hw = rate-weighted mean pause (formula 1); isolation and silent corruption counted apart; P = share of 30-day windows with A_op ≥ target (formula 6)');
   const v = (k: typeof f.kpi) => (E ? k.effective : k.aOp), loss = (k: typeof f.kpi) => (E ? k.lossS : k.mttrS);
   const rows: (string | number)[][] = [['', `${M} nominal`, `${M} derated`, ...(E ? ['G_del derated'] : []), 'MTBF_hw (derated)', `${LOSS} (derated)`, 'P(window)', 'plan'],
@@ -373,11 +375,14 @@ export function prune(a: Args, json: boolean): void {
   const MS = (set.prune.metric ?? 'aOp') === 'effective' ? 'G_eff' : 'A_op';
   const VN: Record<MechanismVerdict, { zh: string; en: string }> = { reference: { zh: '参考', en: 'reference' }, candidate: { zh: `${MS} 候选`, en: `${MS} candidate` }, goodput: { zh: '只保交付 goodput', en: 'delivered-goodput-only' }, pruned: { zh: '剪除', en: 'pruned' }, capability: { zh: '能力', en: 'capability' } };
   const archs = P.archs.join(', ');
+  const MK = (set.prune.metric ?? 'aOp') === 'effective' ? 'effective' : 'aOp';
   const reason = (id: string) => {
     const v = P.verdicts[id], th = `${(P.threshold * 100).toFixed(2)}`;
     const why = v.dominatedBy ? { zh: `在同一恢复阶段上被 ${v.dominatedBy} 支配`, en: `dominated by ${v.dominatedBy} on the same recovery stage` }
       : v.missing.length ? { zh: `在 ${v.missing.join('、')} 上没有 Shapley 值`, en: `no Shapley value on ${v.missing.join(', ')}` }
-      : { zh: `A_op Shapley 最小 ${pt(v.aOp.min)}、有效产出 Shapley 最小 ${pt(v.delivered.min)}（阈值 ${th} 点）`, en: `minimum A_op Shapley ${pt(v.aOp.min)}, minimum delivered Shapley ${pt(v.delivered.min)} (threshold ${th} pt)` };
+      // v5.7 (sixth review F3) the Shapley value reaches the threshold but the mechanism gains nothing on top of the reference set
+      : v.noReferenceGain ? { zh: `${MS} Shapley 最小 ${pt(v[MK].min)} 达到阈值，但叠加在参考集上没有增益（${MS} ${pt(v.onReference[MK])}、交付 goodput ${pt(v.onReference.delivered)}）`, en: `minimum ${MS} Shapley ${pt(v[MK].min)} reaches the threshold, but no gain on top of the reference set (${MS} ${pt(v.onReference[MK])}, delivered goodput ${pt(v.onReference.delivered)})` }
+      : { zh: `${MS} Shapley 最小 ${pt(v[MK].min)}、交付 goodput Shapley 最小 ${pt(v.delivered.min)}（阈值 ${th} 点）`, en: `minimum ${MS} Shapley ${pt(v[MK].min)}, minimum delivered-goodput Shapley ${pt(v.delivered.min)} (threshold ${th} pt)` };
     return { zh: `hacd prune 重新判定为${VN[v.verdict].zh}：${(pr.scale / 10000).toLocaleString('en-US')} 万卡、${archs} 上${why.zh}。`, en: `re-derived by hacd prune as ${VN[v.verdict].en}: at ${pr.scale.toLocaleString('en-US')} NPUs on ${archs}, ${why.en}.` };
   };
   const changed = movable.filter((id) => P.verdicts[id].verdict !== pr.listOf(id));
@@ -385,9 +390,11 @@ export function prune(a: Args, json: boolean): void {
   const out = parseMechanismSet({ ...set, candidates: newList('candidates'), goodputOnly: newList('goodputOnly'), pruned: newList('pruned'), ...(verdicts ? { verdicts } : {}) });
   const same = ['candidates', 'goodputOnly', 'pruned'].every((L) => JSON.stringify(out[L as 'pruned']) === JSON.stringify(set[L as 'pruned']));
   if (a.flag('out')) { writeJson(a.flag('out')!, out); log(`written ${a.flag('out')}`); }
-  if (json) { console.log(JSON.stringify({ scale: pr.scale, archs: P.archs, threshold: P.threshold, changed, candidates: out.candidates, goodputOnly: out.goodputOnly, pruned: out.pruned, verdicts: P.verdicts }, null, 1)); return; }
-  console.log(`# pruning rule on ${archs} at ${pr.scale.toLocaleString('en-US')} NPUs (threshold ${(P.threshold * 100).toFixed(2)} pt; 口径: sampled Shapley of A_op / delivered goodput on the bare scenario)`);
+  if (json) { console.log(JSON.stringify({ scale: pr.scale, archs: P.archs, threshold: P.threshold, metric: P.metric, changed, candidates: out.candidates, goodputOnly: out.goodputOnly, pruned: out.pruned, unresolved: P.unresolved, verdicts: P.verdicts }, null, 1)); return; }
+  console.log(`# pruning rule on ${archs} at ${pr.scale.toLocaleString('en-US')} NPUs (threshold ${(P.threshold * 100).toFixed(2)} pt; 口径: sampled Shapley of ${MS} / delivered goodput on the bare scenario, gains on top of the reference set)`);
   for (const L of ['candidates', 'goodputOnly', 'pruned'] as const) console.log(`${L}: ${out[L].join(', ') || '—'}`);
+  // v5.7 (sixth review F6) a verdict whose deciding Shapley value lies within its sampled half-width of the threshold
+  if (P.unresolved.length) console.log(`unresolved (within the sampled 95 % half-width of the threshold; re-run hacd study with more --permutations): ${P.unresolved.map((id) => `${id} ${P.verdicts[id].margin.toFixed(2)} half-widths`).join('; ')}`);
   console.log(same ? `the set's lists already follow the rule (set ${set.id})` : `changed: ${changed.map((id) => `${id} ${pr.listOf(id)} → ${P.verdicts[id].verdict}`).join('; ')}`);
   if (!a.flag('out')) console.log('- add --out pruned.json to write the set with these lists');
 }

@@ -5,7 +5,7 @@
  */
 import { evaluate as evalRbd, importance, cutSets, listBlocks, compensationWaterfall, type Block, type BlockResult, type ImportanceRow, type CutSetResult, type CompensationResult, type WaterfallStep } from '../rbd/index.js';
 import { composeMttr, recoveryTimeS, recoverySampler as pipelineSampler, PIPELINE_PRESETS, type Pipeline, type ComposedMttr, type StageTime } from '../mttr/index.js';
-import { subhealthUnit, humanFraction as repairHumanFraction, isDual } from '../ctmc/repair.js';
+import { subhealthUnit, humanFraction as repairHumanFraction, isDual, stragglerLawClasses, type StragglerClass } from '../ctmc/repair.js';
 import { ladderExpectation, ladderSampler, LADDER_PRESETS, type Ladder, type LadderResult } from '../recovery/ladder.js';
 import type { Rng } from '../math/rng.js';
 import { youngInterval, dalyThreeTerm, dalyExact, saxenaOptimalPeriod, goodputFirstOrder, dalyGoodput, scaleTable, headlineGoodput, renewalGoodputMixed, type GoodputFirstOrder, type ScaleRow, type MixedRenewalResult } from '../checkpoint/index.js';
@@ -117,6 +117,13 @@ export interface TrainingKpis {
   /** probability that hot spares are exhausted (pool template), else 0 */
   blockedProbability: number;
   effectiveGoodput: number;
+  /**
+   * v5.7 (sixth review F4) the effective goodput on the exact renewal model — the window ledger's model — whatever the headline rule
+   * shows: renewal × (1 − P_blocked) × φ_perf × (1 − ℓ_local) × (1 − o) × (1 − p_sdc). The report pipeline accepts on it
+   * (`BudgetMetric` 'effective', the strategies' and the studies' 'effective' value); formula (1′) is its first-order loss form.
+   * Equals `effectiveGoodput` when the headline is the exact renewal.
+   */
+  effectiveGoodputExact: number;
   interruptionsPerDay: number;
   expectedInterruptions: number;
   pNoInterruption24h: number;
@@ -151,8 +158,12 @@ export interface TrainingKpis {
   sdc?: SdcKpis;
   /** correct (delivered, 正确有效) goodput over the job window; equals the effective goodput without silent corruption */
   deliveredGoodput: number;
-  /** closed-form window ledger (fractions of the job duration) */
+  /** v5.7 the delivered goodput on the exact renewal model (the delivery model run on the exact clean-time goodput) */
+  deliveredGoodputExact: number;
+  /** closed-form window ledger (fractions of the job duration), decomposed with the headline model */
   ledger: TrainingLedger;
+  /** v5.7 the same ledger decomposed with the exact renewal model: it closes on `effectiveGoodputExact` / `deliveredGoodputExact` */
+  ledgerExact: TrainingLedger;
 }
 
 export interface ChainRow {
@@ -460,20 +471,21 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
   const components = componentRows(items, hardwareRate, subhealthOf);
 
   // v2: sub-health at unit level (straggler law, isolation interruptions) and repair-path accounting
-  let pNotSlowed = 1;
   let isolationRate = 0;
   let minPerformance = 1;
   let anySubhealth = false;
+  // v5.7 (sixth review F5): the straggler law over the classes — the step runs at the slowest slowed unit, each class at its own φ
+  // (before, every slowed state was charged at the worst class's φ; identical while every class has one φ, as in the records)
+  const slowClasses: StragglerClass[] = [];
   for (const ci of items) {
     if (!ci.subhealth) continue;
     anySubhealth = true;
     const r = subhealthOf(ci)!;
-    pNotSlowed *= Math.pow(1 - r.pSubhealthGivenNotDown, ci.total);
+    slowClasses.push({ n: ci.total, p: r.pSubhealthGivenNotDown, performance: ci.subhealth.performance });
     isolationRate += r.isolationFrequency * ci.total;
     minPerformance = Math.min(minPerformance, ci.subhealth.performance);
   }
-  const pSlowed = 1 - pNotSlowed;
-  const performanceFactor = 1 - pSlowed * (1 - minPerformance);
+  const { pSlowed, performanceFactor } = stragglerLawClasses(slowClasses);
   const totalRate = hardwareRate + isolationRate;
   const lambdaWeighted = items.reduce((a, ci) => a + ci.lambda * ci.total, 0);
   const humanFraction = lambdaWeighted > 0 ? items.reduce((a, ci) => a + ci.lambda * ci.total * repairHumanFraction(ci.repair), 0) / lambdaWeighted : 1;
@@ -645,6 +657,9 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     const pool = result ? findBlock(result, 'node-pool') : poolBlock ? evalRbd(poolBlock) : undefined;
     const blocked = pool ? pool.unavailability : 0;
     const effective = head.goodput * (1 - blocked) * performanceFactor * (1 - localLossFraction) * (1 - overheadFraction);
+    // v5.7 (sixth review F4) the same product on the exact renewal model: the acceptance value of the report pipeline, which the window
+    // ledger reproduces (the first-order headline sits 0.06–0.46 pt below it at 10k–500k while its flags read 'ok')
+    const effectiveExactClean = head.model === 'exact-renewal' ? effective : renewal * (1 - blocked) * performanceFactor * (1 - localLossFraction) * (1 - overheadFraction);
     smallParameter = fo.smallParameter;
     restartRatio = fo.restartRatio;
     warnings.push(...fo.warnings);
@@ -655,13 +670,18 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     const preEpisodeLossH = ((tauS * tauS) / 2 + tauS * deltaS) / (tauS + deltaS) / 3600;
     let sdc: SdcKpis | undefined;
     let delivered = effective;
+    let deliveredExact = effectiveExactClean;
+    let dExact: SdcDeliveryResult | undefined;
     let aOp = aRun;
     if (sdcTotal > 0) {
       const undetected = sdcTotal * (1 - sdcCoverage);
       const pClear = pClearedBeforePersist(mixed.rollbackRatePerHour, periodH);
       const nu = undetected * aRun * (1 - pClear);
-      const d = sdcDelivery({ horizonH, nuPerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: globalS / 3600, cleanGoodput: effective, preEpisodeLossH, terminalRule: s.sdc.terminalRule });
+      const sdcIn = { horizonH, nuPerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseH: globalS / 3600, preEpisodeLossH, terminalRule: s.sdc.terminalRule };
+      const d = sdcDelivery({ ...sdcIn, cleanGoodput: effective });
       delivered = d.delivered;
+      dExact = head.model === 'exact-renewal' ? d : sdcDelivery({ ...sdcIn, cleanGoodput: effectiveExactClean });
+      deliveredExact = dExact.delivered;
       aOp = aRun * (1 - d.pauseFraction);
       sdc = { ratePerHour: sdcTotal, coverage: sdcCoverage, detectedRatePerHour: sdcDetectedRate, undetectedRatePerHour: undetected, pClearedBeforePersist: pClear, episodeRatePerWallHour: nu, fallbackDelayH: s.sdc.fallbackDelayHours, episodePauseS: globalS, stepRecovery: !!s.sdc.stepRecovery, terminalRule: s.sdc.terminalRule, delivery: d };
       if (s.sdc.terminalRule === 'discard-all') assumptions.push('terminal rule discard-all (reference V4 / ReMAP legacy delivery): a window that ends inside a corruption episode delivers nothing; the retain-last-clean value is reported alongside and the two are different metrics');
@@ -673,23 +693,29 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
     // v5.6 the effective goodput KPI counts the episode pauses of silent corruption as downtime, as A_op and the ledger do (before, it
     // excluded them: ≤ 0.006 pt at 500k); `effective` above stays the clean-time goodput the delivery model runs on
     const effectiveKpi = effective * (1 - pauseFrac);
-    const nonPause = 1 - pauseFrac;
-    const dec = head.model === 'first-order'
-      ? { running: 1 - fo.terms.restart, save: fo.terms.save, rollback: fo.terms.recompute, goodput: fo.goodput }
-      : { running: mixedRenewal.runningFraction, save: mixedRenewal.saveFraction, rollback: mixedRenewal.rollbackFraction + lagFrac, goodput: renewal };
-    const computeFrac = nonPause * dec.goodput;
-    const ledger: TrainingLedger = {
-      downtime: nonPause * (1 - dec.running) + pauseFrac,
-      save: nonPause * dec.save,
-      rollback: nonPause * dec.rollback,
-      slowdown: computeFrac * (1 - performanceFactor),
-      local: computeFrac * performanceFactor * localLossFraction,
-      blocked: computeFrac * performanceFactor * (1 - localLossFraction) * blocked,
-      overhead: computeFrac * performanceFactor * (1 - localLossFraction) * (1 - blocked) * overheadFraction,
-      sdcRollback: sdc ? sdc.delivery.rollbackFraction : 0,
-      terminal: sdc ? sdc.delivery.terminalDiscardFraction : 0,
-      delivered,
+    const decExact = { running: mixedRenewal.runningFraction, save: mixedRenewal.saveFraction, rollback: mixedRenewal.rollbackFraction + lagFrac, goodput: renewal };
+    const dec = head.model === 'first-order' ? { running: 1 - fo.terms.restart, save: fo.terms.save, rollback: fo.terms.recompute, goodput: fo.goodput } : decExact;
+    const ledgerOf = (dc: typeof dec, pf: number, dd: SdcDeliveryResult | undefined, deliveredValue: number): TrainingLedger => {
+      const np = 1 - pf;
+      const computeFrac = np * dc.goodput;
+      return {
+        downtime: np * (1 - dc.running) + pf,
+        save: np * dc.save,
+        rollback: np * dc.rollback,
+        slowdown: computeFrac * (1 - performanceFactor),
+        local: computeFrac * performanceFactor * localLossFraction,
+        blocked: computeFrac * performanceFactor * (1 - localLossFraction) * blocked,
+        overhead: computeFrac * performanceFactor * (1 - localLossFraction) * (1 - blocked) * overheadFraction,
+        sdcRollback: dd ? dd.rollbackFraction : 0,
+        terminal: dd ? dd.terminalDiscardFraction : 0,
+        delivered: deliveredValue,
+      };
     };
+    const ledger = ledgerOf(dec, pauseFrac, sdc?.delivery, delivered);
+    // v5.7 the exact-renewal twin of the ledger and the KPI (identical objects when the headline already is the exact renewal)
+    const pauseFracExact = dExact ? dExact.pauseFraction : 0;
+    const ledgerExact = head.model === 'exact-renewal' ? ledger : ledgerOf(decExact, pauseFracExact, dExact, deliveredExact);
+    const effectiveExactKpi = head.model === 'exact-renewal' ? effectiveKpi : effectiveExactClean * (1 - pauseFracExact);
 
     const lambdaPerGpu = lambdaJob / N;
     const scale = scaleTable(lambdaPerGpu, deltaS, (n) => recoveryModel.meanS(n), SCALE_SIZES, w.intervalModel === 'daly3' ? 'daly3' : w.intervalModel === 'dalyExact' ? 'dalyExact' : 'young');
@@ -720,7 +746,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       row.renewalGoodput = Math.max(0, mrRow.goodput - lagRow);
       row.headline = h.goodput;
       row.headlineModel = h.model;
-      const perfRow = 1 - (1 - Math.pow(pNotSlowed, f)) * (1 - minPerformance);
+      const perfRow = stragglerLawClasses(slowClasses, f).performanceFactor;
       const localRow = Math.min(1, mx.localLossSPerHour / 3600);
       const eff = row.headline * (1 - blocked) * perfRow * (1 - localRow) * (1 - overheadFraction);
       row.effective = eff;
@@ -759,6 +785,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       dalyGoodput: dg,
       blockedProbability: blocked,
       effectiveGoodput: effectiveKpi,
+      effectiveGoodputExact: effectiveExactKpi,
       interruptionsPerDay: 24 * lambdaJob,
       expectedInterruptions: w.durationDays * 24 * lambdaJob,
       pNoInterruption24h: Math.exp(-24 * lambdaJob),
@@ -784,7 +811,9 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       chain: { active: chainActive, params: chainParams, rows: chainRows, detectS, globalS },
       sdc,
       deliveredGoodput: delivered,
+      deliveredGoodputExact: deliveredExact,
       ledger,
+      ledgerExact,
     };
     formulas.mtbi = 'λ_job = Σ n_i λ_i (all components, synchronous job); MTBI = 1/λ_job';
     formulas.interval = w.intervalModel === 'young' ? 'τ = √(2δM_rb) (Young / Daly-Young; M_rb = MTBI of rollback events)' : w.intervalModel === 'daly3' ? 'τ = √(2δM)[1 + (1/3)(δ/2M)^{1/2} + (1/9)(δ/2M)] − δ (Daly three-term)' : w.intervalModel === 'dalyExact' ? '(1 − τ/M)e^{(τ+δ)/M} = 1 (Daly exact)' : 'T_c* = T_s + √(2(T_f+T_r)T_s + T_s²) (Saxena, availability objective)';

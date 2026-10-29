@@ -60,6 +60,7 @@ describe('mechanism planner', () => {
     expect(p.verification!.trials).toBe(60);
     expect(Math.abs(p.verification!.mean - p.plan!.value)).toBeLessThan(0.03);
     const planned = applyMechanisms(p.players.length ? referenceThreeClasses(50000) : referenceThreeClasses(50000), p.plan!.ids);
-    expect(evaluateScenario(planned).training!.deliveredGoodput).toBeCloseTo(p.plan!.value, 9);
+    // v5.7 the planner's values are the exact-renewal goodputs (mechanismValues)
+    expect(evaluateScenario(planned).training!.deliveredGoodputExact).toBeCloseTo(p.plan!.value, 9);
   });
 });

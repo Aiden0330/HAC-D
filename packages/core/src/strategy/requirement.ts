@@ -17,9 +17,15 @@
  *   Σ_i λ_i r_i ≤ B = 3600 · (1 − δ/τ − G* / Φ′) − F − Q_other       (seconds of hardware loss per job hour)
  *   ⇔ R_eff (s) ≤ B · MTBF_hw (h),   R_eff = MTTR_hw + P̄_rb W
  *
- * with Φ′ the throughput factors of the derated design; the ends are MTBF_hw ≥ R_eff/B at today's loss per interruption and
- * R_eff ≤ B · MTBF_hw at today's MTBF. B ≤ 0 means the checkpoint saves, the other classes and the factors take the whole loss
- * budget 1 − G*; `terms` says how much each consumed.
+ * with Φ′ = (1 − p_sdc)·Φ the throughput factors of the derated design; the ends are MTBF_hw ≥ R_eff/B at today's loss per
+ * interruption and R_eff ≤ B · MTBF_hw at today's MTBF. B ≤ 0 means the checkpoint saves, the other classes and the factors take the
+ * whole loss budget 1 − G*; `terms` says how much each consumed.
+ * v5.7 (sixth review F1): Φ′ is the product of the factors (kpiForm `factor` and `pauseFrac`), never G_eff/(1 − S): in the
+ * exact-renewal regime that ratio exceeds 1 (1.02–1.17 at 500k with 2–4× the record rates), inflated B and printed an unreachable
+ * target as reachable. (2′) is the first-order budget at the target, where the losses are small (1 − G*), whatever regime today's
+ * design is in; the acceptance itself is the engine's (the window rule's root on the exact value). (M1) The episode pauses of
+ * undetected corruption, p_sdc, are booked with the other event classes as in formula (3′): `terms.other` = F + Q_other +
+ * 3600·G*·p_sdc/((1 − p_sdc)Φ), `terms.factors` = 3600·G*(1/Φ − 1).
  * 口径: as the KPI form.
  */
 import type { Scenario } from '../scenario/schema.js';
@@ -47,7 +53,7 @@ export interface Requirement {
   mttrFactor: number | null;
   /** today's loss per hard interruption the two ends refer to: MTTR_hw on the A_op basis, R_eff = MTTR_hw + P̄_rb W on the goodput basis (seconds) */
   todayLossS: number;
-  /** what the non-hardware terms consume of `totalBudget`, seconds per job hour: checkpoint saves, the other event classes (F, plus their recompute), the throughput factors (φ on the A_op basis); B = totalBudget − Σ terms */
+  /** what the non-hardware terms consume of `totalBudget`, seconds per job hour: checkpoint saves, the other event classes (F, their recompute and, on the goodput basis, the episode pauses of undetected corruption), the throughput factors (φ on the A_op basis); B = totalBudget − Σ terms */
   terms: { save: number; other: number; factors: number };
 }
 
@@ -60,13 +66,15 @@ export function requirementFromKpi(kD: KpiForm, target: number, metric: BudgetMe
     lossS = kD.mttrS;
     terms = { save: 0, other: kD.F, factors: (3600 * kD.phi) / target };
   } else {
-    // Φ′ from the form itself: exact while the headline model is first order (the form closes on the engine), the first-order budget otherwise
-    const S = kD.saveFrac + (kD.sumLoss + kD.F + kD.otherRecomputeSPerH) / 3600;
-    const factor = S < 1 ? kD.effective / (1 - S) : NaN;
-    B = Number.isFinite(factor) && factor > 0 ? 3600 * (1 - kD.saveFrac - target / factor) - kD.F - kD.otherRecomputeSPerH : -Infinity;
+    // Φ′ = (1 − p_sdc)·Φ, the product of the throughput factors (v5.7: never G_eff/(1 − S), which exceeds 1 in the exact-renewal regime)
+    const phi = kD.factor, p = kD.pauseFrac;
+    const phiPrime = (1 - p) * phi;
+    B = phiPrime > 0 ? 3600 * (1 - kD.saveFrac - target / phiPrime) - kD.F - kD.otherRecomputeSPerH : -Infinity;
     totalBudget = 3600 * (1 - target);
     lossS = kD.lossS;
-    terms = { save: 3600 * kD.saveFrac, other: kD.F + kD.otherRecomputeSPerH, factors: Number.isFinite(B) ? totalBudget - 3600 * kD.saveFrac - kD.F - kD.otherRecomputeSPerH - B : Infinity };
+    // the episode pauses p_sdc go with the other event classes (as in formula 3′), the rest of 3600·G*(1/Φ′ − 1) with the factors
+    const pausePart = phiPrime > 0 ? (3600 * target * p) / ((1 - p) * phi) : Infinity;
+    terms = { save: 3600 * kD.saveFrac, other: kD.F + kD.otherRecomputeSPerH + pausePart, factors: phi > 0 ? 3600 * target * (1 / phi - 1) : Infinity };
   }
   const reachable = B > 0;
   return {
@@ -80,10 +88,10 @@ export function requirementFromKpi(kD: KpiForm, target: number, metric: BudgetMe
 /** the sentence of the unreachable case, for every surface that prints formula (2) / (2′); `F` and `phi` are the derated form's */
 export const UNREACHABLE_TEXT = {
   zh: (q: Requirement, F: number, phi: number) => q.metric === 'effective'
-    ? `B = ${q.B.toFixed(1)} s/h ≤ 0：仅靠硬件不可达——检查点保存 δ/τ（${q.terms.save.toFixed(1)} s/h）、其他事件类（隔离、已检出静默、误报）${q.terms.other.toFixed(1)} s/h 与吞吐系数（亚健康降速、局部损失、备机阻塞、机制开销）${q.terms.factors.toFixed(1)} s/h 已占满全部损失预算 1 − G* = ${q.totalBudget.toFixed(1)} s/h；需先改变检查点周期 / 保存时间或目标，再谈 MTBF / 每次中断损失的要求`
+    ? `B = ${q.B.toFixed(1)} s/h ≤ 0：仅靠硬件不可达——检查点保存 δ/τ（${q.terms.save.toFixed(1)} s/h）、其他事件类（隔离、已检出静默、误报、未检出静默的事件暂停）${q.terms.other.toFixed(1)} s/h 与吞吐系数（亚健康降速、局部损失、备机阻塞、机制开销）${q.terms.factors.toFixed(1)} s/h 已占满全部损失预算 1 − G* = ${q.totalBudget.toFixed(1)} s/h；需先改变检查点周期 / 保存时间或目标，再谈 MTBF / 每次中断损失的要求`
     : `B = ${q.B.toFixed(1)} s/h ≤ 0：仅靠硬件不可达——其他事件类（隔离、已检出静默、误报）F = ${F.toFixed(1)} s/h 与未检出静默损失 φ = ${(phi * 100).toFixed(3)} % 已占满全部预算 ${q.totalBudget.toFixed(1)} s/h；需先降低 F 或 φ（检测 / 恢复机制），再谈 MTBF / MTTR 要求`,
   en: (q: Requirement, F: number, phi: number) => q.metric === 'effective'
-    ? `B = ${q.B.toFixed(1)} s/h ≤ 0: out of reach by hardware alone — the checkpoint saves δ/τ (${q.terms.save.toFixed(1)} s/h), the other event classes (isolation, detected silent corruption, false alarms) ${q.terms.other.toFixed(1)} s/h and the throughput factors (sub-health slowdown, local loss, blocked spares, mechanism overhead) ${q.terms.factors.toFixed(1)} s/h take the whole loss budget 1 − G* = ${q.totalBudget.toFixed(1)} s/h; the checkpoint period / save time or the target must change before an MTBF / loss-per-interruption requirement exists`
+    ? `B = ${q.B.toFixed(1)} s/h ≤ 0: out of reach by hardware alone — the checkpoint saves δ/τ (${q.terms.save.toFixed(1)} s/h), the other event classes (isolation, detected silent corruption, false alarms, episode pauses of undetected corruption) ${q.terms.other.toFixed(1)} s/h and the throughput factors (sub-health slowdown, local loss, blocked spares, mechanism overhead) ${q.terms.factors.toFixed(1)} s/h take the whole loss budget 1 − G* = ${q.totalBudget.toFixed(1)} s/h; the checkpoint period / save time or the target must change before an MTBF / loss-per-interruption requirement exists`
     : `B = ${q.B.toFixed(1)} s/h ≤ 0: out of reach by hardware alone — the other event classes (isolation, detected silent corruption, false alarms) F = ${F.toFixed(1)} s/h and the undetected-corruption loss φ = ${(phi * 100).toFixed(3)} % take the whole budget of ${q.totalBudget.toFixed(1)} s/h; F or φ must fall first (detection / recovery mechanisms) before an MTBF / MTTR requirement exists`,
 };
 

@@ -112,7 +112,7 @@ export interface BudgetResult {
     leverValues: { nominal: LeverValues | null; derated: LeverValues | null };
     plan: { aOp: number; aOpDerated: number; value: number; valueDerated: number };
     final: DesignSummary;
-    /** pause each applied mechanism removes per layer (seconds per hour, nominal, removed from the final design) and its A_op / effective / delivered goodput value */
+    /** pause (A_op basis) or pause plus recompute (goodput basis, v5.7) each applied mechanism removes per layer (seconds per hour, nominal, removed from the final design) and its A_op / effective / delivered goodput value */
     removal: Record<string, { byLayer: Record<LayerId, number>; aOp: number; delivered: number; effective: number }>;
   };
 }
@@ -194,7 +194,7 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   const applied: AppliedMechanism[] = Object.entries(rec.nom.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order).map(([id, r]) => ({ id, order: r.order, kind: mechanismById(id).kind, effort: o.efforts?.[id] ?? mechanismById(id).effort, nominal: r.parameters, derated: rec.der.mechanisms.applied?.[id]?.parameters ?? derateParameters(r.parameters, derate) }));
   const leverValuesOf = (d: Scenario): LeverValues | null => (d.recovery.mode === 'mixture' ? { autoSeconds: d.recovery.automatic.seconds, success: d.recovery.automatic.successProbability, manualSeconds: d.recovery.manual.seconds } : null);
   const leverValues = { nominal: leverValuesOf(rec.nom), derated: leverValuesOf(rec.der) };
-  // pause each applied mechanism removes per layer (nominal, removed from the final design; R-SDC goes with D-SDC)
+  // loss each applied mechanism removes per layer (nominal, removed from the final design; R-SDC goes with D-SDC)
   log('removal per mechanism');
   const bare = stripMechanisms(s, [...REF]);
   const allIds = applied.map((a) => a.id);
@@ -207,7 +207,10 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
     const keep = allIds.filter((x) => x !== id && !(id === 'D-SDC' && x === 'R-SDC'));
     const lv = byLayer(rebuild(keep), undefined, model.layers);
     const base = fin.layers;
-    return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, (lv.levels[l.id].c + lv.levels[l.id].iso + lv.levels[l.id].sdc) - (base[l.id].c + base[l.id].iso + base[l.id].sdc)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered, effective: fin.kpi.effective - lv.k.effective }];
+    // v5.7 (sixth review M4) on the goodput basis the layer's loss is its pause plus the recompute of the rollbacks it causes (formula 3′),
+    // so a mechanism that acts through the recompute (C-ASYNC's durable lag) shows in the per-layer column, not only in the metric's gain
+    const lossOf = (c: number, iso: number, sdc: number, q: number) => c + iso + sdc + (METRIC === 'aOp' ? 0 : q);
+    return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, lossOf(lv.levels[l.id].c, lv.levels[l.id].iso, lv.levels[l.id].sdc, lv.levels[l.id].recompute) - lossOf(base[l.id].c, base[l.id].iso, base[l.id].sdc, base[l.id].recompute)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered, effective: fin.kpi.effective - lv.k.effective }];
   }));
   return {
     npus: n, counts, instances: model.instances(n, counts),

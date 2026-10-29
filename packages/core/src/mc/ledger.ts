@@ -3,7 +3,8 @@
  * (docs/MODEL_REFERENCE.md §21): hard interruptions handled by the mechanism chain, sub-health slow-downs with
  * detection, and silent data corruption with immediate detection, fallback discovery, clean-checkpoint rollback
  * and terminal discard. Every hour of the window is booked exactly once:
- * delivered + downtime + save + rollback + slowdown + local loss + terminal discard = T.
+ * delivered + downtime + save + rollback + slowdown + local loss + overhead + blocked + terminal discard = T (v5.7: `blocked`
+ * applies the closed form's spare-pool factor P_blocked to compute; the pool itself is not simulated).
  * Semantics follow the audited ai-cluster-reliability engine (catalogs/review-2026-10-09/engine.cjs) so the two
  * tools can be cross-checked on one scenario. Time unit inside: hours; faults arrive on the running clock.
  */
@@ -50,6 +51,11 @@ export interface LedgerSpec {
   chain: ChainParams;
   /** fault-free throughput overhead of the enabled mechanisms (fraction of compute) */
   overhead?: number;
+  /**
+   * v5.7 (sixth review M2) probability that the hot-spare pool is exhausted (the closed form's P_blocked): applied to compute as the
+   * same steady-state throughput factor the closed form uses, booked in `blocked` (the pool itself is not simulated)
+   */
+  blocked?: number;
   sdc: { coverage: number; detectSeconds: number; fallbackDelayHours: number; step?: { stepSeconds: number; recoverSeconds: number }; terminalRule?: SdcTerminalRule };
   /** v3.5 order of the detection-delayed rungs (default replay → hotswap → elastic → process) */
   chainOrder?: readonly string[];
@@ -73,6 +79,8 @@ export interface LedgerAccount {
   localLoss: number;
   /** fault-free overhead of mechanisms */
   overhead: number;
+  /** v5.7 compute lost to an exhausted spare pool (steady-state factor P_blocked) */
+  blocked: number;
 }
 
 export interface LedgerClassAccount {
@@ -150,10 +158,11 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   const locals: { domain: number; until: number; cls: number }[] = [];
   // v3.7 degraded running after a custom rung (fabric re-route): a throughput factor until the repair ends
   const degrades: { factor: number; until: number; cls: number }[] = [];
-  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, rollbackSdcDiscovery: 0, terminalInvalid: 0, localLoss: 0, overhead: 0 };
+  const ledger: LedgerAccount = { downtime: 0, save: 0, slowdown: 0, rollback: 0, rollbackHard: 0, rollbackSdc: 0, rollbackSdcDiscovery: 0, terminalInvalid: 0, localLoss: 0, overhead: 0, blocked: 0 };
   const counts = { hard: 0, slow: 0, sdc: 0, manual: 0, sdcEpisodes: 0, replay: 0, elastic: 0, process: 0, global: 0, isolations: 0, predicted: 0, falseAlarms: 0, netfail: 0, hotswap: 0, custom: 0 };
   const lagH = Math.max(0, spec.rollbackLagH ?? 0);
   const overheadFrac = Math.min(0.99, Math.max(0, spec.overhead ?? 0));
+  const blockedFrac = Math.min(0.99, Math.max(0, spec.blocked ?? 0));
   // false alarms of the predictor: a separate Poisson stream of planned migrations on the running clock
   const pd = spec.chain.predict;
   const falseAlarmRate = pd ? classes.reduce((a, c) => a + c.hardRatePerHour * c.applicable.predict * pd.recall * (1 - pd.precision) / Math.max(pd.precision, 0.01), 0) : 0;
@@ -313,7 +322,8 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     const localFactor = 1 - locals.length / domains;
     let degradeFactor = 1;
     for (const d of degrades) degradeFactor *= d.factor;
-    const factor = slowFactor * localFactor * degradeFactor * (1 - overheadFrac);
+    // the closed form's order: slowdown, local loss, blocked spares, mechanism overhead (each on what the previous ones left)
+    const factor = slowFactor * localFactor * degradeFactor * (1 - blockedFrac) * (1 - overheadFrac);
     if (commits) {
       cp = progress + (commits * tau - Math.min(phase, tau)) * factor;
       cpDirty = !!dirty;
@@ -324,7 +334,8 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
     const slowLoss = compute * (1 - slowFactor);
     const localLoss = compute * slowFactor * (1 - localFactor);
     const degradeLoss = compute * slowFactor * localFactor * (1 - degradeFactor);
-    ledger.overhead += compute * slowFactor * localFactor * degradeFactor * overheadFrac;
+    ledger.blocked += compute * slowFactor * localFactor * degradeFactor * blockedFrac;
+    ledger.overhead += compute * slowFactor * localFactor * degradeFactor * (1 - blockedFrac) * overheadFrac;
     ledger.slowdown += slowLoss;
     ledger.localLoss += localLoss + degradeLoss;
     for (const s of slows) acct(s.cls).slowdown += slowLoss / slows.length;
@@ -427,14 +438,14 @@ export function runLedgerOnce(spec: LedgerSpec, rng: Rng, tech: Rng): LedgerRepl
   ledger.terminalInvalid = progress - correct;
   if (dirty) acct(dirty.cls).terminalInvalid += ledger.terminalInvalid;
   else if (ledger.terminalInvalid > 0) acct(current).terminalInvalid += ledger.terminalInvalid;
-  const accounted = correct + ledger.downtime + ledger.save + ledger.slowdown + ledger.rollback + ledger.terminalInvalid + ledger.localLoss + ledger.overhead;
+  const accounted = correct + ledger.downtime + ledger.save + ledger.slowdown + ledger.rollback + ledger.terminalInvalid + ledger.localLoss + ledger.overhead + ledger.blocked;
   if (Math.abs(accounted - T) > 1e-6 * Math.max(1, T)) throw new Error(`ledger does not conserve time: ${accounted - T}`);
   return {
     horizonH: T,
     delivered: correct / T,
     correctH: correct,
     operationalAvailability: 1 - ledger.downtime / T,
-    effective: 1 - (ledger.downtime + ledger.save + ledger.slowdown + ledger.localLoss + ledger.overhead + ledger.rollback - ledger.rollbackSdcDiscovery) / T,
+    effective: 1 - (ledger.downtime + ledger.save + ledger.slowdown + ledger.localLoss + ledger.overhead + ledger.blocked + ledger.rollback - ledger.rollbackSdcDiscovery) / T,
     ledger,
     counts,
     byClass,
@@ -486,7 +497,7 @@ export function simulateLedgerReplications(spec: LedgerSpec, from: number, count
 export function summarizeLedger(rows: LedgerReplication[], seed: number | string, target?: number): LedgerSummary {
   const n = rows.length;
   const T = rows[0]?.horizonH ?? 0;
-  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'rollbackSdcDiscovery', 'terminalInvalid', 'localLoss', 'overhead'];
+  const keys: (keyof LedgerAccount)[] = ['downtime', 'save', 'slowdown', 'rollback', 'rollbackHard', 'rollbackSdc', 'rollbackSdcDiscovery', 'terminalInvalid', 'localLoss', 'overhead', 'blocked'];
   const ledger = Object.fromEntries(keys.map((k) => [k, rows.reduce((a, r) => a + r.ledger[k], 0) / (n * T || 1)])) as LedgerSummary['ledger'];
   ledger.delivered = rows.reduce((a, r) => a + r.delivered, 0) / (n || 1);
   const countKeys = Object.keys(rows[0]?.counts ?? {}) as (keyof LedgerReplication['counts'])[];

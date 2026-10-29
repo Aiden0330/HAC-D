@@ -455,6 +455,32 @@ export function stragglerLaw(n: number, pSubhealth: number, performance: number)
   return { pSlowed, performanceFactor: 1 - pSlowed * (1 - performance) };
 }
 
+/** one class of the multi-class straggler law: n units, each slowed with probability p, running at φ while slowed */
+export interface StragglerClass { n: number; p: number; performance: number }
+/**
+ * Straggler law over several classes (v5.7, sixth review F5): the synchronous step runs at the slowest slowed unit, so with the
+ * classes sorted by φ ascending and q_c = (1 − p_c)^{n_c} the probability that no unit of class c is slowed,
+ *   E[φ_job] = Π_c q_c + Σ_j φ_(j) (1 − q_(j)) Π_{i<j} q_(i)          (independent units)
+ * — with one φ for every class this is the single-class law 1 − P(slowed)(1 − φ) exactly. Before v5.7 every slowed state was
+ * charged at the worst class's φ, which overstated the slowdown when the classes differ (`atlas950Training`: 7.9 % against the
+ * ledger's 1.45 %). `scale` multiplies every n (the scale table's N/N₀).
+ */
+export function stragglerLawClasses(classes: StragglerClass[], scale = 1): { pSlowed: number; performanceFactor: number } {
+  const rows = classes
+    .filter((c) => c.n > 0 && c.p > 0)
+    .map((c) => ({ logQ: c.n * scale * Math.log1p(-Math.min(c.p, 1 - 1e-15)), phi: c.performance }))
+    .sort((a, b) => a.phi - b.phi);
+  let logNone = 0; // log Π_{i<j} q_(i)
+  let perf = 0;
+  for (const r of rows) {
+    const none = Math.exp(logNone);
+    perf += r.phi * none * -Math.expm1(r.logQ);
+    logNone += r.logQ;
+  }
+  const pNone = Math.exp(logNone);
+  return { pSlowed: 1 - pNone, performanceFactor: pNone + perf };
+}
+
 /** Plane-loss performance factor (§15): φ = 1 / (1 + f_comm/(P − 1)). */
 export function planeLossPerformance(planes: number, commShare: number): { performance: number; stepTimeFactor: number } {
   if (!(planes >= 2)) return { performance: 0, stepTimeFactor: Infinity };

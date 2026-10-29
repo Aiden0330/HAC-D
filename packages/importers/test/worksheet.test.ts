@@ -65,6 +65,17 @@ describe('record round trips', () => {
     const back = worksheetToMechanismSet(parseWorksheetMarkdown(text));
     expect(back).toEqual(DEFAULT_MECHANISM_SET);
   });
+  it('v5.7 the prune metric survives both forms (sixth review F2: a complete worksheet used to fall back to the A_op rule)', () => {
+    const complete = worksheetToMechanismSet(parseWorksheetMarkdown(mechanismSetToWorksheet(DEFAULT_MECHANISM_SET)));
+    expect(complete.prune.metric).toBe('effective');
+    const s = clone(DEFAULT_MECHANISM_SET) as MechanismSet;
+    s.id = 'internal-mech-aop'; s.source = 'internal review 2026-10';
+    s.prune = { ...s.prune, metric: 'aOp' };
+    const text = mechanismSetToWorksheet(s, DEFAULT_MECHANISM_SET);
+    expect(text).toContain('| metric | aOp');
+    expect(worksheetToMechanismSet(parseWorksheetMarkdown(text), DEFAULT_MECHANISM_SET).prune.metric).toBe('aOp');
+    expect(() => worksheetToMechanismSet(parseWorksheetMarkdown(text.replace('| metric | aOp', '| metric | delivered')), DEFAULT_MECHANISM_SET)).toThrow();
+  });
   it('mechanism set, delta form over the default set', () => {
     const s = clone(DEFAULT_MECHANISM_SET) as MechanismSet;
     s.id = 'internal-mech-1'; s.source = 'internal review 2026-10';

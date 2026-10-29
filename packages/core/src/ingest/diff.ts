@@ -87,11 +87,11 @@ export function diffRates(a: FaultRateOverride | undefined, b: FaultRateOverride
 export interface KpiRow {
   scale: number;
   aOp: number; aOpDerated: number; delivered: number;
-  /** v5.6 the effective goodput nominal / derated (the report's metric) */
+  /** v5.6 the effective goodput nominal / derated (the report's metric; v5.7 on the exact renewal model) */
   effective: number; effectiveDerated: number;
   mtbfHwH: number; mttrS: number;
   windowP: number; verdict: string;
-  /** requirement: hardware pause budget B (s per job hour, formula 2) */
+  /** requirement: the hardware budget B in seconds per job hour — pause on the A_op basis (formula 2), pause plus recompute on the effective-goodput basis (formula 2′) */
   B: number;
   k: number;
   mechanisms: string[]; levers: string[];

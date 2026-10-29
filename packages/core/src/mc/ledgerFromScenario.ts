@@ -92,6 +92,7 @@ export function ledgerSpecFromScenario(s: Scenario, tauS?: number): LedgerSpec {
     chainOrder: s.mechanisms.order,
     rollbackLagH: (w.rollbackLagS ?? 0) / 3600,
     overhead: Object.values(s.mechanisms.overheads ?? {}).reduce((a, b) => a + b, 0),
+    blocked: ev.blockedProbability,
     sdc: { coverage: sdcTotal > 0 ? sdcWeighted / sdcTotal : s.sdc.detection.coverage, detectSeconds: s.sdc.detection.detectSeconds, fallbackDelayHours: s.sdc.fallbackDelayHours, terminalRule: s.sdc.terminalRule, step: s.sdc.stepRecovery },
     classes,
   };
@@ -106,7 +107,8 @@ export function buildLedgerRun(s: Scenario, opts: LedgerRunOptions = {}): Ledger
     trials: opts.trials ?? 200,
     seed: opts.seed ?? 1,
     target: opts.target ?? s.targets.goodput,
-    closedForm: { delivered: tr.deliveredGoodput, effective: tr.effectiveGoodput, operationalAvailability: tr.operationalAvailability, ledger: tr.ledger },
+    // v5.7 the closed-form values of the simulation's own (exact renewal) model
+    closedForm: { delivered: tr.deliveredGoodputExact, effective: tr.effectiveGoodputExact, operationalAvailability: tr.operationalAvailability, ledger: tr.ledgerExact },
   };
 }
 

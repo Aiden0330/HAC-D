@@ -131,13 +131,17 @@ function sections(lang, ctx) {
   function outcome() {
     const of = (v) => MX.mechanisms.filter((m) => m.verdict === v);
     const ids = (v) => of(v).map((m) => m.id).join(T('、', ', '));
-    const dom = of('pruned').filter((m) => m.dominatedBy), rest = of('pruned').filter((m) => !m.dominatedBy);
+    // v5.7 (sixth review F3) a pruned mechanism without a gain on top of the reference set is named apart from those below the threshold
+    const dom = of('pruned').filter((m) => m.dominatedBy), noRef = of('pruned').filter((m) => !m.dominatedBy && m.noReferenceGain), rest = of('pruned').filter((m) => !m.dominatedBy && !m.noReferenceGain);
     const nc = of('candidate').length, nl = R.levers.length, moves = nc + nl;
     const domGroups = [...new Set(dom.map((m) => m.dominatedBy))].map((by) => T(`${dom.filter((m) => m.dominatedBy === by).map((m) => m.id).join('、')} 被 ${by} 支配`, `${dom.filter((m) => m.dominatedBy === by).map((m) => m.id).join(', ')} dominated by ${by}`));
-    const prunedWhy = [...domGroups, ...(rest.length ? [T(`${rest.map((m) => m.id).join('、')} 低于阈值`, `${rest.map((m) => m.id).join(', ')} below the threshold`)] : [])].join(T('；', '; '));
+    const prunedWhy = [...domGroups, ...(noRef.length ? [T(`${noRef.map((m) => m.id).join('、')} 叠加在参考集上没有增益`, `${noRef.map((m) => m.id).join(', ')} without a gain on top of the reference set`)] : []), ...(rest.length ? [T(`${rest.map((m) => m.id).join('、')} 低于阈值`, `${rest.map((m) => m.id).join(', ')} below the threshold`)] : [])].join(T('；', '; '));
+    // v5.7 (sixth review F6) verdicts within the sampled half-width of the threshold
+    const unres = (MX.unresolved ?? []).filter((id) => MX.mechanisms.some((m) => m.id === id));
+    const unresTxt = unres.length ? T(`未定（决定性的 Shapley 比较离阈值不足一个抽样半宽，需加置换数）：${unres.join('、')}。`, ` Unresolved (the deciding Shapley comparison lies within one sampled half-width of the threshold; more permutations needed): ${unres.join(', ')}.`) : '';
     const search = moves <= 10 ? T(`HAC-D 最优策略精确枚举 ${fmt(2 ** moves)} 个子集`, `which HAC-D’s optimal strategy enumerates exactly (${fmt(2 ** moves)} subsets)`) : T('超过 10 个动作，HAC-D 最优策略改用贪心路径', 'more than 10 moves, so HAC-D’s optimal strategy falls back to the greedy path');
-    return esc(T(`结果：${nc} 个 ${MSYM} 候选（${ids('candidate')}）、${of('goodput').length} 个${EFF ? '只保交付 goodput' : '只保有效产出'}（${ids('goodput')}）、${of('pruned').length} 个剪除（${prunedWhy}）、${of('capability').length} 个能力（${ids('capability')}）。${nc} 个候选 + ${nl} 个杠杆 = ${moves} 个动作，${search}。`,
-      `Outcome: ${nc} ${MSYM} candidates (${ids('candidate')}), ${of('goodput').length} ${EFF ? 'delivered-only' : 'goodput-only'} (${ids('goodput')}), ${of('pruned').length} pruned (${prunedWhy}), ${of('capability').length} capability (${ids('capability')}). ${nc} candidates + ${nl} levers = ${moves} moves, ${search}.`));
+    return esc(T(`结果：${nc} 个 ${MSYM} 候选（${ids('candidate')}）、${of('goodput').length} 个${EFF ? '只保交付 goodput' : '只保有效产出'}（${ids('goodput')}）、${of('pruned').length} 个剪除（${prunedWhy}）、${of('capability').length} 个能力（${ids('capability')}）。${nc} 个候选 + ${nl} 个杠杆 = ${moves} 个动作，${search}。${unresTxt}`,
+      `Outcome: ${nc} ${MSYM} candidates (${ids('candidate')}), ${of('goodput').length} ${EFF ? 'delivered-only' : 'goodput-only'} (${ids('goodput')}), ${of('pruned').length} pruned (${prunedWhy}), ${of('capability').length} capability (${ids('capability')}). ${nc} candidates + ${nl} levers = ${moves} moves, ${search}.${unresTxt}`));
   }
 
   /* ---------------- tables ---------------- */
@@ -202,7 +206,9 @@ export function methodologyHtml({ results, mechanisms, provenance }) {
   // decision scale of the hierarchy's Shapley columns: the largest scale of its studies
   const DEC = Math.max(...ARCHS.flatMap((a) => Object.keys(MX.studies?.[a]?.baseline ?? {}).map(Number)));
   if (!Number.isFinite(DEC)) throw new Error('the mechanism hierarchy has no study scales');
-  const maxHw = Math.max(0, ...MX.mechanisms.flatMap((m) => ARCHS.flatMap((a) => Object.values(m.shapley[a] ?? {}).filter(Boolean).map((s) => s.halfWidth ?? 0))));
+  // the largest sampled half-width of the rule's metric (v5.7: the effective goodput's on that basis; the A_op one is ~1e-9 there)
+  const HWK = (MX.metric ?? 'aOp') === 'effective' ? 'effective' : 'aOp';
+  const maxHw = Math.max(0, ...MX.mechanisms.flatMap((m) => ARCHS.flatMap((a) => Object.values(m.shapley[a] ?? {}).filter(Boolean).map((s) => s.halfWidthBy?.[HWK] ?? s.halfWidth ?? 0))));
   const archsMeta = ARCHS.map((a) => {
     const A = R.archs[a], z = A.sizes[MAIN], lay = A.layers ?? {};
     return { id: a, short: A.short, name: A.name, podNpus: lay.superpod?.npus ?? Math.round(z.npus / z.instances.superpod), superpodUnit: lay.superpod?.unit ?? 'supernodes', cabinetNpus: lay.cabinet?.npus ?? Math.round(z.npus / z.instances.cabinet), nodeNpus: lay.node?.npus ?? z.counts.gpusPerNode, cpusPerNode: Math.round(z.counts.cpus / z.counts.nodes) };

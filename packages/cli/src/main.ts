@@ -494,6 +494,8 @@ switch (cmd) {
       ['rollback (interruptions)', pct(L.ledger.rollbackHard, 3), pct(r.closedForm.ledger.rollback, 3)],
       ['slow-down', pct(L.ledger.slowdown, 3), pct(r.closedForm.ledger.slowdown, 3)],
       ['local loss', pct(L.ledger.localLoss, 3), pct(r.closedForm.ledger.local, 3)],
+      ['mechanism overhead', pct(L.ledger.overhead, 3), pct(r.closedForm.ledger.overhead, 3)],
+      ['spares exhausted', pct(L.ledger.blocked ?? 0, 3), pct(r.closedForm.ledger.blocked, 3)],
       ['rollback (silent)', pct(L.ledger.rollbackSdc, 3), pct(r.closedForm.ledger.sdcRollback, 3)],
       ['terminal discard', pct(L.ledger.terminalInvalid, 3), pct(r.closedForm.ledger.terminal, 3)],
     ]);

@@ -72,7 +72,7 @@ export interface StudyDecomposition {
 export interface StudyVerification { trials: number; seed: number; value: SummaryStat; aOp: SummaryStat; delivered: SummaryStat; pAtLeastTarget: number; wilson: [number, number]; verdict: 'supported' | 'uncertain' | 'below'; counts: Record<string, number> }
 export interface StudyLever { id: string; patch: { autoSeconds?: number; success?: number; manualSeconds?: number }; value: number; valueDerated: number; recoveryS: number; meanPauseS: number; residualFactor: number }
 export interface StudyPlan { feasible: boolean; ids: string[]; effort: number; nominal: number; derated: number; necessary: string[]; feasibleCount: number; maxValue: number; maxDerated: number; pareto: { ids: string[]; effort: number; value: number; derated: number }[]; notes: string[]; method: 'exact' | 'greedy'; best: { ids: string[]; effort: number; value: number; derated: number } }
-export interface StudyGain { id: string; byMetric: Record<AttributionMetric, { single: number; lastAdded: number; shapley: number }>; halfWidth?: number }
+export interface StudyGain { id: string; byMetric: Record<AttributionMetric, { single: number; lastAdded: number; shapley: number }>; halfWidth?: number; /** v5.7 (sixth review F6) the 95 % half-width of the sampled Shapley of every metric (0 when exact) */ halfWidthBy?: Record<AttributionMetric, number> }
 export interface StudySize {
   N: number; baseline: StudyDecomposition; unavailabilityBudget: number;
   hardwareOnly: { factor: number; lambdaStar: number; mtbiStarHours: number; arinc?: { id: string; name: string; currentFit: number; allowedFit: number; improvementFactor: number }[]; minimumEffort?: { notes: string[]; rows: { id: string; currentFit: number; allowedFit: number; improvementFactor: number }[] } };
@@ -102,7 +102,8 @@ export function withSize(s: Scenario, N: number): Scenario {
   else if (c.workload.type === 'inference') c.workload = { ...c.workload, nGpus: Math.max(1, Math.round(N)) } as typeof c.workload;
   return c;
 }
-const metricKey = (m: StudyMetric): 'operationalAvailability' | 'deliveredGoodput' | 'effectiveGoodput' => (m === 'aOp' ? 'operationalAvailability' : m === 'delivered' ? 'deliveredGoodput' : 'effectiveGoodput');
+/** v5.7 the goodputs on the exact renewal model (the window ledger's model), as `mechanismValues` reads them */
+const metricKey = (m: StudyMetric): 'operationalAvailability' | 'deliveredGoodputExact' | 'effectiveGoodputExact' => (m === 'aOp' ? 'operationalAvailability' : m === 'delivered' ? 'deliveredGoodputExact' : 'effectiveGoodputExact');
 function valueOf(s: Scenario, metric: StudyMetric): number {
   const t = evaluateScenario(s, { structure: false }).training;
   if (!t) throw new Error('the allocation study needs a training workload');
@@ -164,7 +165,7 @@ export function decompose(s: Scenario, metric: StudyMetric): StudyDecomposition 
   byGroup.falseAlarm = sumLP > 0 ? (unRun * falseAlarmS) / sumLP : 0;
   byGroup.sdcDetected = sumLP > 0 ? (unRun * sdcDetS) / sumLP : 0;
   byGroup.sdcPause = t.runningFraction * (t.sdc ? t.sdc.delivery.pauseFraction : 0);
-  return { aOp: t.operationalAvailability, aRun: t.runningFraction, lambdaJob: t.interruptionRatePerHour, hardware: t.subhealth?.hardwareInterruptionsPerHour ?? t.interruptionRatePerHour, isolation: t.subhealth?.isolationInterruptionsPerHour ?? 0, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS, detectS: t.detectS, globalS: t.globalRecoveryS, mtbiHours: t.mtbiHours, delivered: t.deliveredGoodput, effective: t.effectiveGoodput, value: t[metricKey(metric)], ledger: t.ledger, byGroup, byDomain, stages: t.recovery.stages.map((st) => ({ name: st.name, meanS: st.meanS })), overhead: t.overheadFraction, falseAlarms: t.falseAlarmRatePerHour };
+  return { aOp: t.operationalAvailability, aRun: t.runningFraction, lambdaJob: t.interruptionRatePerHour, hardware: t.subhealth?.hardwareInterruptionsPerHour ?? t.interruptionRatePerHour, isolation: t.subhealth?.isolationInterruptionsPerHour ?? 0, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS, detectS: t.detectS, globalS: t.globalRecoveryS, mtbiHours: t.mtbiHours, delivered: t.deliveredGoodputExact, effective: t.effectiveGoodputExact, value: t[metricKey(metric)], ledger: t.ledgerExact, byGroup, byDomain, stages: t.recovery.stages.map((st) => ({ name: st.name, meanS: st.meanS })), overhead: t.overheadFraction, falseAlarms: t.falseAlarmRatePerHour };
 }
 
 function verify(s: Scenario, metric: StudyMetric, target: number, trials: number, seed: number): StudyVerification {
@@ -232,7 +233,7 @@ function gainsFor(s: Scenario, metric: StudyMetric, players: string[], params: R
   const ids = players.filter((id) => !!mechanismById(id).apply);
   if (ids.length <= 12) {
     const rep = mechanismReport(s, ids, { metric, parameters: params });
-    return { gains: rep.gains.map((g) => ({ id: g.id, byMetric: g.byMetric })), attribution: { method: 'exact', coalitions: rep.coalitions } };
+    return { gains: rep.gains.map((g) => ({ id: g.id, byMetric: g.byMetric, halfWidthBy: { delivered: 0, effective: 0, aOp: 0 } })), attribution: { method: 'exact', coalitions: rep.coalitions } };
   }
   const base = stripMechanisms(s, ids);
   const metrics: AttributionMetric[] = ['delivered', 'effective', 'aOp'];
@@ -265,7 +266,7 @@ function gainsFor(s: Scenario, metric: StudyMetric, players: string[], params: R
       const st = summaryStat(contrib[id][m]);
       byMetric[m] = { single: val([id])[m] - v0[m], lastAdded: vAll[m] - val(ids.filter((x) => x !== id))[m], shapley: st.mean };
     }
-    return { id, byMetric, halfWidth: summaryStat(contrib[id][metric]).ci95 };
+    return { id, byMetric, halfWidth: summaryStat(contrib[id][metric]).ci95, halfWidthBy: Object.fromEntries(metrics.map((m) => [m, summaryStat(contrib[id][m]).ci95])) as Record<AttributionMetric, number> };
   });
   return { gains, attribution: { method: 'sampled', permutations } };
 }

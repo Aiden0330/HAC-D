@@ -81,6 +81,8 @@ export function SimulatePanel() {
           { label: t('training.ledger_rollback'), value: L.ledger.rollbackHard },
           ...(L.ledger.slowdown > 0 ? [{ label: t('training.ledger_slowdown'), value: L.ledger.slowdown }] : []),
           ...(L.ledger.localLoss > 0 ? [{ label: t('training.ledger_local'), value: L.ledger.localLoss }] : []),
+          ...(L.ledger.overhead > 0 ? [{ label: t('training.ledger_overhead'), value: L.ledger.overhead }] : []),
+          ...((L.ledger.blocked ?? 0) > 0 ? [{ label: t('training.ledger_blocked'), value: L.ledger.blocked }] : []),
           ...(L.ledger.rollbackSdc > 0 ? [{ label: t('training.ledger_sdcRollback'), value: L.ledger.rollbackSdc }] : []),
           ...(L.ledger.terminalInvalid > 0 ? [{ label: t('training.ledger_terminal'), value: L.ledger.terminalInvalid }] : []),
         ];

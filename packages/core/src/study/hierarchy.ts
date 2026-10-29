@@ -4,7 +4,9 @@
  * layer and the layers it acts on, the quantity it changes, parameters nominal and derated, effort, the A_op and delivered-goodput
  * Shapley values per architecture at the report scales, and the verdict (reference / candidate / goodput / pruned / capability).
  * The set's verdict lists are checked against the pruning rule on the Shapley data (`pruneByShapley`); a mismatch throws, so a set
- * whose parameters changed must be re-pruned (`hac-d prune`) before it feeds a report.
+ * whose parameters changed must be re-pruned (`hac-d prune`) before it feeds a report. v5.7: the rule also needs a candidate to gain on
+ * top of the reference set (the reference gains are part of the studies), and verdicts within the sampling half-width are listed in
+ * `unresolved`.
  * 口径: Shapley values in fractions of A_op / delivered goodput, sampled (permutations and half-width as stored in the study).
  */
 import { MECHANISM_LIBRARY, mechanismById, type MechanismKind, type MechanismMetadata } from '../mechanisms/index.js';
@@ -17,7 +19,17 @@ type L = { zh: string; en: string };
 /** one architecture's stored Shapley study (scripts/arch-mechanism-shapley.ts output, or allocationStudy results) */
 type ByMetric = Record<'aOp' | 'effective' | 'delivered', number>;
 export interface StoredStudy { perSize: Record<string, { baseline: number | { value: number }; allOn: number | { value: number }; allOnDerated: number | { value: number }; baselineBy?: ByMetric; allOnBy?: ByMetric; allOnDeratedBy?: ByMetric; plan: unknown; gains: StoredGain[] }> }
-export interface HierarchyGain { aOp: number; halfWidth: number | undefined; delivered: number; /** v5.6 effective-goodput Shapley (NaN in a study without it) */ effective: number }
+export interface HierarchyGain {
+  aOp: number;
+  /** 95 % half-width of the A_op Shapley; v5.7 `halfWidthBy` the three metrics' */
+  halfWidth: number | undefined;
+  halfWidthBy?: ByMetric;
+  delivered: number;
+  /** v5.6 effective-goodput Shapley (NaN in a study without it) */
+  effective: number;
+  /** v5.7 the gain on top of the reference set (null for a reference mechanism; absent in a study written before v5.7) */
+  onReference?: ByMetric | null;
+}
 export interface HierarchyRow {
   id: string; name: L; kind: MechanismKind; origin: 'original' | 'extension'; remapCategory: string; eventCandidates: unknown;
   change: L; effort: number; requires: string[]; appliable: boolean;
@@ -26,6 +38,13 @@ export interface HierarchyRow {
   /** arch → scale → values (null where the study has none) */
   shapley: Record<string, Record<string, HierarchyGain | null>>;
   aOp500: { min: number; max: number }; delivered500: { min: number; max: number }; /** v5.6 */ effective500: { min: number; max: number };
+  /** v5.7 the smallest gain on top of the reference set at the decision scale (NaN where the studies carry none) */
+  onReference500: ByMetric;
+  /** v5.7 the verdict failed the reference-gain test (sixth review F3) */
+  noReferenceGain: boolean;
+  /** v5.7 the deciding Shapley comparison clears its sampled half-width (sixth review F6); `margin` in half-widths */
+  resolved: boolean;
+  margin: number;
   verdict: MechanismVerdict; reason: L | null; dominatedBy: string | null;
 }
 export interface MechanismHierarchy {
@@ -40,6 +59,8 @@ export interface MechanismHierarchy {
   source: { players: number; permutations?: number; basis: string; set: string };
   mechanisms: HierarchyRow[];
   candidates: string[];
+  /** v5.7 verdicts whose deciding Shapley comparison lies within its sampled half-width (re-sample with more permutations) */
+  unresolved: string[];
 }
 export interface HierarchyOptions {
   /** decision scale of the pruning rule (default: the largest scale in the studies) */
@@ -88,19 +109,20 @@ export function mechanismHierarchy(set: MechanismSet, studies: Record<string, St
     const v = prune.verdicts[id];
     const nominal = r.parameters[id];
     const appliable = !!m.apply;
-    const sh = Object.fromEntries(archs.map((a) => [a, Object.fromEntries(scales.map((n) => { const g = studies[a].perSize[String(n)]?.gains.find((x) => x.id === id); if (!g) return [String(n), null]; const p = gainPair(g); return [String(n), { aOp: p.aOp, halfWidth: p.halfWidth, delivered: p.delivered, effective: p.effective }]; }))]));
+    const sh = Object.fromEntries(archs.map((a) => [a, Object.fromEntries(scales.map((n) => { const g = studies[a].perSize[String(n)]?.gains.find((x) => x.id === id); if (!g) return [String(n), null]; const p = gainPair(g); return [String(n), { aOp: p.aOp, halfWidth: p.halfWidth, ...(p.halfWidthBy ? { halfWidthBy: p.halfWidthBy } : {}), delivered: p.delivered, effective: p.effective, ...(p.onReference !== undefined ? { onReference: p.onReference } : {}) }]; }))]));
     return {
       id, name: m.name, kind: m.kind, origin: m.audit ? 'extension' : 'original', remapCategory: c?.category ?? (set.baseline.includes(id) ? '参考机制' : 'ReMAP 基线扩展'), eventCandidates: c?.eventCandidates ?? null,
       change: m.change, effort: r.efforts[id], requires: m.requires ?? [], appliable,
       deploy: meta.deploy, how: meta.how, acts: meta.acts, changes: meta.changes, stage: meta.stage,
       nominal, derated: appliable ? derateParameters(nominal, r.derate) : nominal,
       shapley: sh, aOp500: v.aOp, delivered500: v.delivered, effective500: v.effective,
+      onReference500: v.onReference, noReferenceGain: v.noReferenceGain, resolved: v.resolved, margin: v.margin,
       verdict: listOf(id), reason: set.verdicts?.[id]?.reason ?? null, dominatedBy: set.prune.dominated[id] ?? null,
     };
   });
   return {
     generated: new Date().toISOString(), threshold: set.prune.threshold, metric, rule: set.prune.rule ?? DEFAULT_RULE, archs, studies: studiesOut,
     source: { players: ids.filter((id) => !!mechanismById(id).apply).length, permutations: o.permutations, basis: o.basis ?? `bare architecture scenario, HAC-D per-unit FIT, mechanism set ${set.id}`, set: set.id },
-    mechanisms: rows, candidates: rows.filter((x) => x.verdict === 'candidate').map((x) => x.id),
+    mechanisms: rows, candidates: rows.filter((x) => x.verdict === 'candidate').map((x) => x.id), unresolved: prune.unresolved,
   };
 }

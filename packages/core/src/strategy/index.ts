@@ -136,8 +136,9 @@ function training(s: Scenario): TrainingResult {
   if (!t) throw new Error('allocation strategies need a training workload');
   return t;
 }
-const metricOf = (t: TrainingResult, metric: StrategyMetric): number => (metric === 'aOp' ? t.operationalAvailability : metric === 'effective' ? t.effectiveGoodput : t.deliveredGoodput);
-const valuesOf = (t: TrainingResult, metric: StrategyMetric): StrategyValues => ({ value: metricOf(t, metric), aOp: t.operationalAvailability, delivered: t.deliveredGoodput, effective: t.effectiveGoodput, mtbiHours: t.mtbiHours, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS });
+/** v5.7 the goodput metrics on the exact renewal model (the window ledger's model, which also verifies the plans) */
+const metricOf = (t: TrainingResult, metric: StrategyMetric): number => (metric === 'aOp' ? t.operationalAvailability : metric === 'effective' ? t.effectiveGoodputExact : t.deliveredGoodputExact);
+const valuesOf = (t: TrainingResult, metric: StrategyMetric): StrategyValues => ({ value: metricOf(t, metric), aOp: t.operationalAvailability, delivered: t.deliveredGoodputExact, effective: t.effectiveGoodputExact, mtbiHours: t.mtbiHours, meanPauseS: t.meanPauseS, recoveryS: t.recoveryS });
 
 /**
  * Move the mixture recovery to the lever limits (derated limits never worse than the current value). The levers act after the
@@ -242,8 +243,12 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
   const free = hw.filter((h) => !h.fixed && h.floor < 1);
   const hwEffort = (x: Record<string, number>) => free.reduce((a, h) => a + (x[h.id] !== undefined && x[h.id] < 1 ? h.e * Math.log2(1 / x[h.id]) : 0), 0);
 
-  /** contributions c_i (s/h) per class from an evaluation */
-  const contributions = (t: TrainingResult) => Object.fromEntries(t.chain.rows.map((r) => [r.id, r.ratePerHour * r.meanPauseS]));
+  /**
+   * contributions c_i (s/h) per class from an evaluation: the pause λ_i t̄_i on A_op; v5.7 (sixth review M3) the loss λ_i r_i =
+   * λ_i (t̄_i + P_rb,i W) on the goodput metrics (formula 1′), so that the min-effort and AGREE splits weight a class by what it costs
+   * the metric (ARINC is unaffected: its weights are the contributions themselves)
+   */
+  const contributions = (t: TrainingResult) => Object.fromEntries(t.chain.rows.map((r) => [r.id, r.ratePerHour * (r.meanPauseS + (metric === 'aOp' ? 0 : r.pRollback * t.recomputePerInterruptionS))]));
   const weightsOf = (c: Record<string, number>) => Object.fromEntries(free.map((h) => [h.id, split === 'min-effort' ? h.e : split === 'agree' ? h.count * h.importance : (c[h.id] ?? 0)]));
   const xAt = (L: number, c: Record<string, number>, w: Record<string, number>) => {
     const x: Record<string, number> = {};

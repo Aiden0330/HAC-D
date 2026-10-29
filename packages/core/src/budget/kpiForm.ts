@@ -12,8 +12,11 @@
  * r_i is the loss per hard interruption of class i (its pause plus the recompute W of the rollbacks it causes), Q_other the
  * recompute of detected silent corruption rolled back without step recovery, p_sdc the episode pauses of silent corruption, and Φ'
  * the throughput factors. The hardware side is MTBF_hw = 1/Σλ_i and the loss per interruption R_eff = Σλ_i r_i / Σλ_i = MTTR_hw +
- * P̄_rb W. The form closes on the engine (|Δ| ≤ 1e-9) while the headline model is the first-order one; with the exact renewal
- * headline the engine value stands and the form is the first-order budget (as formula (4) is for k).
+ * P̄_rb W. The form closes on the engine's first-order goodput in every regime (|Δ| ≤ 1e-9, `effectiveFirstOrder`).
+ * v5.7 (sixth review F4): the value the report accepts on, `effective`, is the exact-renewal effective goodput
+ * (`TrainingKpis.effectiveGoodputExact`, the window ledger's model), with `delivered` and `ledger` on the same model; the loss form is
+ * its first-order budget (formula (2′)) and attribution (formula (3′) splits the exact ledger's lines), as formula (4) is for k. The
+ * first-order value sits 0.06–0.46 pt below the exact one on the report set (10k–500k, derated).
  *
  * The hardware interruption classes i run through the mechanism chain (λ_i job interruptions per hour, t̄_i mean pause in seconds
  * of job time per event); the other classes k are the isolation of detected sub-healthy units (one global-recovery pause each),
@@ -29,8 +32,8 @@ import type { Scenario } from '../scenario/schema.js';
 /** v5.6 the acceptance metric of the report pipeline: A_op (running availability) or the effective goodput (performance goodput) */
 export type BudgetMetric = 'aOp' | 'effective';
 export const BUDGET_METRICS: BudgetMetric[] = ['aOp', 'effective'];
-/** the metric's value in the engine's training KPIs */
-export const metricValue = (t: TrainingKpis, m: BudgetMetric): number => (m === 'aOp' ? t.operationalAvailability : t.effectiveGoodput);
+/** the metric's value in the engine's training KPIs (v5.7: the effective goodput on the exact renewal model, the window ledger's model) */
+export const metricValue = (t: TrainingKpis, m: BudgetMetric): number => (m === 'aOp' ? t.operationalAvailability : t.effectiveGoodputExact);
 /** the metric's value in a KPI form */
 export const metricOfForm = (k: KpiForm, m: BudgetMetric): number => (m === 'aOp' ? k.aOp : k.effective);
 /** names of the metrics for messages (the reports have their own bilingual labels) */
@@ -73,12 +76,15 @@ export interface KpiForm {
   /** Σ over the other classes, seconds per hour */
   F: number;
   mtbiH: number;
+  /** v5.7 the delivered goodput on the exact renewal model (`TrainingKpis.deliveredGoodputExact`) */
   delivered: number;
   detectS: number;
   globalS: number;
   /* ---- v5.6 the loss form of the effective goodput ---- */
-  /** the effective (performance) goodput: headline checkpoint model × throughput factors, silent-corruption pauses counted as downtime */
+  /** v5.7 the effective (performance) goodput on the exact renewal model × the throughput factors, silent-corruption pauses counted as downtime (the acceptance value) */
   effective: number;
+  /** the loss form (1′): Φ′(1 − δ/τ − (Σλr + F + Q_other)/3600), the engine's first-order effective goodput (closes to 1e-9) */
+  effectiveFirstOrder: number;
   /** recompute per rollback event W, seconds (τ/2 plus the durable lag, or the measured / one-step value) */
   recomputeS: number;
   /** Σ_i λ_i P_rb,i W: recompute caused by the hardware classes, seconds per hour */
@@ -96,7 +102,7 @@ export interface KpiForm {
   /** throughput factor Φ = (1 − P_blocked) · φ_perf · (1 − ℓ_local) · (1 − o) */
   factor: number;
   headlineModel: TrainingKpis['headlineModel'];
-  /** the engine's closed-form window ledger (fractions of the window) */
+  /** v5.7 the engine's closed-form window ledger on the exact renewal model (fractions of the window): closes on `effective` / `delivered` */
   ledger: TrainingKpis['ledger'];
 }
 
@@ -122,12 +128,12 @@ export function kpiForm(sc: Scenario, t: TrainingKpis = trainingOf(sc)): KpiForm
   const pauseFrac = t.sdc?.delivery.pauseFraction ?? 0;
   const factor = (1 - t.blockedProbability) * (t.subhealth?.performanceFactor ?? 1) * (1 - t.localLossFraction) * (1 - t.overheadFraction);
   const saveFrac = t.firstOrder.terms.save;
-  if (t.headlineModel === 'first-order') {
-    const formula = (1 - pauseFrac) * factor * (1 - saveFrac - (sumLP + hardRecompute + F + otherRecompute) / 3600);
-    if (Math.abs(formula - t.effectiveGoodput) > 1e-9) throw new Error(`effective goodput does not close: ${formula} vs ${t.effectiveGoodput}`);
-  }
+  // the loss form (1′) is the first-order model: it closes on the engine's first-order goodput in every regime (unless that is clamped at 0)
+  const formula = (1 - pauseFrac) * factor * (1 - saveFrac - (sumLP + hardRecompute + F + otherRecompute) / 3600);
+  const engineFirstOrder = (1 - pauseFrac) * factor * t.firstOrder.goodput;
+  if (t.firstOrder.goodput > 0 && Math.abs(formula - engineFirstOrder) > 1e-9) throw new Error(`effective goodput does not close: ${formula} vs ${engineFirstOrder}`);
   return {
-    aOp: t.operationalAvailability, aRun: t.runningFraction, phi, lamHw, mtbfHwH: 1 / lamHw, mttrS: sumLP / lamHw, sumLP, other, F, mtbiH: t.mtbiHours, delivered: t.deliveredGoodput, detectS: t.chain.detectS, globalS: t.chain.globalS,
-    effective: t.effectiveGoodput, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: (sumLP + hardRecompute) / lamHw, otherRecomputeSPerH: otherRecompute, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledger,
+    aOp: t.operationalAvailability, aRun: t.runningFraction, phi, lamHw, mtbfHwH: 1 / lamHw, mttrS: sumLP / lamHw, sumLP, other, F, mtbiH: t.mtbiHours, delivered: t.deliveredGoodputExact, detectS: t.chain.detectS, globalS: t.chain.globalS,
+    effective: t.effectiveGoodputExact, effectiveFirstOrder: formula, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: (sumLP + hardRecompute) / lamHw, otherRecomputeSPerH: otherRecompute, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledgerExact,
   };
 }

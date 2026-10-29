@@ -21,6 +21,8 @@ const getPath = (o: unknown, path: string): unknown => path.split('.').reduce<un
 const splitActs = (s: string) => s.split(/[/,，、]/).map((x) => x.trim()).filter(Boolean);
 
 const PARAM_COLS = ['mechanism', 'parameter', 'value'], PROV_OPT = ['source', 'confidence', 'note'];
+/** the metrics of the candidate rule (MechanismSetSchema prune.metric) */
+const PRUNE_METRICS = ['aOp', 'effective'] as const;
 const VERDICT_COLS = ['mechanism', 'verdict', 'reason zh', 'reason en'];
 const META_COLS = ['mechanism', 'deploy', 'acts', 'stage', 'how zh', 'how en', 'changes zh', 'changes en'];
 
@@ -89,7 +91,13 @@ export function worksheetToMechanismSet(doc: WsDoc, base?: MechanismSet): Mechan
   const dt = optionalTable(doc, 'derate', ['field', 'value']);
   if (dt?.rows.length) { const d = ((s as Record<string, unknown>).derate ?? {}) as Record<string, number>; for (const row of dt.rows) { const k = enumCell(row, 'field', DERATE_FIELDS, 'derate row')!; d[k] = numCell(row, 'value', `derate ${k}`); } (s as Record<string, unknown>).derate = d; }
   const prt = optionalTable(doc, 'prune', ['field', 'value']);
-  for (const row of prt?.rows ?? []) { const k = reqCell(row, 'field', 'prune row'); if (k !== 'threshold') throw new WorksheetError(`prune '${k}': only 'threshold' is a prune field (the rule text goes to front matter pruneRule)`, prt!.line); setPath(s as Record<string, unknown>, 'prune.threshold', numCell(row, 'value', 'prune threshold')); }
+  // v5.7 (sixth review F2) the rule's metric is a prune field beside the threshold: a complete worksheet used to lose it (the rule fell back to A_op)
+  for (const row of prt?.rows ?? []) {
+    const k = reqCell(row, 'field', 'prune row');
+    if (k === 'threshold') setPath(s as Record<string, unknown>, 'prune.threshold', numCell(row, 'value', 'prune threshold'));
+    else if (k === 'metric') setPath(s as Record<string, unknown>, 'prune.metric', enumCell(row, 'value', PRUNE_METRICS, 'prune metric'));
+    else throw new WorksheetError(`prune '${k}': the prune fields are 'threshold' and 'metric' (the rule text goes to front matter pruneRule)`, prt!.line);
+  }
   const dom = optionalTable(doc, 'dominated', ['mechanism', 'by']);
   if (dom) setPath(s as Record<string, unknown>, 'prune.dominated', Object.fromEntries(dom.rows.map((row) => [mech(row, 'dominated row'), reqCell(row, 'by', 'dominated row')])));
   const mt = optionalTable(doc, 'metadata', META_COLS);
@@ -124,7 +132,10 @@ export function mechanismSetToWorksheet(s: MechanismSet, base?: MechanismSet, ti
   const efforts: WsCellValue[][] = Object.entries(s.efforts ?? {}).filter(([m, e]) => !base || base.efforts?.[m] !== e).map(([m, e]) => [m, e, ...pc(P(`efforts.${m}`))]);
   const levers: WsCellValue[][] = !base || !same(base.levers, s.levers) ? s.levers.map((l) => [l.id, l.limit, l.effort]) : [];
   const derate: WsCellValue[][] = DERATE_FIELDS.filter((k) => !base || base.derate[k] !== s.derate[k]).map((k) => [k, s.derate[k]]);
-  const prune: WsCellValue[][] = !base || base.prune.threshold !== s.prune.threshold ? [['threshold', s.prune.threshold]] : [];
+  const prune: WsCellValue[][] = [
+    ...(!base || base.prune.threshold !== s.prune.threshold ? [['threshold', s.prune.threshold] as WsCellValue[]] : []),
+    ...(s.prune.metric !== undefined && (!base || base.prune.metric !== s.prune.metric) ? [['metric', s.prune.metric] as WsCellValue[]] : []),
+  ];
   const dominated: WsCellValue[][] = !base || !same(base.prune.dominated, s.prune.dominated) ? Object.entries(s.prune.dominated) : [];
   const metadata: WsCellValue[][] = Object.entries(s.metadata).filter(([m, md]) => !base || !same(base.metadata[m], md)).map(([m, md]) => [m, md.deploy, md.acts.join(' / '), md.stage, md.how.zh, md.how.en, md.changes.zh, md.changes.en]);
   const leftovers: WsCellValue[][] = Object.entries(prov).filter(([k, p]) => !used.has(k) && (!base || !same(base.provenance?.[k], p))).map(([k, p]) => [k, p.source, p.confidence, p.note]);
@@ -136,7 +147,7 @@ export function mechanismSetToWorksheet(s: MechanismSet, base?: MechanismSet, ti
   add('efforts', 'implementation effort by mechanism (replaces the library value)', ['mechanism', 'effort', 'source', 'confidence', 'note'], efforts);
   add('levers', 'recovery levers of the allocation', ['id', 'limit', 'effort'], levers);
   add('derate', 'derating of the candidate parameters', ['field', 'value'], derate);
-  add('prune', 'pruning threshold (A_op / delivered Shapley fraction)', ['field', 'value'], prune);
+  add('prune', 'pruning rule: threshold (Shapley fraction) and metric (aOp or effective: the candidate test; the goodput-only test reads the delivered goodput)', ['field', 'value'], prune);
   add('dominated', 'dominated → dominating mechanism', ['mechanism', 'by'], dominated);
   add('metadata', 'deployment layer, acted-on layers, stage, how, what changes', META_COLS, metadata);
   add('provenance', 'entries by field path not placed in a row above', ['path', 'source', 'confidence', 'note'], leftovers);

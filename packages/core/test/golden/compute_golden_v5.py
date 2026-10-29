@@ -68,6 +68,17 @@ identity check, declared below:
     the first-order k* of G5 is computed only where the mean binds (recommended.binding 'mean').
   * G6e pruneByShapley on the effective goodput: the candidate test reads the effective-goodput Shapley (min over the
     architectures ≥ 0.0015), the goodput test the delivered Shapley, as the set record's prune.metric = 'effective' says.
+  v5.7 — the sixth model review (MODEL_REFERENCE.md §31):
+  * G1e: the acceptance value G_eff is the exact renewal model's, (1 − p_sdc)·Φ·renewal (declared identity on the engine's
+    effectiveGoodputExact and renewal goodput); the loss form above is `effectiveFirstOrder` and closes on the engine's first-order
+    goodput (1 − p_sdc)·Φ·g_fo in every regime (F4).
+  * G2e: the ledger is the exact one (ledgerExact): its seven loss lines add up to 1 − G_eff (identity) and the layers take their
+    shares of its downtime and rollback lines in proportion to C_ℓ and Q_ℓ; the closure is checked in every regime.
+  * G4e: Φ′ = (1 − p_sdc)·Φ, the product of the throughput factors, never G_eff/(1 − S) (F1); terms.other = F + Q_other +
+    3600·G*·p_sdc/((1 − p_sdc)Φ) (the episode pauses with the other classes, as in 3′: M1), terms.factors = 3600·G*(1/Φ − 1).
+  * G6 / G6e: a test passes only with a gain on top of the reference set where the studies carry it (`onReference`, F3); every
+    verdict states whether its deciding Shapley comparison clears the sampled half-width at the deciding architecture (F6); a
+    synthetic table exercises both.
 Run: /usr/bin/python3 compute_golden_v5.py  → golden_v5.json   (Python 3.9, standard library only)
 """
 import json
@@ -312,14 +323,21 @@ def kpi_form(t, splits):
         factor = (1 - fac['blocked']) * fac['performance'] * (1 - local) * (1 - fac['overhead'])
         sum_loss = sumLP + q_hw
         g_eff = (1 - fac['pauseFraction']) * factor * (1 - save - (sum_loss + F + q_other) / 3600)
-        if t.get('headlineModel') == 'first-order' and abs(g_eff - t['effective']) > 1e-9:
-            findings.append('effective goodput closure: formula %r vs engine %r' % (g_eff, t['effective']))
-        form.update({'W': W, 'qHw': q_hw, 'sumLoss': sum_loss, 'lossS': sum_loss / lam, 'qOther': q_other, 'save': save, 'factor': factor, 'pauseFrac': fac['pauseFraction'], 'effective': g_eff, 'effectiveEngine': t['effective'], 'headlineModel': t.get('headlineModel'), 'ledger': t.get('ledger')})
+        # v5.7 the loss form is the first-order model: it closes on the engine's first-order goodput in every regime
+        g_fo_engine = (1 - fac['pauseFraction']) * factor * t['firstOrderGoodput']
+        if t['firstOrderGoodput'] > 0 and abs(g_eff - g_fo_engine) > 1e-9:
+            findings.append('effective goodput closure: formula %r vs engine first order %r' % (g_eff, g_fo_engine))
+        # v5.7 the acceptance value is the exact renewal model's: (1 − p_sdc)·Φ·renewal (declared identity on the engine outputs)
+        g_exact = (1 - fac['pauseFraction']) * factor * t['renewalGoodput']
+        if abs(g_exact - t['effective']) > 1e-9:
+            findings.append('exact effective goodput: (1 − p)Φ·renewal %r vs engine %r' % (g_exact, t['effective']))
+        form.update({'W': W, 'qHw': q_hw, 'sumLoss': sum_loss, 'lossS': sum_loss / lam, 'qOther': q_other, 'save': save, 'factor': factor, 'pauseFrac': fac['pauseFraction'], 'effective': g_exact, 'effectiveFirstOrder': g_eff, 'effectiveEngine': t['effective'], 'headlineModel': t.get('headlineModel'), 'ledger': t.get('ledger')})
     return exp, form
 
 
 def kpi_form_eff(form):
-    """the exported fields of the loss form (formula 1′); `effective` is the Python formula value (an identity on the engine while first order)"""
+    """the exported fields of the loss form (formula 1′); v5.7 `effective` is the exact-renewal acceptance value (1 − p)Φ·renewal and
+    `effectiveFirstOrder` the Python loss form (an identity on the engine's first-order goodput in every regime)"""
     exp = OrderedDict()
     exp['recomputeS'] = form['W']
     exp['hardRecomputeSPerH'] = form['qHw']
@@ -330,21 +348,24 @@ def kpi_form_eff(form):
     exp['factor'] = form['factor']
     exp['pauseFrac'] = form['pauseFrac']
     exp['effective'] = form['effective']
+    exp['effectiveFirstOrder'] = form['effectiveFirstOrder']
     return exp
 
 
 def requirement_eff(form, target):
-    """formula (2′) on the derated design's loss form"""
-    S = form['save'] + (form['sumLoss'] + form['F'] + form['qOther']) / 3600
-    factor = form['effective'] / (1 - S)
-    B = 3600 * (1 - form['save'] - target / factor) - form['F'] - form['qOther']
+    """formula (2′) on the derated design's loss form; v5.7 Φ′ = (1 − p_sdc)·Φ, the product of the throughput factors (sixth review F1),
+    and the episode pauses p_sdc counted with the other classes (M1)"""
+    p = form['pauseFrac']
+    phi = form['factor']
+    phi_prime = (1 - p) * phi
+    B = 3600 * (1 - form['save'] - target / phi_prime) - form['F'] - form['qOther']
     total = 3600 * (1 - target)
     mtbf = 1 / form['lam']
     loss = form['lossS']
     reachable = B > 0
     out = OrderedDict([
         ('B', B), ('totalBudget', total), ('todayLossS', loss),
-        ('terms.save', 3600 * form['save']), ('terms.other', form['F'] + form['qOther']), ('terms.factors', total - 3600 * form['save'] - form['F'] - form['qOther'] - B),
+        ('terms.save', 3600 * form['save']), ('terms.other', form['F'] + form['qOther'] + 3600 * target * p / ((1 - p) * phi)), ('terms.factors', 3600 * target * (1 / phi - 1)),
         ('ratioToday', loss / mtbf),
     ])
     if reachable:
@@ -357,7 +378,8 @@ def requirement_eff(form, target):
 
 
 def loss_breakdown(t, splits, form):
-    """formula (3′): the layers' shares of the engine ledger's downtime and rollback lines, the other lines, the closure"""
+    """formula (3′): the layers' shares of the engine ledger's downtime and rollback lines, the other lines, the closure;
+    v5.7 the ledger is the exact-renewal one (the acceptance value's), split in proportion to C_ℓ and Q_ℓ"""
     W = form['W']
     c = OrderedDict((l, 0.0) for l in LAYERS)
     q = OrderedDict((l, 0.0) for l in LAYERS)
@@ -369,11 +391,10 @@ def loss_breakdown(t, splits, form):
     pauses = sum(c.values()) + form['F']
     recompute = sum(q.values()) + form['qOther']
     down = max(0.0, L['downtime'] - form['pauseFrac'])
-    if t.get('headlineModel') == 'first-order':
-        if abs(down - (1 - form['pauseFrac']) * pauses / 3600) > 1e-9:
-            findings.append('ledger downtime line vs (1 − p_sdc)(ΣC + F)/3600: %r vs %r' % (down, (1 - form['pauseFrac']) * pauses / 3600))
-        if abs(L['rollback'] - (1 - form['pauseFrac']) * recompute / 3600) > 1e-9:
-            findings.append('ledger rollback line vs (1 − p_sdc)(ΣQ + Q_other)/3600: %r vs %r' % (L['rollback'], (1 - form['pauseFrac']) * recompute / 3600))
+    # v5.7 the exact ledger's seven loss lines add up to 1 − G_eff (exact): an identity on the engine outputs
+    lines_sum = L['downtime'] + L['save'] + L['rollback'] + L['slowdown'] + L['local'] + L['blocked'] + L['overhead']
+    if abs(lines_sum - (1 - form['effective'])) > 1e-9:
+        findings.append('exact ledger lines %r vs 1 − G_eff %r' % (lines_sum, 1 - form['effective']))
     share = lambda cc, qq: 100 * ((down * cc / pauses if pauses > 0 else 0.0) + (L['rollback'] * qq / recompute if recompute > 0 else 0.0))
     exp = OrderedDict()
     hard = 0.0
@@ -388,7 +409,7 @@ def loss_breakdown(t, splits, form):
     exp['lines.otherClasses'] = share(form['F'], form['qOther']) + 100 * form['pauseFrac']
     exp['lines.factors'] = 100 * (L['slowdown'] + L['local'] + L['blocked'] + L['overhead'])
     closure = hard + exp['lines.save'] + exp['lines.otherClasses'] + exp['lines.factors'] - exp['total']
-    if t.get('headlineModel') == 'first-order' and abs(closure) > 1e-9:
+    if abs(closure) > 1e-9:
         findings.append('loss split closure: Σ U_ℓ + lines − (1 − G_eff) = %r' % closure)
     exp['closure'] = closure
     return exp
@@ -510,7 +531,10 @@ def requirement(form, target):
 
 # ---------------------------------------------------------------- G6 pruning rule
 def prune(values, ids, threshold, dominated, reference, metric='aOp'):
-    """values: {arch: {id: {'aOp': x, 'delivered': y, 'effective': z}}}; the Methodology §4 rule on the metric (v5.6: 'effective')."""
+    """values: {arch: {id: {'aOp': x, 'delivered': y, 'effective': z, 'onReference': {...}, 'halfWidthBy': {...}}}}; the Methodology §4
+    rule on the metric (v5.6: 'effective'). v5.7 (sixth review F3, F6): a test passes only with a gain on top of the reference set
+    (when the studies carry it), and each verdict states whether its deciding Shapley comparison clears the sampled half-width at
+    the deciding architecture (the minimum); margin in half-widths, None for infinity."""
     archs = list(values.keys())
     verdicts = OrderedDict()
     lists = {'reference': [], 'candidate': [], 'goodput': [], 'pruned': [], 'capability': []}
@@ -527,18 +551,49 @@ def prune(values, ids, threshold, dominated, reference, metric='aOp'):
         v['effective'] = {'min': min(eff), 'max': max(eff)} if eff else None
         v['dominatedBy'] = dominated.get(mid)
         v['missing'] = missing
+        main_key = 'effective' if metric == 'effective' else 'aOp'
+
+        def ref_min(k):
+            xs = [values[a][mid]['onReference'][k] for a in present if values[a][mid].get('onReference')]
+            return min(xs) if xs else None
+        on_ref = OrderedDict((k, ref_min(k)) for k in ('aOp', 'effective', 'delivered'))
+
+        def test(k, vals):
+            ref_ok = not (on_ref[k] is not None and on_ref[k] <= 0)
+            margin = None
+            if ref_ok:
+                at, low = -1, float('inf')
+                for i, a in enumerate(present):
+                    x = values[a][mid].get(k, float('nan'))
+                    if x < low:
+                        at, low = i, x
+                hw = values[present[at]][mid].get('halfWidthBy', {}).get(k) if at >= 0 else None
+                if hw is not None and hw > 0:
+                    margin = abs(low - threshold) / hw
+            reached = bool(vals) and min(vals) >= threshold
+            return {'pass': reached and ref_ok, 'refFail': reached and not ref_ok, 'margin': margin, 'resolved': not (margin is not None and margin < 1)}
+
+        no_ref, resolved, margin = False, True, None
         if mid in reference:
             verdict = 'reference'
         elif not present:
             verdict = 'capability'
         elif mid in dominated:
             verdict = 'pruned'
-        elif main and min(main) >= threshold:
-            verdict = 'candidate'
-        elif min(dlv) >= threshold:
-            verdict = 'goodput'
         else:
-            verdict = 'pruned'
+            tm, td = test(main_key, main), test('delivered', dlv)
+            if tm['pass']:
+                verdict, resolved, margin = 'candidate', tm['resolved'], tm['margin']
+            else:
+                verdict = 'goodput' if td['pass'] else 'pruned'
+                resolved = tm['resolved'] and td['resolved']
+                ms = [m for m in (tm['margin'], td['margin']) if m is not None]
+                margin = min(ms) if ms else None
+                no_ref = tm['refFail'] or (not td['pass'] and td['refFail'])
+        v['onReference'] = on_ref
+        v['noReferenceGain'] = no_ref
+        v['resolved'] = resolved
+        v['margin'] = margin
         v['verdict'] = verdict
         verdicts[mid] = v
         lists[verdict].append(mid)
@@ -549,7 +604,7 @@ def values_from_studies(studies, scale):
     out = OrderedDict()
     for arch, st in studies.items():
         gains = st['perSize'][str(scale)]['gains']
-        out[arch] = OrderedDict((g['id'], dict([('aOp', g['aOp']['shapley']), ('delivered', g['delivered']['shapley'])] + ([('effective', g['effective']['shapley'])] if 'effective' in g else []))) for g in gains)
+        out[arch] = OrderedDict((g['id'], dict([('aOp', g['aOp']['shapley']), ('delivered', g['delivered']['shapley'])] + ([('effective', g['effective']['shapley'])] if 'effective' in g else []) + ([('onReference', g['onReference'])] if g.get('onReference') else []) + ([('halfWidthBy', g['halfWidthBy'])] if g.get('halfWidthBy') else []))) for g in gains)
     return out
 
 
@@ -781,6 +836,37 @@ cases.append({
     'id': 'pruneEff.synthetic', 'group': 'pruneEff',
     'inputs': {'studies': syn_eff_studies, 'scale': 500000, 'ids': syn_ids, 'threshold': THRESHOLD, 'dominated': SYN_DOMINATED, 'reference': SYN_REFERENCE, 'metric': 'effective', 'values': syn_eff_values},
     'expected': prune(syn_eff_values, syn_ids, THRESHOLD, SYN_DOMINATED, SYN_REFERENCE, 'effective'), 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
+})
+
+# v5.7 G6e synthetic (sixth review F3, F6): reference gains and half-widths. C-ASYNC reaches the threshold but loses on top of the
+# reference set (pruned, noReferenceGain); H-SDC-SCREEN the same on the effective goodput but gains delivered on the reference set
+# (goodput); R-FABRIC-DEGRADE a candidate within its half-width (unresolved); R-LINK-LOCAL a resolved candidate; D-SLOW pruned below
+# the threshold within its half-width (unresolved); D-HARD carries no reference gain (a study written before v5.7: the test is skipped).
+SYN_REF = OrderedDict([
+    # id: (effective Shapley per arch, delivered Shapley per arch, onReference per arch or None, effective half-width per arch)
+    ('D-SDC', ([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], None, [0.0, 0.0, 0.0])),
+    ('C-ASYNC', ([0.0017, 0.002, 0.0019], [0.0009, 0.001, 0.0011], {'aOp': 0.0, 'effective': -0.0013, 'delivered': -0.0011}, [0.00045, 0.00046, 0.00044])),
+    ('H-SDC-SCREEN', ([0.002, 0.003, 0.004], [0.004, 0.005, 0.006], {'aOp': 0.0, 'effective': -0.0001, 'delivered': 0.002}, [0.0001, 0.0001, 0.0001])),
+    ('R-FABRIC-DEGRADE', ([0.0016, 0.0017, 0.0018], [0.001, 0.001, 0.001], {'aOp': 0.0002, 'effective': 0.0004, 'delivered': 0.0003}, [0.0003, 0.0003, 0.0003])),
+    ('R-LINK-LOCAL', ([0.01, 0.009, 0.011], [0.008, 0.008, 0.008], {'aOp': 0.003, 'effective': 0.004, 'delivered': 0.003}, [0.0006, 0.0006, 0.0006])),
+    ('D-SLOW', ([0.0014, 0.0016, 0.0017], [0.0002, 0.0002, 0.0002], {'aOp': 0.0001, 'effective': 0.0001, 'delivered': 0.0001}, [0.0002, 0.0002, 0.0002])),
+    ('D-HARD', ([0.003, 0.003, 0.003], [0.002, 0.002, 0.002], None, [0.0001, 0.0001, 0.0001])),
+])
+syn_ref_studies = OrderedDict()
+for j, arch in enumerate(SYN_ARCHS):
+    gains = []
+    for mid, (eff, dlv, ref, hw) in SYN_REF.items():
+        g = {'id': mid, 'aOp': {'shapley': 0.0}, 'delivered': {'shapley': dlv[j]}, 'effective': {'shapley': eff[j]}, 'halfWidthBy': {'aOp': 0.0, 'effective': hw[j], 'delivered': 0.0001}}
+        if ref is not None:
+            g['onReference'] = ref
+        gains.append(g)
+    syn_ref_studies[arch] = {'perSize': {'500000': {'gains': gains}}}
+syn_ref_ids = list(SYN_REF.keys())
+syn_ref_values = values_from_studies(syn_ref_studies, 500000)
+cases.append({
+    'id': 'pruneEff.reference-synthetic', 'group': 'pruneEff',
+    'inputs': {'studies': syn_ref_studies, 'scale': 500000, 'ids': syn_ref_ids, 'threshold': THRESHOLD, 'dominated': {}, 'reference': ['D-SDC'], 'metric': 'effective', 'values': syn_ref_values},
+    'expected': prune(syn_ref_values, syn_ref_ids, THRESHOLD, {}, ['D-SDC'], 'effective'), 'tolerance': {'rel': 1e-12, 'abs': 1e-15},
 })
 
 out = {

@@ -221,7 +221,8 @@ export function planToTarget(s: Scenario, opts: PlanOptions = {}): MechanismPlan
         const c = cloneScenario(planned);
         c.sdc = { ...c.sdc, detection: { ...c.sdc.detection, coverage: q } };
         if (isMixture && c.recovery.mode === 'mixture') c.recovery = { ...c.recovery, automatic: { ...c.recovery.automatic, seconds: sec } };
-        cells.push({ coverage: q, recoverySeconds: sec, value: evaluateScenario(c, { structure: false }).training![metric === 'delivered' ? 'deliveredGoodput' : metric === 'effective' ? 'effectiveGoodput' : 'operationalAvailability'] });
+        // v5.7 the goodputs on the exact renewal model, as `mechanismValues` (the plan's own values) reads them
+        cells.push({ coverage: q, recoverySeconds: sec, value: evaluateScenario(c, { structure: false }).training![metric === 'delivered' ? 'deliveredGoodputExact' : metric === 'effective' ? 'effectiveGoodputExact' : 'operationalAvailability'] });
         opts.onProgress?.(cells.length, scanTotal, 'scan');
       }
     out.scan = { coverages: grid.coverages, recoverySeconds: isMixture ? grid.recoverySeconds : [], cells, basis: `${planIds.join(' + ') || 'baseline'}; immediate silent-corruption detection coverage × automatic recovery attempt (s)${isMixture ? '' : ' (recovery axis needs the MTTR mixture)'}` };

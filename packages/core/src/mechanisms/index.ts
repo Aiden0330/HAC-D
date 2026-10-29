@@ -501,6 +501,7 @@ export function mechanismById(id: string): MechanismDef {
 export type AttributionMetric = 'delivered' | 'effective' | 'aOp';
 
 export interface MechanismValues {
+  /** v5.7 the delivered and the effective goodput on the exact renewal model (the window ledger's model, the report's acceptance value) */
   delivered: number;
   effective: number;
   aOp: number;
@@ -576,7 +577,7 @@ export function mechanismValues(s: Scenario): MechanismValues {
   const r = evaluateScenario(s, { structure: false }).training;
   if (!r) throw new Error('mechanism attribution needs a training workload');
   const w = s.workload as Extract<Scenario['workload'], { type: 'training' }>;
-  return { delivered: r.deliveredGoodput, effective: r.effectiveGoodput, aOp: r.operationalAvailability, mtbiHours: r.mtbiHours, recoveryS: r.recoveryS, tauS: r.tauS, deltaS: w.deltaS, horizonH: w.durationDays * 24 };
+  return { delivered: r.deliveredGoodputExact, effective: r.effectiveGoodputExact, aOp: r.operationalAvailability, mtbiHours: r.mtbiHours, recoveryS: r.recoveryS, tauS: r.tauS, deltaS: w.deltaS, horizonH: w.durationDays * 24 };
 }
 
 const factorial = (n: number): number => (n < 2 ? 1 : n * factorial(n - 1));

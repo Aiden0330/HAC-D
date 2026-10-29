@@ -92,6 +92,21 @@ function flatSplit(prefix: string, sp: Split, out: Record<string, number>) {
 
 const byGroup = (g: string) => golden.cases.filter((c) => c.group === g);
 
+/** v5.7 (sixth review F3, F6) the verdict fields of the reference-gain test and the resolution check, against the Python values (null ↔ NaN / Infinity) */
+function checkV57(caseId: string, id: string, v: Record<string, unknown> | undefined, w: Record<string, unknown>, tol: { rel: number; abs: number }) {
+  if (!v || !('resolved' in w)) return;
+  expect.soft(v.noReferenceGain, `${caseId}: ${id} noReferenceGain`).toBe(w.noReferenceGain);
+  expect.soft(v.resolved, `${caseId}: ${id} resolved`).toBe(w.resolved);
+  const m = v.margin as number, wm = w.margin as number | null;
+  if (wm === null) expect.soft(m, `${caseId}: ${id} margin`).toBe(Infinity);
+  else expect.soft(Math.abs(m - wm), `${caseId}: ${id} margin`).toBeLessThanOrEqual(tol.abs + tol.rel * Math.abs(wm) + 1e-12);
+  const ref = v.onReference as Record<string, number>, wr = w.onReference as Record<string, number | null>;
+  for (const k of ['aOp', 'effective', 'delivered']) {
+    if (wr[k] === null) expect.soft(Number.isNaN(ref[k]), `${caseId}: ${id} onReference.${k} absent`).toBe(true);
+    else expect.soft(Math.abs(ref[k] - (wr[k] as number)), `${caseId}: ${id} onReference.${k}`).toBeLessThanOrEqual(tol.abs + tol.rel * Math.abs(wr[k] as number));
+  }
+}
+
 describe('v5 golden vectors (independent Python)', () => {
   it('G1 kpiForm — the MTBF / MTTR form of A_op, formula (1); A_run closure on the engine running fraction', () => {
     for (const c of byGroup('kpiForm')) {
@@ -216,9 +231,11 @@ describe('v5 golden vectors (independent Python)', () => {
       const s = scenarioOf(c.inputs.design!);
       const t = trainingOf(s);
       const k = kpiForm(s, t);
-      compareNumbers(c.id, { recomputeS: k.recomputeS, hardRecomputeSPerH: k.hardRecomputeSPerH, sumLoss: k.sumLoss, lossS: k.lossS, otherRecomputeSPerH: k.otherRecomputeSPerH, saveFrac: k.saveFrac, factor: k.factor, pauseFrac: k.pauseFrac, effective: k.effective }, c.expected, c.tolerance);
-      // the identity the Python declared: the engine's effective goodput equals the loss form while the headline model is first order
-      if (t.headlineModel === 'first-order') expect.soft(Math.abs(t.effectiveGoodput - (c.expected.effective as number)), `${c.id}: engine effectiveGoodput vs the Python loss form`).toBeLessThanOrEqual(1e-9);
+      compareNumbers(c.id, { recomputeS: k.recomputeS, hardRecomputeSPerH: k.hardRecomputeSPerH, sumLoss: k.sumLoss, lossS: k.lossS, otherRecomputeSPerH: k.otherRecomputeSPerH, saveFrac: k.saveFrac, factor: k.factor, pauseFrac: k.pauseFrac, effective: k.effective, effectiveFirstOrder: k.effectiveFirstOrder }, c.expected, c.tolerance);
+      // v5.7 the identities the Python declared: the acceptance value is the engine's exact-renewal effective goodput, and the loss form
+      // is the engine's first-order effective goodput in every regime
+      expect.soft(Math.abs(t.effectiveGoodputExact - (c.expected.effective as number)), `${c.id}: engine effectiveGoodputExact vs (1 − p)Φ·renewal`).toBeLessThanOrEqual(1e-9);
+      if (t.firstOrder.goodput > 0) expect.soft(Math.abs((1 - k.pauseFrac) * k.factor * t.firstOrder.goodput - (c.expected.effectiveFirstOrder as number)), `${c.id}: engine first-order effective goodput vs the Python loss form`).toBeLessThanOrEqual(1e-9);
       expect.soft(Math.abs(k.lossS - (k.mttrS + k.hardRecomputeSPerH / k.lamHw)), `${c.id}: R_eff = MTTR_hw + P̄_rb W`).toBeLessThanOrEqual(1e-12 * k.lossS);
     }
   });
@@ -234,7 +251,8 @@ describe('v5 golden vectors (independent Python)', () => {
       compareNumbers(c.id, got, c.expected, c.tolerance);
       const U = unavailabilityByLayer(x, DEFAULT_LAYERS, 'effective') as unknown as Record<string, number>;
       for (const l of Object.keys(b.byLayer)) expect.soft(Math.abs(U[l] - b.byLayer[l as keyof typeof b.byLayer]), `${c.id}: unavailabilityByLayer(effective) = lossBreakdown.byLayer (${l})`).toBeLessThanOrEqual(1e-12);
-      if (trainingOf(s).headlineModel === 'first-order') expect.soft(Math.abs(got.closure), `${c.id}: Σ U_ℓ + lines − (1 − G_eff)`).toBeLessThanOrEqual(1e-9);
+      // v5.7 the exact ledger closes on the exact G_eff in every regime
+      expect.soft(Math.abs(got.closure), `${c.id}: Σ U_ℓ + lines − (1 − G_eff)`).toBeLessThanOrEqual(1e-9);
     }
   });
 
@@ -284,6 +302,7 @@ describe('v5 golden vectors (independent Python)', () => {
         const v = r.verdicts[id];
         expect.soft(v?.verdict, `${c.id}: ${id} verdict`).toBe(w.verdict);
         if (!v) continue;
+        checkV57(c.id, id, v as unknown as Record<string, unknown>, w as unknown as Record<string, unknown>, c.tolerance);
         for (const m of ['aOp', 'delivered', 'effective'] as const) {
           if (!w[m]) continue;
           for (const side of ['min', 'max'] as const) expect.soft(Math.abs((v[m]?.[side] ?? NaN) - w[m]![side]), `${c.id}: ${id} ${m}.${side}`).toBeLessThanOrEqual(c.tolerance.abs + c.tolerance.rel * Math.abs(w[m]![side]));
@@ -310,6 +329,7 @@ describe('v5 golden vectors (independent Python)', () => {
         expect.soft(v, `${c.id}: ${id} has a verdict`).toBeDefined();
         if (!v) continue;
         expect.soft(v.verdict, `${c.id}: ${id} verdict`).toBe(w.verdict);
+        checkV57(c.id, id, v as unknown as Record<string, unknown>, w as unknown as Record<string, unknown>, c.tolerance);
         expect.soft(v.dominatedBy ?? null, `${c.id}: ${id} dominatedBy`).toBe(w.dominatedBy);
         expect.soft([...(v.missing ?? [])].sort(), `${c.id}: ${id} missing`).toEqual([...w.missing].sort());
         for (const m of ['aOp', 'delivered'] as const) {

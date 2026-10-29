@@ -12,6 +12,9 @@
  * the rollback probability P_rb,i and the local loss, the checkpoint interval τ and save time δ, the recompute source and lag,
  * the throughput factors (blocked spares, sub-health performance, overhead, the silent-corruption episode pauses) and the
  * engine's ledger lines; `effective` is the engine output the loss-form identity is declared on.
+ * v5.7 (sixth review F4): `effective`, `delivered` and `ledger` are the exact-renewal values (effectiveGoodputExact,
+ * deliveredGoodputExact, ledgerExact: the report's acceptance values), `renewalGoodput` the exact renewal goodput they are the
+ * product of (declared identity), and `firstOrderGoodput` the engine's first-order goodput the loss form (1′) closes on.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -73,9 +76,12 @@ function table(s, design) {
     },
     aOp: r.operationalAvailability,
     aRun: r.runningFraction,
-    delivered: r.deliveredGoodput,
-    // v5.6 the loss form of the effective goodput (formula 1′): its inputs and the engine value the identity is declared on
-    effective: r.effectiveGoodput,
+    delivered: r.deliveredGoodputExact,
+    // v5.6 the loss form of the effective goodput (formula 1′): its inputs and the engine value the identity is declared on;
+    // v5.7 the acceptance value on the exact renewal model, the exact renewal goodput and the first-order goodput of the loss form
+    effective: r.effectiveGoodputExact,
+    renewalGoodput: r.renewalGoodput,
+    firstOrderGoodput: r.firstOrder.goodput,
     headlineModel: r.headlineModel,
     tauS: r.tauS,
     deltaS: s.workload.deltaS,
@@ -85,7 +91,7 @@ function table(s, design) {
     stepTimeS: s.workload.stepTimeS ?? null,
     measuredRecomputeS: s.workload.measuredRecomputeS ?? null,
     factors: { blocked: r.blockedProbability, performance: r.subhealth ? r.subhealth.performanceFactor : 1, localLossFraction: r.localLossFraction, overhead: r.overheadFraction, pauseFraction: r.sdc ? r.sdc.delivery.pauseFraction : 0 },
-    ledger: r.ledger,
+    ledger: r.ledgerExact,
     // v5.5: the per-class silent-corruption detection inputs of §24.3 (an absolute class coverage, the conditional detectors' gains), for the detected-rate split of formula (3)
     slowSdcByClass: s.components.map((c) => ({ id: c.id, unit: lib.get(c.id)?.unit ?? null, count: count.get(c.id) ?? null, slowPerUnitPerHour: c.subhealth ? c.subhealth.ratePerHour : 0, sdcPerUnitPerHour: c.sdc ? c.sdc.ratePerHour : 0, sdcCoverage: c.sdc?.coverage ?? null, sdcExtraDetection: c.sdc?.extraDetection ?? null })),
   };
