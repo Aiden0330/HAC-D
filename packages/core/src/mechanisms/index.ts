@@ -11,6 +11,7 @@ import { cloneScenario } from '../scenario/analysis.js';
 import { recordApplied, restorePrevious, orNull, type Previous } from './applied.js';
 import { AUDIT_MECHANISM_DEFS } from './auditLibrary.js';
 import type { AuditBaseline, AuditCatalogMechanism, SinglePoint } from './auditTypes.js';
+import { assertParameters } from './parameters.js';
 
 export type MechanismKind = 'detect' | 'recover' | 'checkpoint' | 'physical';
 export type MechanismStatus = 'baseline' | 'candidate' | 'conditional' | 'informational';
@@ -88,7 +89,7 @@ function raiseClassCoverage(c: Scenario, q: number): Record<string, Scenario['co
   return prev;
 }
 
-export const MECHANISM_LIBRARY: MechanismDef[] = [
+export const MECHANISM_LIBRARY: MechanismDef[] = guardParameters([
   {
     id: 'D-HARD', name: { zh: '中断检测 / 超时兜底', en: 'Interruption detection / timeout fallback' }, kind: 'detect', status: 'baseline', scope: 'hard',
     change: { zh: '基线 95 % 在 10 s 发现、其余 60 s 超时 → 99.9 % 在 1 s 发现、其余 60 s；只改变停机中的发现时间', en: 'baseline 95 % detected in 10 s, rest by a 60 s timeout → 99.9 % in 1 s, rest 60 s; only the detection part of the outage changes' },
@@ -393,7 +394,19 @@ export const MECHANISM_LIBRARY: MechanismDef[] = [
     },
   },
   ...AUDIT_MECHANISM_DEFS,
-];
+]);
+
+/**
+ * v5.8 (method & code review 2026-10-29, P1-③) every transform checks its parameters against their domains (mechanisms/parameters.ts)
+ * before it runs, so a probability above 1 or a negative time stops at whichever path brought it — a set, a worksheet, a project edit,
+ * a recorded parameter re-applied by stripMechanisms / editBase — instead of reaching the closed forms
+ */
+function guardParameters(defs: MechanismDef[]): MechanismDef[] {
+  return defs.map((d) => {
+    const apply = d.apply;
+    return apply ? { ...d, apply: (s: Scenario, p: Record<string, number>) => { assertParameters(d.id, p); return apply(s, p); } } : d;
+  });
+}
 
 export const DEFAULT_PLAYERS = ['D-SDC', 'R-SDC', 'R-REPLAY', 'R-PROCESS', 'R-ELASTIC', 'C-FAST'];
 

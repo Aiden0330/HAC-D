@@ -8,6 +8,7 @@ import { SuperpodSchema, ScaleOutSchema, SUPERPOD_PRESETS, ConfidenceSchema } fr
 import { COUNT_OVERRIDE_ROWS } from '../scenario/build.js';
 import { FAULT_UNITS, TOPOLOGY_TEMPLATE_IDS, unitFaultLibrary } from '../topology/index.js';
 import { MECHANISM_LIBRARY, mechanismById } from '../mechanisms/index.js';
+import { parameterDomain } from '../mechanisms/parameters.js';
 import { LAYER_IDS } from '../layers/index.js';
 
 export const WORKSHEET_VERSION = 'hacd-worksheet-1';
@@ -112,7 +113,8 @@ export function fieldSpecs(kind: WorksheetKind): FieldSpec[] {
     case 'mechanisms': {
       const out: FieldSpec[] = [];
       for (const id of mechanismIds()) {
-        for (const k of mechanismParameterKeys(id)) out.push({ path: `parameters.${id}.${k}`, type: 'number', about: B('机制参数', 'mechanism parameter') });
+        // v5.8 the parameter's domain in the about text (templates, `hacd ingest fields`, the extraction prompt); the gates enforce it
+        for (const k of mechanismParameterKeys(id)) { const d = parameterDomain(k); out.push({ path: `parameters.${id}.${k}`, type: 'number', about: d ? B(`机制参数（${d.about.zh}）`, `mechanism parameter (${d.about.en})`) : B('机制参数', 'mechanism parameter') }); }
         out.push({ path: `verdicts.${id}`, type: 'enum', values: VERDICTS, about: B('机制判定', 'mechanism verdict') });
         out.push({ path: `efforts.${id}`, type: 'number', about: B('实施工作量', 'implementation effort') });
       }

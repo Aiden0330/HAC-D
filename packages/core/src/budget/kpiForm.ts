@@ -133,7 +133,9 @@ export function kpiForm(sc: Scenario, t: TrainingKpis = trainingOf(sc)): KpiForm
   const engineFirstOrder = (1 - pauseFrac) * factor * t.firstOrder.goodput;
   if (t.firstOrder.goodput > 0 && Math.abs(formula - engineFirstOrder) > 1e-9) throw new Error(`effective goodput does not close: ${formula} vs ${engineFirstOrder}`);
   return {
-    aOp: t.operationalAvailability, aRun: t.runningFraction, phi, lamHw, mtbfHwH: 1 / lamHw, mttrS: sumLP / lamHw, sumLP, other, F, mtbiH: t.mtbiHours, delivered: t.deliveredGoodputExact, detectS: t.chain.detectS, globalS: t.chain.globalS,
-    effective: t.effectiveGoodputExact, effectiveFirstOrder: formula, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: (sumLP + hardRecompute) / lamHw, otherRecomputeSPerH: otherRecompute, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledgerExact,
+    // v5.8 (method & code review 2026-10-29) without hard interruptions (Σλ = 0) the MTBF is unbounded (∞; null in JSON, read as "no hard
+    // interruptions") and the mean pause / loss per interruption are 0, never NaN — λ·MTTR = Σλt̄ = 0 still holds
+    aOp: t.operationalAvailability, aRun: t.runningFraction, phi, lamHw, mtbfHwH: lamHw > 0 ? 1 / lamHw : Infinity, mttrS: lamHw > 0 ? sumLP / lamHw : 0, sumLP, other, F, mtbiH: t.mtbiHours, delivered: t.deliveredGoodputExact, detectS: t.chain.detectS, globalS: t.chain.globalS,
+    effective: t.effectiveGoodputExact, effectiveFirstOrder: formula, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: lamHw > 0 ? (sumLP + hardRecompute) / lamHw : 0, otherRecomputeSPerH: otherRecompute, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledgerExact,
   };
 }

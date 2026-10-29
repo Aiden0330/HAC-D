@@ -34,7 +34,11 @@ export interface KpiRow {
   today: { aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string };
   /** formula (2) / (2′); `reachable` false (B ≤ 0): the non-hardware terms take the whole budget, the two ends are null */
   required: { metric: BudgetMetric; B: number; reachable: boolean; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number | null; F: number; phi: number; totalBudget: number; terms: { save: number; other: number; factors: number } };
-  recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; feasible: boolean; ceiling: { nominal: number; derated: number } | null; aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string };
+  recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; feasible: boolean; ceiling: { nominal: number; derated: number; constrained?: { nominal: number; derated: number } } | null; aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string;
+    /** v5.8 why no move set meets the target (absent when feasible); the search's own P of a recommended plan (pWindow is its acceptance on fresh windows); classes the constraints hold */
+    cause?: 'ceiling' | 'constraints' | 'window'; pWindowSearch?: number; fixedClasses?: string[]; atFloor?: string[] };
+  /** v5.8 inputs the training model and the window ledger do not use (absent when none) */
+  unmodelled?: { redundancy: string[]; ccf: string[]; nonExponential: string[] };
 }
 export interface ScenarioReportManifest {
   status: 'ok';
@@ -98,7 +102,8 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
       scale: n,
       today: { aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, effective: z.today.kpi.effective, effectiveDerated: z.today.kpiDerated.effective, delivered: z.today.kpiDerated.delivered, mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS, lossS: z.today.kpiDerated.lossS, pWindow: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict },
       required: { metric: z.required.metric, B: z.required.B, reachable: z.required.reachable, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS, F: z.today.kpiDerated.F, phi: z.today.kpiDerated.phi, totalBudget: z.required.totalBudget, terms: z.required.terms },
-      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, feasible: rec.feasible, ceiling: rec.ceiling, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, effective: f.kpi.effective, effectiveDerated: f.kpiDerated.effective, delivered: f.kpiDerated.delivered, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, lossS: f.kpiDerated.lossS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict },
+      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, feasible: rec.feasible, ceiling: rec.ceiling, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, effective: f.kpi.effective, effectiveDerated: f.kpiDerated.effective, delivered: f.kpiDerated.delivered, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, lossS: f.kpiDerated.lossS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict, ...(rec.cause ? { cause: rec.cause } : {}), ...(rec.search ? { pWindowSearch: rec.search.pAtLeastTarget } : {}), ...(rec.fixedClasses ? { fixedClasses: rec.fixedClasses } : {}), ...(rec.atFloor ? { atFloor: rec.atFloor } : {}) },
+      ...(z.unmodelled ? { unmodelled: z.unmodelled } : {}),
     };
   });
   return {

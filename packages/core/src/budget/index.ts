@@ -19,7 +19,7 @@ import type { TrainingKpis } from '../scenario/evaluate.js';
 import { computeCounts, type Counts } from '../scenario/build.js';
 import { topologyBom, DOMAIN_UNIT, type BomRow, type FaultUnit } from '../topology/index.js';
 import { toPerHour } from '../units/index.js';
-import { allocateStrategy, applyLevers, withHardwareFactors, DEFAULT_LEVERS, type LeverId, type RecoveryLever, type StrategyPlan, type StrategyResult } from '../strategy/index.js';
+import { allocateStrategy, applyLevers, withHardwareFactors, hardwareClasses, DEFAULT_LEVERS, type LeverId, type RecoveryLever, type StrategyPlan, type StrategyResult } from '../strategy/index.js';
 import { recommendPlan, windowCheck, deratedOf, type WindowCheck, type WindowRulePlan, type WindowRuleTrial } from '../strategy/window.js';
 import { requirementFromKpi, type Requirement } from '../strategy/requirement.js';
 import { applyMechanismsInOrder, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
@@ -89,6 +89,8 @@ export interface AppliedMechanism { id: string; order: number; kind: MechanismKi
 export interface LeverValues { autoSeconds: number; success: number; manualSeconds: number }
 export interface BudgetResult {
   npus: number;
+  /** v5.8 inputs of the scenario the training model and the window ledger do not use (absent when none; method & code review P1-②) */
+  unmodelled?: NonNullable<TrainingKpis['unmodelled']>;
   counts: Counts;
   instances: Record<LayerId, number>;
   bomRows: { id: string; name: BomRow['name']; level: BomRow['level']; count: number; perNpu: number; faultUnit: FaultUnit | null; fitHard: number | null; hardPerHour: number | null; confidence: BomRow['confidence'] }[];
@@ -102,12 +104,19 @@ export interface BudgetResult {
     feasible: boolean; mechanisms: string[]; levers: LeverId[]; needed: boolean; factor: number | null; slack: number | null; final: number; finalDerated: number;
     effort: StrategyResult['effort']; verification: StrategyResult['verification'] | null;
     alternatives: { mechanisms: string[]; levers: LeverId[]; effort: number; value: number; derated: number; feasible: boolean }[]; evaluations: number;
+    /** v5.8 exact enumeration of the move subsets or the greedy descent (method & code review 2026-10-29, §3.6) */
+    solver: NonNullable<StrategyResult['solver']>;
   };
   recommended: {
     mechanisms: string[]; levers: LeverId[]; k: number; kMean: number | null; kPlan: number | null; binding: 'window' | 'mean' | 'none'; escalated: boolean; tried: WindowRuleTrial[];
     /** v5.6 false when no move set meets the target: every move is on at k = 1 and `ceiling` is the metric with perfect hardware */
-    feasible: boolean; ceiling: { nominal: number; derated: number } | null;
-    window: WindowCheck; windowPlan: WindowCheck | null; effort: WindowRulePlan['effort'];
+    feasible: boolean; ceiling: WindowRulePlan['ceiling'];
+    /** v5.8 why no move set meets the target (absent when feasible): 'ceiling' | 'constraints' | 'window' */
+    cause?: WindowRulePlan['cause'];
+    /** v5.8 a feasible plan's window verdict is its acceptance on replications the search never drew; `search` the search's check at k */
+    window: WindowCheck; search?: WindowCheck; windowPlan: WindowCheck | null; effort: WindowRulePlan['effort'];
+    /** v5.8 classes kept at today's FIT (fixed or floor 1) and classes stopped at their floor (each absent when empty) */
+    fixedClasses?: string[]; atFloor?: string[];
     applied: AppliedMechanism[];
     leverValues: { nominal: LeverValues | null; derated: LeverValues | null };
     plan: { aOp: number; aOpDerated: number; value: number; valueDerated: number };
@@ -141,22 +150,29 @@ function fitProvenanceByUnit(sc: Scenario): Partial<Record<FaultUnit, NonNullabl
   return out;
 }
 
-/** the hardware units of the BOM with today's FIT and the allowed FIT at a uniform factor k */
-export function unitTable(sc: Scenario, k: number): UnitBudgetRow[] {
+/**
+ * the hardware units of the BOM with today's FIT and the allowed FIT at a uniform factor k; v5.8 with the per-class factors of the
+ * window rule (fixed classes kept, floors respected) the allowed FIT of a unit is the BOM of the factored classes
+ */
+export function unitTable(sc: Scenario, k: number, factors?: Record<string, number>): UnitBudgetRow[] {
   const bom = topologyBom(sc);
   const prov = fitProvenanceByUnit(sc);
-  return bom.rows.filter((r) => r.faultUnit && r.fit && r.fit.hard > 0).map((r) => ({ id: r.id, name: r.name, level: r.level, faultUnit: r.faultUnit, count: r.count, perNpu: r.perNpu, fitToday: r.fit!.hard, fitAllowed: r.fit!.hard * k, mtbfTodayH: 1e9 / r.fit!.hard, mtbfAllowedH: 1e9 / (r.fit!.hard * k), hardPerHourToday: r.hardPerHour ?? 0, hardPerHourAllowed: (r.hardPerHour ?? 0) * k, blastRadiusNpus: r.blastRadiusNpus ?? null, confidence: r.confidence, ...(prov[r.faultUnit!] ? { fitProvenance: prov[r.faultUnit!] } : {}) }));
+  const factored = factors ? new Map(topologyBom(withHardwareFactors(sc, factors)).rows.map((r) => [r.id, r.fit?.hard])) : undefined;
+  return bom.rows.filter((r) => r.faultUnit && r.fit && r.fit.hard > 0).map((r) => {
+    const today = r.fit!.hard, allowed = factored?.get(r.id) ?? today * k;
+    return { id: r.id, name: r.name, level: r.level, faultUnit: r.faultUnit, count: r.count, perNpu: r.perNpu, fitToday: today, fitAllowed: allowed, mtbfTodayH: 1e9 / today, mtbfAllowedH: 1e9 / allowed, hardPerHourToday: r.hardPerHour ?? 0, hardPerHourAllowed: (r.hardPerHour ?? 0) * (factored ? allowed / today : k), blastRadiusNpus: r.blastRadiusNpus ?? null, confidence: r.confidence, ...(prov[r.faultUnit!] ? { fitProvenance: prov[r.faultUnit!] } : {}) };
+  });
 }
 
-/** per-layer summary of a design (nominal and derated twins); `base` is the bare hardware for the unit table */
-export function designSummary(n: number, base: Scenario, nom: Scenario, der: Scenario, counts: Counts, k: number, model: LayerModel, tNom?: TrainingKpis, tDer?: TrainingKpis, metric: BudgetMetric = 'aOp'): DesignSummary {
+/** per-layer summary of a design (nominal and derated twins); `base` is the bare hardware for the unit table, `factors` the window rule's per-class factors */
+export function designSummary(n: number, base: Scenario, nom: Scenario, der: Scenario, counts: Counts, k: number, model: LayerModel, tNom?: TrainingKpis, tDer?: TrainingKpis, metric: BudgetMetric = 'aOp', factors?: Record<string, number>): DesignSummary {
   const N = byLayer(nom, tNom, model.layers), D = byLayer(der, tDer, model.layers);
   const inst = model.instances(n, counts);
   const layers = Object.fromEntries(model.layers.map((l) => {
     const a = N.levels[l.id], d = D.levels[l.id];
     return [l.id, { lam: a.lam, c: a.c, iso: a.iso, sdc: a.sdc, mttrS: a.lam > 0 ? a.c / a.lam : 0, cDerated: d.c, isoDerated: d.iso, sdcDerated: d.sdc, mttrDeratedS: d.lam > 0 ? d.c / d.lam : 0, recompute: a.recompute, recomputeDerated: d.recompute, lossS: a.lam > 0 ? (a.c + a.recompute) / a.lam : 0, lossDeratedS: d.lam > 0 ? (d.c + d.recompute) / d.lam : 0, instances: inst[l.id], mtbfH: a.lam > 0 ? 1 / a.lam : null, mtbfInstanceH: a.lam > 0 ? inst[l.id] / a.lam : null, rows: a.rows }];
   })) as Record<LayerId, LayerBudget>;
-  return { kpi: N.k, kpiDerated: D.k, layers, mttr: { nom: mttrDecomposition(nom, tNom), der: mttrDecomposition(der, tDer) }, units: unitTable(base, k), k, metric, loss: lossBreakdown(N, model.layers, metric), lossDerated: lossBreakdown(D, model.layers, metric) };
+  return { kpi: N.k, kpiDerated: D.k, layers, mttr: { nom: mttrDecomposition(nom, tNom), der: mttrDecomposition(der, tDer) }, units: unitTable(base, k, factors), k, metric, loss: lossBreakdown(N, model.layers, metric), lossDerated: lossBreakdown(D, model.layers, metric) };
 }
 
 const planRow = (p: StrategyPlan) => ({ mechanisms: p.mechanisms, levers: p.levers, effort: p.effort.total, value: p.value, derated: p.derated, feasible: p.feasible });
@@ -189,7 +205,9 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   const optFactor = opt.hardware.needed ? Math.min(...opt.hardware.rows.map((h) => h.factor)) : null;
   log('window rule');
   const rec = recommendPlan(s, { candidates: o.candidates, parameters: params, efforts: o.efforts, mechanisms: opt.mechanisms, leverIds: opt.levers, levers: LEVERS, derate, target: TARGET, trials: TRIALS, seed: SEED, required: REQUIRED, metric: METRIC, onInfeasible: 'best', onProgress: log });
-  const fin = designSummary(n, s, rec.nom, rec.der, counts, rec.k, model, undefined, undefined, METRIC);
+  const fin = designSummary(n, s, rec.nom, rec.der, counts, rec.k, model, undefined, undefined, METRIC, rec.factors);
+  // v5.8 the classes the constraints hold: fixed (or floor 1), and those an improvement stopped at their floor
+  const atFloor = rec.k < 1 ? hardwareClasses(s).filter((h) => !h.fixed && h.floor < 1 && h.floor > rec.k).map((h) => h.id) : [];
   // the design's mechanisms with their parameters, nominal and derated
   const applied: AppliedMechanism[] = Object.entries(rec.nom.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order).map(([id, r]) => ({ id, order: r.order, kind: mechanismById(id).kind, effort: o.efforts?.[id] ?? mechanismById(id).effort, nominal: r.parameters, derated: rec.der.mechanisms.applied?.[id]?.parameters ?? derateParameters(r.parameters, derate) }));
   const leverValuesOf = (d: Scenario): LeverValues | null => (d.recovery.mode === 'mixture' ? { autoSeconds: d.recovery.automatic.seconds, success: d.recovery.automatic.successProbability, manualSeconds: d.recovery.manual.seconds } : null);
@@ -198,7 +216,7 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   log('removal per mechanism');
   const bare = stripMechanisms(s, [...REF]);
   const allIds = applied.map((a) => a.id);
-  const kFactors = Object.fromEntries(rec.hardwareClasses.map((id) => [id, rec.k]));
+  const kFactors = rec.factors;
   // rebuilt in the final design's recorded order (`allIds` is sorted by it; a `keep` subset keeps that order): the reference set as the
   // project applied it, then the plan's additions — a library-order rebuild is not the same design when transforms do not commute (v5.5)
   const rebuild = (keep: string[]) => withHardwareFactors(applyLevers(applyMechanismsInOrder(bare, keep, paramsOf(keep)), LEVERS.filter((l) => rec.levers.includes(l.id)), null), kFactors);
@@ -213,14 +231,14 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
     return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, lossOf(lv.levels[l.id].c, lv.levels[l.id].iso, lv.levels[l.id].sdc, lv.levels[l.id].recompute) - lossOf(base[l.id].c, base[l.id].iso, base[l.id].sdc, base[l.id].recompute)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered, effective: fin.kpi.effective - lv.k.effective }];
   }));
   return {
-    npus: n, counts, instances: model.instances(n, counts),
+    npus: n, ...(t.unmodelled ? { unmodelled: t.unmodelled } : {}), counts, instances: model.instances(n, counts),
     bomRows: bom.rows.map((r) => ({ id: r.id, name: r.name, level: r.level, count: r.count, perNpu: r.perNpu, faultUnit: r.faultUnit ?? null, fitHard: r.fit?.hard ?? null, hardPerHour: r.hardPerHour ?? null, confidence: r.confidence })),
     hardFitPerNpu: bom.hardFitPerNpu, hardFitPerNpuTotal: bom.hardFitPerNpuTotal, hardPerHour: bom.hardPerHour,
     today: { ...today, window: todayWindow, aOp: today.kpi.aOp, aOpDerated: today.kpiDerated.aOp, value: METRIC === 'aOp' ? today.kpi.aOp : today.kpi.effective, valueDerated: METRIC === 'aOp' ? today.kpiDerated.aOp : today.kpiDerated.effective, effective: today.kpi.effective, effectiveDerated: today.kpiDerated.effective, delivered: today.kpi.delivered, deliveredDerated: today.kpiDerated.delivered },
     required,
     hardwareOnly: { needed: hwOnly.hardware.needed, factor: hwFactor, slack: hwOnly.hardware.slackFactor ?? null, final: hwOnly.final.value, finalDerated: hwOnly.final.derated, effort: hwOnly.effort.total },
-    optimal: { feasible: opt.feasible, mechanisms: opt.mechanisms, levers: opt.levers, needed: opt.hardware.needed, factor: optFactor, slack: opt.hardware.slackFactor ?? null, final: opt.final.value, finalDerated: opt.final.derated, effort: opt.effort, verification: opt.verification ?? null, alternatives: (opt.alternatives ?? []).slice(0, 6).map(planRow), evaluations: opt.evaluations },
-    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, feasible: rec.feasible, ceiling: rec.ceiling, window: rec.window, windowPlan: rec.windowPlan, effort: rec.effort, applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability, value: metricValue(trainingOf(rec.planNom), METRIC), valueDerated: metricValue(trainingOf(rec.planDer), METRIC) }, final: fin, removal },
+    optimal: { feasible: opt.feasible, mechanisms: opt.mechanisms, levers: opt.levers, needed: opt.hardware.needed, factor: optFactor, slack: opt.hardware.slackFactor ?? null, final: opt.final.value, finalDerated: opt.final.derated, effort: opt.effort, verification: opt.verification ?? null, alternatives: (opt.alternatives ?? []).slice(0, 6).map(planRow), evaluations: opt.evaluations, solver: opt.solver! },
+    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, feasible: rec.feasible, ...(rec.cause ? { cause: rec.cause } : {}), ceiling: rec.ceiling, window: rec.window, ...(rec.search ? { search: rec.search } : {}), windowPlan: rec.windowPlan, effort: rec.effort, ...(rec.fixedClasses.length ? { fixedClasses: rec.fixedClasses } : {}), ...(atFloor.length ? { atFloor } : {}), applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability, value: metricValue(trainingOf(rec.planNom), METRIC), valueDerated: metricValue(trainingOf(rec.planDer), METRIC) }, final: fin, removal },
   };
 }
 

@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES } from '../src/index.mjs';
 
 export const REPO = fileURLToPath(new URL('../../../', import.meta.url));
-const read = (rel) => readFileSync(REPO + rel, 'utf8');
+// v5.8 line endings normalised: a Windows checkout with core.autocrlf has CRLF pages (.gitattributes now asks for LF on checkout)
+const read = (rel) => readFileSync(REPO + rel, 'utf8').replace(/\r\n/g, '\n');
 const json = (rel) => JSON.parse(read(rel));
 const maybe = (rel) => (existsSync(REPO + rel) ? json(rel) : undefined);
 

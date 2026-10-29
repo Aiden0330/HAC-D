@@ -78,7 +78,7 @@ const api: ComputeApi = {
       records: [{ id: opts.id, name: opts.name }],
       set: { id: set.id, source: set.source },
       options: { scales: opts.sizes, target: opts.target, trials: opts.trials ?? 400, seed: opts.seed ?? 1, permutations: opts.permutations ?? 300 },
-      engine: { version: CORE_VERSION },
+      engine: { version: CORE_VERSION, commit: __HACD_COMMIT__ },
     };
     // what the recipes read: the data as it is in the sidecar files
     const asFile = (v: unknown): Record<string, unknown> => JSON.parse(JSON.stringify(v));

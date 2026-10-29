@@ -9,6 +9,7 @@ import type { FaultRateOverride } from '../records/faultRates.js';
 import type { MechanismSet } from '../records/mechanismSet.js';
 import { unitFaultLibrary, templateUnits, type UnitFaultType, type TopologyTemplate } from '../topology/index.js';
 import { COUNT_ROWS, SCALEOUT_FIELDS, mechanismParameterKeys } from './fields.js';
+import { parameterIssues } from '../mechanisms/parameters.js';
 
 export type IssueLevel = 'error' | 'warning' | 'info';
 export interface Issue { level: IssueLevel; code: string; path: string; message: { zh: string; en: string } }
@@ -84,6 +85,8 @@ export function validateMechanismSet(s: MechanismSet): Issue[] {
     let keys: string[];
     try { keys = mechanismParameterKeys(id); } catch { continue; }
     for (const k of Object.keys(params)) if (!keys.includes(k)) out.push(issue('error', 'unknown-parameter', `parameters.${id}.${k}`, `${id} 没有参数 ${k}（有：${keys.join(', ')}）`, `'${k}' is not a parameter of ${id} (keys: ${keys.join(', ')}); it would change nothing`));
+    // v5.8 (method & code review 2026-10-29, P1-③) the value inside its domain (the set schema rejects it too; this gate names it per path)
+    for (const b of parameterIssues(id, params)) out.push(issue('error', 'out-of-domain', `parameters.${id}.${b.key}`, b.message.zh, b.message.en));
   }
   const prov = s.provenance ?? {};
   const has = (k: string) => k in prov || Object.keys(prov).some((p) => p.startsWith(`${k}.`));

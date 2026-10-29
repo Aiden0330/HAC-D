@@ -18,6 +18,8 @@ export interface LedgerRun {
   seed: number | string;
   target?: number;
   closedForm: { delivered: number; effective: number; operationalAvailability: number; ledger: TrainingKpis['ledger'] };
+  /** v5.8 inputs of the scenario this ledger does not use (redundancy, common cause, distributions; absent when none) */
+  unmodelled?: TrainingKpis['unmodelled'];
 }
 
 export interface LedgerComparison {
@@ -109,6 +111,7 @@ export function buildLedgerRun(s: Scenario, opts: LedgerRunOptions = {}): Ledger
     target: opts.target ?? s.targets.goodput,
     // v5.7 the closed-form values of the simulation's own (exact renewal) model
     closedForm: { delivered: tr.deliveredGoodputExact, effective: tr.effectiveGoodputExact, operationalAvailability: tr.operationalAvailability, ledger: tr.ledgerExact },
+    ...(tr.unmodelled ? { unmodelled: tr.unmodelled } : {}),
   };
 }
 

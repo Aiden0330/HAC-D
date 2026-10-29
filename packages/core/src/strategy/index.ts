@@ -118,6 +118,12 @@ export interface StrategyResult {
   steps: StrategyStep[];
   /** optimal: the cheapest plans found (best first) */
   alternatives?: StrategyPlan[];
+  /**
+   * v5.8 optimal: how the plans were searched — every admissible subset of the moves ('exact', up to `exactUpTo` moves: 10 on A_op,
+   * 6 on the goodput metrics, whose hardware closure bisects on the engine) or the greedy descent on the total effort beyond, which
+   * is not guaranteed to find the least-effort plan (method & code review 2026-10-29, §3.6: the report states the scope)
+   */
+  solver?: { mode: 'exact' | 'greedy'; moves: number; exactUpTo: number };
   verification?: { trials: number; seed: number; value: SummaryStat; pAtLeastTarget: number; wilson: [number, number]; verdict: 'supported' | 'uncertain' | 'below' };
   /** the final design: the scenario with the added mechanisms, the levers and the allowed FIT */
   scenario: Scenario;
@@ -127,7 +133,51 @@ export interface StrategyResult {
 
 type Move = { kind: 'mechanism'; id: string; effort: number; physical: boolean } | { kind: 'lever'; id: LeverId; effort: number; lever: RecoveryLever; physical: false };
 interface State { mechs: string[]; levers: LeverId[] }
-interface HwClass { id: string; name: string; count: number; fit: number; floor: number; e: number; importance: number; fixed: boolean }
+
+/**
+ * v5.8 a hardware interruption class with its allocation constraints — one rule for the optimal strategy, the window rule and the
+ * report (method & code review 2026-10-29, P1-①: the window rule used to move every class by one k, fixed classes and floors
+ * included, and to charge 2·log2(1/k) per class whatever the class's effort per halving)
+ */
+export interface HardwareClass {
+  id: string; name: string;
+  /** units of the class and its interruption FIT per unit */
+  count: number; fit: number;
+  /** lowest factor of the current FIT the class can reach (component.allocation.minLambdaFactor, default 0.05) */
+  floor: number;
+  /** effort of halving the class's FIT (component.allocation.effortPerHalving, default 2) */
+  effortPerHalving: number;
+  importance: number;
+  /** kept at its current FIT (component.allocation.fixed) */
+  fixed: boolean;
+}
+/** the enabled classes with an interruption rate and their constraints (the constraint map over the component's own fields over the defaults) */
+export function hardwareClasses(s: Scenario, o: Pick<StrategyOptions, 'constraints' | 'defaultFloor' | 'defaultEffortPerHalving'> = {}): HardwareClass[] {
+  const counts = computeCounts(s);
+  const out: HardwareClass[] = [];
+  for (const c of s.components) {
+    if (!c.enabled) continue;
+    const ci = componentInstances(c, counts, s.measures.subhealthThreshold);
+    if (!(ci.lambda > 0) || ci.total <= 0) continue;
+    const k = o.constraints?.[c.id] ?? {};
+    out.push({ id: c.id, name: c.name?.zh ?? c.name?.en ?? c.id, count: ci.total, fit: ci.lambda * 1e9, floor: Math.min(1, Math.max(0, k.floor ?? c.allocation?.minLambdaFactor ?? o.defaultFloor ?? DEFAULT_FLOOR)), effortPerHalving: Math.max(1e-6, k.effortPerHalving ?? c.allocation?.effortPerHalving ?? o.defaultEffortPerHalving ?? DEFAULT_EFFORT_PER_HALVING), importance: c.allocation?.importance ?? 1, fixed: !!(k.fixed ?? c.allocation?.fixed) });
+  }
+  return out;
+}
+/** the classes a hardware factor can move: not fixed, floor below 1 */
+export const freeClasses = (classes: HardwareClass[]): HardwareClass[] => classes.filter((h) => !h.fixed && h.floor < 1);
+/**
+ * the ARINC uniform factor k under the constraints: a fixed class keeps its FIT (1); an improvement (k < 1) stops at the class's floor,
+ * x_i = max(floor_i, k) — the 'arinc' split of the optimal strategy, x_i = clamp(L, floor_i, 1); an acceptance ceiling (k ≥ 1) relaxes
+ * every class that is not fixed
+ */
+export function arincFactors(classes: HardwareClass[], k: number): Record<string, number> {
+  return Object.fromEntries(classes.map((h) => [h.id, h.fixed ? 1 : k >= 1 ? k : Math.max(h.floor, k)]));
+}
+/** the hardware effort of per-class factors: Σ e_i log2(1/x_i) over the classes improved (x_i < 1), e_i the class's effort per halving */
+export function hardwareEffortOf(classes: HardwareClass[], x: Record<string, number>): number {
+  return classes.reduce((a, h) => a + (!h.fixed && x[h.id] !== undefined && x[h.id] < 1 ? h.effortPerHalving * Math.log2(1 / x[h.id]) : 0), 0);
+}
 
 const keyOf = (st: State) => `${[...st.mechs].sort().join('+')}|${[...st.levers].sort().join('+')}`;
 
@@ -231,17 +281,9 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
   const leverEffort = (st: State) => st.levers.reduce((a, id) => a + (leverList.find((l) => l.id === id)?.effort ?? 0), 0);
 
   // ---- hardware classes ----
-  const counts = computeCounts(s0);
-  const hw: HwClass[] = [];
-  for (const c of s0.components) {
-    if (!c.enabled) continue;
-    const ci = componentInstances(c, counts, s0.measures.subhealthThreshold);
-    if (!(ci.lambda > 0) || ci.total <= 0) continue;
-    const k = opts.constraints?.[c.id] ?? {};
-    hw.push({ id: c.id, name: c.name?.zh ?? c.name?.en ?? c.id, count: ci.total, fit: ci.lambda * 1e9, floor: Math.min(1, Math.max(0, k.floor ?? c.allocation?.minLambdaFactor ?? opts.defaultFloor ?? DEFAULT_FLOOR)), e: Math.max(1e-6, k.effortPerHalving ?? c.allocation?.effortPerHalving ?? opts.defaultEffortPerHalving ?? DEFAULT_EFFORT_PER_HALVING), importance: c.allocation?.importance ?? 1, fixed: !!(k.fixed ?? c.allocation?.fixed) });
-  }
-  const free = hw.filter((h) => !h.fixed && h.floor < 1);
-  const hwEffort = (x: Record<string, number>) => free.reduce((a, h) => a + (x[h.id] !== undefined && x[h.id] < 1 ? h.e * Math.log2(1 / x[h.id]) : 0), 0);
+  const hw = hardwareClasses(s0, opts);
+  const free = freeClasses(hw);
+  const hwEffort = (x: Record<string, number>) => hardwareEffortOf(hw, x);
 
   /**
    * contributions c_i (s/h) per class from an evaluation: the pause λ_i t̄_i on A_op; v5.7 (sixth review M3) the loss λ_i r_i =
@@ -249,7 +291,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
    * the metric (ARINC is unaffected: its weights are the contributions themselves)
    */
   const contributions = (t: TrainingResult) => Object.fromEntries(t.chain.rows.map((r) => [r.id, r.ratePerHour * (r.meanPauseS + (metric === 'aOp' ? 0 : r.pRollback * t.recomputePerInterruptionS))]));
-  const weightsOf = (c: Record<string, number>) => Object.fromEntries(free.map((h) => [h.id, split === 'min-effort' ? h.e : split === 'agree' ? h.count * h.importance : (c[h.id] ?? 0)]));
+  const weightsOf = (c: Record<string, number>) => Object.fromEntries(free.map((h) => [h.id, split === 'min-effort' ? h.effortPerHalving : split === 'agree' ? h.count * h.importance : (c[h.id] ?? 0)]));
   const xAt = (L: number, c: Record<string, number>, w: Record<string, number>) => {
     const x: Record<string, number> = {};
     for (const h of free) {
@@ -352,6 +394,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
   let state: State = empty;
   let hwc: Closure = { x: {}, feasible: feasibleNow(empty), effort: 0, needed: false };
   let alternatives: StrategyPlan[] | undefined;
+  let solver: StrategyResult['solver'];
   const recoverySide = moves.filter((m) => !m.physical);
   const physicalSide = moves.filter((m) => m.physical);
 
@@ -370,6 +413,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
     }
   } else {
     const maxExact = metric === 'aOp' ? 10 : 6;
+    solver = { mode: moves.length <= maxExact ? 'exact' : 'greedy', moves: moves.length, exactUpTo: maxExact };
     const plans: StrategyPlan[] = [];
     const planOf = (st: State, exact: boolean): StrategyPlan => {
       const c = closure(st, exact);
@@ -441,12 +485,13 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
   const after = ptsOf(tDer);
   const rows: StrategyHardwareRow[] = hw.map((h) => {
     const f = x[h.id] ?? 1;
-    return { id: h.id, name: h.name, count: h.count, currentFit: h.fit, allowedFit: h.fit * f, factor: f, floor: h.fixed ? 1 : h.floor, atFloor: !h.fixed && f <= h.floor + 1e-12 && f < 1, effortPerHalving: h.e, effort: f < 1 ? h.e * Math.log2(1 / f) : 0, pointsBefore: before[h.id] ?? 0, pointsAfter: after[h.id] ?? 0, mtbfHours: h.fit * f > 0 ? 1e9 / (h.fit * f) : Infinity };
+    return { id: h.id, name: h.name, count: h.count, currentFit: h.fit, allowedFit: h.fit * f, factor: f, floor: h.fixed ? 1 : h.floor, atFloor: !h.fixed && f <= h.floor + 1e-12 && f < 1, effortPerHalving: h.effortPerHalving, effort: f < 1 ? h.effortPerHalving * Math.log2(1 / f) : 0, pointsBefore: before[h.id] ?? 0, pointsAfter: after[h.id] ?? 0, mtbfHours: h.fit * f > 0 ? 1e9 / (h.fit * f) : Infinity };
   });
-  // slack: uniform factor on every class at which the target is just met (acceptance limit) when no hardware is needed
+  // slack: uniform factor on every class that is not fixed at which the target is just met (acceptance limit) when no hardware is
+  // needed (v5.8: a fixed class keeps its FIT in the ceiling too, as in the window rule)
   let slackFactor: number | undefined;
   if (!hwc.needed && feasible) {
-    const ok = (k: number) => { const xs = Object.fromEntries(hw.map((h) => [h.id, k])); return mv(evalT(withHardwareFactors(sc.nom, xs))) >= T && (!derate || mv(evalT(withHardwareFactors(sc.der, xs))) >= T); };
+    const ok = (k: number) => { const xs = arincFactors(hw, k); return mv(evalT(withHardwareFactors(sc.nom, xs))) >= T && (!derate || mv(evalT(withHardwareFactors(sc.der, xs))) >= T); };
     let lo = 1, hi = 2;
     while (ok(hi) && hi < 1e4) { lo = hi; hi *= 2; }
     if (hi < 1e4) { for (let i = 0; i < 30; i++) { const mid = Math.sqrt(lo * hi); if (ok(mid)) lo = mid; else hi = mid; } slackFactor = lo; }
@@ -473,7 +518,7 @@ export function allocateStrategy(s0: Scenario, opts: StrategyOptions): StrategyR
     hardware: { rows, effort: hwc.effort, needed: hwc.needed, atFloors: rows.filter((r) => r.atFloor).map((r) => r.id), slackFactor },
     effort,
     final: { ...valuesOf(tNom, metric), derated: mv(tDer) },
-    steps, alternatives, verification, scenario: finalNom, evaluations, notes,
+    steps, alternatives, ...(solver ? { solver } : {}), verification, scenario: finalNom, evaluations, notes,
   };
 }
 

@@ -139,7 +139,14 @@ function sections(lang, ctx) {
     // v5.7 (sixth review F6) verdicts within the sampled half-width of the threshold
     const unres = (MX.unresolved ?? []).filter((id) => MX.mechanisms.some((m) => m.id === id));
     const unresTxt = unres.length ? T(`未定（决定性的 Shapley 比较离阈值不足一个抽样半宽，需加置换数）：${unres.join('、')}。`, ` Unresolved (the deciding Shapley comparison lies within one sampled half-width of the threshold; more permutations needed): ${unres.join(', ')}.`) : '';
-    const search = moves <= 10 ? T(`HAC-D 最优策略精确枚举 ${fmt(2 ** moves)} 个子集`, `which HAC-D’s optimal strategy enumerates exactly (${fmt(2 ** moves)} subsets)`) : T('超过 10 个动作，HAC-D 最优策略改用贪心路径', 'more than 10 moves, so HAC-D’s optimal strategy falls back to the greedy path');
+    // v5.8 (method & code review 2026-10-29, §3.6) the search as the optimal strategy ran it: exact enumeration up to 10 moves on A_op but
+    // only up to 6 on the goodput metrics (each plan's hardware level bisects on the engine), the greedy descent beyond; the stored
+    // `optimal.solver` when present, else the strategy's limits by metric
+    const solverOf = (z) => z?.optimal?.solver;
+    const stored = Object.values(R.archs).flatMap((A) => Object.values(A.sizes).map(solverOf)).filter(Boolean);
+    const exactUpTo = stored[0]?.exactUpTo ?? (EFF ? 6 : 10);
+    const greedy = stored.length ? stored.some((x) => x.mode === 'greedy') : moves > exactUpTo;
+    const search = !greedy ? T(`HAC-D 最优策略精确枚举 ${fmt(2 ** moves)} 个子集`, `which HAC-D’s optimal strategy enumerates exactly (${fmt(2 ** moves)} subsets)`) : T(`超过 ${exactUpTo} 个动作（${MSYM} 口径下精确枚举的上限），HAC-D 最优策略改用总努力的贪心下降，不保证找到最省方案`, `more than ${exactUpTo} moves (the limit of exact enumeration on the ${MSYM} basis), so HAC-D’s optimal strategy runs the greedy descent on the total effort, which does not guarantee the least-effort plan`);
     return esc(T(`结果：${nc} 个 ${MSYM} 候选（${ids('candidate')}）、${of('goodput').length} 个${EFF ? '只保交付 goodput' : '只保有效产出'}（${ids('goodput')}）、${of('pruned').length} 个剪除（${prunedWhy}）、${of('capability').length} 个能力（${ids('capability')}）。${nc} 个候选 + ${nl} 个杠杆 = ${moves} 个动作，${search}。${unresTxt}`,
       `Outcome: ${nc} ${MSYM} candidates (${ids('candidate')}), ${of('goodput').length} ${EFF ? 'delivered-only' : 'goodput-only'} (${ids('goodput')}), ${of('pruned').length} pruned (${prunedWhy}), ${of('capability').length} capability (${ids('capability')}). ${nc} candidates + ${nl} levers = ${moves} moves, ${search}.${unresTxt}`));
   }

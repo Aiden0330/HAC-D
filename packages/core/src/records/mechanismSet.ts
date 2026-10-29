@@ -13,6 +13,7 @@
 import { z } from 'zod';
 import { ConfidenceSchema, RecoverySchema, RecoveryStagesSchema, type Scenario } from '../scenario/schema.js';
 import { MECHANISM_LIBRARY, applyMechanisms, editBase, mechanismById, type MechanismMetadata } from '../mechanisms/index.js';
+import { parameterIssues } from '../mechanisms/parameters.js';
 import type { RecoveryLever } from '../strategy/index.js';
 import type { DerateSpec } from '../mechanisms/plan.js';
 import remapLatest from '../../data/mechanism-sets/remap-latest-2026-10.json';
@@ -86,6 +87,9 @@ export const MechanismSetSchema = z.object({
   }
   for (const id of Object.keys(s.metadata)) if (!seen.has(id)) ctx.addIssue({ code: 'custom', path: ['metadata', id], message: `metadata for '${id}', which is in none of the lists` });
   for (const id of Object.keys(s.parameters)) if (!seen.has(id)) ctx.addIssue({ code: 'custom', path: ['parameters', id], message: `parameters for '${id}', which is in none of the lists` });
+  // v5.8 (method & code review 2026-10-29, P1-③) every parameter inside its domain: probabilities and shares in [0, 1], seconds ≥ 0, …
+  for (const [id, params] of Object.entries(s.parameters)) for (const b of parameterIssues(id, params)) ctx.addIssue({ code: 'custom', path: ['parameters', id, b.key], message: b.message.en });
+  s.levers.forEach((l, i) => { if (l.id === 'success' && l.limit > 1) ctx.addIssue({ code: 'custom', path: ['levers', i, 'limit'], message: `the automatic-success lever's limit ${l.limit} is a probability (≤ 1)` }); });
   for (const id of Object.keys(s.efforts ?? {})) if (!seen.has(id)) ctx.addIssue({ code: 'custom', path: ['efforts', id], message: `effort for '${id}', which is in none of the lists` });
   if (s.verdicts) {
     for (const [id, v] of Object.entries(s.verdicts)) {

@@ -1,0 +1,16 @@
+# v5.8 (method & code review 2026-10-29, P2): check out text with LF on every platform — the report pages, the golden vectors and the
+# worksheets are compared byte for byte, and a Windows checkout with core.autocrlf turned them into CRLF
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.pptx binary
+*.docx binary
+*.xlsx binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

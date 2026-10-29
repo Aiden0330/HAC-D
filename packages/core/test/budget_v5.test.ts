@@ -31,9 +31,16 @@ const REC = BUILTIN_TOPOLOGY_RECORDS;
 
 /**
  * fields the engine writes since the stored v4.4 data (additive, derived from stored values, so the stored block stays the
- * reference): `required.reachable` (v5.5, fifth review D6) = B > 0 — checked against the stored B instead of flagged as extra
+ * reference): `required.reachable` (v5.5, fifth review D6) = B > 0 — checked against the stored B instead of flagged as extra;
+ * v5.8 (method & code review 2026-10-29) `optimal.solver` — exact enumeration up to its limit, the greedy descent beyond — and
+ * `recommended.cause` — 'ceiling' when the stored perfect-hardware ceiling misses the target (a feasible block has none)
  */
-const ADDED_SINCE_STORED: Record<string, (a: unknown, parent: Record<string, unknown>) => boolean> = { '.required.reachable': (a, parent) => a === ((parent.B as number) > 0) };
+const ceilingMisses = (p: Record<string, unknown>) => { const c = p.ceiling as { nominal: number; derated: number } | null; return !!c && (c.nominal < R.target || c.derated < R.target); };
+const ADDED_SINCE_STORED: Record<string, (a: unknown, parent: Record<string, unknown>) => boolean> = {
+  '.required.reachable': (a, parent) => a === ((parent.B as number) > 0),
+  '.optimal.solver': (a) => { const x = a as { mode: string; moves: number; exactUpTo: number }; return x.mode === (x.moves <= x.exactUpTo ? 'exact' : 'greedy') && x.exactUpTo === (R.metric === 'aOp' ? 10 : 6); },
+  '.recommended.cause': (a, parent) => parent.feasible === false && a === (ceilingMisses(parent) ? 'ceiling' : a),
+};
 /** deep comparison: numbers to 1e-9 relative, the rest exactly; returns the differences */
 function diff(a: unknown, b: unknown, path = '', out: string[] = []): string[] {
   if (typeof b === 'number') { if (typeof a !== 'number') out.push(`${path}: ${a} vs ${b}`); else if (Math.abs(a - b) > 1e-9 * Math.max(1e-3, Math.abs(b))) out.push(`${path}: ${a} vs ${b}`); return out; }

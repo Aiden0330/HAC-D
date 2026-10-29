@@ -31,7 +31,8 @@ describe('hacd findings --data <bundle.json>', () => {
     expect(r.status).toBe(0);
     expect(r.stderr).toContain('written');
     const got = readFileSync(join(dir, 'out', 'ASCEND_ALLOCATION_FINDINGS_950.html'), 'utf8');
-    expect(got).toBe(readFileSync(join(REPO, 'docs', 'ASCEND_ALLOCATION_FINDINGS_950.html'), 'utf8'));
+    // v5.8 line endings normalised (a Windows checkout with core.autocrlf has CRLF pages)
+    expect(got).toBe(readFileSync(join(REPO, 'docs', 'ASCEND_ALLOCATION_FINDINGS_950.html'), 'utf8').replace(/\r\n/g, '\n'));
   }, 120_000);
   it('refuses a bundle without provenance', () => {
     const dir = mkdtempSync(join(tmpdir(), 'hacd-findings-data-'));

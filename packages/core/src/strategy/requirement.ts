@@ -77,10 +77,12 @@ export function requirementFromKpi(kD: KpiForm, target: number, metric: BudgetMe
     terms = { save: 3600 * kD.saveFrac, other: kD.F + kD.otherRecomputeSPerH + pausePart, factors: phi > 0 ? 3600 * target * (1 / phi - 1) : Infinity };
   }
   const reachable = B > 0;
+  // v5.8 without hard interruptions (Σλ = 0: MTBF ∞, loss 0) the two ends of the requirement are not defined: null, never NaN or ∞
+  const hard = kD.lamHw > 0 && lossS > 0;
   return {
     metric, B, totalBudget, reachable,
-    mtbfAtTodayMttrH: reachable ? lossS / B : null, mttrAtTodayMtbfS: reachable ? B * kD.mtbfHwH : null, ratioToday: lossS / kD.mtbfHwH,
-    mtbfFactor: reachable ? lossS / B / kD.mtbfHwH : null, mttrFactor: reachable ? (B * kD.mtbfHwH) / lossS : null,
+    mtbfAtTodayMttrH: reachable && hard ? lossS / B : null, mttrAtTodayMtbfS: reachable && hard ? B * kD.mtbfHwH : null, ratioToday: hard ? lossS / kD.mtbfHwH : 0,
+    mtbfFactor: reachable && hard ? lossS / B / kD.mtbfHwH : null, mttrFactor: reachable && hard ? (B * kD.mtbfHwH) / lossS : null,
     todayLossS: lossS, terms,
   };
 }

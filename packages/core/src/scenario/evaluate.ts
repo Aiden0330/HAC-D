@@ -79,6 +79,41 @@ export interface SystemKpis {
   approximate: boolean;
 }
 
+/**
+ * v5.8 inputs of the scenario that the training closed forms and the window ledger do not use (method & code review 2026-10-29, P1-②):
+ * both count λ_i·n_i job interruptions per class at the mean rate — a class's redundancy (credited by the structure model), its β-factor
+ * common cause and its lifetime / repair distributions (sampled by the unit-level Monte Carlo) change nothing there. The class FIT of a
+ * training scenario is the job-impact rate (the 口径 normaliser's impact factor credits the redundancy); a class listed here is either
+ * entered that way already or over-counted (redundancy) / simplified (common cause, distributions). Absent when every list is empty.
+ */
+export interface UnmodelledInputs {
+  /** classes with a parallel / k-of-n / standby arrangement: every unit failure counts as an interruption */
+  redundancy: string[];
+  /** classes with a common-cause share β > 0: counted as independent interruptions, without the domain-wide blast radius */
+  ccf: string[];
+  /** classes with a Weibull shape ≠ 1, lemon or infant-mortality units, or a repair-time distribution: mean values only */
+  nonExponential: string[];
+}
+/** the inputs of a training scenario that its closed forms and window ledger do not use (undefined when none) */
+export function unmodelledInputs(s: Scenario): UnmodelledInputs | undefined {
+  const on = s.components.filter((c) => c.enabled);
+  const u: UnmodelledInputs = {
+    redundancy: on.filter((c) => c.redundancy && c.redundancy.scheme !== 'series').map((c) => c.id),
+    ccf: on.filter((c) => (c.ccf?.beta ?? 0) > 0).map((c) => c.id),
+    nonExponential: on.filter((c) => (c.failure.weibullShape !== undefined && c.failure.weibullShape !== 1) || !!c.lemon || !!c.infant || !!c.repair.distribution).map((c) => c.id),
+  };
+  return u.redundancy.length || u.ccf.length || u.nonExponential.length ? u : undefined;
+}
+/** the warning of `unmodelledInputs` (one sentence per kind) */
+export function unmodelledWarning(u: UnmodelledInputs): string {
+  const list = (ids: string[]) => (ids.length > 6 ? `${ids.slice(0, 6).join(', ')} … (${ids.length})` : ids.join(', '));
+  return [
+    u.redundancy.length ? `redundancy of ${list(u.redundancy)} is not credited by the training model or the window ledger: every unit failure counts as a job interruption (enter the job-impact rate, or read the structure model)` : '',
+    u.ccf.length ? `common cause (β) of ${list(u.ccf)} is not modelled by the training model or the window ledger: the failures count as independent interruptions without the domain-wide blast radius (run the unit-level Monte Carlo)` : '',
+    u.nonExponential.length ? `lifetime / repair distributions of ${list(u.nonExponential)} enter the training model and the window ledger by their means only (run the unit-level Monte Carlo)` : '',
+  ].filter(Boolean).join('; ');
+}
+
 export interface TrainingKpis {
   nGpus: number;
   interruptionRatePerHour: number;
@@ -164,6 +199,8 @@ export interface TrainingKpis {
   ledger: TrainingLedger;
   /** v5.7 the same ledger decomposed with the exact renewal model: it closes on `effectiveGoodputExact` / `deliveredGoodputExact` */
   ledgerExact: TrainingLedger;
+  /** v5.8 inputs these closed forms and the window ledger do not use (absent when none) */
+  unmodelled?: UnmodelledInputs;
 }
 
 export interface ChainRow {
@@ -759,6 +796,7 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       } else row.delivered = eff;
     }
     const nGpuEff = N;
+    const unmodelled = unmodelledInputs(s);
     training = {
       nGpus: N,
       interruptionRatePerHour: lambdaJob,
@@ -814,7 +852,9 @@ export function evaluateScenario(s: Scenario, opts: ScenarioEvaluateOptions = {}
       deliveredGoodputExact: deliveredExact,
       ledger,
       ledgerExact,
+      ...(unmodelled ? { unmodelled } : {}),
     };
+    if (unmodelled) warnings.push(unmodelledWarning(unmodelled));
     formulas.mtbi = 'λ_job = Σ n_i λ_i (all components, synchronous job); MTBI = 1/λ_job';
     formulas.interval = w.intervalModel === 'young' ? 'τ = √(2δM_rb) (Young / Daly-Young; M_rb = MTBI of rollback events)' : w.intervalModel === 'daly3' ? 'τ = √(2δM)[1 + (1/3)(δ/2M)^{1/2} + (1/9)(δ/2M)] − δ (Daly three-term)' : w.intervalModel === 'dalyExact' ? '(1 − τ/M)e^{(τ+δ)/M} = 1 (Daly exact)' : 'T_c* = T_s + √(2(T_f+T_r)T_s + T_s²) (Saxena, availability objective)';
     formulas.goodput = 'first order: 1 − δ/τ − (P_rb·W + R̄)/M_ev with W = τ/2 (or one step / measured), R̄ = rate-weighted pause per event; exact renewal (mixed): λ_rb τ/[(e^{λ_rb(τ+δ)} − 1)(1 + λ_rb R_rb + λ_p R_p)] (pause-only events do not restart the interval); Daly full: τ/(M e^{R/M}(e^{(τ+δ)/M} − 1)) × 1/(1 + λ_p R_p); product: A_run·τ/(τ+δ)·(1 − P_rb W/M_ev), A_run = 1/(1 + λ_rb R_rb + λ_p R_p); headline = first order while (τ+δ)/M and R/M are small, else exact renewal';

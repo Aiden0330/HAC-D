@@ -20,7 +20,7 @@ import {
   BUILTIN_TOPOLOGY_RECORDS, parseTopologyRecord, recordSuperpod, topologyRecordJsonSchema, type TopologyRecord,
   DEFAULT_MECHANISM_SET, parseMechanismSet, resolveMechanismSet, mechanismSetJsonSchema, type MechanismSet,
   parseFaultRateOverride, faultRateOverrideJsonSchema, type FaultRateOverride,
-  budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT,
+  budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT, unmodelledWarning,
   type StoredStudy, type ArchStudy, type BudgetDocument, type MechanismVerdict,
   type BudgetMetric,
 } from '@hac-d/core';
@@ -339,9 +339,13 @@ export function budget(a: Args, json: boolean): void {
   const rows: (string | number)[][] = [['', `${M} nominal`, `${M} derated`, ...(E ? ['G_del derated'] : []), 'MTBF_hw (derated)', `${LOSS} (derated)`, 'P(window)', 'plan'],
     ['today', p(v(z.today.kpi)), p(v(z.today.kpiDerated)), ...(E ? [p(z.today.kpiDerated.delivered)] : []), h(z.today.kpiDerated.mtbfHwH), s(loss(z.today.kpiDerated)), p(z.today.window.pAtLeastTarget, 1), z.today.window.verdict],
     ['required', '', p(target, 1), ...(E ? [''] : []), z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} at today's ${LOSS}` : '—', z.required.reachable ? `≤ ${s(z.required.mttrAtTodayMtbfS ?? 0)} at today's MTBF` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (formula ${E ? '2′' : '2'})` : UNREACHABLE_TEXT.en(z.required, z.today.kpiDerated.F, z.today.kpiDerated.phi)],
-    [r.feasible === false ? 'all moves (not feasible)' : 'recommended', p(v(f.kpi)), p(v(f.kpiDerated)), ...(E ? [p(f.kpiDerated.delivered)] : []), h(f.kpiDerated.mtbfHwH), s(loss(f.kpiDerated)), p(r.window.pAtLeastTarget, 1), `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · ${r.feasible === false ? `no factor meets the target; ceiling with perfect hardware ${p(r.ceiling!.derated)} derated` : `hardware k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`}`]];
+    [r.feasible === false ? 'all moves (not feasible)' : 'recommended', p(v(f.kpi)), p(v(f.kpiDerated)), ...(E ? [p(f.kpiDerated.delivered)] : []), h(f.kpiDerated.mtbfHwH), s(loss(f.kpiDerated)), p(r.window.pAtLeastTarget, 1), `${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} · ${r.feasible === false ? (r.cause === 'constraints' ? `not within the hardware constraints: ${p(r.ceiling!.constrained!.derated)} derated with every class at its floor, ${p(r.ceiling!.derated)} with perfect hardware` : r.cause === 'window' ? 'the mean is reachable but no design passes the window check' : `no factor meets the target; ceiling with perfect hardware ${p(r.ceiling!.derated)} derated`) : `hardware k ${r.k.toFixed(3)} (${r.binding}${r.escalated ? ', escalated' : ''})`}`]];
   const w = rows[0].map((_c, j) => Math.max(...rows.map((x) => String(x[j]).length)));
   for (const x of rows) console.log(x.map((c, j) => String(c).padEnd(w[j])).join('  '));
+  // v5.8 (method & code review 2026-10-29) the acceptance of a recommended plan, the classes the constraints hold, the inputs not modelled
+  if (r.search) console.log(`acceptance: P(window) ${p(r.window.pAtLeastTarget, 1)} ${r.window.verdict} on replications ${r.window.from ?? 0}–${(r.window.from ?? 0) + r.window.trials - 1} (never drawn by the search; the search's own P at this k: ${p(r.search.pAtLeastTarget, 1)} ${r.search.verdict})`);
+  if (r.fixedClasses?.length || r.atFloor?.length) console.log(`hardware constraints: ${r.fixedClasses?.length ? `fixed at today's FIT ${r.fixedClasses.join(', ')}` : ''}${r.fixedClasses?.length && r.atFloor?.length ? '; ' : ''}${r.atFloor?.length ? `at their floor ${r.atFloor.join(', ')}` : ''}`);
+  if (z.unmodelled) console.log(`warning: ${unmodelledWarning(z.unmodelled)}`);
 }
 
 /** hacd study --record <id|path> [--mechanisms] [--rates] [--scales] [--target] [--permutations 300] [--seed 1] [--out-dir docs/data] */

@@ -20,6 +20,7 @@ export * from './mc/ledgerFromScenario.js';
 export * from './mechanisms/chain.js';
 export * from './mechanisms/index.js';
 export * from './mechanisms/plan.js';
+export * from './mechanisms/parameters.js';
 export * from './mechanisms/auditTypes.js';
 export { AUDIT_CATALOG } from './mechanisms/auditCatalog.js';
 export { AUDIT_MECHANISM_DEFS, provisionalParameters, integrationStatus } from './mechanisms/auditLibrary.js';
