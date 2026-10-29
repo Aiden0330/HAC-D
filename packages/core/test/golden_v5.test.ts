@@ -93,8 +93,9 @@ function flatSplit(prefix: string, sp: Split, out: Record<string, number>) {
 const byGroup = (g: string) => golden.cases.filter((c) => c.group === g);
 
 /** v5.7 (sixth review F3, F6) the verdict fields of the reference-gain test and the resolution check, against the Python values (null ↔ NaN / Infinity) */
-function checkV57(caseId: string, id: string, v: Record<string, unknown> | undefined, w: Record<string, unknown>, tol: { rel: number; abs: number }) {
+function checkV57(caseId: string, id: string, v: Record<string, unknown> | undefined, w: Record<string, unknown>, tolerance: Record<string, number>) {
   if (!v || !('resolved' in w)) return;
+  const tol = { rel: tolerance.rel ?? 0, abs: tolerance.abs ?? 0 };
   expect.soft(v.noReferenceGain, `${caseId}: ${id} noReferenceGain`).toBe(w.noReferenceGain);
   expect.soft(v.resolved, `${caseId}: ${id} resolved`).toBe(w.resolved);
   const m = v.margin as number, wm = w.margin as number | null;

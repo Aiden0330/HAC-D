@@ -25,7 +25,7 @@ import { simulateLedgerReplications, summarizeLedger } from '../src/mc/ledger.js
 import { atlas950Training, workedExample3 } from '../src/scenario/examples.js';
 import type { Scenario } from '../src/scenario/schema.js';
 
-const rec = (id: string, n: number) => recordScenario(BUILTIN_TOPOLOGY_RECORDS[id], DEFAULT_MECHANISM_SET, n);
+const rec = (id: keyof typeof BUILTIN_TOPOLOGY_RECORDS, n: number) => recordScenario(BUILTIN_TOPOLOGY_RECORDS[id], DEFAULT_MECHANISM_SET, n);
 const atK = (s: Scenario, k: number) => withHardwareFactors(s, Object.fromEntries(s.components.filter((c) => c.enabled && c.failure.value > 0).map((c) => [c.id, k])));
 const ledgerMean = (s: Scenario, trials: number) => summarizeLedger(simulateLedgerReplications(buildLedgerRun(s, { trials, seed: 1 }).spec, 0, trials, 1), 1);
 

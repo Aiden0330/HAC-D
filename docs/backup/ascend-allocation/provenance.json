@@ -1,5 +1,5 @@
 {
- "command": "hacd findings --record native950,ubl128,cm384,a3server --study-dir docs/backup/arch-mechanism-shapley --out docs --data-out docs/backup/ascend-allocation --strict-prune",
+ "command": "hacd findings --record native950,ubl128,cm384,a3server --study-dir docs/backup/arch-mechanism-shapley --out docs --data-out docs/backup/ascend-allocation",
  "records": [
   {
    "id": "native950",
@@ -45,10 +45,10 @@
   "metric": "effective",
   "trials": 400,
   "seed": 1,
-  "permutations": 300
+  "permutations": 1200
  },
  "engine": {
   "version": "0.5.0",
-  "commit": "76a5d3b-dirty"
+  "commit": "f76cfec"
  }
 }

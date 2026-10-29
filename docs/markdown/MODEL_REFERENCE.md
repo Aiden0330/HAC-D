@@ -439,6 +439,8 @@ Decision (2026-10-28): the report set and the web app's Report tab use the goodp
 
 ### 30.1 Definitions and the primitives
 
+(v5.7, the sixth model review: the accepted value is the exact-renewal effective goodput, Φ′ in (2′) is the product of the factors, the window ledger books the spare-pool blocking and the candidate rule needs a gain on top of the reference set — §31 states what changed in the bullets below.)
+
 - **Effective goodput** (`TrainingKpis.effectiveGoodput`): the headline checkpoint goodput (first order while its flags hold, else the exact renewal, §18) × (1 − P_blocked) × φ_perf × (1 − ℓ_local) × (1 − o) × (1 − p_sdc). v5.6 correction: the episode pauses of silent corruption p_sdc (`sdc.delivery.pauseFraction`) count as downtime of the effective goodput, as A_op and the window ledger do — before, `effectiveGoodput` excluded them (≤ 0.006 pt at 500k); the scale-table rows follow (`row.effective`). Ledger identity: 1 − G_eff = downtime + save + rollback + slowdown + local + blocked + overhead, and G_del = G_eff − sdcRollback − terminal.
 - **Per-window value** (`mc/ledger.ts`): `LedgerReplication.effective` = 1 − (downtime + save + slowdown + localLoss + overhead + rollback − rollbackSdcDiscovery)/T = delivered + (discovery rollback + terminal discard)/T, with the new account line `rollbackSdcDiscovery` (the part of `rollbackSdc` booked when an undetected episode is discovered and the dirty window returns to the last clean checkpoint; the rollback at immediate detection, one step or to the checkpoint, stays a loss of the effective goodput). `summarizeLedger` carries `effective` as a statistic.
 - **Loss form, formula (1′)** (`kpiForm`, fields `effective`, `recomputeS` = W, `hardRecomputeSPerH` = Σλᵢ P_rb,i W, `sumLoss` = Σλᵢ rᵢ, `lossS` = R_eff, `otherRecomputeSPerH` = Q_other, `saveFrac` = δ/τ, `pauseFrac`, `factor` = Φ, `headlineModel`, `ledger`):
@@ -457,7 +459,57 @@ Decision (2026-10-28): the report set and the web app's Report tab use the goodp
 
 ### 30.2 What the basis implies on the default set
 
-With C-FAST in the reference baseline the checkpoint period is fixed at τ = 60 s with δ = 1 s, so the saves alone cost δ/τ = 1.67 % nominal and 2.5 % derated (δ × 1.5); the effective goodput cannot exceed 98.33 % nominal / 97.5 % derated for any hardware and any mechanism of the set (every candidate and lever on at 10k: 98.21 % / 97.31 %). At the 98.5 % goal B < 0 at every scale of the four records — the pages print the reason (the three terms of formula 2′), the all-moves design and its ceiling — and the goal becomes reachable only by changing the checkpoint period / save time (Young's interval instead of C-FAST's fixed 60 s, or shorter saves such as C-MEM's 0.5 s) or the target. The A_op basis (`--metric aOp`) still reproduces the v5.5 plans.
+With C-FAST in the reference baseline the checkpoint period is fixed at τ = 60 s with δ = 1 s, so the saves alone cost δ/τ = 1.67 % nominal and 2.5 % derated in the first-order budget of (2′) (δ × 1.5); on the exact renewal model (v5.7, §31.1) the effective goodput cannot exceed τ/(τ + δ) = 98.36 % nominal / 97.56 % derated for any hardware and any mechanism of the set — every candidate and lever on with perfect hardware reaches 98.36 % / 97.56 % at 10k, and at k = 1 the all-moves design reaches 97.52 / 97.12 / 96.68 / 95.38 % derated on native950 at 10k / 100k / 200k / 500k. At the 98.5 % goal B < 0 at every scale of the four records — the pages print the reason (the three terms of formula 2′), the all-moves design and its ceiling — and the goal becomes reachable only by changing the checkpoint period / save time (Young's interval instead of C-FAST's fixed 60 s, or shorter saves such as C-MEM's 0.5 s) or the target. The A_op basis (`--metric aOp`) still reproduces the v5.5 plans.
 
 Goldens: `packages/core/test/golden/golden_v5.json` groups G1e–G6e (`compute_golden_v5.py`, inputs dumped by `dump_inputs_v5.mjs` with the per-class rollback probabilities, the recompute W, the throughput factors and the ledger lines) pin the loss form's closure, the layer split, the requirement, the all-moves identity and the pruning rule on the effective basis; `budget_v5.test.ts` reproduces one regenerated `results.json` block.
 
+## 31. v5.7 the sixth model review, fixed (2026-10-29, `docs/markdown/MODEL_REVIEW_2026-10-29.md` §6)
+
+The sixth review (at 5e782f0) found six problems (F1–F6) and six minor items (M1–M6) on the effective-goodput basis. All are fixed in e6a3443; the studies were regenerated from it (f76cfec, with the set record), and the report set, the goldens and the manual from f76cfec.
+
+### 31.1 The accepted value on the exact renewal model (F4)
+
+- `TrainingKpis.effectiveGoodputExact` = renewal × (1 − P_blocked) × φ_perf × (1 − ℓ_local) × (1 − o) × (1 − p_sdc), the same product as the effective goodput with the exact renewal goodput (§18, the mixed renewal with the durable-lag correction) in place of the headline; `deliveredGoodputExact` runs the delivery model (§19) on that clean-time goodput; `ledgerExact` is the closed-form ledger decomposed with the mixed renewal (running = A_run, save, rollback + lag). When the headline is the exact renewal the three equal the headline values.
+- Readers: `metricValue(·, 'effective')` (the budget, the window rule's mean side, the requirement's target value), `kpiForm` (`effective`, `delivered`, `ledger`; `effectiveFirstOrder` = the loss form), `mechanismValues` (`effective`, `delivered`: the Shapley studies, the planner, the audits), the strategies' goodput metrics, the study's value and decomposition, the planner's scan and `buildLedgerRun`'s closed form. The headline rule stays for display (Reliability page, the scale table, the BOM, the analysis budgets).
+- Why: the first-order headline sat 0.06 pt (10k) to 0.46 pt (500k, derated) below the exact value while every flag read `ok`, and the window ledger reproduces the exact value (native950 500k nominal: first order 93.703 %, exact 93.963 %, ledger 93.977 ± 0.054 %), so the mean rule and the window rule tested different numbers; A_op was exact already.
+- The loss form (1′) is the first-order model: it closes on the engine's first-order goodput (1 − p_sdc)·Φ·g_fo in every regime (`effectiveFirstOrder`, |Δ| ≤ 1e-9) and serves the budget (2′), the weights of the layer split (3′) and the closed form of k (4′).
+
+### 31.2 Formula (2′) and its terms (F1, M1)
+
+- Φ′ = (1 − p_sdc)·Φ, the product of the throughput factors (`kpiForm.factor`, `pauseFrac`), never G_eff/(1 − S): in the exact-renewal regime that ratio exceeds 1 (1.02–1.17 at 500k with 2–4× the record rates), turned the factors term negative and printed an unreachable target as reachable (cm384 500k at 4× rates, 98.5 %: B = +119.4 s/h and "MTBF ≥ 0.96 h" beside a design that reaches 97.03 % with perfect hardware). B = 3600(1 − δ/τ − G*/Φ′) − F − Q_other is the first-order budget at the target, where the losses are small whatever regime today's design is in; the engine's root decides the plan.
+- `terms.other` = F + Q_other + 3600·G*·p_sdc/((1 − p_sdc)Φ) (the episode pauses of undetected corruption with the other classes, as in (3′)); `terms.factors` = 3600·G*(1/Φ − 1); `terms.save` = 3600 δ/τ; B = 3600(1 − G*) − Σ terms. The unreachable sentence names the episode pauses among the other classes.
+
+### 31.3 The straggler law over classes (F5)
+
+`stragglerLawClasses` (`ctmc/repair.ts`): the synchronous step runs at the slowest slowed unit; with the classes sorted by φ ascending and q_c = (1 − p_c)^{n_c}, E[φ_job] = Π_c q_c + Σ_j φ_(j)(1 − q_(j)) Π_{i<j} q_(i) (independent units). With one φ for every class it is the single-class law of §14 exactly (the records: every sub-health class at 0.95, unchanged). Before, every slowed state was charged at the worst class's φ: `atlas950Training` (P(slowed) 0.264, mostly optical links at 0.997 and switches at 0.952) booked 7.9 % slowdown against the ledger's 1.45 %; now 1.41 %. The scale table applies the law per row with n_c scaled. The window ledger multiplies the performance of concurrent slow units (the reference engine's semantics), which differs from the minimum only when slow episodes overlap.
+
+### 31.4 Spare-pool blocking in the window ledger (M2)
+
+`LedgerSpec.blocked` = P_blocked of the scenario; the ledger applies (1 − P_blocked) to compute in the closed form's order (slowdown, local loss, blocked spares, overhead) and books the `blocked` line, which the per-window effective goodput counts (`workedExample3`, P_blocked 0.30 %: closed form 96.80 %, ledger 96.81 ± 0.03 %; before, the window omitted 0.3 pt). The CLI ledger table and the Simulation page show the overhead and blocked lines.
+
+### 31.5 The candidate rule: a gain on top of the reference set, and the sampled half-width (F3, F6)
+
+- The study (`studyOfBuild`) stores for every non-reference player `onReference` = its value added to the set's reference mechanisms (and its prerequisites), nominal at k = 1, for the three metrics; and `halfWidthBy`, the 95 % half-width of every metric's sampled Shapley value (the A_op one alone before v5.7).
+- `pruneByShapley`: a test passes when the Shapley value is at least the threshold on every architecture **and** the mechanism gains on top of the reference set on every architecture (candidate on the rule's metric; goodput-only on the delivered goodput). The allocated designs always hold the reference set, while the Shapley value also averages over coalitions without it: C-ASYNC (blocking target 1.15 s, durable lag 10 s) earned 0.17–0.20 pt where C-FAST was absent and lowers G_eff wherever C-FAST (δ = 1 s) is present — on top of the reference set −0.003 pt (10k) to −0.15 pt nominal / −0.25 pt derated (500k), in the 500k all-moves designs −0.10 to −0.12 pt nominal.
+- Each verdict carries `resolved` and `margin`: the deciding Shapley value (the minimum over the architectures) against the threshold in units of its half-width at that architecture; a failed reference test decides without sampling. `PruneResult.unresolved`, `MechanismHierarchy.unresolved`, `hacd prune` and the Methodology's outcome name the verdicts within one half-width.
+- A stored study without `onReference` or `halfWidthBy` is stale for `hacd findings` ("written before v5.7"); a study read without them skips the two tests.
+- On the v5.7 studies (1200 permutations, 500k): C-ASYNC moves from candidate to pruned by the reference test (on top of the reference set −0.12 to −0.15 pt effective, −0.11 to −0.13 pt delivered over the four topologies, against a Shapley value of +0.20–0.23 pt); every other verdict is unchanged and resolved — the deciding Shapley values lie 8.6 (R-RUNTIME-SNAPSHOT) to 317 half-widths from the threshold, and R-FABRIC-DEGRADE (Shapley 0.07–0.16 pt) also loses 0.08–0.20 pt on top of the reference set. The largest effective-goodput half-width at 500k is 0.18 pt (the reference mechanisms). Candidates: D-HARD, D-RECOVERY-CLASSIFY, R-LINK-LOCAL, R-RUNTIME-SNAPSHOT, H-CONTROL-CONTINUITY, C-LOSSLESS.
+
+### 31.6 Worksheet and presentation (F2, M3, M4, M6)
+
+- The mechanism-set worksheet carries the rule's metric as a prune row (`| metric | effective |` beside `| threshold | … |`); a complete worksheet used to lose it, the rule fell back to A_op and the hierarchy threw on the stored studies.
+- The strategies' hardware split weights a class by its loss λᵢ(t̄ᵢ + P_rb,i W) on the goodput metrics (λᵢ t̄ᵢ on A_op); ARINC is unaffected.
+- Findings Table 4 on the goodput basis: the per-layer column is the loss removed (pause plus the recompute P_rb·W of the layer's rollbacks); C-ASYNC's and C-LOSSLESS's parameters carry labels and two decimals where needed. The no-plan sentence gives the advice once when (2′) already did; the (6′) note quotes the half-width of the rule's metric.
+
+### 31.7 Effect on the report set
+
+Regenerated from f76cfec (`hacd study --permutations 1200`, then `hacd findings`): every scale of the four records stays without a feasible plan at the 98.5 % goal (B unchanged to 0.1 s/h; the terms move between "other classes" and "factors" by the episode pauses, M1), the all-moves designs lose C-ASYNC, and the accepted values rise by the first-order bias and C-ASYNC's lag:
+
+| native950, derated | 10k | 100k | 200k | 500k |
+|---|---|---|---|---|
+| today G_eff (v5.6 → v5.7) | 97.40 → 97.46 % | 96.46 → 96.55 % | 95.43 → 95.57 % | 92.33 → 92.70 % |
+| all-moves design G_eff | 97.45 → 97.52 % | 97.01 → 97.12 % | 96.53 → 96.68 % | 95.08 → 95.38 % |
+| ceiling with perfect hardware | 97.49 → 97.56 % | 97.44 → 97.51 % | 97.39 → 97.45 % | 97.22 → 97.29 % |
+| all-moves design G_del | 96.94 → 97.00 % | 92.14 → 92.24 % | 87.32 → 87.45 % | 75.41 → 75.65 % |
+
+The other three records move alike (500k all-moves G_eff derated: ubl128 95.11 → 95.41 %, cm384 94.72 → 95.07 %, a3server 94.75 → 95.10 %). `reproduce.mjs` prints six OK; the v5 goldens were re-dumped and recomputed (findings 0).

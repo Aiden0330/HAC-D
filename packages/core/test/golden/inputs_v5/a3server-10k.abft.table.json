@@ -411,8 +411,10 @@
  },
  "aOp": 0.9991043973456772,
  "aRun": 0.9991047790781233,
- "delivered": 0.9806054193997215,
- "effective": 0.9813125306423945,
+ "delivered": 0.98089369180315,
+ "effective": 0.9816010109017543,
+ "renewalGoodput": 0.9826367269796853,
+ "firstOrderGoodput": 0.9823479423363586,
  "headlineModel": "first-order",
  "tauS": 60,
  "deltaS": 1,
@@ -423,22 +425,22 @@
  "measuredRecomputeS": null,
  "factors": {
   "blocked": 0,
-  "performance": 0.9999568406328236,
+  "performance": 0.9999568406328582,
   "localLossFraction": 0.000010530372222222221,
   "overhead": 0.001,
   "pauseFraction": 3.8207448718579536e-7
  },
  "ledger": {
-  "downtime": 0.0008964047926064007,
-  "save": 0.016666660298758545,
-  "rollback": 0.00008936790236272801,
-  "slowdown": 0.00004239749933922733,
-  "local": 0.0000103440390707211,
+  "downtime": 0.0008956026543227716,
+  "save": 0.016377272525654362,
+  "rollback": 0.00009077328076112392,
+  "slowdown": 0.00004240996306299307,
+  "local": 0.000010347079948097848,
   "blocked": 0,
-  "overhead": 0.0009822948254678623,
-  "sdcRollback": 0.0006428287978259363,
-  "terminal": 0.00006428244484722966,
-  "delivered": 0.9806054193997215
+  "overhead": 0.0009825835944962506,
+  "sdcRollback": 0.0006430177591151321,
+  "terminal": 0.00006430133948936194,
+  "delivered": 0.98089369180315
  },
  "slowSdcByClass": [
   {
