@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/cli",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "type": "module",
   "description": "Command-line interface for HAC-D scenario evaluation",
   "bin": {

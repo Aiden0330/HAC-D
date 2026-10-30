@@ -14,6 +14,7 @@
  * `BudgetResult` is the shape of one `archs.<id>.sizes.<N>` block of docs/backup/ascend-allocation/results.json; the v4.4 data
  * reproduces from it to 1e-9 (fixed seeds). 口径: as the KPI form; FIT = business-impact interruptions per unit-hour × 1e9.
  */
+import type { VariantSummary } from './variants.js';
 import type { Scenario } from '../scenario/schema.js';
 import type { TrainingKpis } from '../scenario/evaluate.js';
 import { computeCounts, type Counts } from '../scenario/build.js';
@@ -272,6 +273,8 @@ export interface BudgetDocument {
   derate: DerateSpec; candidates: string[]; levers: RecoveryLever[]; reference: string[]; layers: LayerDef[];
   archs: Record<string, { name: { zh: string; en: string }; short: { zh: string; en: string }; family: string; assumed: (string | { zh: string; en: string })[]; layers?: LayerModelSpec; sizes: Record<string, BudgetResult> }>;
   mechanismLibrary: ReturnType<typeof mechanismLibraryTable>;
+  /** v5.9 appendix variants (`hacd findings --variants`): the budget under alternative mechanism sets, reduced to the rows of Appendix A (`variantSummary`); the main tables never read them */
+  variants?: VariantSummary[];
 }
 /** the budget of several architectures at several scales: the shape of docs/backup/ascend-allocation/results.json */
 export function budgetDocument(archs: Record<string, BudgetArchInput>, o: BudgetDocumentOptions): BudgetDocument {

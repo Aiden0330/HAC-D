@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/importers",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "private": true,
   "type": "module",
   "exports": {

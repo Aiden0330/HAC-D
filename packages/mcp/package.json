@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/mcp",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "type": "module",
   "description": "MCP server exposing HAC-D scenario evaluation, comparison, allocation, sensitivity and simulation to agents",
   "bin": {

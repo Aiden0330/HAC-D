@@ -18,7 +18,7 @@ export interface ReportProvenance {
   records: { id: string; name?: Bilingual | string }[];
   set: { id: string; source?: string };
   rates?: { id: string; basis: string };
-  options: { scales?: number[]; target?: number; /** v5.6 the acceptance metric of the target */ metric?: 'aOp' | 'effective'; trials?: number; seed?: number; permutations?: number; npus?: number };
+  options: { scales?: number[]; target?: number; /** v5.6 the acceptance metric of the target */ metric?: 'aOp' | 'effective'; trials?: number; seed?: number; permutations?: number; npus?: number; /** v5.9 the mechanism sets of the appendix variants */ variants?: string[] };
   /** version of packages/core/package.json and the short git hash when available */
   engine: { version: string; commit?: string };
 }

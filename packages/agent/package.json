@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/agent",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "private": true,
   "type": "module",
   "description": "HAC-D v6 extraction worker: model adapters (OpenAI-compatible, mock, none), chunking, evidence cards with grounding and two-pass agreement, review queue and run log",

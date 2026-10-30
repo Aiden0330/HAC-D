@@ -6,7 +6,7 @@ description: Pre-release verification for HAC-D — golden tests, typecheck, pro
 # Release check
 
 ```bash
-npm test                                   # 358 core tests (143 + 26 + 18 golden vectors) + 29 importer tests
+npm test                                   # every suite: core (goldens included), importers, agent, reports, CLI (the operate tests spawn the mock model; about 3 min)
 npm run typecheck                          # core, cli, mcp, importers, web
 npm run build -w @hac-d/web                # production bundle
 node --import tsx packages/cli/src/main.ts example ref-three-classes-100k > data-staging/three.json
@@ -17,7 +17,7 @@ node --import tsx packages/cli/src/main.ts ledger data-staging/three.json --tria
 node --import tsx packages/cli/src/main.ts plan data-staging/three.json --target 0.9 --trials 100 | head -6
 ```
 
-Expected on the three-class example at 100k cards: delivered 62.6 %, A_op 97.55 %; the ledger simulation agrees with the closed form; the plan is D-SDC alone at effort 5 (92.3 % nominal).
+Expected on the three-class example at 100k cards: delivered 62.7 % (62.711 since the v5.7 straggler law; 62.6 before), A_op 97.55 %; the ledger simulation agrees with the closed form; the plan is D-SDC alone at effort 5 (92.5 % nominal / 90.2 % derated). Since v5.9 also `node packages/reports/test/reproduce.mjs` (six OK) and, after a recipe or data change, the regenerated pages carry Appendix A (`hacd findings --variants`).
 
 ## Browser checks
 

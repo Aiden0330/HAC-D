@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/core",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "type": "module",
   "description": "Numerics core for HAC-D: RBD, fault tree, CTMC, checkpoint/goodput, sparing, MTTR pipeline, allocation, Monte Carlo",
   "main": "./src/index.ts",

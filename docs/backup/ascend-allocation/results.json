@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-29T13:57:39.609Z",
+ "generated": "2026-10-30T02:16:59.781Z",
  "metric": "effective",
  "target": 0.985,
  "sizes": [
@@ -542,6 +542,8 @@
        "sumLoss": 3.0182023523809525,
        "lossS": 97.4314689709155,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000001403890594682851,
        "factor": 0.9999505617866136,
@@ -602,6 +604,8 @@
        "sumLoss": 3.3914732476190483,
        "lossS": 109.48113542831744,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.0000028002058595923116,
        "factor": 0.9999457051760993,
@@ -1454,7 +1458,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -1515,6 +1524,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9835565589198814,
        "derated": 0.9755539945657522
@@ -1804,6 +1814,8 @@
         "sumLoss": 0.7374885390334784,
         "lossS": 23.807082268875256,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 3.445312924333859e-7,
         "factor": 0.9999514183637255,
@@ -1864,6 +1876,8 @@
         "sumLoss": 1.380248200119291,
         "lossS": 44.55619404576983,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.0000010457247870653859,
         "factor": 0.9999467313893949,
@@ -3078,6 +3092,8 @@
        "sumLoss": 30.155428771428575,
        "lossS": 97.37400370106832,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000013611749096213921,
        "factor": 0.9995072470696705,
@@ -3138,6 +3154,8 @@
        "sumLoss": 33.88813772380953,
        "lossS": 109.42718384647983,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.000026527131295030622,
        "factor": 0.9994586982741198,
@@ -3990,7 +4008,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -4051,6 +4074,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9831083142421218,
        "derated": 0.9750543080563546
@@ -4340,6 +4364,8 @@
         "sumLoss": 7.369138585406212,
         "lossS": 23.795467586549467,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.0000033598869311582333,
         "factor": 0.9995158097878372,
@@ -4400,6 +4426,8 @@
         "sumLoss": 13.794050509582197,
         "lossS": 44.5419607711036,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000009955660563338744,
         "factor": 0.9994689567495192,
@@ -5614,6 +5642,8 @@
        "sumLoss": 60.30704867619048,
        "lossS": 97.36988736367314,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000026334215334438752,
        "factor": 0.9990177338561037,
@@ -5674,6 +5704,8 @@
        "sumLoss": 67.77246658095238,
        "lossS": 109.4233192006783,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00005012092227020605,
        "factor": 0.9989206744406581,
@@ -6526,7 +6558,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -6587,6 +6624,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.982613462829339,
        "derated": 0.9745030683656782
@@ -6876,6 +6914,8 @@
         "sumLoss": 14.737455985032422,
         "lossS": 23.794638616700148,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000006539916928402431,
         "factor": 0.9990348525592649,
@@ -6936,6 +6976,8 @@
         "sumLoss": 27.586895711549396,
         "lossS": 44.54094483332693,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.00001890399641625753,
         "factor": 0.9989411833248503,
@@ -8150,6 +8192,8 @@
        "sumLoss": 150.7693914952381,
        "lossS": 97.3706524455741,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.00005995237942912285,
        "factor": 0.9975681778155657,
@@ -8210,6 +8254,8 @@
        "sumLoss": 169.43293625714284,
        "lossS": 109.42403750199146,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00010744882632398732,
        "factor": 0.9973258110928666,
@@ -9062,7 +9108,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -9123,6 +9174,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9811486419911087,
        "derated": 0.972872912080651
@@ -9412,6 +9464,8 @@
         "sumLoss": 36.8440475644082,
         "lossS": 23.794809506779103,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000015133532311144694,
         "factor": 0.9976109248686261,
@@ -9472,6 +9526,8 @@
         "sumLoss": 68.96783060929242,
         "lossS": 44.54115386142379,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000041023963108250314,
         "factor": 0.9973770237549768,
@@ -10737,6 +10793,8 @@
        "sumLoss": 2.8349974380952387,
        "lossS": 93.14648144265706,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.0000013853870595237523,
        "factor": 0.9999510733380927,
@@ -10797,6 +10855,8 @@
        "sumLoss": 3.210735952380953,
        "lossS": 105.49172030527859,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.0000027633913343048097,
        "factor": 0.999946216725094,
@@ -11649,7 +11709,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -11710,6 +11775,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9835572006082316,
        "derated": 0.9755547113863985
@@ -11999,6 +12065,8 @@
         "sumLoss": 0.7335763929420498,
         "lossS": 24.102335668372646,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 3.399732696092091e-7,
         "factor": 0.999951929915643,
@@ -12059,6 +12127,8 @@
         "sumLoss": 1.3652935147164338,
         "lossS": 44.857990107306094,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000001031928890168995,
         "factor": 0.9999472429389147,
@@ -13273,6 +13343,8 @@
        "sumLoss": 28.33189488571429,
        "lossS": 93.10585941321743,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000013443148264331857,
        "factor": 0.9995122929975063,
@@ -13333,6 +13405,8 @@
        "sumLoss": 32.08928002857143,
        "lossS": 105.45358886383616,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00002620636682124063,
        "factor": 0.9994637439568611,
@@ -14185,7 +14259,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -14246,6 +14325,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9831146510887188,
        "derated": 0.9750613813462619
@@ -14535,6 +14615,8 @@
         "sumLoss": 7.33020630921764,
         "lossS": 24.088934427044784,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.0000033166690483450638,
         "factor": 0.999520855758901,
@@ -14595,6 +14677,8 @@
         "sumLoss": 13.645219859880768,
         "lossS": 44.84168556537659,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000009831017744296844,
         "factor": 0.9994740024840495,
@@ -15809,6 +15893,8 @@
        "sumLoss": 56.6612093904762,
        "lossS": 93.10295991392267,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000026028368953581353,
        "factor": 0.9990277405886228,
@@ -15869,6 +15955,8 @@
        "sumLoss": 64.17597967619048,
        "lossS": 105.45086713651,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00004956492399106549,
        "factor": 0.9989306802009746,
@@ -16721,7 +16809,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -16782,6 +16875,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9826260455877455,
        "derated": 0.9745171036222635
@@ -17071,6 +17165,8 @@
         "sumLoss": 14.65961872610385,
         "lossS": 24.087976753267924,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000006457945956714319,
         "factor": 0.9990448594632547,
@@ -17131,6 +17227,8 @@
         "sumLoss": 27.28933773806725,
         "lossS": 44.84052043428188,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.0000186790863958213,
         "factor": 0.9989511892905955,
@@ -18345,6 +18443,8 @@
        "sumLoss": 141.65417903809526,
        "lossS": 93.1034793086302,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.00005937868478329838,
        "factor": 0.9975926036364937,
@@ -18405,6 +18505,8 @@
        "sumLoss": 160.44110475238094,
        "lossS": 105.45135468647115,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.0001065186759451349,
        "factor": 0.9973502309793568,
@@ -19257,7 +19359,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -19318,6 +19425,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9811794780288644,
        "derated": 0.9729072677032414
@@ -19607,6 +19715,8 @@
         "sumLoss": 36.64944077036249,
         "lossS": 24.08817356188741,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000014957161879795783,
         "factor": 0.9976353517362312,
@@ -19667,6 +19777,8 @@
         "sumLoss": 68.2238840126267,
         "lossS": 44.84075949369454,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000040598871508183674,
         "factor": 0.9974014448954278,
@@ -20921,6 +21033,8 @@
        "sumLoss": 3.464809723809524,
        "lossS": 102.77442511525948,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.0000014064597517567217,
        "factor": 0.9999445923821447,
@@ -20981,6 +21095,8 @@
        "sumLoss": 3.876505380952381,
        "lossS": 114.98628892831317,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.000002805286916190315,
        "factor": 0.9999394338192151,
@@ -21852,7 +21968,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -21913,6 +22034,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9835502279488217,
        "derated": 0.97554703196447
@@ -22202,6 +22324,8 @@
         "sumLoss": 0.8674292102339338,
         "lossS": 25.72999544458593,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 3.4519342521055494e-7,
         "factor": 0.9999455008607986,
@@ -22262,6 +22386,8 @@
         "sumLoss": 1.5861331806786894,
         "lossS": 47.048449639323366,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.0000010477064764366156,
         "factor": 0.9999404936715997,
@@ -23511,6 +23637,8 @@
        "sumLoss": 34.78427293333334,
        "lossS": 102.79253386538687,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000013630760792249129,
        "factor": 0.9994453056140455,
@@ -23571,6 +23699,8 @@
        "sumLoss": 38.9259056952381,
        "lossS": 115.03165488286601,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.000026560424140709624,
        "factor": 0.9993937408551832,
@@ -24461,7 +24591,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -24522,6 +24657,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9830421259201477,
        "derated": 0.9749814833489937
@@ -24811,6 +24947,8 @@
         "sumLoss": 8.675216165242194,
         "lossS": 25.636512603391495,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.0000033677129964575148,
         "factor": 0.9994543867250751,
@@ -24871,6 +25009,8 @@
         "sumLoss": 15.872904368809754,
         "lossS": 46.90671738345769,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000009976173655456169,
         "factor": 0.9994043350910943,
@@ -26139,6 +26279,8 @@
        "sumLoss": 69.56854586666668,
        "lossS": 102.79253386538687,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000026337287053177332,
        "factor": 0.9988947449224059,
@@ -26199,6 +26341,8 @@
        "sumLoss": 77.8518113904762,
        "lossS": 115.03165488286601,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00005011644748906583,
        "factor": 0.9987916613590263,
@@ -27089,7 +27233,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -27150,6 +27299,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9824819723472067,
        "derated": 0.9743583198693719
@@ -27439,6 +27589,8 @@
         "sumLoss": 17.350432330484388,
         "lossS": 25.636512603391495,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000006552452443990931,
         "factor": 0.9989128990514087,
@@ -27499,6 +27651,8 @@
         "sumLoss": 31.74580873761951,
         "lossS": 46.90671738345769,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000018930964915694048,
         "factor": 0.9988128403893001,
@@ -28767,6 +28921,8 @@
        "sumLoss": 173.9212468666667,
        "lossS": 102.7924885435234,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.00005975553409189061,
        "factor": 0.9972674913724823,
@@ -28827,6 +28983,8 @@
        "sumLoss": 194.62941067619047,
        "lossS": 115.03161245447237,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00010708629258673626,
        "factor": 0.9970101209624656,
@@ -29717,7 +29875,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -29778,6 +29941,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9808266916752743,
        "derated": 0.9725179413337096
@@ -30067,6 +30231,8 @@
         "sumLoss": 43.37607820903098,
         "lossS": 25.63651711733066,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000015145438926889717,
         "factor": 0.9973128170817588,
@@ -30127,6 +30293,8 @@
         "sumLoss": 79.36451193608376,
         "lossS": 46.90672261685454,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.00004101756649399782,
         "factor": 0.997062998991965,
@@ -31418,6 +31586,8 @@
        "sumLoss": 3.384887123809524,
        "lossS": 102.94889532448559,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.0000014016304952684519,
        "factor": 0.9999463107151202,
@@ -31478,6 +31648,8 @@
        "sumLoss": 3.7793094476190476,
        "lossS": 114.94496522054988,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.000002795692958716203,
        "factor": 0.9999411521433259,
@@ -32341,7 +32513,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -32402,6 +32579,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9835523512979217,
        "derated": 0.9755493653748205
@@ -32691,6 +32869,8 @@
         "sumLoss": 0.8645465461739339,
         "lossS": 26.29455832046657,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 3.440003533854001e-7,
         "factor": 0.9999472191953351,
@@ -32751,6 +32931,8 @@
         "sumLoss": 1.5762303632736894,
         "lossS": 47.93990722305408,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.0000010440970012896498,
         "factor": 0.9999422119975319,
@@ -33991,6 +34173,8 @@
        "sumLoss": 33.98540033333334,
        "lossS": 102.96748883678994,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000013587920104291288,
        "factor": 0.9994623494442348,
@@ -34051,6 +34235,8 @@
        "sumLoss": 37.95429976190477,
        "lossS": 114.9922878268711,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00002648019323555834,
        "factor": 0.9994107838060237,
@@ -34933,7 +35119,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -34994,6 +35185,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9830632183780559,
        "derated": 0.9750046715664685
@@ -35283,6 +35475,8 @@
         "sumLoss": 8.646397376182195,
         "lossS": 26.196478975628658,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.0000033563920177007875,
         "factor": 0.9994714307101272,
@@ -35343,6 +35537,8 @@
         "sumLoss": 15.773905918654755,
         "lossS": 47.791094577709636,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000009943670447630477,
         "factor": 0.9994213782226014,
@@ -36602,6 +36798,8 @@
        "sumLoss": 67.97080066666668,
        "lossS": 102.96748883678994,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.000026262356167739823,
        "factor": 0.9989285284291687,
@@ -36662,6 +36860,8 @@
        "sumLoss": 75.90859952380954,
        "lossS": 114.9922878268711,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.000049984727681250964,
        "factor": 0.9988254413794115,
@@ -37544,7 +37744,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -37605,6 +37810,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9825238505580713,
        "derated": 0.974404380156924
@@ -37894,6 +38100,8 @@
         "sumLoss": 17.29279475236439,
         "lossS": 26.196478975628658,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000006531044876149332,
         "factor": 0.9989466831721603,
@@ -37954,6 +38162,8 @@
         "sumLoss": 31.54781183730951,
         "lossS": 47.791094577709636,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000018872750281870535,
         "factor": 0.9988466211259789,
@@ -39213,6 +39423,8 @@
        "sumLoss": 169.92700166666668,
        "lossS": 102.96748883678993,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1,
        "saveFrac": 0.016666666666666666,
        "pauseFrac": 0.00005963265786728532,
        "factor": 0.9973497090149608,
@@ -39273,6 +39485,8 @@
        "sumLoss": 189.77149880952382,
        "lossS": 114.99228782687108,
        "otherRecomputeSPerH": 0,
+       "tauS": 60,
+       "deltaS": 1.5,
        "saveFrac": 0.025,
        "pauseFrac": 0.00010690721203612135,
        "factor": 0.9970923173865764,
@@ -40155,7 +40369,12 @@
         "feasible": false
        }
       ],
-      "evaluations": 204
+      "evaluations": 204,
+      "solver": {
+       "mode": "greedy",
+       "moves": 9,
+       "exactUpTo": 6
+      }
      },
      "recommended": {
       "mechanisms": [
@@ -40216,6 +40435,7 @@
        }
       ],
       "feasible": false,
+      "cause": "ceiling",
       "ceiling": {
        "nominal": 0.9809291281126792,
        "derated": 0.9726307728101967
@@ -40505,6 +40725,8 @@
         "sumLoss": 43.23198688091097,
         "lossS": 26.196478975628654,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1,
         "saveFrac": 0.016666666666666666,
         "pauseFrac": 0.000015099830947806959,
         "factor": 0.9973950384610211,
@@ -40565,6 +40787,8 @@
         "sumLoss": 78.86952959327377,
         "lossS": 47.79109457770963,
         "otherRecomputeSPerH": 0,
+        "tauS": 60,
+        "deltaS": 1.5,
         "saveFrac": 0.025,
         "pauseFrac": 0.000040910020704918174,
         "factor": 0.997145199775495,
@@ -41736,5 +41960,1522 @@
     "share": 0.95
    }
   }
- }
+ },
+ "variants": [
+  {
+   "id": "remap-latest-2026-10--young",
+   "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic); v5.9 appendix variant (user's request 2026-10-29): the reference set plus C-YOUNG — the checkpoint period by Young's rule τ = √(2δ·M_rb) on C-FAST's 1 s save (hacd findings --variants)",
+   "baseline": [
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST",
+    "C-YOUNG"
+   ],
+   "added": [
+    "C-YOUNG"
+   ],
+   "removed": [],
+   "mechanisms": {
+    "C-YOUNG": {
+     "name": {
+      "zh": "Young 检查点周期",
+      "en": "Young checkpoint interval"
+     },
+     "kind": "checkpoint",
+     "effort": 1,
+     "change": {
+      "zh": "检查点周期不再固定：τ = √(2δ·M_rb)（Young 公式，M_rb 为回滚事件的平均间隔，随规模与降额变化）；保存时间 δ 不变",
+      "en": "the checkpoint period is no longer fixed: τ = √(2δ·M_rb) (Young’s rule, M_rb the mean interval of rollback events, moving with scale and derating); the save time δ stays as it is"
+     },
+     "requires": [],
+     "nominal": {},
+     "derated": {}
+    }
+   },
+   "archs": {
+    "native950": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 1021.3161378622757,
+       "deltaS": 1.5,
+       "saveSPerH": 5.287295284790838,
+       "effective": 0.9961144749072106,
+       "delivered": 0.9908549747076244,
+       "mtbfHwH": 32.28129117786131,
+       "lossS": 270.1347500730289
+      },
+      "required": {
+       "B": 48.35982835519684,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.287295284790838,
+        "other": 0.1603364605402593,
+        "factors": 0.19253989947164873
+       },
+       "mtbfAtTodayMttrH": 5.585932772319274,
+       "mttrAtTodayMtbfS": 1561.117700445503
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 7.112299554523965,
+       "effective": 0.9859994224923475,
+       "delivered": 0.9808370592005448,
+       "pWindow": 0.935,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 323.1094565900057,
+       "deltaS": 1.5,
+       "saveSPerH": 16.712602772416133,
+       "effective": 0.9813794803305619,
+       "delivered": 0.9324637320422908,
+       "mtbfHwH": 3.229070441648884,
+       "lossS": 153.37207558016695
+      },
+      "required": {
+       "B": 33.76957526666931,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 16.712602772416133,
+        "other": 1.5973264734218466,
+        "factors": 1.9204954874934272
+       },
+       "mtbfAtTodayMttrH": 4.541723559417869,
+       "mttrAtTodayMtbfS": 109.04433732063909
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "k": 1.0069794694031464,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9357316691868176,
+       "pWindow": 0.9875,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 228.48002918305534,
+       "deltaS": 1.5,
+       "saveSPerH": 23.634450762756106,
+       "effective": 0.9684417496701526,
+       "delivered": 0.8773575916788671,
+       "mtbfHwH": 1.6145689351585737,
+       "lossS": 137.56190651082142
+      },
+      "required": {
+       "B": 23.34997756012224,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 23.634450762756106,
+        "other": 3.184147890073343,
+        "factors": 3.8314237870480317
+       },
+       "mtbfAtTodayMttrH": 5.891307867710912,
+       "mttrAtTodayMtbfS": 37.70014840522316
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.6475788921099077,
+       "effective": 0.985,
+       "delivered": 0.891084942848721,
+       "pWindow": 0.99,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 144.50261892271246,
+       "deltaS": 1.5,
+       "saveSPerH": 37.36956492731942,
+       "effective": 0.9347421413121803,
+       "delivered": 0.7465564029870494,
+       "mtbfHwH": 0.6458250675413083,
+       "lossS": 123.53729906317687
+      },
+      "required": {
+       "B": -0.7754303514279393,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 37.36956492731942,
+        "other": 7.897765103006556,
+        "factors": 9.50810032110178
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.2127338143564132,
+       "effective": 0.985,
+       "delivered": 0.7793101365156373,
+       "pWindow": 0.965,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "ubl128": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 1053.3342522920118,
+       "deltaS": 1.5,
+       "saveSPerH": 5.126577805905223,
+       "effective": 0.9962494167608977,
+       "delivered": 0.9910579443690223,
+       "mtbfHwH": 32.85593143436481,
+       "lossS": 264.33562009157373
+      },
+      "required": {
+       "B": 48.52442600808692,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.126577805905223,
+        "other": 0.1582704353355656,
+        "factors": 0.1907257506725406
+       },
+       "mtbfAtTodayMttrH": 5.447475464161502,
+       "mttrAtTodayMtbfS": 1594.3152138136124
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 7.0856831224055785,
+       "effective": 0.9865856272547707,
+       "delivered": 0.9814859102833167,
+       "pWindow": 0.9475,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 333.19862504299687,
+       "deltaS": 1.5,
+       "saveSPerH": 16.206549469713956,
+       "effective": 0.9821030706847231,
+       "delivered": 0.933738314901226,
+       "mtbfHwH": 3.2862559948351326,
+       "lossS": 149.12198680277044
+      },
+      "required": {
+       "B": 34.31390216672815,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 16.206549469713956,
+        "other": 1.5769641623122528,
+        "factors": 1.902584201246301
+       },
+       "mtbfAtTodayMttrH": 4.345818382246361,
+       "mttrAtTodayMtbfS": 112.76426670159663
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [
+        "auto",
+        "manual"
+       ],
+       "k": 1.0612883267515527,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9363511463334957,
+       "pWindow": 0.9925,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 235.61231272227604,
+       "deltaS": 1.5,
+       "saveSPerH": 22.919005961989587,
+       "effective": 0.9697025994084073,
+       "delivered": 0.8795025555230569,
+       "mtbfHwH": 1.6431516537585893,
+       "lossS": 133.5200911127421
+      },
+      "required": {
+       "B": 24.141384713488094,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 22.919005961989587,
+        "other": 3.143742321437322,
+        "factors": 3.7958670030845876
+       },
+       "mtbfAtTodayMttrH": 5.530755285886429,
+       "mttrAtTodayMtbfS": 39.66795621599029
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "H-CONTROL-CONTINUITY",
+        "D-HARD",
+        "R-LINK-LOCAL"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.6561155707549953,
+       "effective": 0.9850000000000001,
+       "delivered": 0.8922094323690524,
+       "pWindow": 0.985,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 149.01370951203123,
+       "deltaS": 1.5,
+       "saveSPerH": 36.238276449080736,
+       "effective": 0.9373918827280445,
+       "delivered": 0.7502960124799007,
+       "mtbfHwH": 0.6572589664551425,
+       "lossS": 119.67905560270314
+      },
+      "required": {
+       "B": 0.5423430870167181,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 36.238276449080736,
+        "other": 7.7983359247401465,
+        "factors": 9.421044539162423
+       },
+       "mtbfAtTodayMttrH": 220.67038092257266,
+       "mttrAtTodayMtbfS": 0.3564598568366995
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.21617973638895144,
+       "effective": 0.9850000000000001,
+       "delivered": 0.7814702915238508,
+       "pWindow": 0.965,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "cm384": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 950.7265375252255,
+       "deltaS": 1.5,
+       "saveSPerH": 5.679866698637012,
+       "effective": 0.9957646943235418,
+       "delivered": 0.9904984710166671,
+       "mtbfHwH": 29.662357620683427,
+       "lossS": 272.83192696757095
+      },
+      "required": {
+       "B": 47.92594901765087,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.679866698637012,
+        "other": 0.1794035982032572,
+        "factors": 0.21478068550885387
+       },
+       "mtbfAtTodayMttrH": 5.692780895524644,
+       "mttrAtTodayMtbfS": 1421.5966390722017
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 5.489710609314755,
+       "effective": 0.9871497764116403,
+       "delivered": 0.9819663273538326,
+       "pWindow": 0.9625,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 300.0385312315318,
+       "deltaS": 1.5,
+       "saveSPerH": 17.99768842300112,
+       "effective": 0.9793343580289572,
+       "delivered": 0.9304708706654913,
+       "mtbfHwH": 2.9551439543496123,
+       "lossS": 157.5816290243747
+      },
+      "required": {
+       "B": 32.053316905893396,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 17.99768842300112,
+        "other": 1.797895620114083,
+        "factors": 2.151099050991228
+       },
+       "mtbfAtTodayMttrH": 4.916234706287179,
+       "mttrAtTodayMtbfS": 94.72216567130309
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 1.0225693243899414,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9355937768151517,
+       "pWindow": 0.99,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 212.15928005106787,
+       "deltaS": 1.5,
+       "saveSPerH": 25.452575059173427,
+       "effective": 0.9648363605563404,
+       "delivered": 0.8741200327279033,
+       "mtbfHwH": 1.4775719771748062,
+       "lossS": 142.00388054324796
+      },
+      "required": {
+       "B": 20.67233081080532,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 25.452575059173427,
+        "other": 3.5851415937109135,
+        "factors": 4.289952536310409
+       },
+       "mtbfAtTodayMttrH": 6.869272838311162,
+       "mttrAtTodayMtbfS": 30.54485670893328
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.5494357377251379,
+       "effective": 0.9850000000000002,
+       "delivered": 0.8908414913327326,
+       "pWindow": 0.98,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 134.1813550791956,
+       "deltaS": 1.5,
+       "saveSPerH": 40.244041333558215,
+       "effective": 0.9270982637996815,
+       "delivered": 0.7410992314654775,
+       "mtbfHwH": 0.5910289305959682,
+       "lossS": 128.18122375063842
+      },
+      "required": {
+       "B": -5.777026038776276,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 40.244041333558215,
+        "other": 8.899079548004336,
+        "factors": 10.633905157213581
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.174894326508936,
+       "effective": 0.9850000000000002,
+       "delivered": 0.7788285642351369,
+       "pWindow": 0.9475,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "a3server": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 962.346317173583,
+       "deltaS": 1.5,
+       "saveSPerH": 5.61128556698781,
+       "effective": 0.9958306510024361,
+       "delivered": 0.990581925820182,
+       "mtbfHwH": 30.414277214840087,
+       "lossS": 274.96771641314297
+      },
+      "required": {
+       "B": 48.00708133555122,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.61128556698781,
+        "other": 0.17294631692499246,
+        "factors": 0.2086867805363366
+       },
+       "mtbfAtTodayMttrH": 5.727649104331574,
+       "mttrAtTodayMtbfS": 1460.1006800148302
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 6.175899145313308,
+       "effective": 0.9862838312158766,
+       "delivered": 0.9811264596613488,
+       "pWindow": 0.9425,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 303.68896753136147,
+       "deltaS": 1.5,
+       "saveSPerH": 17.78135058344637,
+       "effective": 0.9797251030147763,
+       "delivered": 0.9309878468644156,
+       "mtbfHwH": 3.029756537421101,
+       "lossS": 158.22169987410268
+      },
+      "required": {
+       "B": 32.39467277928735,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 17.78135058344637,
+        "other": 1.7333842025085053,
+        "factors": 2.09059243475779
+       },
+       "mtbfAtTodayMttrH": 4.884188858831974,
+       "mttrAtTodayMtbfS": 98.14797163066322
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.9903675364054663,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9357517676471937,
+       "pWindow": 0.9925,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 214.74052831296694,
+       "deltaS": 1.5,
+       "saveSPerH": 25.146627152420606,
+       "effective": 0.9655331335057261,
+       "delivered": 0.874986474849674,
+       "mtbfHwH": 1.5148782687105504,
+       "lossS": 142.44261570429816
+      },
+      "required": {
+       "B": 21.227273162716184,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 25.146627152420606,
+        "other": 3.4562170446547285,
+        "factors": 4.169882640208915
+       },
+       "mtbfAtTodayMttrH": 6.710358632143385,
+       "mttrAtTodayMtbfS": 32.15673481818142
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.5554457913469946,
+       "effective": 0.985,
+       "delivered": 0.891138269420585,
+       "pWindow": 0.9925,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 135.81383508337018,
+       "deltaS": 1.5,
+       "saveSPerH": 39.76030863634162,
+       "effective": 0.9285909986249167,
+       "delivered": 0.742601343191622,
+       "mtbfHwH": 0.6059513074842201,
+       "lossS": 128.44134770389684
+      },
+      "required": {
+       "B": -4.678291636642905,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 39.76030863634162,
+        "other": 8.577272950278362,
+        "factors": 10.34071005002312
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.17857790004842292,
+       "effective": 0.985,
+       "delivered": 0.7794023774199275,
+       "pWindow": 0.9525,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "remap-latest-2026-10--cmem",
+   "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic); v5.9 appendix variant (user's request 2026-10-29): C-MEM (in-memory / tiered checkpoints — 0.5 s save every 60 s, the load of a global recovery 60 s shorter, 1 % throughput overhead) in place of C-FAST in the reference set (hacd findings --variants)",
+   "baseline": [
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-MEM"
+   ],
+   "added": [
+    "C-MEM"
+   ],
+   "removed": [
+    "C-FAST"
+   ],
+   "mechanisms": {
+    "C-MEM": {
+     "name": {
+      "zh": "内存 / 分层 checkpoint",
+      "en": "In-memory and tiered checkpointing"
+     },
+     "kind": "checkpoint",
+     "effort": 3,
+     "change": {
+      "zh": "暴露保存时间降到 0.5 s、每 60 s 一次；从主机 / 邻居内存加载使全局恢复缩短 60 s；主机内存与流量干扰计 1 % 开销",
+      "en": "exposed save time 0.5 s every 60 s; loading from host / peer memory shortens the global recovery by 60 s; host-memory and traffic interference cost 1 % of throughput"
+     },
+     "requires": [],
+     "nominal": {
+      "computeSeconds": 60,
+      "saveSeconds": 0.5,
+      "loadSavingSeconds": 60,
+      "overhead": 0.01
+     },
+     "derated": {
+      "computeSeconds": 60,
+      "saveSeconds": 0.75,
+      "loadSavingSeconds": 40,
+      "overhead": 0.015
+     }
+    }
+   },
+   "archs": {
+    "native950": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9719354947570908,
+       "delivered": 0.9668022734715379,
+       "mtbfHwH": 32.28129117786131,
+       "lossS": 97.27249867646708
+      },
+      "required": {
+       "B": -45.33080845792038,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 0.13533647876120694,
+        "factors": 54.19547197915928
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9724047672027489,
+       "delivered": 0.967266613108065,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.972783911083454,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.963872533347123,
+       "delivered": 0.9156217514796302,
+       "mtbfHwH": 3.229070441648884,
+       "lossS": 97.22665106830878
+      },
+      "required": {
+       "B": -48.29820501124883,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 1.3484633995812927,
+        "factors": 55.94974161166838
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.968509617287985,
+       "delivered": 0.9198061839599553,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9722857163424501,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9550520245564785,
+       "delivered": 0.8646713742942427,
+       "mtbfHwH": 1.6145689351585737,
+       "lossS": 97.22336692426066
+      },
+      "required": {
+       "B": -51.57794945277684,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 2.6881791105960424,
+        "factors": 57.889770342181066
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9642130451757924,
+       "delivered": 0.8721769721295669,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9717361227955773,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9294253958822815,
+       "delivered": 0.740611188716632,
+       "mtbfHwH": 0.6458250675413083,
+       "lossS": 97.22397733077747
+      },
+      "required": {
+       "B": -61.32043619964781,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 6.667542472641506,
+        "factors": 63.652893727006635
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9515156234491536,
+       "delivered": 0.7545823784872621,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9701108373518743,
+       "constrained": null
+      }
+     }
+    ],
+    "ubl128": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9719785995600092,
+       "delivered": 0.9669126725611031,
+       "mtbfHwH": 32.85593143436481,
+       "lossS": 93.88043413637405
+      },
+      "required": {
+       "B": -45.32722226080832,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 0.13359205708043184,
+        "factors": 54.193630203728254
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.972409526931199,
+       "delivered": 0.9673391305896281,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9727846258577932,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9642954675044524,
+       "delivered": 0.9166100496766002,
+       "mtbfHwH": 3.2862559948351326,
+       "lossS": 93.84802997090509
+      },
+      "required": {
+       "B": -48.26281910990045,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 1.3312615451839003,
+        "factors": 55.93155756471657
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9685566464933065,
+       "delivered": 0.9204603490892836,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9722927694400361,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9558844382670727,
+       "delivered": 0.8664384823394643,
+       "mtbfHwH": 1.6431516537585893,
+       "lossS": 93.84571704227449
+      },
+      "required": {
+       "B": -51.50771092733787,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 2.654038842987904,
+        "factors": 57.853672084349974
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9643063505781356,
+       "delivered": 0.8733555110303176,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9717501179852879,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9314123871986635,
+       "delivered": 0.743876834787401,
+       "mtbfHwH": 0.6572589664551425,
+       "lossS": 93.84613136308214
+      },
+      "required": {
+       "B": -61.14804183275564,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 6.583529610255994,
+        "factors": 63.56451222249975
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9517436694207944,
+       "delivered": 0.7568005181157975,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9701450948988436,
+       "constrained": null
+      }
+     }
+    ],
+    "cm384": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.971810490541253,
+       "delivered": 0.9666685251944407,
+       "mtbfHwH": 29.662357620683427,
+       "lossS": 101.96216919408789
+      },
+      "required": {
+       "B": -45.3694303552167,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 0.15137889784721392,
+        "factors": 54.21805145736979
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9723410560392258,
+       "delivered": 0.9671935018337945,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9727769684175901,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.962593310598066,
+       "delivered": 0.9143377262048751,
+       "mtbfHwH": 2.9551439543496123,
+       "lossS": 101.99897583153813
+      },
+      "required": {
+       "B": -48.7010941818703,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 1.5172372773104332,
+        "factors": 56.183856904559605
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9678680585470628,
+       "delivered": 0.9190965714762558,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9722131000756419,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9525362749997445,
+       "delivered": 0.8623723164066741,
+       "mtbfHwH": 1.4775719771748062,
+       "lossS": 101.99897583153813
+      },
+      "required": {
+       "B": -52.38090277963747,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 3.025621016886186,
+        "factors": 58.35528176275167
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9629396177516356,
+       "delivered": 0.8708938071877179,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9715917886059026,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9234474983289547,
+       "delivered": 0.7363508105043173,
+       "mtbfHwH": 0.5910289305959682,
+       "lossS": 101.99893977853124
+      },
+      "required": {
+       "B": -63.30603409183635,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 7.510191292634855,
+        "factors": 64.79584279920174
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9484058551339597,
+       "delivered": 0.7521455354291866,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9697568826504381,
+       "constrained": null
+      }
+     }
+    ],
+    "a3server": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9718367781789201,
+       "delivered": 0.9667122764466795,
+       "mtbfHwH": 30.414277214840087,
+       "lossS": 101.93960593524483
+      },
+      "required": {
+       "B": -45.357809605776,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 0.14594485396224302,
+        "factors": 54.21186475181297
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9723460577863623,
+       "delivered": 0.9672162102576567,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9727792951971904,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9628517655153065,
+       "delivered": 0.9147305244041108,
+       "mtbfHwH": 3.029756537421101,
+       "lossS": 101.97798304779081
+      },
+      "required": {
+       "B": -48.585373705926294,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 1.462944838151957,
+        "factors": 56.12242886777403
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.967917612884143,
+       "delivered": 0.9193024642787843,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9722362224021137,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9530437994115598,
+       "delivered": 0.8630741466129633,
+       "mtbfHwH": 1.5148782687105504,
+       "lossS": 101.97798304779081
+      },
+      "required": {
+       "B": -52.150499663390065,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 2.9171162723157047,
+        "factors": 58.23338339107449
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9630377332147252,
+       "delivered": 0.8712653750026251,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9716377180140686,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 60,
+       "deltaS": 0.75,
+       "saveSPerH": 45,
+       "effective": 0.9246495439143178,
+       "delivered": 0.7376455592611364,
+       "mtbfHwH": 0.6059513074842201,
+       "lossS": 101.97798304779083
+      },
+      "required": {
+       "B": -62.737535672212836,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 45,
+        "other": 7.239352880311525,
+        "factors": 64.49818279190143
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": false,
+       "cause": "ceiling",
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "D-HARD",
+        "H-CONTROL-CONTINUITY",
+        "R-RUNTIME-SNAPSHOT",
+        "C-LOSSLESS",
+        "D-RECOVERY-CLASSIFY"
+       ],
+       "levers": [
+        "success",
+        "auto",
+        "manual"
+       ],
+       "k": 1,
+       "effective": 0.9486438960854169,
+       "delivered": 0.7528480723941391,
+       "pWindow": 0,
+       "verdict": "below",
+       "ceiling": 0.9698693935499924,
+       "constrained": null
+      }
+     }
+    ]
+   }
+  }
+ ]
 }

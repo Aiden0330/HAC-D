@@ -30,6 +30,10 @@ export function restorePrevious(c: Scenario, prev: Previous): void {
       case 'workload.deltaS':
         if (c.workload.type === 'training' && typeof v === 'number') c.workload = { ...c.workload, deltaS: v };
         break;
+      case 'workload.intervalModel':
+        // v5.9 C-YOUNG records the interval model it replaced
+        if (c.workload.type === 'training' && typeof v === 'string') c.workload = { ...c.workload, intervalModel: v as Extract<Scenario['workload'], { type: 'training' }>['intervalModel'] };
+        break;
       case 'recovery':
         c.recovery = v as Scenario['recovery'];
         break;

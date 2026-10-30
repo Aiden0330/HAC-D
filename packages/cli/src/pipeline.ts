@@ -22,8 +22,7 @@ import {
   parseFaultRateOverride, faultRateOverrideJsonSchema, type FaultRateOverride,
   budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT, unmodelledWarning,
   type StoredStudy, type ArchStudy, type BudgetDocument, type MechanismVerdict,
-  type BudgetMetric,
-} from '@hac-d/core';
+  type BudgetMetric, variantSummary } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 
 const CORE = fileURLToPath(new URL('../../core/', import.meta.url));
@@ -140,13 +139,13 @@ const pt = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(3)} pt` : '
 /* ---------------- commands ---------------- */
 
 /**
- * hacd findings --record a,b [--rates] [--mechanisms] [--scales] [--main] [--target] [--trials] [--seed] [--study-dir] [--permutations] [--reuse-studies] [--strict-prune] [--out] [--data-out] [--no-methodology]
+ * hacd findings --record a,b [--rates] [--mechanisms] [--scales] [--main] [--target] [--trials] [--seed] [--study-dir] [--permutations] [--reuse-studies] [--strict-prune] [--variants set,…] [--out] [--data-out] [--no-methodology]
  * hacd findings --data <dir | bundle.json> [--record a,b] [--out docs] [--study-dir <dir>] [--no-methodology]   re-render the reports from a stored sidecar (no engine run)
  */
 export function findings(a: Args): void {
   if (a.flag('data')) { renderFindings(a); return; }
   const specs = list(a.flag('record') ?? a.flag('records'));
-  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
+  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--variants <set>[,<set>…]] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
   const records = specs.map(resolveRecord);
   const set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const sizes = nums(a.flag('scales'), DEFAULT_SCALES);
@@ -155,6 +154,9 @@ export function findings(a: Args): void {
   const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), permutations = Number(a.flag('permutations') ?? 300), metric = metricFlag(a);
   if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
   const outDir = a.flag('out') ?? 'docs', dataOut = a.flag('data-out') ?? join(outDir, 'data'), studyDir = a.flag('study-dir') ?? dataOut;
+  // v5.9 the appendix variants: alternative mechanism sets (ids or paths) whose budget Appendix A of the Findings pages prints
+  const variantSpecs = list(a.flag('variants'));
+  if (variantSpecs.length && metric !== 'effective') fail('--variants: the appendix is defined on the effective-goodput basis (--metric effective)');
   log(`records ${records.map((r) => r.id).join(', ')} · set ${set.id}${rates ? ` · override ${rates.id} (${rates.basis})` : ''} · ${sizes.join(' / ')} NPUs · ${metric === 'aOp' ? 'A_op' : 'effective goodput'} ≥ ${target} · ${trials} windows · seed ${seed}`);
 
   // 1. Shapley studies (Table 7 and the hierarchy): stored when it fits, else computed and written to the data dir
@@ -182,6 +184,22 @@ export function findings(a: Args): void {
     log(`${arch} ${n}: today ${metric === 'aOp' ? 'A_op' : 'G_eff'} ${(z.today.value * 100).toFixed(3)} / ${(z.today.valueDerated * 100).toFixed(3)} % · ${r.feasible === false ? 'NOT FEASIBLE (every move on)' : 'recommended'} ${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} k ${r.k.toFixed(3)} → ${((metric === 'aOp' ? r.final.kpiDerated.aOp : r.final.kpiDerated.effective) * 100).toFixed(2)} % derated, P ${(r.window.pAtLeastTarget * 100).toFixed(1)} %`);
   }
 
+  // 2b. v5.9 the appendix variants: the same budget under each variant set (no study), reduced to Appendix A's rows
+  if (variantSpecs.length) {
+    results.variants = variantSpecs.map((spec) => {
+      const vs = resolveSet(spec);
+      if (vs.id === set.id) fail(`--variants ${spec}: the variant is the report's own set ${set.id}`);
+      log(`variant ${vs.id}: budget of ${records.map((r) => r.id).join(', ')} at ${sizes.join(' / ')} NPUs`);
+      const vd = budgetFromRecords(records, vs, { sizes, target, metric, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`variant ${vs.id} budget ${arch} ${n}`); } }) as BudgetDocument;
+      const v = variantSummary(results, vs, vd);
+      for (const [arch, rows] of Object.entries(v.archs)) for (const row of rows) {
+        const rc = row.recommended;
+        log(`variant ${vs.id} ${arch} ${row.npus}: τ ${row.today.tauS.toFixed(0)} s / δ ${row.today.deltaS} s · G_eff ${(row.today.effective * 100).toFixed(3)} % derated · B ${row.required.B.toFixed(1)} s/h · ${rc.feasible ? `plan ${rc.mechanisms.join('+') || '—'} | ${rc.levers.join('+') || '—'} k ${rc.k.toFixed(3)} → ${(rc.effective * 100).toFixed(2)} % derated, P ${(rc.pWindow * 100).toFixed(1)} %` : `NOT FEASIBLE (every move on: ${(rc.effective * 100).toFixed(2)} %, ceiling ${rc.ceiling === null ? '—' : `${(rc.ceiling * 100).toFixed(2)} %`})`}`);
+      }
+      return v;
+    });
+  }
+
   // 3. the mechanism hierarchy (verdict lists of the set, checked against the pruning rule on these studies)
   const pr = pruneOf(set, studies as unknown as Record<string, StoredStudy>);
   if (pr.mismatches.length) {
@@ -193,7 +211,7 @@ export function findings(a: Args): void {
   const mechanisms = mechanismHierarchy(set, studies as unknown as Record<string, StoredStudy>, { permutations: perms.length === 1 ? perms[0] : undefined, basis: `bare architecture scenario, ${rates ? `failure-rate override ${rates.id}` : 'HAC-D per-unit FIT'}, ${set.id}`, check: false });
 
   // 4. sidecar JSON and the reports
-  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, metric, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations });
+  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, metric, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations, ...(results.variants?.length ? { variants: results.variants.map((v) => v.id) } : {}) });
   writeJson(join(dataOut, 'results.json'), results);
   writeJson(join(dataOut, 'mechanisms.json'), { ...mechanisms, source: { dir: studyDir, ...mechanisms.source } });
   writeJson(join(dataOut, 'provenance.json'), prov);

@@ -27,7 +27,7 @@ export const DEFAULT_CTX = {
     { id: 'a3server', short: L('800T A3', '800T A3'), name: L('Atlas 800T A3 服务器集群（8 NPU / 台，跨机 RoCE）', 'Atlas 800T A3 server cluster (8 NPUs per server, RoCE between servers)'), podNpus: 8, superpodUnit: 'nodes', cabinetNpus: 32, nodeNpus: 8, cpusPerNode: 4 },
   ],
   originals: 8, extensions: 15, capabilities: ['I-CONTAIN'], players: 23, permutations: 300, halfWidthPt: 0.25, decisionScale: 500000, threshold: 0.0015,
-  engine: '0.5.0',
+  engine: '0.5.9',
 };
 
 /** the Methodology prose for a report set; every phrase that depends on the data is filled from `ctx` (see DEFAULT_CTX for the fields) */

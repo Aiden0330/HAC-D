@@ -126,8 +126,8 @@ describe('v3.7 mechanism audit', () => {
     expect(html).toContain('342.5');
     expect(auditReportHtml(rep, 'en')).toContain('Link-transparent recovery');
   });
-  it('library: 35 entries, the audited ones carry their catalog text and events', () => {
-    expect(MECHANISM_LIBRARY.length).toBe(35);
+  it('library: 36 entries (35 + the v5.9 variant C-YOUNG), the audited ones carry their catalog text and events', () => {
+    expect(MECHANISM_LIBRARY.length).toBe(36);
     for (const m of AUDIT_MECHANISM_DEFS) {
       expect(m.audit?.id).toBe(m.id);
       expect(m.audit?.principle.length).toBeGreaterThan(10);

@@ -95,6 +95,9 @@ export interface KpiForm {
   lossS: number;
   /** recompute of detected silent corruption rolled back without step recovery, seconds per hour (0 with step recovery) */
   otherRecomputeSPerH: number;
+  /** v5.9 the design's checkpoint period (fixed, or by the interval model) and save time, seconds — the saves are δ/τ */
+  tauS: number;
+  deltaS: number;
   /** checkpoint save share δ/τ of the window */
   saveFrac: number;
   /** episode pauses of silent corruption, fraction of the window */
@@ -136,6 +139,6 @@ export function kpiForm(sc: Scenario, t: TrainingKpis = trainingOf(sc)): KpiForm
     // v5.8 (method & code review 2026-10-29) without hard interruptions (Σλ = 0) the MTBF is unbounded (∞; null in JSON, read as "no hard
     // interruptions") and the mean pause / loss per interruption are 0, never NaN — λ·MTTR = Σλt̄ = 0 still holds
     aOp: t.operationalAvailability, aRun: t.runningFraction, phi, lamHw, mtbfHwH: lamHw > 0 ? 1 / lamHw : Infinity, mttrS: lamHw > 0 ? sumLP / lamHw : 0, sumLP, other, F, mtbiH: t.mtbiHours, delivered: t.deliveredGoodputExact, detectS: t.chain.detectS, globalS: t.chain.globalS,
-    effective: t.effectiveGoodputExact, effectiveFirstOrder: formula, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: lamHw > 0 ? (sumLP + hardRecompute) / lamHw : 0, otherRecomputeSPerH: otherRecompute, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledgerExact,
+    effective: t.effectiveGoodputExact, effectiveFirstOrder: formula, recomputeS: W, hardRecomputeSPerH: hardRecompute, sumLoss: sumLP + hardRecompute, lossS: lamHw > 0 ? (sumLP + hardRecompute) / lamHw : 0, otherRecomputeSPerH: otherRecompute, tauS: t.tauS, deltaS: sc.workload.type === 'training' ? sc.workload.deltaS : 0, saveFrac, pauseFrac, factor, headlineModel: t.headlineModel, ledger: t.ledgerExact,
   };
 }

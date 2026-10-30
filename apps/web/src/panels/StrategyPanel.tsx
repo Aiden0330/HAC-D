@@ -84,7 +84,7 @@ export function StrategyForm({ s, st, set }: { s: Scenario; st: StrategySettings
   const updateActive = useStore((x) => x.updateActive);
   const pageEfforts = useActiveSettings().mechanisms.efforts;
   const efforts = effortsOf(st, pageEfforts) ?? {};
-  const pool = MECHANISM_LIBRARY.filter((m) => m.apply && m.status !== 'informational' && !s.mechanisms.applied?.[m.id]);
+  const pool = MECHANISM_LIBRARY.filter((m) => m.apply && m.status !== 'informational' && m.status !== 'variant' && !s.mechanisms.applied?.[m.id]);
   const name = (id: string) => { const m = MECHANISM_LIBRARY.find((x) => x.id === id)!; return lang === 'zh' ? m.name.zh : m.name.en; };
   const classes = useMemo(() => {
     const counts = computeCounts(s);

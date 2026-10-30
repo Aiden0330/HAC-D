@@ -1,0 +1,23 @@
+# v5.9 (2026-10-29): the release check on Linux — typecheck, the production bundle of the web app, every test suite (the goldens
+# are precomputed JSON, no Python needed) and the byte-for-byte reproduction of the committed report pages. The CLI suite spawns
+# the mock on-prem model (scripts/mock-onprem-model.mjs); nothing needs the network. Windows is not run (user's decision 2026-10-29).
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build -w @hac-d/web
+      - run: npm test
+      - run: node packages/reports/test/reproduce.mjs

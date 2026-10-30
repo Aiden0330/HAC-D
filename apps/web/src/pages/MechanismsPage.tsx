@@ -187,7 +187,7 @@ export function MechanismsPage() {
                       {m.audit && <div className="muted" style={{ fontSize: 10 }}>{t('mechanisms.auditedTag')}{m.integrationNeeds?.length ? ` · ${integrationStatus(m, { ...m.parameters, ...(overrides[m.id] ?? {}), ...(provisional ? m.provisional ?? {} : {}) }).ready ? t('audit.statusReady') : t('audit.statusMissing') + ': ' + m.integrationNeeds.join(', ')}` : ''}</div>}
                     </td>
                     <td>{m.kind}</td>
-                    <td><Badge status={m.status === 'baseline' ? 'pass' : m.status === 'informational' ? 'none' : 'warn'}>{t(`mechanisms.status_${m.status}`)}</Badge></td>
+                    <td><Badge status={m.status === 'baseline' ? 'pass' : m.status === 'informational' || m.status === 'variant' ? 'none' : 'warn'}>{t(`mechanisms.status_${m.status}`)}</Badge></td>
                     <td style={{ fontSize: 12, minWidth: 220 }}>{lang === 'zh' ? m.change.zh : m.change.en}</td>
                     <td style={{ fontSize: 12, minWidth: 160 }}>{lang === 'zh' ? m.prerequisite.zh : m.prerequisite.en}</td>
                     <td style={{ fontSize: 12, minWidth: 160 }}>{lang === 'zh' ? m.failure.zh : m.failure.en}</td>

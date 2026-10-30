@@ -216,6 +216,7 @@ export function provenanceFooter(p, lang, files, date) {
     o.trials !== undefined ? T(`${fmt(o.trials)} 个 30 天窗口`, `${fmt(o.trials)} 30-day windows`) : null,
     o.seed !== undefined ? T(`种子 ${o.seed}`, `seed ${o.seed}`) : null,
     o.permutations !== undefined ? T(`Shapley ${fmt(o.permutations)} 次置换`, `Shapley ${fmt(o.permutations)} permutations`) : null,
+    o.variants?.length ? T(`附录变体 ${o.variants.map(code).join('、')}`, `appendix variants ${o.variants.map(code).join(', ')}`) : null,
   ].filter(Boolean);
   const recs = (p.records ?? []).map((r) => code(r.id)).join(T('、', ', '));
   // the engine version only: the commit hash stays in provenance.json so the page reproduces byte for byte after a commit

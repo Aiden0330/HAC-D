@@ -178,7 +178,8 @@ function sections(lang, ctx) {
   <p class="note">${H(L(MECH_TEXT.overlapNote))}</p>`,
     `<h2 class="first">${esc(L(BUDGET_TEXT.heading))}</h2>
   <ul class="scale">${BUDGET_TEXT.steps.map((s) => `<li>${H(L(s))}</li>`).join('')}</ul>
-  <p class="note">${H(L(BUDGET_TEXT.procedure))}</p>`,
+  <p class="note">${H(L(BUDGET_TEXT.procedure))}</p>${Array.isArray(R.variants) && R.variants.length ? `
+  <p class="note">${esc(T(`附录变体（v5.9，hacd findings --variants）：各 Findings 页的附录 A 在机制集 ${R.variants.map((v) => v.id).join('、')} 下重算表 1 的预算——候选、杠杆、ARINC 分配、降额、逐窗口规则与种子不变，只有检查点策略不同（C-YOUNG：τ = √(2δ·M_rb)，Young 公式；C-MEM：0.5 s / 60 s 保存、加载缩短 60 s、1 % 开销）——给出每个规模的 τ / δ、保存、公式 2′ 的 B 与两端要求、窗口规则的方案或全部动作时的上限；正文各表不受影响。`, `Appendix variants (v5.9, hacd findings --variants): Appendix A of each Findings page recomputes the budget of Table 1 under the mechanism sets ${R.variants.map((v) => v.id).join(', ')} — the candidates, levers, ARINC split, derating, window rule and seed unchanged, only the checkpoint policy differs (C-YOUNG: τ = √(2δ·M_rb), Young’s rule; C-MEM: 0.5 s / 60 s saves, the load 60 s shorter, 1 % overhead) — and prints per scale τ / δ, the saves, B of formula 2′ with the two ends of the requirement, the window rule’s plan or the ceiling with every move on; the main tables are unaffected.`))}</p>` : ''}`,
     `<h2 class="first">${esc(L(TOOLING.heading))}</h2>
   <p>${H(L(TOOLING.intro))}</p>
   <h3>${esc(T('表 2：能力、实现方式与 v5 的实现', 'Table 2: capabilities, how they are implemented and the v5 implementation'))}</h3>

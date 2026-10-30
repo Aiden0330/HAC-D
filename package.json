@@ -1,7 +1,7 @@
 {
   "name": "hac-d",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.9",
   "type": "module",
   "description": "HAC-D: availability / MTBF / MTTR modeling, allocation and design comparison for AI clusters",
   "workspaces": [

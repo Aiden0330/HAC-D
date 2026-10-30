@@ -48,7 +48,7 @@ const log = (m: string) => console.error(m);
 const pad = (rows: (string | number)[][]) => { const w = rows[0].map((_c, j) => Math.max(...rows.map((x) => String(x[j] ?? '').length))); return rows.map((x) => x.map((c, j) => String(c ?? '').padEnd(w[j])).join('  ').trimEnd()).join('\n'); };
 
 /** ids shipped with HAC-D: an internal record may never take one of them */
-const PUBLIC_IDS = { records: [...Object.keys(BUILTIN_TOPOLOGY_RECORDS), 'a960e'], sets: [DEFAULT_MECHANISM_SET.id], rates: ['remap-per-card-2026-10-09'] };
+const PUBLIC_IDS = { records: [...Object.keys(BUILTIN_TOPOLOGY_RECORDS), 'a960e'], sets: [DEFAULT_MECHANISM_SET.id, `${DEFAULT_MECHANISM_SET.id}--young`, `${DEFAULT_MECHANISM_SET.id}--cmem`], rates: ['remap-per-card-2026-10-09'] };
 const existingIds = (data = DATA) => ({ records: idsIn(join(data, 'records')), rates: idsIn(join(data, 'fault-rates')), sets: idsIn(join(data, 'mechanism-sets')) });
 const idsIn = (dir: string) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)) : []);
 

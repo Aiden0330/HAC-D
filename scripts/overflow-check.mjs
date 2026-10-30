@@ -4,10 +4,12 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 375, height: 812 } });
 const page = await ctx.newPage();
 await page.goto('http://localhost:5173', { waitUntil: 'networkidle' });
-await page.evaluate(() => localStorage.removeItem('hacd-scenarios-v1'));
+// v5.9: the full navigation (minimal mode hides the Scenario editor and Inference pages) in the English UI, as scripts/screenshots.mjs does
+await page.evaluate(() => { localStorage.removeItem('hacd-scenarios-v1'); localStorage.removeItem('hacd-projects-v1'); localStorage.setItem('hacd-ui-mode', 'full'); localStorage.setItem('hacd-lang', 'en'); });
 await page.reload({ waitUntil: 'networkidle' });
-for (const name of ['Scenario', 'Training', 'Report', 'Compare', 'Import']) {
-  await page.getByRole('navigation').getByRole('button', { name, exact: true }).click();
+// v5.9: the eight pages of the v5.2 navigation (English UI); Projects is the landing page
+for (const name of ['Projects', 'Topology & hardware', 'Allocation', 'Mechanism library', 'Fault library', 'Review', 'Scenario editor', 'Inference & spares']) {
+  await page.locator('nav.nav button', { hasText: name }).first().click();
   await page.waitForTimeout(500);
   const info = await page.evaluate(() => {
     const vw = document.documentElement.clientWidth;

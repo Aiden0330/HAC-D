@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/reports",
-  "version": "0.5.0",
+  "version": "0.5.9",
   "private": true,
   "type": "module",
   "description": "HAC-D bilingual HTML report kit and the Ascend allocation report recipes (Findings, Methodology, BOM) as pure functions of data",

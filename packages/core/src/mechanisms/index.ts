@@ -14,7 +14,8 @@ import type { AuditBaseline, AuditCatalogMechanism, SinglePoint } from './auditT
 import { assertParameters } from './parameters.js';
 
 export type MechanismKind = 'detect' | 'recover' | 'checkpoint' | 'physical';
-export type MechanismStatus = 'baseline' | 'candidate' | 'conditional' | 'informational';
+/** v5.9 'variant': an alternative policy for the report's appendix (hacd findings --variants), applied only through a mechanism set that lists it — outside the strategies' candidate pool */
+export type MechanismStatus = 'baseline' | 'candidate' | 'conditional' | 'informational' | 'variant';
 
 /** v5 the six layers of the per-unit basis, top-down (cluster = the job, scale-out network, SuperPoD / UB domain, cabinet, node, NPU) */
 type LayerId = 'cluster' | 'scaleout' | 'superpod' | 'cabinet' | 'node' | 'npu';
@@ -239,6 +240,25 @@ export const MECHANISM_LIBRARY: MechanismDef[] = guardParameters([
       const previous: Previous = { 'workload.intervalS': orNull(c.workload.intervalS), 'workload.deltaS': c.workload.deltaS };
       c.workload = { ...c.workload, intervalS: p.computeSeconds, deltaS: p.saveSeconds };
       return recordApplied(c, 'C-FAST', p, previous);
+    },
+  },
+  {
+    // v5.9 the appendix variant of the report set: the checkpoint period by Young's rule instead of a fixed one (the save time δ stays the design's)
+    id: 'C-YOUNG', name: { zh: 'Young 检查点周期', en: 'Young checkpoint interval' }, kind: 'checkpoint', status: 'variant', scope: 'all',
+    change: { zh: '检查点周期不再固定：τ = √(2δ·M_rb)（Young 公式，M_rb 为回滚事件的平均间隔，随规模与降额变化）；保存时间 δ 不变', en: 'the checkpoint period is no longer fixed: τ = √(2δ·M_rb) (Young’s rule, M_rb the mean interval of rollback events, moving with scale and derating); the save time δ stays as it is' },
+    prerequisite: { zh: '训练框架能按规模 / 故障率设置保存周期', en: 'the training framework can set the save period per scale / failure rate' },
+    failure: { zh: '无新增故障模式；周期随 M_rb 变化，每次回滚的重算随之变化', en: 'no new failure mode; the period follows M_rb and the recompute per rollback with it' },
+    confidence: 'textbook rule (Young 1974); appendix variant of the report, not a candidate move',
+    effort: 1,
+    parameters: {},
+    apply: (s, p) => {
+      const c = cloneScenario(s);
+      if (c.workload.type !== 'training') return c;
+      const previous: Previous = { 'workload.intervalS': orNull(c.workload.intervalS), 'workload.intervalModel': c.workload.intervalModel };
+      const w = { ...c.workload };
+      delete w.intervalS;
+      c.workload = { ...w, intervalModel: 'young' };
+      return recordApplied(c, 'C-YOUNG', p, previous);
     },
   },
   {
