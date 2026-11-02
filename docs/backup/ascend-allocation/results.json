@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-29T22:16:59.781-04:00",
+ "generated": "2026-11-01T20:33:07.716-05:00",
  "metric": "effective",
  "target": 0.985,
  "sizes": [
@@ -43471,6 +43471,827 @@
        "pWindow": 0,
        "verdict": "below",
        "ceiling": 0.9698693935499924,
+       "constrained": null
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "remap-latest-2026-10--young-sdc",
+   "source": "ReMAP f53ab7e, extensionScenario() + parameter sets (eligible share 1, FP8 / FP4 0.5 of the CORE silent risk each, success 0.95, failure attempt 0 s, overhead 0, ABFT 0.001; eligibility × success folded into the parameters by expectation where the transform is deterministic); v5.10 appendix variant (user’s request 2026-11-01): the reference set plus C-YOUNG plus the five delivered-only mechanisms of the default set (D-SDC-FP8, D-SDC-FP4, D-ABFT, D-NET-SDC, H-SDC-SCREEN) with the set’s target parameters, so that the appendix shows the goal and the delivered goodput with them applied (hacd findings --variants)",
+   "baseline": [
+    "D-SDC",
+    "R-SDC",
+    "R-REPLAY",
+    "R-PROCESS",
+    "R-ELASTIC",
+    "C-FAST",
+    "C-YOUNG",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN"
+   ],
+   "added": [
+    "C-YOUNG",
+    "D-SDC-FP8",
+    "D-SDC-FP4",
+    "D-ABFT",
+    "D-NET-SDC",
+    "H-SDC-SCREEN"
+   ],
+   "removed": [],
+   "mechanisms": {
+    "C-YOUNG": {
+     "name": {
+      "zh": "Young 检查点周期",
+      "en": "Young checkpoint interval"
+     },
+     "kind": "checkpoint",
+     "effort": 1,
+     "change": {
+      "zh": "检查点周期不再固定：τ = √(2δ·M_rb)（Young 公式，M_rb 为回滚事件的平均间隔，随规模与降额变化）；保存时间 δ 不变",
+      "en": "the checkpoint period is no longer fixed: τ = √(2δ·M_rb) (Young’s rule, M_rb the mean interval of rollback events, moving with scale and derating); the save time δ stays as it is"
+     },
+     "requires": [],
+     "nominal": {},
+     "derated": {}
+    },
+    "D-SDC-FP8": {
+     "name": {
+      "zh": "FP8 计算路径 SDC 检测",
+      "en": "FP8 compute-path silent-corruption detection"
+     },
+     "kind": "detect",
+     "effort": 4,
+     "change": {
+      "zh": "现有 BF16 检测尚未验证的 FP8 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+      "en": "A 95 % detection target registered on the FP8 path that the BF16 detector does not cover; the path's share of the silent-corruption risk is to be calibrated"
+     },
+     "requires": [],
+     "nominal": {
+      "detectionTarget": 0.95,
+      "detectSeconds": 1,
+      "riskShare": 0.475
+     },
+     "derated": {
+      "detectionTarget": 0.8999999999999999,
+      "detectSeconds": 1.5,
+      "riskShare": 0.425
+     }
+    },
+    "D-SDC-FP4": {
+     "name": {
+      "zh": "FP4 计算路径 SDC 检测",
+      "en": "FP4 compute-path silent-corruption detection"
+     },
+     "kind": "detect",
+     "effort": 4,
+     "change": {
+      "zh": "现有 BF16 检测尚未验证的 FP4 路径，单独增加 95% 检出目标；未验证路径暂不记覆盖收益。",
+      "en": "A 95 % detection target registered on the FP4 path that the BF16 detector does not cover; the path's share of the silent-corruption risk is to be calibrated"
+     },
+     "requires": [],
+     "nominal": {
+      "detectionTarget": 0.95,
+      "detectSeconds": 1,
+      "riskShare": 0.475
+     },
+     "derated": {
+      "detectionTarget": 0.8999999999999999,
+      "detectSeconds": 1.5,
+      "riskShare": 0.425
+     }
+    },
+    "D-ABFT": {
+     "name": {
+      "zh": "算子 ABFT／实时矩阵校验",
+      "en": "Operator ABFT / online matrix checks"
+     },
+     "kind": "detect",
+     "effort": 4,
+     "change": {
+      "zh": "以 0.1% 正常态吞吐损失为压测预算；示例捕获前一道 95% 检测剩余漏检中的 90%，该子集两级覆盖变为 99.5%。",
+      "en": "Catches 90 % of the misses left by the upstream 95 % detector (joint 99.5 %) at a 0.1 % steady throughput cost"
+     },
+     "requires": [],
+     "nominal": {
+      "upstreamDetection": 0.95,
+      "conditionalMissDetection": 0.855,
+      "overhead": 0.001
+     },
+     "derated": {
+      "upstreamDetection": 0.8999999999999999,
+      "conditionalMissDetection": 0.8049999999999999,
+      "overhead": 0.0015
+     }
+    },
+    "D-NET-SDC": {
+     "name": {
+      "zh": "网络端到端 SDC 检测",
+      "en": "Network end-to-end silent-corruption detection"
+     },
+     "kind": "detect",
+     "effort": 3,
+     "change": {
+      "zh": "在目标网络残余 SDC 子集内登记 95% 检出目标，剩余漏检比例降至 5%。",
+      "en": "A 95 % detection target registered on the residual network silent-corruption subset"
+     },
+     "requires": [],
+     "nominal": {
+      "detectionTarget": 0.9025,
+      "detectSeconds": 1
+     },
+     "derated": {
+      "detectionTarget": 0.8524999999999999,
+      "detectSeconds": 1.5
+     }
+    },
+    "H-SDC-SCREEN": {
+     "name": {
+      "zh": "在线压测与异常资源筛除",
+      "en": "Online stress screening and eviction"
+     },
+     "kind": "physical",
+     "effort": 3,
+     "change": {
+      "zh": "保留“SDC 发生率下降 25%”目标；表中显示全部风险适用时的条件情景。落地只对验证过的子集乘以 0.75，不改变检出率或单次恢复时间。",
+      "en": "Silent-corruption FIT of the screened subset × 0.75; detection and recovery unchanged"
+     },
+     "requires": [],
+     "nominal": {
+      "occurrenceReduction": 0.25,
+      "eligibleShare": 0.95
+     },
+     "derated": {
+      "occurrenceReduction": 0.125,
+      "eligibleShare": 0.8999999999999999
+     }
+    }
+   },
+   "archs": {
+    "native950": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 1021.3161378622757,
+       "deltaS": 1.5,
+       "saveSPerH": 5.287295284790838,
+       "effective": 0.9946226666447776,
+       "delivered": 0.9938018221174791,
+       "mtbfHwH": 32.28129117786131,
+       "lossS": 270.1347500730289
+      },
+      "required": {
+       "B": 43.040973847445315,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.287295284790838,
+        "other": 0.1519112388483109,
+        "factors": 5.519819628915343
+       },
+       "mtbfAtTodayMttrH": 6.276223001609957,
+       "mttrAtTodayMtbfS": 1389.4182093480958
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 6.443430362560009,
+       "effective": 0.9854655980670618,
+       "delivered": 0.9846585387355284,
+       "pWindow": 0.9425,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 323.1094565900057,
+       "deltaS": 1.5,
+       "saveSPerH": 16.712602772416133,
+       "effective": 0.9799292726702411,
+       "delivered": 0.9719974188915771,
+       "mtbfHwH": 3.229070441648884,
+       "lossS": 153.37207558016695
+      },
+      "required": {
+       "B": 28.5188448073654,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 16.712602772416133,
+        "other": 1.5181813761596965,
+        "factors": 7.250371044059095
+       },
+       "mtbfAtTodayMttrH": 5.37792034060778,
+       "mttrAtTodayMtbfS": 92.08935879743537
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.998849785342598,
+       "effective": 0.9850000000000001,
+       "delivered": 0.976988015874539,
+       "pWindow": 0.9975,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 228.48002918305534,
+       "deltaS": 1.5,
+       "saveSPerH": 23.634450762756106,
+       "effective": 0.9670295195491652,
+       "delivered": 0.9516651918127578,
+       "mtbfHwH": 1.6145689351585737,
+       "lossS": 137.56190651082142
+      },
+      "required": {
+       "B": 18.165654094737864,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 23.634450762756106,
+        "other": 3.0357251003950463,
+        "factors": 9.164170042111284
+       },
+       "mtbfAtTodayMttrH": 7.572637120216314,
+       "mttrAtTodayMtbfS": 29.329700788199897
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.5459202049768916,
+       "effective": 0.985,
+       "delivered": 0.9690991167649928,
+       "pWindow": 0.99,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 144.50261892271246,
+       "deltaS": 1.5,
+       "saveSPerH": 37.36956492731942,
+       "effective": 0.9334219348735566,
+       "delivered": 0.8982348255338852,
+       "mtbfHwH": 0.6458250675413083,
+       "lossS": 123.53729906317687
+      },
+      "required": {
+       "B": -5.80461891603744,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 37.36956492731942,
+        "other": 7.585679606042316,
+        "factors": 14.849374382675709
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.17478480765018775,
+       "effective": 0.985,
+       "delivered": 0.9461525579950865,
+       "pWindow": 0.9725,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "ubl128": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 1053.3342522920118,
+       "deltaS": 1.5,
+       "saveSPerH": 5.126577805905223,
+       "effective": 0.9947573745479568,
+       "delivered": 0.9939454663237072,
+       "mtbfHwH": 32.85593143436481,
+       "lossS": 264.33562009157373
+      },
+      "required": {
+       "B": 43.2054606627958,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.126577805905223,
+        "other": 0.14995877649470718,
+        "factors": 5.518002754804467
+       },
+       "mtbfAtTodayMttrH": 6.118106740132341,
+       "mttrAtTodayMtbfS": 1419.555653126965
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 6.254118226559901,
+       "effective": 0.9862341625977352,
+       "delivered": 0.9854349738210166,
+       "pWindow": 0.9525,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 333.19862504299687,
+       "deltaS": 1.5,
+       "saveSPerH": 16.206549469713956,
+       "effective": 0.9806515244524593,
+       "delivered": 0.972796597021366,
+       "mtbfHwH": 3.2862559948351326,
+       "lossS": 149.12198680277044
+      },
+      "required": {
+       "B": 29.06222367201724,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 16.206549469713956,
+        "other": 1.4987940077469761,
+        "factors": 7.2324328505214375
+       },
+       "mtbfAtTodayMttrH": 5.1311279028642796,
+       "mttrAtTodayMtbfS": 95.50590676540615
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.9977548126905678,
+       "effective": 0.985,
+       "delivered": 0.9770756419797709,
+       "pWindow": 0.99,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 235.61231272227604,
+       "deltaS": 1.5,
+       "saveSPerH": 22.919005961989587,
+       "effective": 0.9682880754328294,
+       "delivered": 0.9530554306505997,
+       "mtbfHwH": 1.6431516537585893,
+       "lossS": 133.5200911127421
+      },
+      "required": {
+       "B": 18.95544317454499,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 22.919005961989587,
+        "other": 2.9969910206164267,
+        "factors": 9.128559842849274
+       },
+       "mtbfAtTodayMttrH": 7.043891819529941,
+       "mttrAtTodayMtbfS": 31.146667799980563
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.5532586022796047,
+       "effective": 0.985,
+       "delivered": 0.9692730220573773,
+       "pWindow": 0.9825,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 149.01370951203123,
+       "deltaS": 1.5,
+       "saveSPerH": 36.238276449080736,
+       "effective": 0.9360672189751381,
+       "delivered": 0.90107371521717,
+       "mtbfHwH": 0.6572589664551425,
+       "lossS": 119.67905560270314
+      },
+      "required": {
+       "B": -4.489445234325065,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 36.238276449080736,
+        "other": 7.488980964350733,
+        "factors": 14.762187820893697
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "H-CONTROL-CONTINUITY",
+        "R-LINK-LOCAL",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.1777420166459711,
+       "effective": 0.985,
+       "delivered": 0.946567905139095,
+       "pWindow": 0.97,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "cm384": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 950.7265375252255,
+       "deltaS": 1.5,
+       "saveSPerH": 5.679866698637012,
+       "effective": 0.9942734140950122,
+       "delivered": 0.9934517697795415,
+       "mtbfHwH": 29.662357620683427,
+       "lossS": 272.83192696757095
+      },
+      "required": {
+       "B": 42.607076111867244,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.679866698637012,
+        "other": 0.17096336324806738,
+        "factors": 5.542093826248223
+       },
+       "mtbfAtTodayMttrH": 6.403441678354919,
+       "mttrAtTodayMtbfS": 1263.826328801884
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 5.152063153638623,
+       "effective": 0.9862285172006089,
+       "delivered": 0.9854189816626435,
+       "pWindow": 0.9575,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 300.0385312315318,
+       "deltaS": 1.5,
+       "saveSPerH": 17.99768842300112,
+       "effective": 0.9778871970016447,
+       "delivered": 0.9699669023470074,
+       "mtbfHwH": 2.9551439543496123,
+       "lossS": 157.5816290243747
+      },
+      "required": {
+       "B": 26.802334850618102,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 17.99768842300112,
+        "other": 1.718655693840597,
+        "factors": 7.4813210325398725
+       },
+       "mtbfAtTodayMttrH": 5.879399309897833,
+       "mttrAtTodayMtbfS": 79.20475779625801
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.9981370877941808,
+       "effective": 0.985,
+       "delivered": 0.9769684367447183,
+       "pWindow": 0.99,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 212.15928005106787,
+       "deltaS": 1.5,
+       "saveSPerH": 25.452575059173427,
+       "effective": 0.9634293798292362,
+       "delivered": 0.9481341020930931,
+       "mtbfHwH": 1.4775719771748062,
+       "lossS": 142.00388054324796
+      },
+      "required": {
+       "B": 15.487310633829287,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 25.452575059173427,
+        "other": 3.4367266892605026,
+        "factors": 9.62338761773632
+       },
+       "mtbfAtTodayMttrH": 9.169047092854562,
+       "mttrAtTodayMtbfS": 22.88361619434754
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.4618435856290313,
+       "effective": 0.985,
+       "delivered": 0.9690612535941875,
+       "pWindow": 0.985,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 134.1813550791956,
+       "deltaS": 1.5,
+       "saveSPerH": 40.244041333558215,
+       "effective": 0.9257885923898544,
+       "delivered": 0.8910495376095476,
+       "mtbfHwH": 0.5910289305959682,
+       "lossS": 128.18122375063842
+      },
+      "required": {
+       "B": -10.808791768839187,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 40.244041333558215,
+        "other": 8.587879972373212,
+        "factors": 15.976870462907799
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.14253198002634437,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9460588480345199,
+       "pWindow": 0.9575,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     }
+    ],
+    "a3server": [
+     {
+      "npus": 10000,
+      "today": {
+       "tauS": 962.346317173583,
+       "deltaS": 1.5,
+       "saveSPerH": 5.61128556698781,
+       "effective": 0.994339263711789,
+       "delivered": 0.9935199107067836,
+       "mtbfHwH": 30.414277214840087,
+       "lossS": 274.96771641314297
+      },
+      "required": {
+       "B": 42.68818802832332,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 5.61128556698781,
+        "other": 0.16453563800328355,
+        "factors": 5.535990766685735
+       },
+       "mtbfAtTodayMttrH": 6.441306813742101,
+       "mttrAtTodayMtbfS": 1298.3303844926434
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [],
+       "levers": [],
+       "k": 5.669103220831156,
+       "effective": 0.985608194040403,
+       "delivered": 0.9848019377877806,
+       "pWindow": 0.9325,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 100000,
+      "today": {
+       "tauS": 303.68896753136147,
+       "deltaS": 1.5,
+       "saveSPerH": 17.78135058344637,
+       "effective": 0.9782772975878343,
+       "delivered": 0.9703741821691497,
+       "mtbfHwH": 3.029756537421101,
+       "lossS": 158.22169987410268
+      },
+      "required": {
+       "B": 27.143537141207627,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 17.78135058344637,
+        "other": 1.654388755308743,
+        "factors": 7.420723520037515
+       },
+       "mtbfAtTodayMttrH": 5.829074488376106,
+       "mttrAtTodayMtbfS": 82.23830910230626
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 1.0065976995055725,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9769917180277242,
+       "pWindow": 0.9875,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 200000,
+      "today": {
+       "tauS": 214.74052831296694,
+       "deltaS": 1.5,
+       "saveSPerH": 25.146627152420606,
+       "effective": 0.9641250294576569,
+       "delivered": 0.9488534843924049,
+       "mtbfHwH": 1.5148782687105504,
+       "lossS": 142.44261570429816
+      },
+      "required": {
+       "B": 16.042032814696846,
+       "totalBudget": 54.00000000000005,
+       "reachable": true,
+       "terms": {
+        "save": 25.146627152420606,
+        "other": 3.3082026866545444,
+        "factors": 9.503137346227865
+       },
+       "mtbfAtTodayMttrH": 8.87933701106757,
+       "mttrAtTodayMtbfS": 24.301726896925796
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.4672184645547406,
+       "effective": 0.985,
+       "delivered": 0.9691072532539377,
+       "pWindow": 0.985,
+       "verdict": "supported",
+       "ceiling": null,
+       "constrained": null
+      }
+     },
+     {
+      "npus": 500000,
+      "today": {
+       "tauS": 135.81383508337018,
+       "deltaS": 1.5,
+       "saveSPerH": 39.76030863634162,
+       "effective": 0.9272790798473447,
+       "delivered": 0.8925350782801132,
+       "mtbfHwH": 0.6059513074842201,
+       "lossS": 128.44134770389684
+      },
+      "required": {
+       "B": -9.71017814675265,
+       "totalBudget": 54.00000000000005,
+       "reachable": false,
+       "terms": {
+        "save": 39.76030863634162,
+        "other": 8.266634608034693,
+        "factors": 15.6832349023762
+       },
+       "mtbfAtTodayMttrH": null,
+       "mttrAtTodayMtbfS": null
+      },
+      "recommended": {
+       "feasible": true,
+       "mechanisms": [
+        "R-LINK-LOCAL",
+        "H-CONTROL-CONTINUITY",
+        "D-HARD"
+       ],
+       "levers": [
+        "auto",
+        "success"
+       ],
+       "k": 0.14587998188790735,
+       "effective": 0.9850000000000001,
+       "delivered": 0.9461697296918403,
+       "pWindow": 0.955,
+       "verdict": "supported",
+       "ceiling": null,
        "constrained": null
       }
      }

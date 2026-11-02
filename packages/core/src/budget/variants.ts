@@ -1,6 +1,7 @@
 /**
  * v5.9 appendix variants of the report (user's request 2026-10-29): the hierarchical budget of the records under an alternative
- * mechanism set — another checkpoint policy, such as Young's interval (C-YOUNG) on the reference set or C-MEM instead of C-FAST —
+ * mechanism set — another checkpoint policy, such as Young's interval (C-YOUNG) on the reference set or C-MEM instead of C-FAST, or
+ * (v5.10) C-YOUNG with the default set's delivered-only mechanisms applied —
  * reduced to what Appendix A of the Findings pages prints per scale: the derated design's τ / δ and saves, the goodputs, the
  * requirement of formula (2′) with its two ends, and the window rule's plan or, when no move set reaches the goal, the all-moves
  * design with its ceiling. The variant is computed with the main run's candidates, levers, split, derating, windows and seed

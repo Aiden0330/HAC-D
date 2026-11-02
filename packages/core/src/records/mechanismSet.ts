@@ -45,7 +45,7 @@ export const MechanismSetSchema = z.object({
   baseline: z.array(z.string()),
   /** A_op levers of the allocation */
   candidates: z.array(z.string()),
-  /** kept for the delivered goodput (silent-corruption detection, checkpoint cost), outside the A_op allocation */
+  /** listed for the delivered goodput (silent-corruption detection, checkpoint cost): outside the allocation and not applied in the report's designs (v5.10: Appendix A of a `--variants` run applies them) */
   goodputOnly: z.array(z.string()),
   /** dominated on a shared stage or without effect beyond noise */
   pruned: z.array(z.string()),

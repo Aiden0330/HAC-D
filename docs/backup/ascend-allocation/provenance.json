@@ -1,5 +1,5 @@
 {
- "command": "hacd findings --record native950,ubl128,cm384,a3server --study-dir docs/backup/arch-mechanism-shapley --variants remap-latest-2026-10--young,remap-latest-2026-10--cmem --out docs --data-out docs/backup/ascend-allocation",
+ "command": "hacd findings --record native950,ubl128,cm384,a3server --study-dir docs/backup/arch-mechanism-shapley --variants remap-latest-2026-10--young,remap-latest-2026-10--cmem,remap-latest-2026-10--young-sdc --out docs --data-out docs/backup/ascend-allocation",
  "records": [
   {
    "id": "native950",
@@ -48,11 +48,12 @@
   "permutations": 1200,
   "variants": [
    "remap-latest-2026-10--young",
-   "remap-latest-2026-10--cmem"
+   "remap-latest-2026-10--cmem",
+   "remap-latest-2026-10--young-sdc"
   ]
  },
  "engine": {
   "version": "0.5.9",
-  "commit": "e4aadf1-dirty"
+  "commit": "bca77e9-dirty"
  }
 }

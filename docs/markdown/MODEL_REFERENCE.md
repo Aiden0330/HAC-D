@@ -565,3 +565,36 @@ Findings: one page per variant after Table 6 — "Appendix A<n>: the goal under 
 ### 33.4 What the appendix shows on the Ascend set
 
 What the appendix shows on the Ascend set (2026-10-29, 400 windows, derated): with Young's interval the saves fall from 90 s/h to 5–11 s/h (τ 950–1,050 s at 10k, 300–333 s at 100k, 212–236 s at 200k, 134–149 s at 500k on a 1.5 s save) and the goal becomes reachable at every scale — at 10k with no move and a hardware ceiling of k = 5.5–7.1, at 100k with one or two moves at k ≈ 1 (the automatic-attempt / manual levers, D-HARD or R-LINK-LOCAL), at 200k with D-HARD + R-LINK-LOCAL + H-CONTROL-CONTINUITY and the automatic-attempt and success levers at k = 0.55–0.66, at 500k with the same five moves at k = 0.18–0.22 (the hardware interruption FIT down to about a fifth), P(window) 95–96 %. C-MEM in place of C-FAST reaches the goal nowhere: its 1 % overhead (1.5 % derated) alone costs 54 s/h, the whole budget, so B = −45 to −63 s/h and the ceiling with every move on and perfect hardware is 97.0–97.3 %. The main tables are byte-identical to the v5.7 / v5.8 data (the regeneration at e4aadf1 reproduced every number of `results.json`; only the v5.8 fields and `variants` were added).
+
+## 34. v5.10 the delivered-only mechanisms in the report (2026-11-01, user's request)
+
+The goal is on the effective goodput; the delivered goodput G_del, which also loses the work that undetected silent corruption spoils, stands beside it. Plans that reach 98.5 % G_eff at 500k deliver about 78 % (§33.4), and the five mechanisms that act on that loss — the set's `goodputOnly` list: D-SDC-FP8, D-SDC-FP4, D-ABFT, D-NET-SDC, H-SDC-SCREEN — sat in no design: they are not in the reference set, and the pruning rule keeps them out of the candidates because they do not raise G_eff. The pages nevertheless called them "kept in the design", so the G_del column read as if it included them.
+
+### 34.1 The variant
+
+`remap-latest-2026-10--young-sdc` (public id, `packages/core/data/mechanism-sets`) is the `--young` set with those five mechanisms moved from `goodputOnly` into the baseline, in their list order, with the set's parameters; their verdict is `reference` with a reason that names the default set's verdict. Candidates, levers, efforts, derating, recovery baseline, parameters and pruning rule are the `--young` set's. It runs through `hacd findings --variants` unchanged (§33.2): the same budget, window rule (with the fresh-window acceptance of §32.2), ARINC split, windows and seed, so a plan is re-solved under the mechanisms' costs. The moves and k are the window rule's, not the Young plan's with the five added on top. The five sit in the baseline, so their efforts (4 + 4 + 4 + 3 + 3 on the library's scale) are not in any plan's effort. The committed report set is generated with `--variants remap-latest-2026-10--young,remap-latest-2026-10--cmem,remap-latest-2026-10--young-sdc`.
+
+### 34.2 The pages
+
+- Findings, Appendix A3: a variant that adds anything but a checkpoint mechanism (`kind !== 'checkpoint'` in `v.mechanisms`) is headed "the goal and the delivered goodput with the delivered-only mechanisms applied", its intro says only the reference set differs, and its note states that the parameters are the set's target values, not measurements, that their throughput overhead counts in G_eff, and the comparison with the checkpoint variant it extends at the headline scale (plan G_del, G_eff, k).
+- What G_del covers: the Table 1 note says these designs do not apply the delivered-only mechanisms of Table 6 and names the appendix that does; the Table 6 and Methodology labels and the pruning rule read "outside the G_eff allocation, not applied in the designs of Tables 1–5" where they read "kept". Tables 1–6 change in no number: `archs` of `results.json` and the two earlier variants are byte-identical.
+- Appendix parameters: printed as written, up to four decimals. Since v5.9 they went through an integer format, so A2 showed C-MEM's save as 1 → 1 s and its overhead as 0 → 0 (0.5 → 0.75 s and 0.01 → 0.015).
+- Methodology: the appendix sentence names the third set. The web Report tab and `hacd scenario report` still run without variants; they get the label and the Table 1 clause, without the reference to an appendix.
+
+### 34.3 What the appendix shows on the Ascend set
+
+400 windows, derated, ranges over the four records; G_eff of every plan with a move is 98.50 %, and every plan's acceptance on fresh windows is supported (P(window) 93.3–99.8 %).
+
+| Scale | Plan G_del, C-YOUNG (A1) | Plan G_del, with the five (A3) | k, A1 | k, A3 |
+|---|---|---|---|---|
+| 10k | 98.08–98.20 % | 98.47–98.54 % | ceiling 5.5–7.1 | ceiling 5.2–6.4 |
+| 100k | 93.56–93.64 % | 97.70–97.71 % | 0.99–1.06 | 0.998–1.007 |
+| 200k | 89.08–89.22 % | 96.91–96.93 % | 0.55–0.66 | 0.46–0.55 |
+| 500k | 77.88–78.15 % | 94.61–94.66 % | 0.18–0.22 | 0.14–0.18 |
+
+At 10k no move is needed either way and G_eff stays above the goal (98.55–98.62 %). The cost is D-ABFT's throughput overhead, 0.1 % nominal and 0.15 % derated: about 5.3 s/h of the 54 s/h budget, so B falls by that much at every scale (native950: 48.4 → 43.0 s/h at 10k, −0.8 → −5.8 s/h at 500k), and the same G_eff needs a hardware factor 16–18 % tighter at 200k and 500k (500k: k 0.213 → 0.175 on native950) or more moves at 100k. The gain rests on the set's target parameters — the confidence of the mechanism parameters is that of the set, not a measurement — above all D-ABFT's 90 % of the upstream detector's misses, the largest single gain (about 14 pt of delivered goodput at 500k, Findings Table 6).
+
+### 34.4 The check
+
+Closed form against the window ledger, which draws each event: on native950's committed plans at 100k, 200k and 500k, nominal and derated, with and without the five, 4,000 windows per design (seed 2026), every closed-form G_del lies within 0.8 half-widths of the ledger mean (with the five at 500k, derated: 94.62 % against 94.64 ± 0.24 %) and G_eff within 0.01 pt. Four hundred windows are too few to read G_del this closely: one window's G_del at 500k, derated, has a standard deviation of 7.6 pt with the five and 14.1 pt without them, which is also a result. Tests: `variants_v59.test.ts` (the set's definition, the summary rows, the ledger against the closed form), `variants.test.ts` (CLI: the sidecar, Appendix A3, the wording, the parameters as written).
+

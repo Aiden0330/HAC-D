@@ -1,7 +1,8 @@
 /**
  * v5.9 the appendix variants of the report (user's request 2026-10-29): C-YOUNG lets the checkpoint period float by Young's rule
  * on the design's save time and is exactly removable; the two variant mechanism sets parse and resolve; `variantSummary` reduces a
- * variant budget to the rows Appendix A prints, consistent with the KPI form and the requirement of formula (2′).
+ * variant budget to the rows Appendix A prints, consistent with the KPI form and the requirement of formula (2′). v5.10 (user's
+ * request 2026-11-01): the variant with the default set's delivered-only mechanisms applied on top of C-YOUNG.
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -10,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import {
   BUILTIN_TOPOLOGY_RECORDS, DEFAULT_MECHANISM_SET, parseMechanismSet, resolveMechanismSet, recordScenario, budgetFromRecords, variantSummary,
   applyMechanisms, stripMechanisms, trainingOf, youngInterval, kpiForm, mechanismById, MECHANISM_LIBRARY,
+  buildLedgerRun, simulateLedgerReplications, summarizeLedger, finishLedgerRun,
 } from '../src/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -101,4 +103,46 @@ describe('v5.9 the appendix variant sets and variantSummary', () => {
     expect(3600 * mainRow.today.kpiDerated.saveFrac).toBeCloseTo(90, 6);
     expect(row.today.saveSPerH).toBeLessThan(90);
   }, 300_000);
+});
+
+describe('v5.10 the appendix variant with the delivered-only mechanisms applied', () => {
+  const FIVE = ['D-SDC-FP8', 'D-SDC-FP4', 'D-ABFT', 'D-NET-SDC', 'H-SDC-SCREEN'];
+  it('the young-sdc set is the young set with the default set’s delivered-only mechanisms in the baseline, nothing else changed', () => {
+    const young = readSet('remap-latest-2026-10--young'), sdc = readSet('remap-latest-2026-10--young-sdc');
+    expect(DEFAULT_MECHANISM_SET.goodputOnly).toEqual(FIVE);
+    expect(sdc.baseline).toEqual([...young.baseline, ...FIVE]);
+    expect(sdc.goodputOnly).toEqual([]);
+    for (const k of ['candidates', 'pruned', 'capability', 'parameters', 'levers', 'derate', 'recovery', 'prune', 'metadata', 'efforts'] as const) expect(sdc[k]).toEqual(young[k]);
+    for (const id of FIVE) expect(sdc.verdicts?.[id].verdict).toBe('reference');
+    expect(Object.keys(recordScenario(REC, sdc, 10000).mechanisms.applied ?? {})).toEqual(expect.arrayContaining(['C-YOUNG', ...FIVE]));
+  });
+  it('variantSummary: the five raise G_del at D-ABFT’s throughput cost, and formula (2′) loses that cost from the budget', () => {
+    const young = readSet('remap-latest-2026-10--young'), sdc = readSet('remap-latest-2026-10--young-sdc');
+    const opts = { sizes: [100000], target: 0.985, metric: 'effective' as const, trials: 40, seed: 1 };
+    const main = budgetFromRecords([REC], DEFAULT_MECHANISM_SET, opts);
+    const a = variantSummary(main, young, budgetFromRecords([REC], young, opts)).archs.a3server[0];
+    const v = variantSummary(main, sdc, budgetFromRecords([REC], sdc, opts));
+    expect(v.added).toEqual(['C-YOUNG', ...FIVE]);
+    expect(v.removed).toEqual([]);
+    expect(Object.keys(v.mechanisms)).toEqual(['C-YOUNG', ...FIVE]);
+    expect(v.mechanisms['D-ABFT'].kind).toBe('detect');
+    expect(v.mechanisms['H-SDC-SCREEN'].kind).toBe('physical');
+    const b = v.archs.a3server[0];
+    // today's design under the two variants (derated): same period rule, the detectors act on the corruption loss
+    expect(b.today.delivered - a.today.delivered).toBeGreaterThan(0.03);
+    expect(b.today.effective).toBeLessThan(a.today.effective);
+    expect(a.today.effective - b.today.effective).toBeLessThan(0.002); // D-ABFT's overhead 0.1 % × 1.5 derated, about 0.15 pt
+    // the budget of formula (2′) shrinks by that overhead: 3600 · G*/Φ′ grows by about 5.3 s/h
+    expect(a.required.B - b.required.B).toBeGreaterThan(4);
+    expect(a.required.B - b.required.B).toBeLessThan(6);
+  }, 300_000);
+  it('the window ledger reproduces the closed-form delivered goodput with the five applied', () => {
+    const sdc = readSet('remap-latest-2026-10--young-sdc');
+    const s = recordScenario(REC, sdc, 100000);
+    const run = buildLedgerRun(s, { trials: 200, seed: 1, target: 0.985 });
+    const c = finishLedgerRun(run, summarizeLedger(simulateLedgerReplications(run.spec, 0, 200, 1), 1, 0.985));
+    expect(c.disagrees).toBe(false);
+    expect(Math.abs(c.delta.delivered)).toBeLessThan(0.01);
+    expect(run.closedForm.delivered).toBe(trainingOf(s).deliveredGoodputExact);
+  }, 120_000);
 });
