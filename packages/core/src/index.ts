@@ -44,6 +44,7 @@ export * from './strategy/requirement.js';
 export * from './study/prune.js';
 export * from './budget/index.js';
 export * from './budget/variants.js';
+export * from './isoLocal.js';
 export * from './records/index.js';
 export * from "./budget/bom.js";
 export * from "./study/hierarchy.js";

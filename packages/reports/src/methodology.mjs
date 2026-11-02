@@ -10,7 +10,7 @@
  * decision scale (the largest scale of its studies), so the 50 万 / 500k headers follow the data (identical for the v4.4 data).
  * Relocated from scripts/build-ascend-allocation-methodology.mjs (v5 T10), now a thin wrapper that reads and writes the files.
  */
-import { esc, fmt, tw, wrap, lines, sz, W, pageShell, pages, M, svgDyn, svgClose, titleBlock, legend, node, arrowDefs, arrow, FLOW, chip, tiny, CHIP_H, kN, provenanceFooter, countWord } from './kit.mjs';
+import { esc, fmt, tw, wrap, lines, sz, W, pageShell, pages, M, svgDyn, svgClose, titleBlock, legend, node, arrowDefs, arrow, FLOW, chip, tiny, CHIP_H, kN, provenanceFooter, countWord, dateOf } from './kit.mjs';
 import { contentFor } from './content.mjs';
 import { FINDINGS_FILES } from './findings.mjs';
 
@@ -203,7 +203,7 @@ const extraCss = `
 /** the Methodology page as an HTML string; throws on inconsistent data (unknown verdict, stage, layer or category) and on undefined / NaN in the output */
 export function methodologyHtml({ results, mechanisms, provenance }) {
   const R = results, MX = mechanisms;
-  const DATE = new Date(R.generated).toLocaleDateString('sv-SE');
+  const DATE = dateOf(R.generated);
   const MAIN = String(R.main);
   const ARCHS = MX.archs;
   const LAYERS = R.layers.map((l) => l.id);

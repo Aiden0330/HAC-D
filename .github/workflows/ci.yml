@@ -5,6 +5,9 @@
 # so npm asked the registry for a package that is not published. `node scripts/version-bump.mjs --check` now fails such a tree
 # before the install (the script needs nothing installed). The actions run on their current major releases, v7 (Node 24 runtime),
 # which ends the runner's Node 20 deprecation warning; the project itself still runs on Node 20, the development machine's version.
+# 2026-11-01: the second run failed in `npm test` — the Findings, Methodology and BOM recipes formatted the run stamp in the
+# renderer's zone, so the UTC runner printed 2026-10-30 for a run of the evening of 2026-10-29 (US Eastern). The page date is
+# now the stamp's first ten characters and the sidecar stamp carries the author's offset (core `isoLocal`): any TZ reproduces.
 name: CI
 on:
   push:

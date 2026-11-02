@@ -11,7 +11,7 @@
  * Table 1 is sectioned by the hardware layers top-down (SuperPoD, compute cabinet, node, NPU; the scale-out network is Table 2).
  */
 import { topologySchematicSvg } from './schematic.mjs';
-import { esc, fmt, pct, tex, W, sz, tw, svgDyn, svgClose, titleBlock, legend, pages, pageShell, provenanceFooter, countWord, kN } from './kit.mjs';
+import { esc, fmt, pct, tex, W, sz, tw, svgDyn, svgClose, titleBlock, legend, pages, pageShell, provenanceFooter, countWord, kN, dateOf } from './kit.mjs';
 
 const cnt = (d, id) => d.rows.find((r) => r.id === id)?.count ?? 0;
 const rowOf = (d, id) => d.rows.find((r) => r.id === id);
@@ -216,7 +216,7 @@ const extraCss = `
 /** the BOM page as an HTML string; throws on inconsistent data (scale-out parts, design list, FIT and rate sums, scales vs. main design) and on undefined / NaN in the output */
 export function bomHtml({ bom, provenance }) {
   const B = bom;
-  const DATE = new Date(B.generated).toLocaleDateString('sv-SE');
+  const DATE = dateOf(B.generated);
   const N = B.npus;
   const D = Object.fromEntries(B.designs.map((d) => [d.id, d]));
   // families, architectures and variants in the data's order (bomDocument: records → variants)

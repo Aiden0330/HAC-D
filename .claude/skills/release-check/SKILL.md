@@ -8,6 +8,7 @@ description: Pre-release verification for HAC-D — version check and clean inst
 ```bash
 node scripts/version-bump.mjs --check      # every copy of the version agrees: root, workspaces and their @hac-d specs, lockfile, CORE_VERSION, the kit's engine default
 D=$(mktemp -d) && git clone -q . "$D" && git diff HEAD | git -C "$D" apply --allow-empty && (cd "$D" && npm ci) && rm -rf "$D"   # the install as CI runs it: a clean checkout, the lockfile alone
+TZ=UTC node packages/reports/test/reproduce.mjs   # the six pages under the runner's zone (the second v5.9 CI run failed here)
 npm test                                   # every suite: core (goldens included), importers, agent, reports, CLI (the operate tests spawn the mock model; about 3 min)
 npm run typecheck                          # core, cli, mcp, importers, web
 npm run build -w @hac-d/web                # production bundle
@@ -19,7 +20,7 @@ node --import tsx packages/cli/src/main.ts ledger data-staging/three.json --tria
 node --import tsx packages/cli/src/main.ts plan data-staging/three.json --target 0.9 --trials 100 | head -6
 ```
 
-The clean install is the step the first CI run of v5.9 failed (2026-10-30: the workspace packages pinned each other at 0.5.0 while every package was 0.5.9, so npm asked the registry for a package that is not published); the local `node_modules` symlinks never show it. `git diff HEAD` carries the tracked changes into the clone — stage a new file with `git add -N <file>` first when the install depends on it. A version bump is `node scripts/version-bump.mjs <version>`, never hand edits.
+The clean install is the step the first CI run of v5.9 failed (2026-10-30: the workspace packages pinned each other at 0.5.0 while every package was 0.5.9, so npm asked the registry for a package that is not published); the local `node_modules` symlinks never show it. `git diff HEAD` carries the tracked changes into the clone — stage a new file with `git add -N <file>` first when the install depends on it. A version bump is `node scripts/version-bump.mjs <version>`, never hand edits. The pages must reproduce under `TZ=UTC` as well as locally: the page date is the first ten characters of the sidecar's `generated` stamp (written with the author's UTC offset by core `isoLocal`), never the renderer's zone — the second CI run of v5.9 printed 2026-10-30 on the UTC runner for a run of the evening of 2026-10-29 in US Eastern time.
 
 Expected on the three-class example at 100k cards: delivered 62.7 % (62.711 since the v5.7 straggler law; 62.6 before), A_op 97.55 %; the ledger simulation agrees with the closed form; the plan is D-SDC alone at effort 5 (92.5 % nominal / 90.2 % derated). Since v5.9 also `node packages/reports/test/reproduce.mjs` (six OK) and, after a recipe or data change, the regenerated pages carry Appendix A (`hacd findings --variants`).
 

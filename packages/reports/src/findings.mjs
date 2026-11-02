@@ -22,7 +22,7 @@
  * G*) printed with every move on and the ceiling at perfect hardware. The A_op basis (`metric` absent or 'aOp') renders as before.
  */
 import { topologySchematicSvg } from './schematic.mjs';
-import { esc, fmt, tw, wrap, lines, pct, fk, pP, f2, kN, hours, secs, sz, W, svgDyn, svgClose, titleBlock, legend, flow, chip, CHIP_H, pages, pageShell, drawLayer, zoomLines, topoGeomFromRecord, provenanceFooter, countWord } from './kit.mjs';
+import { esc, fmt, tw, wrap, lines, pct, fk, pP, f2, kN, hours, secs, sz, W, svgDyn, svgClose, titleBlock, legend, flow, chip, CHIP_H, pages, pageShell, drawLayer, zoomLines, topoGeomFromRecord, provenanceFooter, countWord, dateOf } from './kit.mjs';
 
 const UNIT_LAYER = { npu: 'npu', cluster: 'cluster', node: 'node', cabinet: 'cabinet', pod: 'superpod', fabric: 'superpod', 'scale-out': 'scaleout' };
 /** architecture id → file suffix of docs/ASCEND_ALLOCATION_FINDINGS_<suffix>.html */
@@ -37,7 +37,7 @@ const sum = (o, pred) => Object.entries(o).filter(([k]) => pred(k)).reduce((a, [
 export function findingsHtml(arch, { results, mechanisms, shapley, record, provenance }) {
   const R = results, MJ = mechanisms;
   if (!R.archs[arch]) throw new Error(`unknown arch ${arch}`);
-  const DATE = new Date(R.generated).toLocaleDateString('sv-SE');
+  const DATE = dateOf(R.generated);
   const SIZES = R.sizes, MAIN = R.main, TARGET = R.target;
   const TGT = `${fmt(TARGET * 100, 1)} %`;
   /** v5.6 the acceptance metric of the data: the effective goodput, or A_op (the v4.4–v5.5 reports) */

@@ -19,6 +19,11 @@ export const pP = (p) => `${fmt(p * 100, p === 0 || p === 1 ? 0 : 1)} %`;
 export const f2 = (v) => (v < 0.005 ? '< 0.01' : fmt(v, 2));
 export const kN = (n, lang) => (lang === 'zh' ? `${fmt(n / 10000)} 万` : `${fmt(n / 1000)}k`);
 export const hours = (h, lang) => (h >= 8760 ? (lang === 'zh' ? `${fmt(h / 8760, 1)} 年` : `${fmt(h / 8760, 1)} y`) : h >= 48 ? (lang === 'zh' ? `${fmt(h / 24)} 天` : `${fmt(h / 24)} d`) : h >= 1 ? `${fmt(h, 1)} h` : `${fmt(h * 60, 1)} min`);
+/** The date a page prints: the first ten characters of the sidecar's `generated` stamp — the author's calendar day when the stamp
+ * carries the author's UTC offset (core `isoLocal`, since 2026-11-01), the UTC day for the `Z` stamps of earlier sidecars — never
+ * the renderer's zone (the second CI run of v5.9 printed 2026-10-30 on a UTC runner for a run of the evening of 2026-10-29).
+ * The same rule as core's `stampDay`; the kit depends on no package. */
+export const dateOf = (generated) => (typeof generated === 'string' && /^\d{4}-\d{2}-\d{2}/.test(generated) ? generated.slice(0, 10) : '—');
 export const secs = (s) => (s >= 3600 ? `${fmt(s / 3600, 2)} h` : s >= 120 ? `${fmt(s / 60, 1)} min` : `${fmt(s, s < 10 ? 1 : 0)} s`);
 
 /** small counts as words (zh 六个 / en six) for prose that states a count of the data; digits above twelve */

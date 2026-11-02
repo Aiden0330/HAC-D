@@ -7,6 +7,7 @@
  * variant only); the hard FIT per NPU splits sum to the total; the rows' rates sum to the job rate.
  * 口径: counts are HAC-D topology-template geometry, not vendor bills of materials; FIT per unit-hour; rates per hour at job level.
  */
+import { isoLocal } from '../isoLocal.js';
 import type { Scenario } from '../scenario/schema.js';
 import { topologyBom, TOPOLOGY_SCALES, type BomRow, type FaultUnit } from '../topology/index.js';
 import type { Counts } from '../scenario/build.js';
@@ -97,5 +98,5 @@ export function bomDocument(records: TopologyRecord[], npus: number, sizes: numb
       fam[v.id] ??= entry;
     }
   }
-  return { generated: new Date().toISOString(), npus, sizes, designs, scales, scaleOutDesigns };
+  return { generated: isoLocal(), npus, sizes, designs, scales, scaleOutDesigns };
 }

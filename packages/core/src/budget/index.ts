@@ -14,6 +14,7 @@
  * `BudgetResult` is the shape of one `archs.<id>.sizes.<N>` block of docs/backup/ascend-allocation/results.json; the v4.4 data
  * reproduces from it to 1e-9 (fixed seeds). 口径: as the KPI form; FIT = business-impact interruptions per unit-hour × 1e9.
  */
+import { isoLocal } from '../isoLocal.js';
 import type { VariantSummary } from './variants.js';
 import type { Scenario } from '../scenario/schema.js';
 import type { TrainingKpis } from '../scenario/evaluate.js';
@@ -279,7 +280,7 @@ export interface BudgetDocument {
 /** the budget of several architectures at several scales: the shape of docs/backup/ascend-allocation/results.json */
 export function budgetDocument(archs: Record<string, BudgetArchInput>, o: BudgetDocumentOptions): BudgetDocument {
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT;
-  const out: BudgetDocument = { generated: new Date().toISOString(), metric: o.metric ?? 'effective', target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}) };
+  const out: BudgetDocument = { generated: isoLocal(), metric: o.metric ?? 'effective', target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}) };
   for (const [arch, A] of Object.entries(archs)) {
     const sizes: Record<string, BudgetResult> = {};
     for (const n of o.sizes) sizes[String(n)] = hierarchicalBudget(A.build(n), { ...o, layerSpec: A.layerSpec, onProgress: (step) => o.onProgress?.(arch, n, step) });
