@@ -11,7 +11,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hac-d/core": "0.5.0",
+    "@hac-d/core": "0.5.9",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "yaml": "^2.8.1"
   }

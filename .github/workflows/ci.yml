@@ -1,6 +1,10 @@
 # v5.9 (2026-10-29): the release check on Linux — typecheck, the production bundle of the web app, every test suite (the goldens
 # are precomputed JSON, no Python needed) and the byte-for-byte reproduction of the committed report pages. The CLI suite spawns
 # the mock on-prem model (scripts/mock-onprem-model.mjs); nothing needs the network. Windows is not run (user's decision 2026-10-29).
+# 2026-10-30: the first run failed in `npm ci` — the workspace packages pinned each other at 0.5.0 while every package was 0.5.9,
+# so npm asked the registry for a package that is not published. `node scripts/version-bump.mjs --check` now fails such a tree
+# before the install (the script needs nothing installed). The actions run on their current major releases, v7 (Node 24 runtime),
+# which ends the runner's Node 20 deprecation warning; the project itself still runs on Node 20, the development machine's version.
 name: CI
 on:
   push:
@@ -11,11 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
+      - run: node scripts/version-bump.mjs --check
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build -w @hac-d/web
