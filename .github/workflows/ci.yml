@@ -3,11 +3,14 @@
 # the mock on-prem model (scripts/mock-onprem-model.mjs); nothing needs the network. Windows is not run (user's decision 2026-10-29).
 # 2026-10-30: the first run failed in `npm ci` — the workspace packages pinned each other at 0.5.0 while every package was 0.5.9,
 # so npm asked the registry for a package that is not published. `node scripts/version-bump.mjs --check` now fails such a tree
-# before the install (the script needs nothing installed). The actions run on their current major releases, v7 (Node 24 runtime),
-# which ends the runner's Node 20 deprecation warning; the project itself still runs on Node 20, the development machine's version.
+# before the install (the script needs nothing installed). The actions run on their current major releases, v7 (Node 24 runtime).
 # 2026-11-01: the second run failed in `npm test` — the Findings, Methodology and BOM recipes formatted the run stamp in the
 # renderer's zone, so the UTC runner printed 2026-10-30 for a run of the evening of 2026-10-29 (US Eastern). The page date is
 # now the stamp's first ten characters and the sidecar stamp carries the author's offset (core `isoLocal`): any TZ reproduces.
+# 2026-11-01 (toolchain): the check runs on Node 24, the development version (`.nvmrc`; vitest 5 and commander 15 want 22.12 or
+# newer and had warned on Node 20, which reached end of life in April 2026). The second job builds the offline bundle on 24 and
+# runs it from an empty folder on Node 20 — the floor the bundle promises the network that holds the documents
+# (scripts/bundle-offline.mjs targets node20, the launchers say Node >= 20).
 name: CI
 on:
   push:
@@ -21,7 +24,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
       - run: node scripts/version-bump.mjs --check
       - run: npm ci
@@ -29,3 +32,27 @@ jobs:
       - run: npm run build -w @hac-d/web
       - run: npm test
       - run: node packages/reports/test/reproduce.mjs
+  bundle-node20:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: node scripts/bundle-offline.mjs
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - name: the bundle from an empty folder on Node 20
+        run: |
+          node --version
+          mkdir -p "$RUNNER_TEMP/hacd-smoke" && cd "$RUNNER_TEMP/hacd-smoke"
+          V=$(node -p "require('$GITHUB_WORKSPACE/package.json').version")
+          tar xzf "$GITHUB_WORKSPACE/dist/offline/hacd-$V.tgz"
+          B=$(ls -d hacd-*)
+          "$B/bin/hacd" records
+          "$B/bin/hacd" budget --record a3server --scale 10000 --trials 40 --json > budget.json
+          node -e "const b=require(process.cwd()+'/budget.json'); if (!(b.today && b.required && b.recommended)) throw new Error('budget output incomplete'); console.log('bundle OK on', process.version, '— today effective goodput', b.today.kpiDerated.effective)"

@@ -6,6 +6,7 @@ description: Pre-release verification for HAC-D — version check and clean inst
 # Release check
 
 ```bash
+# Node 24: `nvm use` reads .nvmrc (vitest 5 / commander 15 need ≥ 22.12); the offline bundle keeps Node ≥ 20 — CI's bundle-node20 job runs it there
 node scripts/version-bump.mjs --check      # every copy of the version agrees: root, workspaces and their @hac-d specs, lockfile, CORE_VERSION, the kit's engine default
 D=$(mktemp -d) && git clone -q . "$D" && git diff HEAD | git -C "$D" apply --allow-empty && (cd "$D" && npm ci) && rm -rf "$D"   # the install as CI runs it: a clean checkout, the lockfile alone
 TZ=UTC node packages/reports/test/reproduce.mjs   # the six pages under the runner's zone (the second v5.9 CI run failed here)
