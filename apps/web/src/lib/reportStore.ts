@@ -11,7 +11,7 @@ export interface SavedReport {
   savedAt: number;
   /** the scenario JSON the report was computed from (a differing current scenario means the saved report is stale) */
   scenarioKey: string;
-  settings: { sizes: number[]; trials: number; permutations: number; target: number; seed: number };
+  settings: { sizes: number[]; trials: number; permutations: number; target: number; seed: number; /** v5.11 appendix variant set ids */ variants?: string[] };
   files: { findings: string; methodology: string; data: string };
   html: { findings: string; methodology: string };
   /** the sidecar bundle JSON text (hacd findings --data re-renders it) */

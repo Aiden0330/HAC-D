@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/web",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,15 +10,15 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@hac-d/core": "0.5.10",
+    "@hac-d/core": "0.5.11",
     "comlink": "^4.4.2",
     "i18next": "^26.4.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-i18next": "^17.0.16",
     "zustand": "^5.0.15",
-    "@hac-d/importers": "0.5.10",
-    "@hac-d/reports": "0.5.10",
+    "@hac-d/importers": "0.5.11",
+    "@hac-d/reports": "0.5.11",
     "katex": "^0.19.0"
   },
   "devDependencies": {

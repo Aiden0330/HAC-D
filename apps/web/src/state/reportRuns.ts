@@ -7,7 +7,7 @@ import type { ReportRun } from '../worker/compute.worker.js';
  * is shown again. In memory only (a reload drops a run; a saved report lives in IndexedDB, lib/reportStore.ts). `scenarioKey` is
  * the scenario's JSON at the start of the run: a result whose key differs from the project's current scenario is shown as stale.
  */
-export interface ReportRunSettings { sizes: number[]; trials: number; permutations: number; target: number }
+export interface ReportRunSettings { sizes: number[]; trials: number; permutations: number; target: number; /** v5.11 appendix variant set ids */ variants?: string[] }
 export interface ReportRunState {
   projectId: string;
   projectName: string;

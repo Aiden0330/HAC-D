@@ -13,10 +13,11 @@
 import type { Scenario } from '../scenario/schema.js';
 import { withSize } from '../study/index.js';
 import { budgetDocument, type BudgetDocument } from './index.js';
+import { variantSummary } from './variants.js';
 import { studyOfBuild, type ArchStudy } from '../study/archStudy.js';
 import { mechanismHierarchy, type MechanismHierarchy, type StoredStudy } from '../study/hierarchy.js';
 import { DEFAULT_MECHANISM_SET, resolveMechanismSet, type MechanismSet } from '../records/mechanismSet.js';
-import { MECHANISM_LIBRARY } from '../mechanisms/index.js';
+import { MECHANISM_LIBRARY, applyMechanisms, stripMechanisms } from '../mechanisms/index.js';
 import { integrationStatus } from '../mechanisms/auditLibrary.js';
 import { TOPOLOGY_TEMPLATES } from '../topology/index.js';
 import { minWindowTrials } from '../math/stats.js';
@@ -44,7 +45,15 @@ export interface ScenarioReportOptions {
   permutations?: number;
   /** the mechanism set (default the default set: its candidates, parameters, efforts, levers and derating) */
   set?: MechanismSet;
-  onProgress?: (stage: 'study' | 'budget' | 'hierarchy', n: number, detail: string) => void;
+  /**
+   * v5.11 the appendix variants (Appendix A of the Findings page, `hacd findings --variants`): for each variant set the budget of the
+   * project's design with the set's change — the mechanisms its baseline adds to / removes from the report set's baseline, e.g.
+   * C-YOUNG added, C-MEM in place of C-FAST — under the same metric, target, scales, windows, seed, split and derating, with the
+   * variant set's candidates, parameters, efforts, levers and derating; no Shapley study. `results.variants` carries the rows
+   * (`variantSummary`); Tables 1–6 never read them. A variant equal to the report set is refused.
+   */
+  variants?: MechanismSet[];
+  onProgress?: (stage: 'study' | 'budget' | 'hierarchy' | 'variant', n: number, detail: string) => void;
 }
 /** the record-shaped geometry the Findings recipe draws Figures 1 and 2 from (`record` of findingsHtml; records.json of the sidecar) */
 export interface ReportRecord {
@@ -63,6 +72,17 @@ export interface ScenarioReport {
 }
 
 /** the candidates of the report preset for a scenario: the set's candidates that are appliable, not applied in the scenario and ready with the set's parameters */
+/**
+ * v5.11 the reference set of a variant on a project: the project's design (its applied mechanisms, in their order) without the
+ * mechanisms the variant's baseline drops from the report set's baseline, plus the ones it adds (appended, applied after the
+ * design's own). The record path applies the variant's whole baseline instead (`budgetFromRecords`); on the default set's own
+ * design both give the same list.
+ */
+export function variantReference(reference: readonly string[], setBaseline: readonly string[], variantBaseline: readonly string[]): string[] {
+  const added = variantBaseline.filter((id) => !setBaseline.includes(id)), removed = setBaseline.filter((id) => !variantBaseline.includes(id));
+  return [...reference.filter((id) => !removed.includes(id)), ...added.filter((id) => !reference.includes(id))];
+}
+
 export function reportCandidates(s: Scenario, set: MechanismSet = DEFAULT_MECHANISM_SET): string[] {
   const r = resolveMechanismSet(set);
   return r.candidates.filter((id) => {
@@ -111,6 +131,25 @@ export function reportFromScenario(s: Scenario, o: ScenarioReportOptions): Scena
     { [o.id]: { name: o.name, short: o.short, family, assumed, build, layerSpec } },
     { sizes, target: o.target, metric: o.metric, main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
   );
+  if (o.variants?.length) {
+    results.variants = o.variants.map((V) => {
+      if (V.id === set.id) throw new Error(`variant ${V.id} is the report's own set`);
+      const rv = resolveMechanismSet(V);
+      // the variant's change against the report set's baseline, applied to the project's design: the dropped mechanisms stripped
+      // (their recorded previous values restored), the added ones applied after the design's own with the variant set's parameters
+      const added = rv.baseline.filter((id) => !r.baseline.includes(id) && !reference.includes(id)), removed = r.baseline.filter((id) => !rv.baseline.includes(id) && reference.includes(id));
+      const vReference = variantReference(reference, r.baseline, rv.baseline);
+      const vBuild = (n: number) => applyMechanisms(stripMechanisms(build(n), removed), added, rv.parameters);
+      // the set's parameters, the project's applied parameters kept for the mechanisms that stay in the design
+      const vParameters = { ...rv.parameters, ...Object.fromEntries(applied.filter(([id]) => vReference.includes(id)).map(([id, rec]) => [id, { ...(rv.parameters[id] ?? {}), ...rec.parameters }])) };
+      const vCandidates = reportCandidates(s, V).filter((id) => !vReference.includes(id));
+      const vd = budgetDocument(
+        { [o.id]: { name: o.name, short: o.short, family, assumed, build: vBuild, layerSpec } },
+        { sizes, target: o.target, metric: o.metric, main, trials, seed, candidates: vCandidates, parameters: vParameters, efforts: V.efforts, levers: rv.levers, reference: vReference, derate: rv.derate, onProgress: (_arch, n, step) => o.onProgress?.('variant', n, `${V.id} · ${step}`) },
+      );
+      return variantSummary(results, V, vd);
+    });
+  }
   o.onProgress?.('hierarchy', main, '');
   const custom = Object.keys(study.projectParameters ?? {});
   const h = mechanismHierarchy(set, { [o.id]: study as unknown as StoredStudy }, { permutations, basis: `bare project scenario ${o.id}, the project's per-unit FIT, ${set.id}${custom.length ? `, the project's parameters for ${custom.join(' + ')}` : ''}${study.fixed?.length ? `; fixed in the base (outside the set): ${study.fixed.join(' + ')}` : ''}`, check: false });

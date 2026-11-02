@@ -42,7 +42,9 @@ export interface VariantSummary {
 /** the appendix rows of a variant run: `main` the report's document (its reference set), `set` the variant set, `doc` its budget document */
 export function variantSummary(main: BudgetDocument, set: MechanismSet, doc: BudgetDocument): VariantSummary {
   const r = resolveMechanismSet(set);
-  const added = r.baseline.filter((id) => !main.reference.includes(id)), removed = main.reference.filter((id) => !r.baseline.includes(id));
+  // what the variant's design adds to / removes from the main run's reference set: read from the variant document's own reference
+  // (the set's baseline on the record path; v5.11 the project's design with the set's change on the browser path, report.ts)
+  const added = doc.reference.filter((id) => !main.reference.includes(id)), removed = main.reference.filter((id) => !doc.reference.includes(id));
   const archs: Record<string, VariantSizeRow[]> = {};
   for (const [arch, A] of Object.entries(doc.archs)) {
     archs[arch] = doc.sizes.map((n) => {

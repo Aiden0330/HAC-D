@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Comlink from 'comlink';
-import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, reportCandidates, minWindowTrials, type Scenario } from '@hac-d/core';
+import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, VARIANT_MECHANISM_SETS, resolveMechanismSet, reportCandidates, minWindowTrials, type Scenario, type MechanismSet } from '@hac-d/core';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, ComputeCancelled } from '../worker/client.js';
 import type { ReportRun } from '../worker/compute.worker.js';
@@ -32,6 +32,8 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const [trials, setTrials] = useState(400);
   const [perms, setPerms] = useState(300);
   const [allScales, setAllScales] = useState(false);
+  /** v5.11 the appendix variant sets ticked for this run, in the built-in order (Appendix A1, A2, …) */
+  const [variants, setVariants] = useState<string[]>([]);
   const [saved, setSaved] = useState<SavedReport | null | undefined>(undefined);
   const [msg, setMsg] = useState<{ text: string; tone: 'crit' | 'info' } | null>(null);
   /** the page shown inline when the browser refuses a new tab (pop-up blocking, embedded browsers) */
@@ -53,13 +55,13 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const busy = run?.status === 'running';
 
   const generate = async () => {
-    const settings = { sizes, trials: Math.max(MIN_TRIALS, Math.round(trials)), permutations: Math.max(1, Math.round(perms)), target };
+    const settings = { sizes, trials: Math.max(MIN_TRIALS, Math.round(trials)), permutations: Math.max(1, Math.round(perms)), target, ...(variants.length ? { variants: [...variants] } : {}) };
     const name = { zh: s.meta.name, en: s.meta.name };
     runs.start(id, s.meta.name, key, settings);
     setMsg(null);
     try {
       // the promise is held by the store's run, not by this panel: the worker goes on when the tab is left
-      const r = await compute().report(s, { id, name, short: name, sizes: settings.sizes, main: N, target, trials: settings.trials, seed: 1, permutations: settings.permutations }, Comlink.proxy((stage: string, n: number, detail: string) => useReportRuns.getState().progress(id, stageText(stage, n, detail))));
+      const r = await compute().report(s, { id, name, short: name, sizes: settings.sizes, main: N, target, trials: settings.trials, seed: 1, permutations: settings.permutations, variants: settings.variants }, Comlink.proxy((stage: string, n: number, detail: string) => useReportRuns.getState().progress(id, stageText(stage, n, detail))));
       useReportRuns.getState().finish(id, r);
     } catch (e) {
       useReportRuns.getState().fail(id, e instanceof ComputeCancelled ? t('mechanisms.cancelled') : (e as Error).message, e instanceof ComputeCancelled);
@@ -86,7 +88,14 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const verdict = (v: string) => t(`mechanisms.verdict_${v}`);
   const LEV: Record<string, string> = { auto: lang === 'zh' ? '自动 60 s' : 'auto 60 s', manual: lang === 'zh' ? '人工 30 min' : 'manual 30 min', success: lang === 'zh' ? '成功 99.9 %' : 'success 99.9 %' };
   const when = (ms: number) => new Date(ms).toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-  const settingsText = (st: { sizes: number[]; trials: number; permutations: number; target: number }) => `${st.sizes.map((n) => fmtInt(n)).join(' / ')} NPU · ${t('findingsTab.trials')} ${st.trials} · ${t('findingsTab.permutations')} ${st.permutations} · ${t('findingsTab.target')} ${fmtPct(st.target, 1)}`;
+  const settingsText = (st: { sizes: number[]; trials: number; permutations: number; target: number; variants?: string[] }) => `${st.variants?.length ? `${t('findingsTab.variantsShort')} ${st.variants.map((v) => v.replace(/^remap-latest-2026-10--/, '')).join(', ')} · ` : ''}${st.sizes.map((n) => fmtInt(n)).join(' / ')} NPU · ${t('findingsTab.trials')} ${st.trials} · ${t('findingsTab.permutations')} ${st.permutations} · ${t('findingsTab.target')} ${fmtPct(st.target, 1)}`;
+  /** what a variant set changes against the default set's baseline, for its checkbox label */
+  const variantChange = (V: MechanismSet) => {
+    const b = resolveMechanismSet(DEFAULT_MECHANISM_SET).baseline, vb = resolveMechanismSet(V).baseline;
+    const added = vb.filter((id) => !b.includes(id)).join(' + '), removed = b.filter((id) => !vb.includes(id)).join(' + ');
+    return removed ? t('findingsTab.variantReplaces', { added, removed }) : t('findingsTab.variantAdds', { ids: added });
+  };
+  const toggleVariant = (id: string, on: boolean) => setVariants(VARIANT_MECHANISM_SETS.map((v) => v.id).filter((x) => (x === id ? on : variants.includes(x))));
   const stale = (scenarioKey: string) => scenarioKey !== key;
   const A = run?.status === 'done' && run.result ? run.result.sidecar.results.archs[id] : undefined;
   const result: ReportRun | undefined = run?.status === 'done' ? run.result : undefined;
@@ -107,6 +116,17 @@ export function ReportPanel({ s }: { s: Scenario }) {
           <input type="checkbox" checked={allScales} onChange={(e) => setAllScales(e.target.checked)} />
           {t('findingsTab.allScales')}
         </label>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>{t('findingsTab.variants')}</div>
+          <div className="muted" style={{ fontSize: 12, margin: '2px 0 4px' }}>{t('findingsTab.variantsHint')}</div>
+          {VARIANT_MECHANISM_SETS.map((V) => (
+            <label key={V.id} className="check" style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+              <input type="checkbox" checked={variants.includes(V.id)} onChange={(e) => toggleVariant(V.id, e.target.checked)} />
+              <span className="mono" style={{ fontSize: 12 }}>{V.id}</span>
+              <span className="muted" style={{ fontSize: 12 }}>{variantChange(V)}</span>
+            </label>
+          ))}
+        </div>
         <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>{t('findingsTab.scales')}: {sizes.map((n) => fmtInt(n)).join(' / ')} NPU · {t('findingsTab.seed')} 1 · {t('findingsTab.timeNote')}</div>
         <div className="btn-row" style={{ marginTop: 10 }}>
           <button type="button" className="btn primary" disabled={busy || !hasPod} onClick={generate}>{busy ? `${t('common.running')}…` : t('findingsTab.run')}</button>

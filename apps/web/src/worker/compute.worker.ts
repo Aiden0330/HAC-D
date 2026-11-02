@@ -5,7 +5,7 @@ import {
   mechanismReport, buildLedgerRun, finishLedgerRun, simulateLedgerReplications, summarizeLedger, auditMechanisms,
   allocateStrategy, type StrategyOptions,
   hierarchicalBudget, type BudgetOptions, type BudgetResult,
-  reportFromScenario, DEFAULT_MECHANISM_SET, CORE_VERSION, type ScenarioReportOptions, type ScenarioReport,
+  reportFromScenario, DEFAULT_MECHANISM_SET, mechanismSetById, CORE_VERSION, type ScenarioReportOptions, type ScenarioReport,
   type AuditOptions,
   type Scenario, type TornadoMetric, type AllocationMethod, type McReplication, type AttributionMetric, type LedgerReplication,
 } from '@hac-d/core';
@@ -13,7 +13,8 @@ import { findingsHtml, methodologyHtml, FINDINGS_FILES, type ReportProvenance } 
 import { ensureKatexCss } from './katexCss.js';
 
 /** v6.3 the Report tab's run: the sidecar (what hacd findings writes next to its reports), the two pages and their file names */
-export type ReportRunOptions = Omit<ScenarioReportOptions, 'onProgress' | 'set'>;
+/** v5.11 `variants`: ids of the built-in public variant sets for Appendix A (the worker resolves them; a set cannot cross the boundary as a class) */
+export type ReportRunOptions = Omit<ScenarioReportOptions, 'onProgress' | 'set' | 'variants'> & { variants?: string[] };
 export interface ReportRun {
   sidecar: ScenarioReport & { provenance: ReportProvenance };
   html: { findings: string; methodology: string };
@@ -70,14 +71,15 @@ const api: ComputeApi = {
   budget: (s, opts, onProgress) => hierarchicalBudget(s, { ...opts, onProgress: onProgress ? (step) => { void onProgress(step); } : undefined }),
   report: async (s, opts, onProgress) => {
     await ensureKatexCss();
-    const r = reportFromScenario(s, { ...opts, onProgress: onProgress ? (stage, n, d) => { void onProgress(stage, n, d); } : undefined });
+    const variants = (opts.variants ?? []).map((id) => mechanismSetById(id));
+    const r = reportFromScenario(s, { ...opts, variants, onProgress: onProgress ? (stage, n, d) => { void onProgress(stage, n, d); } : undefined });
     void onProgress?.('render', opts.main ?? opts.sizes[opts.sizes.length - 1], '');
     const set = DEFAULT_MECHANISM_SET;
     const provenance: ReportProvenance = {
       command: `HAC-D web · Allocation › Report · project ${opts.id}`,
       records: [{ id: opts.id, name: opts.name }],
       set: { id: set.id, source: set.source },
-      options: { scales: opts.sizes, target: opts.target, trials: opts.trials ?? 400, seed: opts.seed ?? 1, permutations: opts.permutations ?? 300 },
+      options: { scales: opts.sizes, target: opts.target, trials: opts.trials ?? 400, seed: opts.seed ?? 1, permutations: opts.permutations ?? 300, ...(opts.variants?.length ? { variants: [...opts.variants] } : {}) },
       engine: { version: CORE_VERSION, commit: __HACD_COMMIT__ },
     };
     // what the recipes read: the data as it is in the sidecar files

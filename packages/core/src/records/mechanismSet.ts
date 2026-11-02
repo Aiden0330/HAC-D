@@ -17,6 +17,9 @@ import { parameterIssues } from '../mechanisms/parameters.js';
 import type { RecoveryLever } from '../strategy/index.js';
 import type { DerateSpec } from '../mechanisms/plan.js';
 import remapLatest from '../../data/mechanism-sets/remap-latest-2026-10.json';
+import remapYoung from '../../data/mechanism-sets/remap-latest-2026-10--young.json';
+import remapCmem from '../../data/mechanism-sets/remap-latest-2026-10--cmem.json';
+import remapYoungSdc from '../../data/mechanism-sets/remap-latest-2026-10--young-sdc.json';
 
 const BilingualSchema = z.object({ zh: z.string(), en: z.string() });
 const LayerIdSchema = z.enum(['cluster', 'scaleout', 'superpod', 'cabinet', 'node', 'npu']);
@@ -208,3 +211,15 @@ export function withRecoveryBaseline(scenario: Scenario, set: MechanismSet): Sce
 
 /** the default mechanism set: ReMAP-latest (f53ab7e), parsed at load (a malformed built-in fails here) */
 export const DEFAULT_MECHANISM_SET: MechanismSet = parseMechanismSet(remapLatest);
+/**
+ * v5.11 the public appendix variants of the report (`hacd findings --variants`, MODEL_REFERENCE §33 / §34), parsed at load so that
+ * the browser — which cannot read data/mechanism-sets — offers the same sets on the Report tab: C-YOUNG on the reference set,
+ * C-MEM in place of C-FAST, C-YOUNG with the default set's delivered-only mechanisms. The CLI keeps reading the data folder.
+ */
+export const VARIANT_MECHANISM_SETS: readonly MechanismSet[] = [remapYoung, remapCmem, remapYoungSdc].map((j) => parseMechanismSet(j));
+/** the default set or one of the public variants by id */
+export function mechanismSetById(id: string): MechanismSet {
+  const set = [DEFAULT_MECHANISM_SET, ...VARIANT_MECHANISM_SETS].find((x) => x.id === id);
+  if (!set) throw new Error(`unknown mechanism set ${id} (built in: ${[DEFAULT_MECHANISM_SET, ...VARIANT_MECHANISM_SETS].map((x) => x.id).join(', ')})`);
+  return set;
+}
