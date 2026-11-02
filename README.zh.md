@@ -21,7 +21,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 
 ## v5.11（2026-11-01）：浏览器报告中的附录
 
-- **分配 › 报告**以复选框提供三个公开变体机制集（+ C-YOUNG；C-MEM 替代 C-FAST；+ C-YOUNG 与五个只保交付 goodput 的机制）：每勾选一个，就增加一页 `hacd findings --variants` 的附录 A——在相同的目标、规模、窗口数、种子、分配方式与降额下，用该机制集的候选与杠杆，对项目的设计施加该机制集的变化后重算预算，不做 Shapley 研究。表 1–6 不变；页脚与保存的结果记录所选机制集。核心：`ScenarioReportOptions.variants`、`VARIANT_MECHANISM_SETS` / `mechanismSetById`（为浏览器内置的机制集）、`variantReference`；`variantSummary` 从变体自身的参考集读取“增加 / 移除”，因此记录路径与浏览器路径的描述一致，在记录自身的设计上逐字节给出相同的行（`report_variants_v511.test.ts`）。MODEL_REFERENCE §35；手册 §7.2。
+- **分配 › 报告**以复选框提供三个公开变体机制集（+ C-YOUNG；C-MEM 替代 C-FAST；+ C-YOUNG 与五个只保交付 goodput 的机制）：每勾选一个，就增加一页 `hacd findings --variants` 的附录 A——在相同的目标、规模、窗口数、种子、分配方式与降额下，用该机制集的候选与杠杆，对项目的设计施加该机制集的变化后重算预算，不做 Shapley 研究。表 1–6 不变；页脚与保存的结果记录所选机制集。核心：`ScenarioReportOptions.variants`、`VARIANT_MECHANISM_SETS` / `mechanismSetById`（为浏览器内置的机制集）、`variantReference`；`variantSummary` 从变体自身的参考集读取“增加 / 移除”，因此记录路径与浏览器路径的描述一致，在记录自身的设计上逐字节给出相同的行（`report_variants_v511.test.ts`）。MODEL_REFERENCE §35；手册 §7.2。 项目工作流取同一选项：`hacd scenario report --variants <set>,…`、操作模型工具 `hacd_scenario_report` 与 MCP 工具 `scenario_report`；Methodology 页公式 4′ 的注记同日说明：在 C-YOUNG 下闭式 k ≈ B/Σc 只是根的下界。
 - 同日：v5.9 附录数值的独立校核（MODEL_REFERENCE §33.5，黄金向量 G7y），以及开发与 CI 迁移到 Node 24（`.nvmrc`；离线包仍保持 Node ≥ 20，由 CI 的第二个作业运行）。
 
 ## v5.10（2026-11-01）：报告中的只保交付 goodput 机制

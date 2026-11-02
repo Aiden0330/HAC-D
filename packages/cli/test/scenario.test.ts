@@ -66,6 +66,22 @@ describe('hacd scenario', () => {
     r = hacd(['findings', '--data', man.files.data, '--out', join(dir, 'out3'), '--no-methodology']);
     expect(r.status, r.stderr).toBe(0);
     expect(readFileSync(join(dir, 'out3', 'ASCEND_ALLOCATION_FINDINGS_ACME-950-DEMO.html'), 'utf8')).toBe(html);
+    // v5.11 the appendix variants on the project workflow: the manifest, the provenance and the bundle carry the set, the page gains Appendix A
+    r = hacd(['scenario', 'report', f, '--out', join(dir, 'out4'), '--trials', '40', '--permutations', '8', '--variants', 'remap-latest-2026-10--young', '--json']);
+    expect(r.status, r.stderr).toBe(0);
+    const mv = json(r.stdout);
+    expect(mv.variants).toEqual(['remap-latest-2026-10--young']);
+    const bundle = json(readFileSync(mv.files.bundle, 'utf8'));
+    expect(bundle.results.variants.map((v: { id: string; added: string[] }) => [v.id, v.added])).toEqual([['remap-latest-2026-10--young', ['C-YOUNG']]]);
+    expect(bundle.provenance.options.variants).toEqual(['remap-latest-2026-10--young']);
+    const hv = readFileSync(mv.files.findings, 'utf8');
+    expect(hv).toContain('Appendix A');
+    expect(hv).toContain('remap-latest-2026-10--young');
+    expect(html).not.toContain('Appendix A');
+    // the report's own set is refused, as hacd findings --variants does
+    r = hacd(['scenario', 'report', f, '--out', join(dir, 'out5'), '--trials', '40', '--permutations', '8', '--variants', 'remap-latest-2026-10', '--json']);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("the report's own set");
   }, 300_000);
 
   it('new --record: the public record’s scenario with the default set’s baseline (the web’s built-in projects)', () => {

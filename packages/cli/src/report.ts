@@ -7,7 +7,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { reportFromScenario, DEFAULT_MECHANISM_SET, type Scenario, type ScenarioReport, type BudgetMetric } from '@hac-d/core';
+import { reportFromScenario, DEFAULT_MECHANISM_SET, type Scenario, type ScenarioReport, type BudgetMetric, type MechanismSet } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 import { engine } from './pipeline.js';
 
@@ -24,6 +24,8 @@ export interface ScenarioReportOptions {
   trials?: number;
   seed?: number;
   permutations?: number;
+  /** v5.11 the appendix variant sets (Appendix A of the Findings page): the project's design with each set's change, as the web Report tab and `hacd findings --variants` */
+  variants?: MechanismSet[];
   /** the command line the footer names as the way to reproduce */
   command: string;
   onProgress?: (message: string) => void;
@@ -53,6 +55,8 @@ export interface ScenarioReportManifest {
   trials: number;
   permutations: number;
   seed: number;
+  /** v5.11 the appendix variant set ids of the run (absent without variants) */
+  variants?: string[];
   files: { dir: string; findings: string; methodology: string; bundle: string; data: string };
   kpi: KpiRow[];
   koujing: string;
@@ -74,9 +78,10 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
   const metric: BudgetMetric = o.metric ?? 'effective';
   const target = o.target ?? (metric === 'aOp' ? s.targets.operational : s.targets.effective) ?? 0.985, trials = o.trials ?? 400, seed = o.seed ?? 1, permutations = o.permutations ?? 300;
   const bil = { zh: name, en: name };
-  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, metric, trials, seed, permutations, onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
+  const variants = o.variants ?? [];
+  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, metric, trials, seed, permutations, ...(variants.length ? { variants } : {}), onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
   const set = DEFAULT_MECHANISM_SET;
-  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, metric, trials, seed, permutations }, engine: engine() };
+  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, metric, trials, seed, permutations, ...(variants.length ? { variants: variants.map((v) => v.id) } : {}) }, engine: engine() };
   const asFile = (v: unknown): Record<string, unknown> => JSON.parse(JSON.stringify(v));
   const R = asFile(r.results), MX = asFile(r.mechanisms), study = asFile(r.studies[id]), record = asFile(r.records[id]);
   o.onProgress?.('render');
@@ -107,7 +112,7 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
     };
   });
   return {
-    status: 'ok', id, name, npus: N, sizes, main, target, metric, trials, permutations, seed, files, kpi,
+    status: 'ok', id, name, npus: N, sizes, main, target, metric, trials, permutations, seed, ...(variants.length ? { variants: variants.map((v) => v.id) } : {}), files, kpi,
     koujing: metric === 'effective'
       ? 'effective goodput G_eff of one synchronous job over the 30-day window (exact renewal model, the window ledger’s; formula 1′ is its first-order loss form: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), nominal and derated, against the target; delivered goodput (silent-corruption loss removed), A_op (formula 1), MTBF_hw and the loss per interruption R_eff = MTTR_hw + P̄_rb·W of the derated design; P = share of 30-day windows with G_eff ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side; feasible false = no move set reaches the target (every move on, ceiling at perfect hardware)'
       : 'A_op of one synchronous job per cluster-hour (formula 1), nominal and derated; MTBF_hw and MTTR_hw of the derated design; P = share of 30-day windows with A_op ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side',

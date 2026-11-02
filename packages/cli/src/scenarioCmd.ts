@@ -8,7 +8,7 @@
  *   hacd scenario set <file.json> --set <path>=<value>… [--out <file.json>] [--json]
  *   hacd scenario fit <file.json> --set <class>=<FIT>… [--reset <class>|all] [--out <file.json>] [--json]
  *   hacd scenario mechanisms <file.json> [--apply <ID>[:k=v,…]]… [--remove <ID>]… [--out <file.json>] [--json]
- *   hacd scenario report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target] [--id <id>] [--json]
+ *   hacd scenario report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target] [--id <id>] [--variants <set>,…] [--json]
  *
  * A file is a bare scenario JSON (`hacd example`, the web's Export JSON) or a project bundle (`*.hacd.json`, version hacd-project-1):
  * it is written back in the same form, in place unless --out names another file. Exit 0 on success, 1 with the reason on stderr.
@@ -21,6 +21,7 @@ import {
   type Scenario, type TopologyTemplate, type ScenarioSummary,
 } from '@hac-d/core';
 import { renderScenarioReport } from './report.js';
+import { resolveSet } from './pipeline.js';
 import { resolveRecord } from './pipeline.js';
 
 const USAGE = `usage: hacd scenario <new | show | fields | set | fit | mechanisms | report> …
@@ -30,7 +31,7 @@ const USAGE = `usage: hacd scenario <new | show | fields | set | fit | mechanism
   set <file.json> --set <path>=<value> [--set …] [--out <file.json>]
   fit <file.json> --set <class>=<FIT> [--set …] [--reset <class>|all] [--out <file.json>]
   mechanisms <file.json> [--apply <ID>[:k=v,…]]… [--remove <ID>]… [--out <file.json>]
-  report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target 0.985] [--id <id>]
+  report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target 0.985] [--id <id>] [--variants <set>,…]
   (--json on any command prints the result as JSON; hacd scenario fields lists the settable paths)`;
 
 const fail = (m: string): never => { console.error(`hacd scenario: ${m}`); process.exit(1); };
@@ -180,7 +181,13 @@ export async function scenario(rest: string[]): Promise<void> {
         if (!dir) fail('--out <dir> is required');
         const sizes = flag(args, 'scales') ? flag(args, 'scales')!.split(',').map(Number).filter((x) => x > 0) : undefined;
         const n = (name: string) => (flag(args, name) !== undefined ? Number(flag(args, name)) : undefined);
-        const m = renderScenarioReport(p.scenario, { id: flag(args, 'id'), outDir: dir!, sizes, trials: n('trials'), permutations: n('permutations'), seed: n('seed'), target: n('target'), command, onProgress: (x) => console.error(`hacd scenario report: ${x}`) });
+        // v5.11 the appendix variants, as hacd findings --variants: set ids of data/mechanism-sets or JSON paths; the report's own set is refused
+        const variants = (flag(args, 'variants') ?? '').split(',').map((x) => x.trim()).filter(Boolean).map((spec) => {
+          const vs = resolveSet(spec);
+          if (vs.id === DEFAULT_MECHANISM_SET.id) fail(`--variants ${spec}: the variant is the report's own set ${DEFAULT_MECHANISM_SET.id}`);
+          return vs;
+        });
+        const m = renderScenarioReport(p.scenario, { id: flag(args, 'id'), outDir: dir!, sizes, trials: n('trials'), permutations: n('permutations'), seed: n('seed'), target: n('target'), variants, command, onProgress: (x) => console.error(`hacd scenario report: ${x}`) });
         if (json) { out(m); return; }
         console.log(`# ${m.name} — report written to ${m.files.dir} in ${m.seconds.toFixed(1)} s`);
         console.log(`files: ${m.files.findings}; ${m.files.methodology}; bundle ${m.files.bundle}; sidecar ${m.files.data}`);
