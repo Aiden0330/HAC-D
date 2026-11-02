@@ -781,6 +781,200 @@
    }
   },
   {
+   "id": "kpiForm.a3server-10k.young",
+   "group": "kpiForm",
+   "inputs": {
+    "table": "a3server-10k.young.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineAOp": 0.9991033948833946,
+    "identity": [
+     "aRun (formula = engine running fraction)",
+     "phi uses the engine A_op"
+    ]
+   },
+   "expected": {
+    "lamHw": 0.032879295238095234,
+    "sumLP": 3.0631625523809527,
+    "mttrS": 93.16387502223141,
+    "mtbfHwH": 30.414277214840087,
+    "other.isolation.ratePerHour": 0.0006392587622459745,
+    "other.isolation.pauseS": 252.00000000000006,
+    "other.isolation.sPerH": 0.16109320808598562,
+    "other.isolation.mtbfH": 1564.311760837811,
+    "other.sdcDetected.ratePerHour": 0.0004581980566529302,
+    "other.sdcDetected.pauseS": 3,
+    "other.sdcDetected.sPerH": 0.0013745941699587908,
+    "other.sdcDetected.mtbfH": 2182.4623336573136,
+    "other.falseAlarm.ratePerHour": 0,
+    "other.falseAlarm.pauseS": 0.0,
+    "other.falseAlarm.sPerH": 0.0,
+    "F": 0.16246780225594443,
+    "aRun": 0.9991047936805668,
+    "phi": 1.4000505063060942e-06,
+    "detectS": 12.500000000000004,
+    "globalS": 252.00000000000006
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiForm.a3server-10k.young-derated",
+   "group": "kpiForm",
+   "inputs": {
+    "table": "a3server-10k.young-derated.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineAOp": 0.9990002877375789,
+    "identity": [
+     "aRun (formula = engine running fraction)",
+     "phi uses the engine A_op"
+    ]
+   },
+   "expected": {
+    "lamHw": 0.032879295238095234,
+    "sumLP": 3.429459161904762,
+    "mttrS": 104.30452164714458,
+    "mtbfHwH": 30.414277214840087,
+    "other.isolation.ratePerHour": 0.0006392587622459745,
+    "other.isolation.pauseS": 252.00000000000006,
+    "other.isolation.sPerH": 0.16109320808598562,
+    "other.isolation.mtbfH": 1564.311760837811,
+    "other.sdcDetected.ratePerHour": 0.00043408236946067074,
+    "other.sdcDetected.pauseS": 4.5,
+    "other.sdcDetected.sPerH": 0.0019533706625730184,
+    "other.sdcDetected.mtbfH": 2303.7102410827197,
+    "other.falseAlarm.ratePerHour": 0,
+    "other.falseAlarm.pauseS": 0.0,
+    "other.falseAlarm.sPerH": 0.0,
+    "F": 0.16304657874855863,
+    "aRun": 0.9990030765867864,
+    "phi": 2.7916322511423175e-06,
+    "detectS": 12.500000000000004,
+    "globalS": 252.00000000000006
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiForm.native950-500k.young",
+   "group": "kpiForm",
+   "inputs": {
+    "table": "native950-500k.young.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineAOp": 0.9614628980366321,
+    "identity": [
+     "aRun (formula = engine running fraction)",
+     "phi uses the engine A_op"
+    ]
+   },
+   "expected": {
+    "lamHw": 1.548406914285714,
+    "sumLP": 136.58204120952382,
+    "mttrS": 88.20810598907048,
+    "mtbfHwH": 0.6458250675413083,
+    "other.isolation.ratePerHour": 0.029443362428485602,
+    "other.isolation.pauseS": 252.00000000000006,
+    "other.isolation.sPerH": 7.419727331978374,
+    "other.isolation.mtbfH": 33.96351223230295,
+    "other.sdcDetected.ratePerHour": 0.02294297199405895,
+    "other.sdcDetected.pauseS": 3,
+    "other.sdcDetected.sPerH": 0.06882891598217684,
+    "other.sdcDetected.mtbfH": 43.58633224409412,
+    "other.falseAlarm.ratePerHour": 0,
+    "other.falseAlarm.pauseS": 0.0,
+    "other.falseAlarm.sPerH": 0.0,
+    "F": 7.488556247960551,
+    "aRun": 0.9615203309586846,
+    "phi": 5.9731365217419174e-05,
+    "detectS": 12.500000000000004,
+    "globalS": 252.00000000000006
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiForm.native950-500k.young-derated",
+   "group": "kpiForm",
+   "inputs": {
+    "table": "native950-500k.young-derated.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineAOp": 0.9569794589231695,
+    "identity": [
+     "aRun (formula = engine running fraction)",
+     "phi uses the engine A_op"
+    ]
+   },
+   "expected": {
+    "lamHw": 1.548406914285714,
+    "sumLP": 153.9164431142857,
+    "mttrS": 99.4030972700015,
+    "mtbfHwH": 0.6458250675413083,
+    "other.isolation.ratePerHour": 0.029443362428485602,
+    "other.isolation.pauseS": 252.00000000000006,
+    "other.isolation.sPerH": 7.419727331978374,
+    "other.isolation.mtbfH": 33.96351223230295,
+    "other.sdcDetected.ratePerHour": 0.021735447152266368,
+    "other.sdcDetected.pauseS": 4.5,
+    "other.sdcDetected.sPerH": 0.09780951218519865,
+    "other.sdcDetected.mtbfH": 46.007795146543806,
+    "other.falseAlarm.ratePerHour": 0,
+    "other.falseAlarm.pauseS": 0.0,
+    "other.falseAlarm.sPerH": 0.0,
+    "F": 7.517536844163573,
+    "aRun": 0.9570817989047271,
+    "phi": 0.00010692919003862933,
+    "detectS": 12.500000000000004,
+    "globalS": 252.00000000000006
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
    "id": "byLayer.native950-500k",
    "group": "byLayer",
    "inputs": {
@@ -7017,6 +7211,318 @@
    }
   },
   {
+   "id": "kpiFormEff.a3server-10k.young",
+   "group": "kpiFormEff",
+   "inputs": {
+    "table": "a3server-10k.young.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineEffective": 0.9966131827324949,
+    "headlineModel": "first-order",
+    "identity": [
+     "effective (formula 1\u2032 = engine effectiveGoodput while first order)",
+     "P_rb,i, \u2113_i, P_blocked, \u03c6_perf, o, p_sdc are engine outputs taken as inputs"
+    ]
+   },
+   "expected": {
+    "recomputeS": 409.6894348231283,
+    "hardRecomputeSPerH": 4.393571927909486,
+    "sumLoss": 7.4567344802904385,
+    "lossS": 226.7911896010099,
+    "otherRecomputeSPerH": 0.0,
+    "saveFrac": 0.0012204366466415243,
+    "factor": 0.9999463107151202,
+    "pauseFrac": 1.4000505063090213e-06,
+    "effective": 0.996613182732495,
+    "effectiveFirstOrder": 0.9966082128410008
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiFormEff.a3server-10k.young-derated",
+   "group": "kpiFormEff",
+   "inputs": {
+    "table": "a3server-10k.young-derated.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineEffective": 0.9958306510024361,
+    "headlineModel": "first-order",
+    "identity": [
+     "effective (formula 1\u2032 = engine effectiveGoodput while first order)",
+     "P_rb,i, \u2113_i, P_blocked, \u03c6_perf, o, p_sdc are engine outputs taken as inputs"
+    ]
+   },
+   "expected": {
+    "recomputeS": 481.1731585867915,
+    "hardRecomputeSPerH": 5.61128556698781,
+    "sumLoss": 9.040744728892573,
+    "lossS": 274.96771641314297,
+    "otherRecomputeSPerH": 0.0,
+    "saveFrac": 0.0015586904352743918,
+    "factor": 0.9999411521433259,
+    "pauseFrac": 2.791632251341931e-06,
+    "effective": 0.995830651002436,
+    "effectiveFirstOrder": 0.995823315207774
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiFormEff.native950-500k.young",
+   "group": "kpiFormEff",
+   "inputs": {
+    "table": "native950-500k.young.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineEffective": 0.9436620855978087,
+    "headlineModel": "first-order",
+    "identity": [
+     "effective (formula 1\u2032 = engine effectiveGoodput while first order)",
+     "P_rb,i, \u2113_i, P_blocked, \u03c6_perf, o, p_sdc are engine outputs taken as inputs"
+    ]
+   },
+   "expected": {
+    "recomputeS": 61.694469493399794,
+    "hardRecomputeSPerH": 29.176034979805895,
+    "sumLoss": 165.75807618932973,
+    "lossS": 107.0507207504912,
+    "otherRecomputeSPerH": 0.0,
+    "saveFrac": 0.008104454161057192,
+    "factor": 0.9975681778155657,
+    "pauseFrac": 5.973136521741495e-05,
+    "effective": 0.9436620855978087,
+    "effectiveFirstOrder": 0.941420161177329
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "kpiFormEff.native950-500k.young-derated",
+   "group": "kpiFormEff",
+   "inputs": {
+    "table": "native950-500k.young-derated.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineEffective": 0.9347421413121803,
+    "headlineModel": "first-order",
+    "identity": [
+     "effective (formula 1\u2032 = engine effectiveGoodput while first order)",
+     "P_rb,i, \u2113_i, P_blocked, \u03c6_perf, o, p_sdc are engine outputs taken as inputs"
+    ]
+   },
+   "expected": {
+    "recomputeS": 72.25130946135623,
+    "hardRecomputeSPerH": 37.36956492731944,
+    "sumLoss": 191.28600804160513,
+    "lossS": 123.53729906317687,
+    "otherRecomputeSPerH": 0.0,
+    "saveFrac": 0.010380434702033174,
+    "factor": 0.9973258110928666,
+    "pauseFrac": 0.0001069291900386615,
+    "effective": 0.9347421413121803,
+    "effectiveFirstOrder": 0.931797958952584
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "young.a3server-10k.young",
+   "group": "young",
+   "inputs": {
+    "table": "a3server-10k.young.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineTauS": 819.3788696462566,
+    "deltaS": 1,
+    "rule": "\u03c4 = \u221a(2\u03b4\u00b7M_rb), Young 1974; M_rb = 3600/\u03bb_rb, \u03bb_rb = \u03a3_i \u03bb_i P_rb,i (+ detected silent corruption without step recovery)",
+    "identity": [
+     "P_rb,i are engine outputs taken as inputs",
+     "the engine \u03c4 is compared with the rule, not read"
+    ]
+   },
+   "expected": {
+    "rollbackRatePerHour": 0.010724152380952381,
+    "mtbiRollbackH": 93.24746278094128,
+    "tauS": 819.3788696462566,
+    "saveFrac": 0.0012204366466415243,
+    "reworkFrac": 0.001220436646641524,
+    "checkpointLossFrac": 0.0024408732932830485,
+    "dalyOptimumS": 818.3788696462566
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   },
+   "note": "v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1\u2032) and (2\u2032) at the Young interval; the saves and the rework are equal at the optimum."
+  },
+  {
+   "id": "young.a3server-10k.young-derated",
+   "group": "young",
+   "inputs": {
+    "table": "a3server-10k.young-derated.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineTauS": 962.346317173583,
+    "deltaS": 1.5,
+    "rule": "\u03c4 = \u221a(2\u03b4\u00b7M_rb), Young 1974; M_rb = 3600/\u03bb_rb, \u03bb_rb = \u03a3_i \u03bb_i P_rb,i (+ detected silent corruption without step recovery)",
+    "identity": [
+     "P_rb,i are engine outputs taken as inputs",
+     "the engine \u03c4 is compared with the rule, not read"
+    ]
+   },
+   "expected": {
+    "rollbackRatePerHour": 0.01166167619047619,
+    "mtbiRollbackH": 85.7509661275517,
+    "tauS": 962.346317173583,
+    "saveFrac": 0.0015586904352743918,
+    "reworkFrac": 0.0015586904352743918,
+    "checkpointLossFrac": 0.0031173808705487836,
+    "dalyOptimumS": 960.846317173583
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   },
+   "note": "v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1\u2032) and (2\u2032) at the Young interval; the saves and the rework are equal at the optimum."
+  },
+  {
+   "id": "young.native950-500k.young",
+   "group": "young",
+   "inputs": {
+    "table": "native950-500k.young.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": false
+    },
+    "engineTauS": 123.38893898679959,
+    "deltaS": 1,
+    "rule": "\u03c4 = \u221a(2\u03b4\u00b7M_rb), Young 1974; M_rb = 3600/\u03bb_rb, \u03bb_rb = \u03a3_i \u03bb_i P_rb,i (+ detected silent corruption without step recovery)",
+    "identity": [
+     "P_rb,i are engine outputs taken as inputs",
+     "the engine \u03c4 is compared with the rule, not read"
+    ]
+   },
+   "expected": {
+    "rollbackRatePerHour": 0.47291167619047614,
+    "mtbiRollbackH": 2.1145597589289102,
+    "tauS": 123.38893898679959,
+    "saveFrac": 0.008104454161057192,
+    "reworkFrac": 0.008104454161057192,
+    "checkpointLossFrac": 0.016208908322114385,
+    "dalyOptimumS": 122.38893898679959
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   },
+   "note": "v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1\u2032) and (2\u2032) at the Young interval; the saves and the rework are equal at the optimum."
+  },
+  {
+   "id": "young.native950-500k.young-derated",
+   "group": "young",
+   "inputs": {
+    "table": "native950-500k.young-derated.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "engineTauS": 144.50261892271246,
+    "deltaS": 1.5,
+    "rule": "\u03c4 = \u221a(2\u03b4\u00b7M_rb), Young 1974; M_rb = 3600/\u03bb_rb, \u03bb_rb = \u03a3_i \u03bb_i P_rb,i (+ detected silent corruption without step recovery)",
+    "identity": [
+     "P_rb,i are engine outputs taken as inputs",
+     "the engine \u03c4 is compared with the rule, not read"
+    ]
+   },
+   "expected": {
+    "rollbackRatePerHour": 0.517216438095238,
+    "mtbiRollbackH": 1.9334265625483935,
+    "tauS": 144.50261892271246,
+    "saveFrac": 0.010380434702033174,
+    "reworkFrac": 0.010380434702033177,
+    "checkpointLossFrac": 0.020760869404066348,
+    "dalyOptimumS": 143.00261892271246
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   },
+   "note": "v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1\u2032) and (2\u2032) at the Young interval; the saves and the rework are equal at the optimum."
+  },
+  {
    "id": "lossByLayer.native950-500k",
    "group": "lossByLayer",
    "inputs": {
@@ -7604,6 +8110,78 @@
     "terms.other": 1.3637223163967718,
     "terms.factors": 4.214671467280638,
     "ratioToday": 31.745808737619505,
+    "reachable": 0.0
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "requirementEff.a3server-10k.young-derated",
+   "group": "requirementEff",
+   "inputs": {
+    "table": "a3server-10k.young-derated.table.json",
+    "design": {
+     "arch": "a3server",
+     "npus": 10000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "target": 0.985,
+    "from": "kpiFormEff.a3server-10k.young-derated"
+   },
+   "expected": {
+    "B": 48.00708133555122,
+    "totalBudget": 54.00000000000005,
+    "todayLossS": 274.96771641314297,
+    "terms.save": 5.61128556698781,
+    "terms.other": 0.17294631692499246,
+    "terms.factors": 0.2086867805363366,
+    "ratioToday": 9.040744728892571,
+    "mtbfAtTodayMttrH": 5.727649104331574,
+    "mttrAtTodayMtbfS": 1460.1006800148302,
+    "mtbfFactor": 0.18832106592152956,
+    "mttrFactor": 5.310080394387128,
+    "reachable": 1.0
+   },
+   "tolerance": {
+    "rel": 1e-09,
+    "abs": 1e-12
+   }
+  },
+  {
+   "id": "requirementEff.native950-500k.young-derated",
+   "group": "requirementEff",
+   "inputs": {
+    "table": "native950-500k.young-derated.table.json",
+    "design": {
+     "arch": "native",
+     "npus": 500000,
+     "mechanisms": [
+      "C-YOUNG"
+     ],
+     "levers": [],
+     "k": 1,
+     "derated": true,
+     "construction": "applyMechanisms \u2192 deratedOf \u2192 applyLevers([], DERATE_DEFAULT)"
+    },
+    "target": 0.985,
+    "from": "kpiFormEff.native950-500k.young-derated"
+   },
+   "expected": {
+    "B": -0.7754303514279393,
+    "totalBudget": 54.00000000000005,
+    "todayLossS": 123.53729906317687,
+    "terms.save": 37.36956492731942,
+    "terms.other": 7.897765103006556,
+    "terms.factors": 9.50810032110178,
+    "ratioToday": 191.28600804160513,
     "reachable": 0.0
    },
    "tolerance": {

@@ -22,6 +22,7 @@ import { pruneByShapley, shapleyAtScale } from '../src/study/prune.js';
 import { applyMechanisms } from '../src/mechanisms/index.js';
 import { applyLevers, withHardwareFactors, DEFAULT_LEVERS, type LeverId } from '../src/strategy/index.js';
 import { DERATE_DEFAULT } from '../src/mechanisms/plan.js';
+import { youngInterval } from '../src/checkpoint/index.js';
 import { evaluateScenario } from '../src/scenario/evaluate.js';
 import type { Scenario } from '../src/scenario/schema.js';
 import type { ChainParams, Applicability } from '../src/mechanisms/chain.js';
@@ -254,6 +255,21 @@ describe('v5 golden vectors (independent Python)', () => {
       for (const l of Object.keys(b.byLayer)) expect.soft(Math.abs(U[l] - b.byLayer[l as keyof typeof b.byLayer]), `${c.id}: unavailabilityByLayer(effective) = lossBreakdown.byLayer (${l})`).toBeLessThanOrEqual(1e-12);
       // v5.7 the exact ledger closes on the exact G_eff in every regime
       expect.soft(Math.abs(got.closure), `${c.id}: Σ U_ℓ + lines − (1 − G_eff)`).toBeLessThanOrEqual(1e-9);
+    }
+  });
+
+  it('G7y Young’s interval (v5.9 appendix, MODEL_REFERENCE §33): τ = √(2δ·M_rb) from the rows’ rollback rates; saves = rework at the optimum', () => {
+    const cases = byGroup('young');
+    expect(cases.length).toBeGreaterThan(0);
+    for (const c of cases) {
+      const s = scenarioOf(c.inputs.design!);
+      const t = trainingOf(s);
+      const k = kpiForm(s, t);
+      const M = 3600 / t.rollbackRatePerHour;
+      compareNumbers(c.id, { tauS: k.tauS, saveFrac: k.saveFrac, rollbackRatePerHour: t.rollbackRatePerHour, mtbiRollbackH: 1 / t.rollbackRatePerHour, reworkFrac: k.tauS / (2 * M), checkpointLossFrac: 2 * k.deltaS / k.tauS, dalyOptimumS: k.tauS - k.deltaS }, c.expected, c.tolerance);
+      expect.soft(Math.abs(youngInterval(k.deltaS, M) - k.tauS), `${c.id}: youngInterval(δ, M_rb) vs the design's τ`).toBeLessThanOrEqual(1e-9 * k.tauS);
+      expect.soft(Math.abs(k.saveFrac - k.tauS / (2 * M)), `${c.id}: δ/τ = τ/(2M) at Young's optimum`).toBeLessThanOrEqual(1e-12);
+      expect.soft(s.workload.type === 'training' ? s.workload.intervalS : -1, `${c.id}: C-YOUNG clears the fixed interval`).toBeUndefined();
     }
   });
 

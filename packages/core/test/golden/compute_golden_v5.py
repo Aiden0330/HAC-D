@@ -630,7 +630,30 @@ TABLES = OrderedDict([
     ('a3server-10k.snapshot', 'a3server-10k.snapshot.table.json'),
     ('a3server-10k.predict', 'a3server-10k.predict.table.json'),
     ('a3server-10k.abft', 'a3server-10k.abft.table.json'),
+    # v5.9 appendix (MODEL_REFERENCE §33; independent check of 2026-11-01): today's design with Young's interval, nominal and derated
+    ('a3server-10k.young', 'a3server-10k.young.table.json'),
+    ('a3server-10k.young-derated', 'a3server-10k.young-derated.table.json'),
+    ('native950-500k.young', 'native950-500k.young.table.json'),
+    ('native950-500k.young-derated', 'native950-500k.young-derated.table.json'),
 ])
+
+
+def young_interval(t):
+    """Young (1974): τ* = √(2δ·M) is the stationary point of the first-order loss δ/τ + τ/(2M) — the saves and the half interval of
+    work lost per rollback — where the two terms are equal and the loss is √(2δ/M). M is the mean interval of the design's rollback
+    events: the hard classes' rates weighted by their rollback probability P_rb,i (the chain's output, taken as an input) plus, without
+    step recovery, the detected silent corruption that rolls back (the events of Q_other). Daly's refinement τ* − δ moves the loss by
+    (δ/τ)² and is not applied (MODEL_REFERENCE §33.1)."""
+    sdc = t['sdc'] or {}
+    o = t['other']
+    lam_rb = sum(r['ratePerHour'] * r['pRollback'] for r in t['rows']) + (0.0 if sdc.get('stepRecovery') else o['sdcDetectedPerHour'])
+    M = 3600.0 / lam_rb
+    tau = math.sqrt(2.0 * t['deltaS'] * M)
+    return OrderedDict([
+        ('rollbackRatePerHour', lam_rb), ('mtbiRollbackH', 1.0 / lam_rb), ('tauS', tau),
+        ('saveFrac', t['deltaS'] / tau), ('reworkFrac', tau / (2.0 * M)), ('checkpointLossFrac', 2.0 * t['deltaS'] / tau),
+        ('dalyOptimumS', tau - t['deltaS']),
+    ])
 ANALYSIS = OrderedDict()
 for name, fname in TABLES.items():
     t = load(fname)
@@ -684,6 +707,23 @@ for name in TABLES:
                    'identity': ['effective (formula 1′ = engine effectiveGoodput while first order)', 'P_rb,i, ℓ_i, P_blocked, φ_perf, o, p_sdc are engine outputs taken as inputs']},
         'expected': kpi_form_eff(a['form']), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
     })
+# v5.9 G7y: Young's interval on today's design — the engine's τ must be the rule's value from the table's own rollback rates
+for name in [n for n in TABLES if '.young' in n]:
+    a = ANALYSIS[name]
+    t = a['t']
+    exp = young_interval(t)
+    if abs(exp['tauS'] - t['tauS']) > 1e-9 * t['tauS']:
+        findings.append('%s: Young interval √(2δ·M_rb) = %.12g s vs the engine τ = %.12g s' % (name, exp['tauS'], t['tauS']))
+    if abs(exp['saveFrac'] - a['form']['save']) > 1e-12:
+        findings.append('%s: saves δ/τ from the rule %r vs the loss form %r' % (name, exp['saveFrac'], a['form']['save']))
+    cases.append({
+        'id': 'young.%s' % name, 'group': 'young',
+        'inputs': {'table': TABLES[name], 'design': t['design'], 'engineTauS': t['tauS'], 'deltaS': t['deltaS'],
+                   'rule': 'τ = √(2δ·M_rb), Young 1974; M_rb = 3600/λ_rb, λ_rb = Σ_i λ_i P_rb,i (+ detected silent corruption without step recovery)',
+                   'identity': ['P_rb,i are engine outputs taken as inputs', 'the engine τ is compared with the rule, not read']},
+        'expected': exp, 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+        'note': 'v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1′) and (2′) at the Young interval; the saves and the rework are equal at the optimum.',
+    })
 # v5.6 G2e: the layer losses on the goodput basis
 for name in ['native950-500k', 'native950-500k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k', 'a3server-10k.derated', 'a3server-10k.predict']:
     a = ANALYSIS[name]
@@ -695,7 +735,7 @@ for name in ['native950-500k', 'native950-500k.derated', 'native950-500k.recomme
         'expected': loss_breakdown(a['t'], a['splits'], a['form']), 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
     })
 # v5.6 G4e: formula (2′) on the derated designs (today's and the all-moves design)
-for name in ['native950-500k.derated', 'cm384-200k.derated', 'a3server-10k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k.recommended-derated-k1']:
+for name in ['native950-500k.derated', 'cm384-200k.derated', 'a3server-10k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k.recommended-derated-k1', 'a3server-10k.young-derated', 'native950-500k.young-derated']:
     a = ANALYSIS[name]
     if 'W' not in a['form']:
         continue

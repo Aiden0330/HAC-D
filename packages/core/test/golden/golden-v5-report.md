@@ -175,3 +175,15 @@ npm test -w @hac-d/core
 ```
 
 _Values of §1 and §2 regenerated 2026-10-28 from commit 38c2c45 (fourth review R1 / R4 fixed, second recheck of the fifth review): `dump_inputs_v5.mjs` → `compute_golden_v5.py`; findings 0. Regenerated again 2026-10-29 for v5.6 (§5, the effective-goodput basis; 62 cases): findings 0. Regenerated 2026-10-29 for v5.7 from commit f76cfec (§6, the sixth model review; 63 cases): findings 0._
+
+## 7. v5.9 appendix — Young's interval (G7y, 2026-11-01)
+
+Independent check of the appendix on another checkpoint policy (MODEL_REFERENCE §33.5). Derived first: Young (1974) τ* = √(2δ·M) is the
+stationary point of the first-order loss δ/τ + τ/(2M) of the saves and the half interval of work lost per rollback; at τ* the two terms are
+equal and the loss is √(2δ/M). Daly's exact segment model E[T] = M(e^{(τ+δ)/M} − 1) has its optimum at τ* − δ (0.1 % here) with a loss 3·10⁻⁶
+below the first-order one at 10k: not applied. Tables `a3server-10k.young[-derated]` and `native950-500k.young[-derated]` (today's design with
+C-YOUNG, built like the harness: applyMechanisms → deratedOf → applyLevers([])). The Python recomputes τ from the rows' own rollback rates,
+λ_rb = Σ_i λ_i P_rb,i (plus detected silent corruption without step recovery), and declares the identity with the engine's τ; the `kpiForm`,
+`kpiFormEff` and (derated) `requirementEff` cases of those tables pin formulas (1), (1′) and (2′) at the Young interval — B = −0.7754 s/h for
+native950 500k derated, as Appendix A1 prints. Results: τ 819.38 / 962.35 s (a3server 10k nominal / derated), 123.39 / 144.50 s (native950
+500k); saves = rework at the optimum to 10⁻¹²; findings 0; 77 cases. Regenerated from eeaf0c3 with `/usr/bin/python3` 3.9.6.

@@ -140,6 +140,15 @@ for (const [suffix, mech] of [['snapshot', 'R-RUNTIME-SNAPSHOT'], ['predict', 'P
   const s = M.applyMechanisms(base('a3server', 10000), [mech], REMAP_LATEST_PARAMS);
   write(`a3server-10k.${suffix}.table.json`, table(s, { arch: 'a3server', npus: 10000, mechanisms: [mech], levers: [], k: 1, derated: false }));
 }
+// v5.9 appendix (C-YOUNG, MODEL_REFERENCE §33; independent check of 2026-11-01): today's design with Young's interval, nominal and
+// derated, at both ends of the appendix's scale range. The table carries the engine's τ; the Python recomputes it from the rows'
+// rollback rates (τ = √(2δ·M_rb)) and declares the identity. Built like the harness: applyMechanisms → (deratedOf → applyLevers([])).
+for (const [arch, n] of [['a3server', 10000], ['native', 500000]]) {
+  const name = `${archKey[arch]}-${n / 1000}k`;
+  const s = M.applyMechanisms(base(arch, n), ['C-YOUNG'], REMAP_LATEST_PARAMS);
+  write(`${name}.young.table.json`, table(S.withHardwareFactors(S.applyLevers(s, [], null), factors(s, 1)), { arch, npus: n, mechanisms: ['C-YOUNG'], levers: [], k: 1, derated: false }));
+  write(`${name}.young-derated.table.json`, table(S.applyLevers(W.deratedOf(s), [], P.DERATE_DEFAULT), { arch, npus: n, mechanisms: ['C-YOUNG'], levers: [], k: 1, derated: true, construction: 'applyMechanisms → deratedOf → applyLevers([], DERATE_DEFAULT)' }));
+}
 for (const [arch, n] of [['native', 500000], ['cm384', 200000]]) {
   const name = `${archKey[arch]}-${n / 1000}k`;
   const { s, p } = recommendedNominal(arch, n);
