@@ -1,6 +1,6 @@
 # HAC-D — AI cluster availability / MTBF / MTTR modeling tool
 
-Plan: `docs/DEVELOPMENT_PLAN.md`. Evidence base: the survey chapter at `../survey/ai-cluster-reliability-modeling.html` (read-only; extract text with a script, it is too large to read whole).
+Plan: `docs/markdown/DEVELOPMENT_PLAN.md`. Evidence base: the survey chapter at `../survey/ai-cluster-reliability-modeling.html` (read-only; extract text with a script, it is too large to read whole).
 
 ## Layout
 - `packages/core` — pure TypeScript numerics (no DOM). Modules: units, math, rbd, ctmc, checkpoint, sparing, mttr, scale, allocation, sensitivity, cost, mc, scenario; v5: records (topology record, failure-rate override, mechanism set — JSON in `packages/core/data/{records,fault-rates,mechanism-sets}`, every value with provenance and confidence), budget, layers, study/prune. Tests in `packages/core/test`, golden vectors in `packages/core/test/golden/golden*.json` (computed independently in Python; do not edit expected values by hand).

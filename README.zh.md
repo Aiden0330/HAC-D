@@ -19,6 +19,45 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 - **抽取工作器**（`packages/agent`，新工作区）：OpenAI 兼容适配器（json_schema / guided_json / fenced），适用于 vLLM / SGLang / llama.cpp 部署的任何模型；分块、两种提示变体与封闭词表、证据卡（字段路径、原文的值与单位、逐字引文、位置），只有引文在分块中找到、值在引文内且两遍一致才接受；评审 Markdown、带提示哈希的 jsonl 日志、草稿工作表的置信来自声明的来源类型而非模型。
 - **命令行** `hacd ingest template | fields | worksheet | import-fit | normalize | validate | dry-run | diff | promote | extract`；**离线包** `node scripts/bundle-offline.mjs` → `dist/offline/hacd-<version>.tgz`（esbuild 打包、katex 置于其旁、`data/` 目录作为 `HACD_DATA`、启动脚本、模板、文档；只需 Node ≥ 20，除指定的模型端点外不联网）。公式与校验门：`docs/markdown/MODEL_REFERENCE.md` §26；维护侧技能 `update-inputs`。
 
+## v5.11（2026-11-01）：浏览器报告中的附录
+
+- **分配 › 报告**以复选框提供三个公开变体机制集（+ C-YOUNG；C-MEM 替代 C-FAST；+ C-YOUNG 与五个只保交付 goodput 的机制）：每勾选一个，就增加一页 `hacd findings --variants` 的附录 A——在相同的目标、规模、窗口数、种子、分配方式与降额下，用该机制集的候选与杠杆，对项目的设计施加该机制集的变化后重算预算，不做 Shapley 研究。表 1–6 不变；页脚与保存的结果记录所选机制集。核心：`ScenarioReportOptions.variants`、`VARIANT_MECHANISM_SETS` / `mechanismSetById`（为浏览器内置的机制集）、`variantReference`；`variantSummary` 从变体自身的参考集读取“增加 / 移除”，因此记录路径与浏览器路径的描述一致，在记录自身的设计上逐字节给出相同的行（`report_variants_v511.test.ts`）。MODEL_REFERENCE §35；手册 §7.2。
+- 同日：v5.9 附录数值的独立校核（MODEL_REFERENCE §33.5，黄金向量 G7y），以及开发与 CI 迁移到 Node 24（`.nvmrc`；离线包仍保持 Node ≥ 20，由 CI 的第二个作业运行）。
+
+## v5.10（2026-11-01）：报告中的只保交付 goodput 机制
+
+- **原因**：在 50 万卡上达到 98.5 % 有效 goodput 目标的方案只交付约 78 %，因为未检出的静默错误使工作作废。作用于这部分损失的五个机制不在任何设计中，页面却称它们“保留”。
+- **附录 A3**：公开变体机制集 `remap-latest-2026-10--young-sdc`（`--young` 机制集，并把 D-SDC-FP8、D-SDC-FP4、D-ABFT、D-NET-SDC、H-SDC-SCREEN 放入基线）经 `hacd findings --variants` 运行。表 1–6 的数字都不变。
+- **结论**（400 个窗口，降额，四个记录）：每个方案仍达到目标，并通过新窗口上的验收；1 万 / 10 万 / 20 万 / 50 万卡的交付 goodput 从 98.1 / 93.6 / 89.1 / 78 % 升到 98.5 / 97.7 / 96.9 / 94.6 %。代价是 D-ABFT 的吞吐开销，约占 54 s/h 预算中的 5.3 s/h，因此 20 万与 50 万卡的硬件系数须收紧 16–18 %（50 万卡 k 从 0.18–0.22 降到 0.14–0.18）。这些参数是机制集的目标值，并非测量值。闭式与窗口账本在抽样误差内一致（4,000 个窗口）。
+- **页面更正**：表 1 的注释说明 G_del 覆盖的范围；标签与剪除规则把“保留”改为“表 1–5 的设计未应用”；附录参数按原值打印（A2 曾把 C-MEM 的 0.5 s 保存显示为 1、1 % 开销显示为 0）。版本 0.5.10。规范 `docs/markdown/MODEL_REFERENCE.md` §34。
+
+## v5.9（2026-10-29）：另一种检查点策略的附录
+
+- **原因**：在有效 goodput 口径下，C-FAST 固定的 60 s / 1 s 检查点使 98.5 % 目标不可达，目标与机制集保持不变（用户决定，2026-10-29）。现在每个 Findings 页末尾都有一个附录，说明目标在另一种检查点策略下需要什么；表 1–6 不受影响。
+- **C-YOUNG**（机制库，状态 `variant`）：检查点周期按 Young 公式 τ = √(2δ·M_rb) 取值，保存时间为设计自身的值，可精确移除，不进入任何候选池。两个公开变体机制集：`remap-latest-2026-10--young`（参考集加 C-YOUNG）与 `remap-latest-2026-10--cmem`（C-MEM 替代 C-FAST）。
+- **`hacd findings --variants <set>,…`** 在各变体机制集下运行相同的预算（窗口规则、候选、杠杆、ARINC、降额、窗口数、种子）并写入 `results.variants`；每个 Findings 页增加附录 A（逐规模的 τ / δ、保存、公式 2′ 的 B 与两端要求、方案或上限），方法页增加一句，页脚列出机制集（`docs/markdown/MODEL_REFERENCE.md` §33）。
+- **结论**：附录在昇腾报告集上的结果（2026-10-29，400 个窗口，降额）：采用 Young 周期后，保存从 90 s/h 降到 5–11 s/h（保存 1.5 s 时，1 万卡 τ 950–1,050 s，10 万卡 300–333 s，20 万卡 212–236 s，50 万卡 134–149 s），目标在每个规模都可达——1 万卡无需动作，硬件上限 k = 5.5–7.1；10 万卡一到两个动作，k ≈ 1（自动尝试 / 人工杠杆、D-HARD 或 R-LINK-LOCAL）；20 万卡需要 D-HARD + R-LINK-LOCAL + H-CONTROL-CONTINUITY 以及自动尝试与成功率杠杆，k = 0.55–0.66；50 万卡同样五个动作，k = 0.18–0.22（硬件中断 FIT 降到约五分之一），P(窗口) 95–96 %。C-MEM 替代 C-FAST 在任何规模都达不到目标：1 % 开销（降额 1.5 %）本身就占 54 s/h，即全部预算，因此 B = −45 至 −63 s/h，全部动作加理想硬件的上限为 97.0–97.3 %。
+- **发布检查与 CI**（2026-10-29 / 30）：工作区版本统一为 0.5.9；`.github/workflows/ci.yml` 在 Linux 上运行检查（版本检查、干净安装、类型检查、Web 构建、全部测试、报告页面逐字节复现）。首次运行在安装时失败：工作区各包互相精确锁定 0.5.0，而各包已是 0.5.9，npm 于是向注册表请求未发布的包，本地 `node_modules` 符号链接掩盖了这一点。`node scripts/version-bump.mjs <version>` 现在一条命令设置所有版本副本（根、各工作区及其 `@hac-d/*` 依赖、lockfile、`CORE_VERSION`、报告工具包的默认引擎版本），`--check` 在安装前运行。第二次运行失败在页面日期：报告配方曾按渲染器所在时区格式化日期；现在取侧车文件 `generated` 时间戳的前十个字符（`isoLocal` 写入作者的 UTC 偏移），页面在任何 `TZ` 下都可复现。附录数值已于 2026-11-01 独立校核（MODEL_REFERENCE §33.5，黄金向量 G7y）：Young 周期、保存、每次中断损失与预算都能由存储项以机器精度复现；附录的 k 是窗口规则的 k，闭式 k ≈ B/Σc 在 C-YOUNG 下只是下界。
+
+## v5.8（2026-10-29）：采纳外部方法与代码评审
+
+- **窗口规则遵守各类约束**：窗口规则的硬件系数 k 现在与最优策略完全一样，遵守各类的 `fixed` 标记、下限与每减半努力（同一规则：`hardwareClasses` / `arincFactors`）。方案只有在每类都到下限时仍满足目标才算可行，不可行的方案说明原因（理想硬件也不够、约束、或窗口校核）。此前窗口规则可能移动固定类，并报告优化器判为不可行的目标已达到。
+- **独立验收**：推荐方案的窗口结论来自搜索从未抽取的窗口（同一种子的第 T … 2T − 1 个复制）；搜索自身的校核保留为 `search`。
+- **参数定义域**：每个机制参数都有定义域（`mechanisms/parameters.ts`：概率在 [0, 1]，秒 ≥ 0，……），由机制集模式、导入校验门与每个变换强制执行；工作表模板会打印定义域。
+- **较小修复**：训练模型未使用的输入（冗余、共因、寿命分布）列为警告，不再静默丢弃；最优策略记录它是枚举还是贪心下降（方法页现在说明 G_eff 报告集用的是贪心下降，而非枚举 512 个子集）；没有硬中断时不再出现 NaN；Web 构建的提交写入报告出处；所有平台按 LF 检出。规范 `docs/markdown/MODEL_REFERENCE.md` §32；决定记录 `docs/markdown/METHOD_CODE_REVIEW_RESPONSE_2026-10-29.md`。
+
+## v5.7（2026-10-29）：第六次模型评审的修复
+
+- **验收值**：报告验收用的有效 goodput 取精确更新模型（`effectiveGoodputExact`，即窗口账本的模型）；损失形式 (1′) 是其一阶预算。此前一阶首要值低 0.06–0.46 点，均值规则与窗口规则检验的不是同一个数。
+- **公式 (2′)**：Φ′ 是各吞吐系数之积，不可达的目标在精确更新区间不再显示为可达。
+- **剪除规则**：候选还需在参考集之上有增益（C-ASYNC 被剪除：C-FAST 已设定保存，它只增加滞后）；研究（1200 次置换）保存每个指标的半宽，规则列出落在半宽内的结论。
+- **较小修复**：按类的 straggler 定律、窗口账本中的备机阻塞、机制集工作表的剪除指标、表 4 的分层损失。规范 `docs/markdown/MODEL_REFERENCE.md` §31；评审 `docs/markdown/MODEL_REVIEW_2026-10-29.md`。
+
+## v5.6（2026-10-29）：按有效 goodput 口径出报告
+
+- **决定**（用户，2026-10-28）：报告以 goodput 作为可用度值——**有效 goodput G_eff**（检查点保存、每次回滚的重算与恢复暂停，乘吞吐系数）是验收指标，目标 98.5 %；**交付 goodput G_del** 并列报告；名义 / 降额成对数值不再显示，每个设计一个降额值。`BudgetMetric`（默认 'effective'，保留 'aOp' 作为 v5.5 口径）贯穿 `kpiForm`（损失形式 1′：rᵢ = t̄ᵢ + P_rb,i·W，R_eff = MTTR_hw + P̄_rb·W）、`requirementFromKpi`（2′：B = 3600 (1 − δ/τ − G*/Φ′) − F − Q_other）、`lossBreakdown`（3′）、`recommendPlan` / `windowCheck`（6′，来自账本的逐窗口有效 goodput）、`allocateStrategy`、Shapley 研究与剪除规则（`prune.metric`；C-ASYNC 进入，R-FABRIC-DEGRADE 移出）、Findings / 方法 / 差异配方、`hacd findings | budget --metric`、`hacd scenario report`、`hacd ingest run`、Web 报告页签、拓扑指标条与策略预设、`targets.effective`。没有可行方案的规模是一个打印出来的结果（全部动作开启、k = 1、给出理想硬件的上限），绝不崩溃。`MODEL_REFERENCE.md` §30；黄金向量 G1e–G6e。
+- **结论**：在 C-FAST 固定的 60 s / 1 s 检查点下，仅保存就把有效 goodput 限制在名义 98.33 % / 降额 97.5 %，因此四个记录的每个规模都达不到 98.5 % 目标；重新生成的页面给出公式 (2′) 各项与全部动作的上限。有效 goodput 现在把静默错误事件（episode）的暂停计为停机（≤ 0.006 点）。图 1 在每个模板族上标出 scale-out 平面。
+
 ## v5 / v5.1 / v5.2 / v5.3（2026-10-21 / 22）：由输入记录生成报告流水线；项目页；页面合并；页面与报告同一口径
 
 - **v5**：昇腾分配报告集（方法、各拓扑结果、10 万卡元件清单）由三种输入记录——拓扑记录、失效率覆盖、机制集（`packages/core/src/records`，JSON 在 `packages/core/data/{records,fault-rates,mechanism-sets}`，每个值带出处与置信）——经核心原语（KPI 形式、MTTR 分解、分层预算、要求、窗口规则、Shapley 剪除、分层预算汇总）、双语报告套件 `packages/reports`（报告配方是旁路 JSON 的纯函数；`node packages/reports/test/reproduce.mjs` 逐字节复现六份报告）与命令行 `hacd findings | bom | budget | methodology | prune | study --record | records | schema --record|--mechanisms|--rates` 生成；黄金向量 G1–G6；参数复核 `docs/markdown/V5_PARAMETER_RECONCILIATION.md`；计划 `docs/markdown/PLAN_V5_REPORT_PIPELINE.md`。
@@ -57,9 +96,9 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ## 快速开始
 
 ```bash
-npm install                      # Node ≥ 20
+npm install                      # Node 24（.nvmrc；22.12 或更新——vitest 5 与 commander 15 需要），工作区（core、importers、reports、agent、cli、mcp、web）；离线包本身在 Node ≥ 20 上运行
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 840 核心 + 52 导入器 + 36 抽取工作器 + 28 报告 + 7 命令行测试（含 530 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s（其 operate 测试会启动模型替身）
+npm test                         # 921 核心 + 56 导入器 + 37 抽取工作器 + 46 报告 + 15 命令行测试（含 578 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s（其 operate 测试会启动模型替身）
 node --import tsx packages/cli/src/main.ts examples        # 命令行：六个内置示例（四种拓扑模板 + 报告记录的 UBL128 与 A3 服务器集群，v5.3）
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 node --import tsx packages/cli/src/main.ts findings --record native950 --out out/950   # v5：由输入记录生成报告集
@@ -86,6 +125,7 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 ## 版本
 
 - v6（2026-10-22）：输入迁移流水线——工作表、口径归一、校验门、差异评审页、抽取工作器、离线包（见上）。
+- v5.6 – v5.11（2026-10-29 / 11-01）：按有效 goodput 口径出报告、第六次模型评审修复、采纳外部方法与代码评审、另一种检查点策略的附录、只保交付 goodput 机制的附录、浏览器报告中的附录（见上）。
 - v5 / v5.1（2026-10-21 / 22）：由输入记录生成报告集、项目页（见上）。
 - v4 – v4.3（2026-10-18 / 19）：NPU 工具拓扑优先、Atlas 950 / 960E 模板、用户硬件数量（见上）。
 - v1（2026-10-09）：RBD / CTMC、checkpoint 与 goodput 一阶式、MTTR 流水线、备件、分配、蒙特卡洛、参数库、Excel 报告。

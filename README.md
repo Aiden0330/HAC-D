@@ -100,7 +100,7 @@ HAC-D is a browser-based reliability-engineering workbench for AI (LLM) training
 
 ```bash
 npm install            # Node 24 (.nvmrc; 22.12 or newer — vitest 5 and commander 15 need it), workspaces (core, importers, reports, agent, cli, mcp, web); the offline bundle itself runs on Node >= 20
-npm test               # 840 core + 52 importer + 36 agent + 28 report + 7 CLI tests incl. the 530 independently computed golden vectors (v1–v6); engine-heavy tests have a 300 s timeout (vitest.config.ts), the CLI suite 600 s (its operate tests spawn the mock model)
+npm test               # 921 core + 56 importer + 37 agent + 46 report + 15 CLI tests incl. the 578 independently computed golden vectors (v1–v6); engine-heavy tests have a 300 s timeout (vitest.config.ts), the CLI suite 600 s (its operate tests spawn the mock model)
 npm run dev            # web app at http://localhost:5173 (bilingual zh/en, light/dark)
 npm run build -w @hac-d/web   # static bundle in apps/web/dist
 ```
