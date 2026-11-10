@@ -19,6 +19,16 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 - **抽取工作器**（`packages/agent`，新工作区）：OpenAI 兼容适配器（json_schema / guided_json / fenced），适用于 vLLM / SGLang / llama.cpp 部署的任何模型；分块、两种提示变体与封闭词表、证据卡（字段路径、原文的值与单位、逐字引文、位置），只有引文在分块中找到、值在引文内且两遍一致才接受；评审 Markdown、带提示哈希的 jsonl 日志、草稿工作表的置信来自声明的来源类型而非模型。
 - **命令行** `hacd ingest template | fields | worksheet | import-fit | normalize | validate | dry-run | diff | promote | extract`；**离线包** `node scripts/bundle-offline.mjs` → `dist/offline/hacd-<version>.tgz`（esbuild 打包、katex 置于其旁、`data/` 目录作为 `HACD_DATA`、启动脚本、模板、文档；只需 Node ≥ 20，除指定的模型端点外不联网）。公式与校验门：`docs/markdown/MODEL_REFERENCE.md` §26；维护侧技能 `update-inputs`。
 
+## v5.12（2026-11-09）：三目标报告
+
+- **原因**：2026-11-09 的全面评审（`docs/markdown/TOOL_REVIEW_2026-11-09.md`）确认公式正确——独立的事件仿真在 1 万、10 万、50 万卡复现了引擎的 goodput——而 98.5 % 目标“不可达”只是因为它在 2026-10-28 从运行时间占比改到了有效 goodput：参考检查点（每 60 s 保存 1 s，降额 1.5 s）自身就占 1.67 %（名义）/ 2.5 %（降额），超过 1.5 % 的全部预算，于是每页都写“不可达”，没有分配结果。所有者 2026-11-09 决定：采纳评审建议。
+- **三个量上的三个目标**（`MODEL_REFERENCE.md` §36）：（1）**A_op ≥ 98.5 %** 承载 MTBF / MTTR 分配（公式 1–6，表 1–6）；`--metric aOp` 重新成为默认，`--metric effective` 保留 v5.6 口径。A_op 既不含检查点周期也不含保存时间，分配不再随检查点策略变化。（2）**检查点层**：推荐设计在随规模变化的周期下的有效 goodput（设计自身周期固定时取 Young 周期 τ = √(2δ·M_rb)）对下限——默认 97 %，取项目的 `targets.effective`，`--effective-floor x|none`——并给出下限允许的保存时间（公式 7，表 7）。（3）**交付层**：交付 goodput 对下限——默认 90 %，`targets.goodput`，`--delivered-floor`——给出下限所需的联合检出覆盖率或发现时延，以及加上机制集中只保交付的检测机制后的值（公式 8，表 8）。核心：`goodputTiers`（`packages/core/src/budget/tiers.ts`）。
+- **现场水平对照**（`--field-rates <override>`，表 9；`fieldCaseSummary`）：同一预算在第二套故障率基准上重算。`field-llama3-2026-11` 把目录的 18 个中断类统一乘 5.92，使总量等于公开的现场总量（16,384 张 GPU、54 天内 419 次作业中断）——这是取自另一厂商集群的界，不是本硬件的测量，各类均标 `assumed`，由 `scripts/build-field-rates.mjs` 生成。公式 2 的要求是绝对量：同一方案下每 NPU 允许的中断 FIT 在两套基准上相同（原生 950、50 万卡：2,748），变化的只是相对“今天”的倍数（目录基准 k 0.887，现场基准 0.150）。
+- **结论**（400 个窗口，四条记录，以降额值为准）：每个规模都有分配方案。1 万与 10 万卡今天的硬件有余量（k 11–14 与 1.1–1.4，无需动作）；20 万卡时两条 950 记录靠人工恢复杠杆保持 k ≈ 1.0，两条 910C 记录用 C-LOSSLESS + D-HARD 加两个杠杆得到 k ≈ 1.4–1.5；50 万卡需要 D-HARD + R-LINK-LOCAL + H-CONTROL-CONTINUITY 加三个恢复杠杆，并把中断 FIT 压到目录值的 77–90 %（每 NPU 2,571–2,748 FIT）。有效 goodput 在 10 万卡及以下每条记录都达到 97 %（20 万卡时两条 950 记录达到，两条 910C 记录为 96.7 %），50 万卡为 96.5 %（降额），除非单次保存不超过 0.51–0.54 s；交付 goodput 在 10 万卡及以下达到 90 %，50 万卡（76.6–76.8 %）需要联合检出覆盖率 97.2 % 或在 31–32 h 内发现——五个只保交付的检测机制把它提高到 92.6–92.7 %。
+- **评审缺陷已修复**：周期被优化时，要求不再在可行方案旁写“仅靠硬件不可达”，也不再在一行里给两个要求（D1、D2：`required.interval = 'optimised'`）；没有可行方案的规模打印“—”而不是允许 FIT（D3）；窗口占比同时给出名义设计与降额设计的值（D4：规则按名义设计验收；k 落在均值限上时降额设计只有约一半窗口达标）；`docs/markdown/SPEC.md` 的计数（D5）；`docs/README.md` 把每个报告页标为现行、背景或已被取代（D6）。另：机制集可为自动恢复给出规模律（`recovery.automatic.scale`，可选；公开集没有，表 5 注已说明），预算中加入节点维修管线及其备件池（`BudgetResult.spares`）。
+- **网页与工具**：拓扑页指标条显示 A_op（降额）、两个 goodput 层对各自下限、MTBF_hw 与 MTTR_hw；分配 › 报告运行三目标报告并按规模预览一行；`hacd scenario report`、操作员工具与 MCP 工具接受 `metric` 与两个下限。黄金向量 G8（Young 孪生设计与保存时间求根；v5 共 97 例）。版本 0.5.12。
+- **未决**——架构对比：四条记录在 50 万卡的 A_op 最多相差 0.8 个百分点，因为 87–94 % 的中断率落在每 NPU 数量与 FIT 在各记录中都相同的类上，而目录里互联只占 4–5 %（评审补充第 11 节）。模型未为此作任何改动。
+
 ## v5.11（2026-11-01）：浏览器报告中的附录
 
 - **分配 › 报告**以复选框提供三个公开变体机制集（+ C-YOUNG；C-MEM 替代 C-FAST；+ C-YOUNG 与五个只保交付 goodput 的机制）：每勾选一个，就增加一页 `hacd findings --variants` 的附录 A——在相同的目标、规模、窗口数、种子、分配方式与降额下，用该机制集的候选与杠杆，对项目的设计施加该机制集的变化后重算预算，不做 Shapley 研究。表 1–6 不变；页脚与保存的结果记录所选机制集。核心：`ScenarioReportOptions.variants`、`VARIANT_MECHANISM_SETS` / `mechanismSetById`（为浏览器内置的机制集）、`variantReference`；`variantSummary` 从变体自身的参考集读取“增加 / 移除”，因此记录路径与浏览器路径的描述一致，在记录自身的设计上逐字节给出相同的行（`report_variants_v511.test.ts`）。MODEL_REFERENCE §35；手册 §7.2。 项目工作流取同一选项：`hacd scenario report --variants <set>,…`、操作模型工具 `hacd_scenario_report` 与 MCP 工具 `scenario_report`；Methodology 页公式 4′ 的注记同日说明：在 C-YOUNG 下闭式 k ≈ B/Σc 只是根的下界。
@@ -98,7 +108,7 @@ HAC-D 把集群描述（拓扑、带故障与修复参数的部件类、负载�
 ```bash
 npm install                      # Node 24（.nvmrc；22.12 或更新——vitest 5 与 commander 15 需要），工作区（core、importers、reports、agent、cli、mcp、web）；离线包本身在 Node ≥ 20 上运行
 npm run dev                      # Web 应用 http://localhost:5173
-npm test                         # 921 核心 + 56 导入器 + 37 抽取工作器 + 46 报告 + 15 命令行测试（含 578 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s（其 operate 测试会启动模型替身）
+npm test                         # 933 核心 + 56 导入器 + 37 抽取工作器 + 46 报告 + 16 命令行测试（含 598 个独立 Python 计算的黄金向量，v1–v6）；引擎重负载测试超时 300 s（vitest.config.ts），命令行测试 600 s（其 operate 测试会启动模型替身）
 node --import tsx packages/cli/src/main.ts examples        # 命令行：六个内置示例（四种拓扑模板 + 报告记录的 UBL128 与 A3 服务器集群，v5.3）
 claude mcp add hacd -- node --import tsx packages/mcp/src/server.ts   # MCP 服务
 node --import tsx packages/cli/src/main.ts findings --record native950 --out out/950   # v5：由输入记录生成报告集
@@ -125,6 +135,7 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 ## 版本
 
 - v6（2026-10-22）：输入迁移流水线——工作表、口径归一、校验门、差异评审页、抽取工作器、离线包（见上）。
+- v5.12（2026-11-09）：三目标报告——A_op 承载分配，有效 goodput 与交付 goodput 各为一层并带下限；现场水平对照；评审缺陷 D1–D6（见上）。
 - v5.6 – v5.11（2026-10-29 / 11-01）：按有效 goodput 口径出报告、第六次模型评审修复、采纳外部方法与代码评审、另一种检查点策略的附录、只保交付 goodput 机制的附录、浏览器报告中的附录（见上）。
 - v5 / v5.1（2026-10-21 / 22）：由输入记录生成报告集、项目页（见上）。
 - v4 – v4.3（2026-10-18 / 19）：NPU 工具拓扑优先、Atlas 950 / 960E 模板、用户硬件数量（见上）。
@@ -145,7 +156,8 @@ Web 应用：首页「拓扑与硬件」→ 选择模板与规模（内置四种
 - 工作流：`docs/markdown/WORKFLOW.md`（分析工作流 A1–A10 含 v6 内部输入步骤、开发工作流 B1–B8）；分配实践 `docs/markdown/ALLOCATION_PRACTICE.md`。
 - 技能：`docs/markdown/SKILLS.md`（`.claude/skills` 中的 model-check、release-check、scenario-review、allocate-to-target、reference-compare、add-parameter、build-manual、update-inputs）。
 - 模型：`docs/markdown/MODEL_REFERENCE.md`（§25 v5 流水线，§26 v6 口径归一、证据检查与校验门）；对比 `docs/markdown/REFERENCE_COMPARISON_100K_500K.md`、`docs/markdown/TRAINING_AVAILABILITY_FORMULAS_AND_COMPARISON.md`；各机制对可用率的贡献、公式因子与更多方法 `docs/markdown/MECHANISM_CONTRIBUTIONS.md`（示例 `ref-catalog-100k`，54 条事件、逐事件机制标志）；与参考引擎、ReMAP 的三方对比（公式、口径、机制、分配、统计）`docs/markdown/TOOL_COMPARISON.md`；v5 参数复核 `docs/markdown/V5_PARAMETER_RECONCILIATION.md`。
-- 报告（`docs/*.html`）：昇腾分配报告集（方法、各拓扑结果、10 万卡元件清单）、规模与对比报告、下一代集群综述。
+- 报告（`docs/*.html`）：`docs/README.md` 是索引——现行报告集（方法、各拓扑结果、10 万卡元件清单；v5.12）、背景页（架构、综述、方法）以及前几代已被取代的结果和应改读的页面。
+- 评审：`docs/markdown/TOOL_REVIEW_2026-11-09.md`（全面评审：目标、模型、缺陷、建议，以及 v5.12 中的处理结果）、模型评审 `docs/markdown/MODEL_REVIEW_*.md`、对外部方法与代码评审的答复 `docs/markdown/METHOD_CODE_REVIEW_RESPONSE_2026-10-29.md`。
 
 ## 目录结构
 
