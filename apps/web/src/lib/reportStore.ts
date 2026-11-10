@@ -4,7 +4,7 @@
  * preview. Browser storage only: it stays on this device and never reaches another viewer; the downloads are the way to move it.
  * Every call rejects with a readable message when IndexedDB is unavailable (private mode, blocked site data).
  */
-export interface SavedReportKpi { scale: number; todayAop: number; todayAopDerated: number; /** v5.6 derated effective / delivered goodput and feasibility (absent in reports saved before) */ todayEffectiveDerated?: number; todayDeliveredDerated?: number; recommendedAopDerated: number; recommendedEffectiveDerated?: number; recommendedDeliveredDerated?: number; feasible?: boolean; mechanisms: string[]; k: number }
+export interface SavedReportKpi { /** v5.12 the allocation basis of the saved report (absent: a report saved before — the effective goodput when its goodput fields are present) */ metric?: 'aOp' | 'effective'; scale: number; todayAop: number; todayAopDerated: number; /** v5.6 derated effective / delivered goodput and feasibility (absent in reports saved before) */ todayEffectiveDerated?: number; todayDeliveredDerated?: number; recommendedAopDerated: number; recommendedEffectiveDerated?: number; recommendedDeliveredDerated?: number; feasible?: boolean; mechanisms: string[]; k: number }
 export interface SavedReport {
   projectId: string;
   projectName: string;

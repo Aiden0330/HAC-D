@@ -187,3 +187,27 @@ C-YOUNG, built like the harness: applyMechanisms → deratedOf → applyLevers([
 `kpiFormEff` and (derated) `requirementEff` cases of those tables pin formulas (1), (1′) and (2′) at the Young interval — B = −0.7754 s/h for
 native950 500k derated, as Appendix A1 prints. Results: τ 819.38 / 962.35 s (a3server 10k nominal / derated), 123.39 / 144.50 s (native950
 500k); saves = rework at the optimum to 10⁻¹²; findings 0; 77 cases. Regenerated from eeaf0c3 with `/usr/bin/python3` 3.9.6.
+
+## 8. v5.12 the checkpoint tier (G8, 2026-11-09)
+
+Independent check of the checkpoint tier of the three-target report (MODEL_REFERENCE §36.2). Six tables, written by
+`dump_inputs_v5.mjs` with the engine used for the per-class rows only: for the derated recommended designs of native950 500k and
+cm384 200k and for today's derated a3server 10k, the design at Young's period (`*.tier-young`) and the design at the save time
+`budget/tiers.ts` reports as allowed for the 97 % floor (`*.tier-save`). The Python recomputes, from the rows alone,
+
+- the rollback rate λ_rb = Σ_i λ_i P_rb,i (plus detected silent corruption where it rolls back) from its own rung tree, and
+  Young's period τ = √(2δ/λ_rb);
+- the exact renewal goodput of formula (7), G_eff = (1 − p_sdc) · Φ · λ_rb τ / [(e^{λ_rb(τ+δ)} − 1)(1 + (ΣC + F)/3600)], with ΣC
+  and F from its own class pauses; the throughput factor Φ and the pause share p_sdc of silent-corruption episodes are engine
+  outputs taken as inputs and declared as such in the case — the goodput itself is recomputed, not read;
+- on a `tier-save` table, that this goodput equals the floor: a difference above 10⁻⁹ is a finding.
+
+Results: native950 500k derated τ_Y = 172.33 s, G_eff = 96.5487 % (below the floor; the allowed derated save is 0.8069 s, at which
+τ_Y = 126.39 s and G_eff = 97.0000 %); cm384 200k derated τ_Y = 177.15 s, G_eff = 96.7123 % (allowed 1.0222 s); a3server 10k
+derated τ_Y = 962.35 s, G_eff = 99.5831 % (the floor would still hold with a save of 132.1 s). The same tables add six `kpiForm`,
+six `kpiFormEff` and two `requirementEff` cases, which pin formulas (1), (1′) and (2′) on designs with a period that follows the
+scale. 97 cases, findings 0; tolerance rel 10⁻⁹. Not covered by a golden: the delivered tier's coverage and delay roots, which
+`tiers_v512.test.ts` checks by substituting the root back into the engine (the floor is met to 10⁻⁹); the delivered goodput
+itself — the quantity those roots are taken on — was reproduced by the event simulation of the tool review
+(`TOOL_REVIEW_2026-11-09.md` §4.1) within its sampling error. Regenerated with
+`/usr/bin/python3` 3.9.6 from the working tree of 2026-11-09 (v5.12, on 532fc8e).

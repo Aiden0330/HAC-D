@@ -22,7 +22,7 @@ import {
   parseFaultRateOverride, faultRateOverrideJsonSchema, type FaultRateOverride,
   budgetFromRecords, bomDocument, mechanismHierarchy, archStudy, pruneByShapley, shapleyAtScale, HIERARCHY_DEFAULT_IDS, minWindowTrials, UNREACHABLE_TEXT, unmodelledWarning,
   type StoredStudy, type ArchStudy, type BudgetDocument, type MechanismVerdict,
-  type BudgetMetric, variantSummary } from '@hac-d/core';
+  type BudgetMetric, variantSummary, fieldCaseSummary } from '@hac-d/core';
 import { findingsHtml, methodologyHtml, bomHtml, FINDINGS_FILES, type ReportProvenance } from '@hac-d/reports';
 
 const CORE = fileURLToPath(new URL('../../core/', import.meta.url));
@@ -91,11 +91,20 @@ function provenanceOf(a: Args, records: TopologyRecord[], set: MechanismSet, rat
 
 /* ---------------- Shapley studies: reuse a stored one when it fits, else compute ---------------- */
 const canon = (v: unknown): string => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([p], [q]) => (p < q ? -1 : 1))) : x));
-/** the acceptance metric of the pipeline: --metric effective (default, v5.6) | aOp */
+/** the acceptance metric of the allocation: --metric aOp (default since v5.12, the operational availability) | effective (the v5.6–v5.11 basis) */
 function metricFlag(a: Args): BudgetMetric {
-  const m = a.flag('metric') ?? 'effective';
-  if (m !== 'effective' && m !== 'aOp') fail(`--metric ${m}: use effective (the effective goodput, default) or aOp`);
+  const m = a.flag('metric') ?? 'aOp';
+  if (m !== 'effective' && m !== 'aOp') fail(`--metric ${m}: use aOp (the operational availability, default) or effective (the effective goodput)`);
   return m;
+}
+/** v5.12 a floor of a goodput tier: --effective-floor / --delivered-floor <0…1> | none (values only); absent: the default (0.97 / 0.90) */
+function floorFlag(a: Args, name: string): number | null | undefined {
+  const v = a.flag(name);
+  if (v === undefined) return undefined;
+  if (v === 'none') return null;
+  const x = Number(v);
+  if (!(x > 0 && x < 1)) fail(`--${name} ${v}: a goodput floor between 0 and 1 (e.g. 0.97), or none`);
+  return x;
 }
 /** null when the stored study was computed for this record, set (players and parameters), override, target and the given sizes; else why not */
 function studyMismatch(st: ArchStudy & { rates?: string | null }, rec: TopologyRecord, set: MechanismSet, rates: FaultRateOverride | undefined, sizes: number[], target: number): string | null {
@@ -145,7 +154,7 @@ const pt = (x: number) => (Number.isFinite(x) ? `${(x * 100).toFixed(3)} pt` : '
 export function findings(a: Args): void {
   if (a.flag('data')) { renderFindings(a); return; }
   const specs = list(a.flag('record') ?? a.flag('records'));
-  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--variants <set>[,<set>…]] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
+  if (!specs.length) fail('usage: hacd findings --record <id|path>[,<id|path>…] [--rates f.json] [--mechanisms m.json] [--scales 10000,100000,200000,500000] [--main N] [--target 0.985] [--metric aOp|effective] [--effective-floor 0.97|none] [--delivered-floor 0.90|none] [--field-rates <id|path>] [--trials 400] [--seed 1] [--study-dir <dir>] [--permutations 300] [--reuse-studies] [--strict-prune] [--variants <set>[,<set>…]] [--out docs] [--data-out <out>/data] [--no-methodology] | hacd findings --data <dir> [--record a,b] [--out docs] [--no-methodology]');
   const records = specs.map(resolveRecord);
   const set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const sizes = nums(a.flag('scales'), DEFAULT_SCALES);
@@ -156,7 +165,10 @@ export function findings(a: Args): void {
   const outDir = a.flag('out') ?? 'docs', dataOut = a.flag('data-out') ?? join(outDir, 'data'), studyDir = a.flag('study-dir') ?? dataOut;
   // v5.9 the appendix variants: alternative mechanism sets (ids or paths) whose budget Appendix A of the Findings pages prints
   const variantSpecs = list(a.flag('variants'));
-  if (variantSpecs.length && metric !== 'effective') fail('--variants: the appendix is defined on the effective-goodput basis (--metric effective)');
+  // v5.12 the floors of the goodput tiers and the field-level case (the same budget under a field-level failure-rate override)
+  const effectiveFloor = floorFlag(a, 'effective-floor'), deliveredFloor = floorFlag(a, 'delivered-floor');
+  const fieldRates = resolveRates(a.flag('field-rates'));
+  if (fieldRates && rates && fieldRates.id === rates.id) fail(`--field-rates ${fieldRates.id}: the field case is the run's own failure-rate override`);
   log(`records ${records.map((r) => r.id).join(', ')} · set ${set.id}${rates ? ` · override ${rates.id} (${rates.basis})` : ''} · ${sizes.join(' / ')} NPUs · ${metric === 'aOp' ? 'A_op' : 'effective goodput'} ≥ ${target} · ${trials} windows · seed ${seed}`);
 
   // 1. Shapley studies (Table 7 and the hierarchy): stored when it fits, else computed and written to the data dir
@@ -178,7 +190,7 @@ export function findings(a: Args): void {
   }
 
   // 2. the hierarchical budget of every record at every scale
-  const results = budgetFromRecords(records, set, { sizes, target, metric, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`budget ${arch} ${n}`); } }) as BudgetDocument;
+  const results = budgetFromRecords(records, set, { sizes, target, metric, effectiveFloor, deliveredFloor, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`budget ${arch} ${n}`); } }) as BudgetDocument;
   for (const [arch, A] of Object.entries(results.archs)) for (const [n, z] of Object.entries(A.sizes)) {
     const r = z.recommended;
     log(`${arch} ${n}: today ${metric === 'aOp' ? 'A_op' : 'G_eff'} ${(z.today.value * 100).toFixed(3)} / ${(z.today.valueDerated * 100).toFixed(3)} % · ${r.feasible === false ? 'NOT FEASIBLE (every move on)' : 'recommended'} ${r.mechanisms.join('+') || '—'} | ${r.levers.join('+') || '—'} k ${r.k.toFixed(3)} → ${((metric === 'aOp' ? r.final.kpiDerated.aOp : r.final.kpiDerated.effective) * 100).toFixed(2)} % derated, P ${(r.window.pAtLeastTarget * 100).toFixed(1)} %`);
@@ -190,14 +202,26 @@ export function findings(a: Args): void {
       const vs = resolveSet(spec);
       if (vs.id === set.id) fail(`--variants ${spec}: the variant is the report's own set ${set.id}`);
       log(`variant ${vs.id}: budget of ${records.map((r) => r.id).join(', ')} at ${sizes.join(' / ')} NPUs`);
-      const vd = budgetFromRecords(records, vs, { sizes, target, metric, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`variant ${vs.id} budget ${arch} ${n}`); } }) as BudgetDocument;
+      const vd = budgetFromRecords(records, vs, { sizes, target, metric, effectiveFloor, deliveredFloor, main, trials, seed, rates, onProgress: (arch, n, step) => { if (step === 'today') log(`variant ${vs.id} budget ${arch} ${n}`); } }) as BudgetDocument;
       const v = variantSummary(results, vs, vd);
       for (const [arch, rows] of Object.entries(v.archs)) for (const row of rows) {
         const rc = row.recommended;
-        log(`variant ${vs.id} ${arch} ${row.npus}: τ ${row.today.tauS.toFixed(0)} s / δ ${row.today.deltaS} s · G_eff ${(row.today.effective * 100).toFixed(3)} % derated · B ${row.required.B.toFixed(1)} s/h · ${rc.feasible ? `plan ${rc.mechanisms.join('+') || '—'} | ${rc.levers.join('+') || '—'} k ${rc.k.toFixed(3)} → ${(rc.effective * 100).toFixed(2)} % derated, P ${(rc.pWindow * 100).toFixed(1)} %` : `NOT FEASIBLE (every move on: ${(rc.effective * 100).toFixed(2)} %, ceiling ${rc.ceiling === null ? '—' : `${(rc.ceiling * 100).toFixed(2)} %`})`}`);
+        const E = metric === 'effective', tv = E ? row.today.effective : row.today.aOp, rv = E ? rc.effective : rc.aOp;
+        log(`variant ${vs.id} ${arch} ${row.npus}: τ ${row.today.tauS.toFixed(0)} s / δ ${row.today.deltaS} s · ${E ? 'G_eff' : 'A_op'} ${(tv * 100).toFixed(3)} % derated · B ${row.required.B.toFixed(1)} s/h · ${rc.feasible ? `plan ${rc.mechanisms.join('+') || '—'} | ${rc.levers.join('+') || '—'} k ${rc.k.toFixed(3)} → ${(rv * 100).toFixed(2)} % derated, P ${(rc.pWindow * 100).toFixed(1)} %` : `NOT FEASIBLE (every move on: ${(rv * 100).toFixed(2)} %, ceiling ${rc.ceiling === null ? '—' : `${(rc.ceiling * 100).toFixed(2)} %`})`}`);
       }
       return v;
     });
+  }
+
+  // 2c. v5.12 the field-level case: the same budget with the interruption classes at a field level (no study), reduced to its table's rows
+  if (fieldRates) {
+    log(`field case ${fieldRates.id}: budget of ${records.map((r) => r.id).join(', ')} at ${sizes.join(' / ')} NPUs`);
+    const fd = budgetFromRecords(records, set, { sizes, target, metric, effectiveFloor, deliveredFloor, main, trials, seed, rates: fieldRates, onProgress: (arch, n, step) => { if (step === 'today') log(`field case budget ${arch} ${n}`); } }) as BudgetDocument;
+    results.fieldCase = fieldCaseSummary(fieldRates, fd);
+    for (const [arch, rows] of Object.entries(results.fieldCase.archs)) for (const row of rows) {
+      const rc = row.recommended;
+      log(`field case ${arch} ${row.npus}: ${row.today.hardFitPerNpu.toFixed(0)} FIT per NPU · today ${metric === 'aOp' ? 'A_op' : 'G_eff'} ${(row.today.value * 100).toFixed(2)} % derated · ${rc.feasible ? `plan ${rc.mechanisms.join('+') || '—'} | ${rc.levers.join('+') || '—'} k ${rc.k.toFixed(3)} (allowed ${rc.allowedFitPerNpu!.toFixed(0)} FIT per NPU), P ${(rc.pWindow * 100).toFixed(1)} %` : `NOT FEASIBLE (every move on: ${(rc.value * 100).toFixed(2)} %, ceiling ${rc.ceiling === null ? '—' : `${(rc.ceiling * 100).toFixed(2)} %`})`}`);
+    }
   }
 
   // 3. the mechanism hierarchy (verdict lists of the set, checked against the pruning rule on these studies)
@@ -211,7 +235,7 @@ export function findings(a: Args): void {
   const mechanisms = mechanismHierarchy(set, studies as unknown as Record<string, StoredStudy>, { permutations: perms.length === 1 ? perms[0] : undefined, basis: `bare architecture scenario, ${rates ? `failure-rate override ${rates.id}` : 'HAC-D per-unit FIT'}, ${set.id}`, check: false });
 
   // 4. sidecar JSON and the reports
-  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, metric, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations, ...(results.variants?.length ? { variants: results.variants.map((v) => v.id) } : {}) });
+  const prov = provenanceOf(a, records, set, rates, { scales: sizes, target, metric, trials, seed, permutations: perms.length === 1 ? perms[0] : permutations, ...(results.variants?.length ? { variants: results.variants.map((v) => v.id) } : {}), effectiveFloor: results.floors?.effective ?? null, deliveredFloor: results.floors?.delivered ?? null, ...(fieldRates ? { fieldRates: fieldRates.id } : {}) });
   writeJson(join(dataOut, 'results.json'), results);
   writeJson(join(dataOut, 'mechanisms.json'), { ...mechanisms, source: { dir: studyDir, ...mechanisms.source } });
   writeJson(join(dataOut, 'provenance.json'), prov);
@@ -339,11 +363,11 @@ export function bom(a: Args): void {
 /** hacd budget --record <id|path> --scale N [--rates] [--mechanisms] [--target] [--trials] [--seed] [--json] */
 export function budget(a: Args, json: boolean): void {
   const spec = a.flag('record'), scale = Number(a.flag('scale') ?? NaN);
-  if (!spec || !(scale > 0)) fail('usage: hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--metric effective|aOp] [--trials 400] [--seed 1] [--json]');
+  if (!spec || !(scale > 0)) fail('usage: hacd budget --record <id|path> --scale 500000 [--rates f.json] [--mechanisms m.json] [--target 0.985] [--metric aOp|effective] [--effective-floor 0.97|none] [--delivered-floor 0.90|none] [--trials 400] [--seed 1] [--json]');
   const rec = resolveRecord(spec), set = resolveSet(a.flag('mechanisms')), rates = resolveRates(a.flag('rates'));
   const target = Number(a.flag('target') ?? 0.985), trials = Number(a.flag('trials') ?? 400), seed = Number(a.flag('seed') ?? 1), metric = metricFlag(a);
   if (!(trials >= minWindowTrials())) fail(`--trials ${trials}: the window rule needs at least ${minWindowTrials()} windows (with fewer, P ≥ 0.9 per window can never be supported: Wilson 95 % lower bound n/(n + z²), formula 6)`);
-  const d = budgetFromRecords([rec], set, { sizes: [scale], target, metric, trials, seed, rates, onProgress: (_x, _n, step) => log(step) });
+  const d = budgetFromRecords([rec], set, { sizes: [scale], target, metric, effectiveFloor: floorFlag(a, 'effective-floor'), deliveredFloor: floorFlag(a, 'delivered-floor'), trials, seed, rates, onProgress: (_x, _n, step) => log(step) });
   const z = d.archs[rec.id].sizes[String(scale)];
   if (json) { console.log(JSON.stringify(z, null, 1)); return; }
   const p = (x: number, k = 3) => `${(x * 100).toFixed(k)} %`, h = (x: number | null) => (x === null ? '—' : `${x.toFixed(3)} h`), s = (x: number) => `${x.toFixed(1)} s`;
@@ -363,6 +387,14 @@ export function budget(a: Args, json: boolean): void {
   // v5.8 (method & code review 2026-10-29) the acceptance of a recommended plan, the classes the constraints hold, the inputs not modelled
   if (r.search) console.log(`acceptance: P(window) ${p(r.window.pAtLeastTarget, 1)} ${r.window.verdict} on replications ${r.window.from ?? 0}–${(r.window.from ?? 0) + r.window.trials - 1} (never drawn by the search; the search's own P at this k: ${p(r.search.pAtLeastTarget, 1)} ${r.search.verdict})`);
   if (r.fixedClasses?.length || r.atFloor?.length) console.log(`hardware constraints: ${r.fixedClasses?.length ? `fixed at today's FIT ${r.fixedClasses.join(', ')}` : ''}${r.fixedClasses?.length && r.atFloor?.length ? '; ' : ''}${r.atFloor?.length ? `at their floor ${r.atFloor.join(', ')}` : ''}`);
+  // v5.12 the goodput tiers of the recommended design (the checkpoint tier at Young's interval unless the design's period already follows the rollback interval)
+  {
+    const T = r.tiers, c = T.checkpoint, dl = T.delivered, row = c.basis === 'young' && c.young ? c.young : c.asDesigned;
+    const met = (m: boolean | null) => (m === null ? 'no floor' : m ? 'met' : 'NOT met');
+    if (r.windowDerated) console.log(`window shares: nominal design ${p(r.window.pAtLeastTarget, 1)}, derated twin ${p(r.windowDerated.pAtLeastTarget, 1)} (the mean criterion binds on the derated twin)`);
+    console.log(`checkpoint tier: save ${c.deltaS.nominal} s (derated ${c.deltaS.derated} s), period ${row.policy === 'fixed' ? 'fixed' : `by ${row.policy}`} ${row.tauS.nominal.toFixed(0)} s (derated ${row.tauS.derated.toFixed(0)} s) → G_eff ${p(row.effective.nominal, 2)} / ${p(row.effective.derated, 2)}${c.young && c.basis === 'young' ? `; as designed (fixed ${c.asDesigned.tauS.nominal.toFixed(0)} s) ${p(c.asDesigned.effective.nominal, 2)} / ${p(c.asDesigned.effective.derated, 2)}` : ''}; floor ${c.floor === null ? '—' : p(c.floor, 1)} ${met(c.met)}${c.floor !== null ? (c.saveAllowedS ? `, save time allowed ≤ ${Number.isFinite(c.saveAllowedS.nominal) ? `${c.saveAllowedS.nominal.toFixed(2)} s (derated ${c.saveAllowedS.derated.toFixed(2)} s)` : 'any'}` : `, out of reach by the save time (ceiling ${p(c.ceiling, 2)} as the save time → 0)`) : ''}`);
+    console.log(`delivered tier: coverage ${p(dl.asAllocated.coverage.nominal, 1)} (derated ${p(dl.asAllocated.coverage.derated, 1)}), discovery after ${dl.fallbackDelayH} h → G_del ${p(dl.asAllocated.delivered.nominal, 2)} / ${p(dl.asAllocated.delivered.derated, 2)}; floor ${dl.floor === null ? '—' : p(dl.floor, 1)} ${met(dl.met)}${dl.floor !== null && dl.ratePerHour > 0 ? (dl.coverageNeeded ? `, joint coverage needed ≥ ${p(dl.coverageNeeded.derated, 2)} derated${dl.delayAllowedH !== null ? ` or discovery within ${dl.delayAllowedH.toFixed(1)} h` : ''}` : `, out of reach by detection alone (ceiling ${p(dl.ceiling, 2)})`) : ''}${dl.withDetectors ? `; with ${dl.withDetectors.mechanisms.join(' + ')}: coverage ${p(dl.withDetectors.coverage.derated, 2)} derated, G_del ${p(dl.withDetectors.delivered.nominal, 2)} / ${p(dl.withDetectors.delivered.derated, 2)} ${met(dl.withDetectors.met)}` : ''}`);
+  }
   if (z.unmodelled) console.log(`warning: ${unmodelledWarning(z.unmodelled)}`);
 }
 

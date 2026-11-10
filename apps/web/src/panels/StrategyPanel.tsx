@@ -30,7 +30,7 @@ export interface StrategySettings {
 }
 
 export function defaultSettings(s: Scenario): StrategySettings {
-  return { metric: 'effective', target: s.targets.effective ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })), efforts: {}, parameters: {} };
+  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'all', split: 'min-effort', derate: true, trials: 0, candidates: DEFAULT_STRATEGY_CANDIDATES.filter((id) => !s.mechanisms.applied?.[id]), levers: DEFAULT_LEVERS.map((l) => ({ ...l, on: true })), efforts: {}, parameters: {} };
 }
 
 /** v5.3 a candidate mechanism is ready when its integration parameters are present (library defaults merged with the form's) */
@@ -46,7 +46,7 @@ export const mechanismReady = (m: MechanismDef, parameters?: Record<string, numb
 export function reportSettings(s: Scenario): StrategySettings {
   const r = resolveMechanismSet(DEFAULT_MECHANISM_SET);
   const candidates = reportCandidates(s, DEFAULT_MECHANISM_SET);
-  return { metric: 'effective', target: s.targets.effective ?? 0.985, strategy: 'optimal', split: 'arinc', derate: true, trials: 400, candidates, efforts: { ...r.efforts }, parameters: Object.fromEntries(Object.entries(r.parameters).map(([id, p]) => [id, { ...p }])), levers: r.levers.map((l) => ({ ...l, on: true })) };
+  return { metric: 'aOp', target: s.targets.operational ?? 0.985, strategy: 'optimal', split: 'arinc', derate: true, trials: 400, candidates, efforts: { ...r.efforts }, parameters: Object.fromEntries(Object.entries(r.parameters).map(([id, p]) => [id, { ...p }])), levers: r.levers.map((l) => ({ ...l, on: true })) };
 }
 
 const isPlain = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);

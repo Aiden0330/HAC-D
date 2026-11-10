@@ -38,8 +38,11 @@ export interface ScenarioReportOptions {
   sizes: number[];
   main?: number;
   target: number;
-  /** v5.6 the acceptance metric (default the effective goodput) */
+  /** the acceptance metric of the allocation (v5.12 default A_op; `effective` the v5.6–v5.11 basis) */
   metric?: BudgetMetric;
+  /** v5.12 the floors of the goodput tiers (default 0.97 / 0.90; null: values only) */
+  effectiveFloor?: number | null;
+  deliveredFloor?: number | null;
   trials?: number;
   seed?: number;
   permutations?: number;
@@ -84,8 +87,15 @@ export function variantReference(reference: readonly string[], setBaseline: read
 }
 
 export function reportCandidates(s: Scenario, set: MechanismSet = DEFAULT_MECHANISM_SET): string[] {
+  return appliableOf(s, set, resolveMechanismSet(set).candidates);
+}
+/** v5.12 the set's delivered-only mechanisms the delivered tier of a scenario's report is also evaluated with: appliable, not applied, ready */
+export function reportDeliveredOnly(s: Scenario, set: MechanismSet = DEFAULT_MECHANISM_SET): string[] {
+  return appliableOf(s, set, resolveMechanismSet(set).goodputOnly);
+}
+function appliableOf(s: Scenario, set: MechanismSet, ids: string[]): string[] {
   const r = resolveMechanismSet(set);
-  return r.candidates.filter((id) => {
+  return ids.filter((id) => {
     const m = MECHANISM_LIBRARY.find((x) => x.id === id);
     return !!m && !!m.apply && m.status !== 'informational' && !s.mechanisms.applied?.[id] && (!m.integrationNeeds?.length || integrationStatus(m, { ...m.parameters, ...(r.parameters[id] ?? {}) }).ready);
   });
@@ -129,7 +139,7 @@ export function reportFromScenario(s: Scenario, o: ScenarioReportOptions): Scena
   const study = studyOfBuild(o.id, build, set, { sizes, target: o.target, permutations, seed, parameters, onProgress: (n, i, k) => o.onProgress?.('study', n, `${i} / ${k}`) });
   const results = budgetDocument(
     { [o.id]: { name: o.name, short: o.short, family, assumed, build, layerSpec } },
-    { sizes, target: o.target, metric: o.metric, main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
+    { sizes, target: o.target, metric: o.metric, effectiveFloor: o.effectiveFloor, deliveredFloor: o.deliveredFloor, deliveredOnly: reportDeliveredOnly(s, set), main, trials, seed, candidates, parameters, efforts: set.efforts, levers: r.levers, reference, derate: r.derate, onProgress: (_arch, n, step) => o.onProgress?.('budget', n, step) },
   );
   if (o.variants?.length) {
     results.variants = o.variants.map((V) => {
@@ -145,7 +155,7 @@ export function reportFromScenario(s: Scenario, o: ScenarioReportOptions): Scena
       const vCandidates = reportCandidates(s, V).filter((id) => !vReference.includes(id));
       const vd = budgetDocument(
         { [o.id]: { name: o.name, short: o.short, family, assumed, build: vBuild, layerSpec } },
-        { sizes, target: o.target, metric: o.metric, main, trials, seed, candidates: vCandidates, parameters: vParameters, efforts: V.efforts, levers: rv.levers, reference: vReference, derate: rv.derate, onProgress: (_arch, n, step) => o.onProgress?.('variant', n, `${V.id} · ${step}`) },
+        { sizes, target: o.target, metric: o.metric, effectiveFloor: o.effectiveFloor, deliveredFloor: o.deliveredFloor, deliveredOnly: reportDeliveredOnly(s, V).filter((id) => !vReference.includes(id)), main, trials, seed, candidates: vCandidates, parameters: vParameters, efforts: V.efforts, levers: rv.levers, reference: vReference, derate: rv.derate, onProgress: (_arch, n, step) => o.onProgress?.('variant', n, `${V.id} · ${step}`) },
       );
       return variantSummary(results, V, vd);
     });

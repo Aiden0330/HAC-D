@@ -16,19 +16,21 @@
  */
 import { isoLocal } from '../isoLocal.js';
 import type { VariantSummary } from './variants.js';
+import type { FieldCase } from './fieldCase.js';
 import type { Scenario } from '../scenario/schema.js';
-import type { TrainingKpis } from '../scenario/evaluate.js';
+import { evaluateScenario, type TrainingKpis } from '../scenario/evaluate.js';
 import { computeCounts, type Counts } from '../scenario/build.js';
 import { topologyBom, DOMAIN_UNIT, type BomRow, type FaultUnit } from '../topology/index.js';
 import { toPerHour } from '../units/index.js';
 import { allocateStrategy, applyLevers, withHardwareFactors, hardwareClasses, DEFAULT_LEVERS, type LeverId, type RecoveryLever, type StrategyPlan, type StrategyResult } from '../strategy/index.js';
 import { recommendPlan, windowCheck, deratedOf, type WindowCheck, type WindowRulePlan, type WindowRuleTrial } from '../strategy/window.js';
 import { requirementFromKpi, type Requirement } from '../strategy/requirement.js';
-import { applyMechanismsInOrder, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
+import { applyMechanisms, applyMechanismsInOrder, stripMechanisms, mechanismById, DEFAULT_PLAYERS, type MechanismKind } from '../mechanisms/index.js';
 import { DERATE_DEFAULT, derateParameters, type DerateSpec } from '../mechanisms/plan.js';
 import { minWindowTrials } from '../math/stats.js';
 import { kpiForm, trainingOf, metricValue, type KpiForm, type BudgetMetric } from './kpiForm.js';
 import { mttrDecomposition, type MttrDecomposition } from '../mttr/decompose.js';
+import { goodputTiers, DEFAULT_TIER_FLOORS, type GoodputTiers, type TierFloors } from './tiers.js';
 import { byLayer, layerModel, lossBreakdown, DEFAULT_LAYERS, type LayerDef, type LayerId, type LayerModel, type LayerModelSpec, type LayerClassRow, type LossBreakdown } from '../layers/index.js';
 
 export interface BudgetOptions {
@@ -54,6 +56,14 @@ export interface BudgetOptions {
   /** layer model (default: the six layers; the SuperPoD instance = one supernode) */
   layers?: LayerDef[];
   layerSpec?: LayerModelSpec;
+  /**
+   * v5.12 the goodput tiers beside the allocation (budget/tiers.ts): the floor of the effective goodput (default 0.97; null: values
+   * only) and of the delivered goodput (default 0.90; null: values only), and the set's delivered-only mechanisms the delivered tier
+   * is also evaluated with (default none)
+   */
+  effectiveFloor?: number | null;
+  deliveredFloor?: number | null;
+  deliveredOnly?: string[];
   onProgress?: (step: string) => void;
 }
 
@@ -99,7 +109,15 @@ export interface BudgetResult {
   hardFitPerNpu: Partial<Record<FaultUnit, number>>;
   hardFitPerNpuTotal: number;
   hardPerHour: number;
-  today: DesignSummary & { window: WindowCheck; aOp: number; aOpDerated: number; /** v5.6 the acceptance metric nominal / derated, and both goodputs */ value: number; valueDerated: number; effective: number; effectiveDerated: number; delivered: number; deliveredDerated: number };
+  /**
+   * v5.12 (tool review 2026-11-09, recommendation 6) two conditions of the numbers that the training model does not enforce: the scale
+   * law of the automatic recovery attempt (null: the same seconds at every scale), and the node repair pipeline — the training model
+   * takes a replacement as always available, so the design needs a pool of this size: Poisson(nodes × λ_node × hardware share ×
+   * turnaround), its mean and its quantile, for the reference design and the recommended one (null without a spares block)
+   */
+  recoveryScale: unknown | null;
+  spares: { nodes: number; hardwareShare: number; turnaroundH: number; quantile: number; configuredHotSpares: number; today: { mean: number; quantile: number }; design: { mean: number; quantile: number } } | null;
+  today: DesignSummary & { window: WindowCheck; aOp: number; aOpDerated: number; /** v5.6 the acceptance metric nominal / derated, and both goodputs */ value: number; valueDerated: number; effective: number; effectiveDerated: number; delivered: number; deliveredDerated: number; /** v5.12 the checkpoint and delivered tiers of the reference design */ tiers: GoodputTiers };
   required: Requirement;
   hardwareOnly: { needed: boolean; factor: number | null; slack: number | null; final: number; finalDerated: number; effort: number };
   optimal: {
@@ -117,6 +135,14 @@ export interface BudgetResult {
     cause?: WindowRulePlan['cause'];
     /** v5.8 a feasible plan's window verdict is its acceptance on replications the search never drew; `search` the search's check at k */
     window: WindowCheck; search?: WindowCheck; windowPlan: WindowCheck | null; effort: WindowRulePlan['effort'];
+    /**
+     * v5.12 the same acceptance windows run on the DERATED twin of a feasible plan (tool review 2026-11-09, §4.3): `window` is the
+     * nominal design's share of windows at or above the target, this is the share if every mechanism performs at its derated value
+     * (the mean criterion binds on the derated twin, so it is near one half when the hardware factor is at the mean limit)
+     */
+    windowDerated?: WindowCheck;
+    /** v5.12 the checkpoint and delivered tiers of the recommended design */
+    tiers: GoodputTiers;
     /** v5.8 classes kept at today's FIT (fixed or floor 1) and classes stopped at their floor (each absent when empty) */
     fixedClasses?: string[]; atFloor?: string[];
     applied: AppliedMechanism[];
@@ -183,7 +209,7 @@ const planRow = (p: StrategyPlan) => ({ mechanisms: p.mechanisms, levers: p.leve
 export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult {
   if (s.workload.type !== 'training') throw new Error('hierarchicalBudget needs a training workload');
   const n = s.workload.nGpus;
-  const TARGET = o.target, TRIALS = o.trials ?? 400, SEED = o.seed ?? 1, REQUIRED = o.required ?? 0.9, METRIC: BudgetMetric = o.metric ?? 'effective';
+  const TARGET = o.target, TRIALS = o.trials ?? 400, SEED = o.seed ?? 1, REQUIRED = o.required ?? 0.9, METRIC: BudgetMetric = o.metric ?? 'aOp';
   // fewer windows than the Wilson bound allows can never be 'supported': the window rule would escalate through every move and fail (fifth review D7)
   if (TRIALS < minWindowTrials(REQUIRED)) throw new Error(`hierarchicalBudget: ${TRIALS} windows cannot support P(A_op ≥ A*) ≥ ${REQUIRED} per window (Wilson 95 % lower bound n/(n + z²)); use at least ${minWindowTrials(REQUIRED)} windows (formula 6)`);
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT, params = o.parameters ?? {};
@@ -196,12 +222,22 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
   log('today');
   const today = designSummary(n, s, s, sDer, counts, 1, model, t, undefined, METRIC);
   const kD = today.kpiDerated;
-  const required = requirementFromKpi(kD, TARGET, METRIC);
+  let required = requirementFromKpi(kD, TARGET, METRIC);
   log('window check of today');
   const todayWindow = windowCheck(s, TARGET, TRIALS, SEED, REQUIRED, METRIC);
   log('hardware alone');
   const hwOnly = allocateStrategy(s, { strategy: 'mttf-first', metric: METRIC, target: TARGET, candidates: [], levers: false, hardwareSplit: 'arinc', derate });
   const hwFactor = hwOnly.hardware.needed ? Math.min(...hwOnly.hardware.rows.map((h) => h.factor)) : null;
+  // v5.12 (tool review 2026-11-09, D1 / D2) on the goodput basis with a checkpoint period that follows the rollback interval (Young,
+  // Daly, Saxena) formula (2′) is not the requirement: it holds the saves at today's period, while the period lengthens as the hardware
+  // improves. The requirement is then the engine's: reachable when hardware alone (ARINC, the classes' floors) meets the target, the
+  // MTBF end = today's MTBF over that factor; a loss per interruption allowed at today's MTBF is not a single number (the checkpoint
+  // loss moves with it) and is left out. B stays the first-order value at today's period, for the terms.
+  if (METRIC === 'effective' && s.workload.intervalS === undefined) {
+    const kHw = !hwOnly.hardware.needed ? (hwOnly.hardware.slackFactor ?? null) : hwOnly.feasible ? hwFactor : null;
+    const usable = kHw !== null && Number.isFinite(kHw) && kHw > 0 && kD.lamHw > 0;
+    required = { ...required, interval: 'optimised', reachable: kHw !== null, mtbfAtTodayMttrH: usable ? kD.mtbfHwH / kHw! : null, mttrAtTodayMtbfS: null, mtbfFactor: usable ? 1 / kHw! : null, mttrFactor: null };
+  }
   log('optimal plan');
   const opt = allocateStrategy(s, { strategy: 'optimal', metric: METRIC, target: TARGET, candidates: o.candidates, parameters: params, efforts: o.efforts, levers: LEVERS, hardwareSplit: 'arinc', derate, verify: { trials: TRIALS, seed: SEED } });
   const optFactor = opt.hardware.needed ? Math.min(...opt.hardware.rows.map((h) => h.factor)) : null;
@@ -232,15 +268,41 @@ export function hierarchicalBudget(s: Scenario, o: BudgetOptions): BudgetResult 
     const lossOf = (c: number, iso: number, sdc: number, q: number) => c + iso + sdc + (METRIC === 'aOp' ? 0 : q);
     return [id, { byLayer: Object.fromEntries(model.layers.map((l) => [l.id, lossOf(lv.levels[l.id].c, lv.levels[l.id].iso, lv.levels[l.id].sdc, lv.levels[l.id].recompute) - lossOf(base[l.id].c, base[l.id].iso, base[l.id].sdc, base[l.id].recompute)])) as Record<LayerId, number>, aOp: fin.kpi.aOp - lv.k.aOp, delivered: fin.kpi.delivered - lv.k.delivered, effective: fin.kpi.effective - lv.k.effective }];
   }));
+  // v5.12 the goodput tiers of the reference design and of the recommended design (budget/tiers.ts): the checkpoint tier on the
+  // design as it is and at Young's interval, the delivered tier on that basis and once more with the set's delivered-only
+  // mechanisms applied after the design's own (those not applied yet, whose prerequisites the design holds)
+  log('goodput tiers');
+  const floors: TierFloors = { effective: o.effectiveFloor === undefined ? DEFAULT_TIER_FLOORS.effective : o.effectiveFloor, delivered: o.deliveredFloor === undefined ? DEFAULT_TIER_FLOORS.delivered : o.deliveredFloor };
+  const extraOf = (have: string[]) => (o.deliveredOnly ?? []).filter((id) => !have.includes(id)).filter((id, _i, all) => (mechanismById(id).requires ?? []).every((r) => have.includes(r) || all.includes(r)));
+  const refIds = Object.keys(s.mechanisms.applied ?? {});
+  // a design on the reference scenario exactly as the window rule builds it (recommendPlan's designAt): added mechanisms, the derated
+  // twin, the levers, the hardware factors — so that with nothing extra it is the recommended design itself
+  const designOn = (added: string[], leverIds: LeverId[], x: Record<string, number> | null, derated: boolean) => {
+    let d = added.length ? applyMechanisms(s, added, paramsOf(added)) : s;
+    if (derated) d = deratedOf(d, derate);
+    d = applyLevers(d, LEVERS.filter((l) => leverIds.includes(l.id)), derated ? derate : null);
+    return x ? withHardwareFactors(d, x) : d;
+  };
+  const tiersOf = (nom: Scenario, der: Scenario, added: string[], leverIds: LeverId[], x: Record<string, number> | null): GoodputTiers => {
+    const extra = extraOf([...refIds, ...added]);
+    return goodputTiers(nom, der, { floors, ...(extra.length ? { detectors: { mechanisms: extra, nom: designOn([...added, ...extra], leverIds, x, false), der: designOn([...added, ...extra], leverIds, x, true) } } : {}) });
+  };
+  const pipelineOf = (sc: Scenario) => { const sp = evaluateScenario(sc, { structure: false }).spares; return sp ? { sp, row: { mean: sp.repairPipeline.mean, quantile: sp.repairPipeline.quantile } } : null; };
+  const sp0 = pipelineOf(s), sp1 = pipelineOf(rec.nom);
+  const spares: BudgetResult['spares'] = sp0 && sp1 ? { nodes: sp0.sp.nodes, hardwareShare: s.spares.hardwareReplacementFraction, turnaroundH: s.spares.turnaroundHours, quantile: sp0.sp.quantile, configuredHotSpares: sp0.sp.configuredHotSpares, today: sp0.row, design: sp1.row } : null;
+  const recoveryScale = s.recovery.mode === 'mixture' ? (s.recovery.automatic.scale ?? null) : null;
+  const todayTiers = tiersOf(s, sDer, [], [], null);
+  const recTiers = tiersOf(rec.nom, rec.der, rec.mechanisms, rec.levers, kFactors);
+  const windowDerated = rec.feasible ? windowCheck(rec.der, TARGET, TRIALS, SEED, REQUIRED, METRIC, TRIALS) : undefined;
   return {
     npus: n, ...(t.unmodelled ? { unmodelled: t.unmodelled } : {}), counts, instances: model.instances(n, counts),
     bomRows: bom.rows.map((r) => ({ id: r.id, name: r.name, level: r.level, count: r.count, perNpu: r.perNpu, faultUnit: r.faultUnit ?? null, fitHard: r.fit?.hard ?? null, hardPerHour: r.hardPerHour ?? null, confidence: r.confidence })),
-    hardFitPerNpu: bom.hardFitPerNpu, hardFitPerNpuTotal: bom.hardFitPerNpuTotal, hardPerHour: bom.hardPerHour,
-    today: { ...today, window: todayWindow, aOp: today.kpi.aOp, aOpDerated: today.kpiDerated.aOp, value: METRIC === 'aOp' ? today.kpi.aOp : today.kpi.effective, valueDerated: METRIC === 'aOp' ? today.kpiDerated.aOp : today.kpiDerated.effective, effective: today.kpi.effective, effectiveDerated: today.kpiDerated.effective, delivered: today.kpi.delivered, deliveredDerated: today.kpiDerated.delivered },
+    hardFitPerNpu: bom.hardFitPerNpu, hardFitPerNpuTotal: bom.hardFitPerNpuTotal, hardPerHour: bom.hardPerHour, recoveryScale, spares,
+    today: { ...today, window: todayWindow, aOp: today.kpi.aOp, aOpDerated: today.kpiDerated.aOp, value: METRIC === 'aOp' ? today.kpi.aOp : today.kpi.effective, valueDerated: METRIC === 'aOp' ? today.kpiDerated.aOp : today.kpiDerated.effective, effective: today.kpi.effective, effectiveDerated: today.kpiDerated.effective, delivered: today.kpi.delivered, deliveredDerated: today.kpiDerated.delivered, tiers: todayTiers },
     required,
     hardwareOnly: { needed: hwOnly.hardware.needed, factor: hwFactor, slack: hwOnly.hardware.slackFactor ?? null, final: hwOnly.final.value, finalDerated: hwOnly.final.derated, effort: hwOnly.effort.total },
     optimal: { feasible: opt.feasible, mechanisms: opt.mechanisms, levers: opt.levers, needed: opt.hardware.needed, factor: optFactor, slack: opt.hardware.slackFactor ?? null, final: opt.final.value, finalDerated: opt.final.derated, effort: opt.effort, verification: opt.verification ?? null, alternatives: (opt.alternatives ?? []).slice(0, 6).map(planRow), evaluations: opt.evaluations, solver: opt.solver! },
-    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, feasible: rec.feasible, ...(rec.cause ? { cause: rec.cause } : {}), ceiling: rec.ceiling, window: rec.window, ...(rec.search ? { search: rec.search } : {}), windowPlan: rec.windowPlan, effort: rec.effort, ...(rec.fixedClasses.length ? { fixedClasses: rec.fixedClasses } : {}), ...(atFloor.length ? { atFloor } : {}), applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability, value: metricValue(trainingOf(rec.planNom), METRIC), valueDerated: metricValue(trainingOf(rec.planDer), METRIC) }, final: fin, removal },
+    recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, kMean: rec.kMean, kPlan: rec.kPlan, binding: rec.binding, escalated: rec.escalated, tried: rec.tried, feasible: rec.feasible, ...(rec.cause ? { cause: rec.cause } : {}), ceiling: rec.ceiling, window: rec.window, ...(rec.search ? { search: rec.search } : {}), windowPlan: rec.windowPlan, effort: rec.effort, ...(rec.fixedClasses.length ? { fixedClasses: rec.fixedClasses } : {}), ...(atFloor.length ? { atFloor } : {}), applied, leverValues, plan: { aOp: trainingOf(rec.planNom).operationalAvailability, aOpDerated: trainingOf(rec.planDer).operationalAvailability, value: metricValue(trainingOf(rec.planNom), METRIC), valueDerated: metricValue(trainingOf(rec.planDer), METRIC) }, final: fin, removal, ...(windowDerated ? { windowDerated } : {}), tiers: recTiers },
   };
 }
 
@@ -274,13 +336,18 @@ export interface BudgetDocument {
   derate: DerateSpec; candidates: string[]; levers: RecoveryLever[]; reference: string[]; layers: LayerDef[];
   archs: Record<string, { name: { zh: string; en: string }; short: { zh: string; en: string }; family: string; assumed: (string | { zh: string; en: string })[]; layers?: LayerModelSpec; sizes: Record<string, BudgetResult> }>;
   mechanismLibrary: ReturnType<typeof mechanismLibraryTable>;
+  /** v5.12 the floors of the goodput tiers (null: values only) and the delivered-only mechanisms the delivered tier is also evaluated with */
+  floors?: TierFloors;
+  deliveredOnly?: string[];
+  /** v5.12 the field-level case (`hacd findings --field-rates`): the same budget under a field-level failure-rate override, reduced to the rows of its Findings table (`fieldCaseSummary`); the main tables never read it */
+  fieldCase?: FieldCase;
   /** v5.9 appendix variants (`hacd findings --variants`): the budget under alternative mechanism sets, reduced to the rows of Appendix A (`variantSummary`); the main tables never read them */
   variants?: VariantSummary[];
 }
 /** the budget of several architectures at several scales: the shape of docs/backup/ascend-allocation/results.json */
 export function budgetDocument(archs: Record<string, BudgetArchInput>, o: BudgetDocumentOptions): BudgetDocument {
   const LEVERS = o.levers ?? DEFAULT_LEVERS, REF = o.reference ?? DEFAULT_PLAYERS, derate = o.derate ?? DERATE_DEFAULT;
-  const out: BudgetDocument = { generated: isoLocal(), metric: o.metric ?? 'effective', target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}) };
+  const out: BudgetDocument = { generated: isoLocal(), metric: o.metric ?? 'aOp', target: o.target, sizes: o.sizes, main: o.main ?? o.sizes[o.sizes.length - 1], trials: o.trials ?? 400, required: o.required ?? 0.9, derate, candidates: o.candidates, levers: LEVERS, reference: REF, layers: o.layers ?? DEFAULT_LAYERS, archs: {}, mechanismLibrary: mechanismLibraryTable([...REF, ...o.candidates], o.parameters ?? {}, derate, o.efforts ?? {}), floors: { effective: o.effectiveFloor === undefined ? DEFAULT_TIER_FLOORS.effective : o.effectiveFloor, delivered: o.deliveredFloor === undefined ? DEFAULT_TIER_FLOORS.delivered : o.deliveredFloor }, deliveredOnly: [...(o.deliveredOnly ?? [])] };
   for (const [arch, A] of Object.entries(archs)) {
     const sizes: Record<string, BudgetResult> = {};
     for (const n of o.sizes) sizes[String(n)] = hierarchicalBudget(A.build(n), { ...o, layerSpec: A.layerSpec, onProgress: (step) => o.onProgress?.(arch, n, step) });
@@ -297,8 +364,11 @@ import { applyFaultRates, type FaultRateOverride } from '../records/faultRates.j
 export interface BudgetRunOptions {
   sizes: number[];
   target: number;
-  /** v5.6 the acceptance metric (default the effective goodput) */
+  /** the acceptance metric of the allocation (v5.12 default A_op; `effective` the v5.6–v5.11 basis) */
   metric?: BudgetMetric;
+  /** v5.12 the floors of the goodput tiers (default 0.97 / 0.90; null: values only) */
+  effectiveFloor?: number | null;
+  deliveredFloor?: number | null;
   main?: number;
   trials?: number;
   seed?: number;
@@ -325,5 +395,5 @@ export function recordScenario(record: TopologyRecord, set: MechanismSet, n: num
 export function budgetFromRecords(records: TopologyRecord[], set: MechanismSet, o: BudgetRunOptions): BudgetDocument {
   const r = resolveMechanismSet(set);
   const archs: Record<string, BudgetArchInput> = Object.fromEntries(records.map((rec) => [rec.id, { name: rec.name, short: rec.short, family: rec.family, assumed: rec.assumed, build: (n: number) => recordScenario(rec, set, n, o.rates, o.variantId), layerSpec: rec.layers }]));
-  return budgetDocument(archs, { sizes: o.sizes, target: o.target, metric: o.metric, main: o.main, trials: o.trials, seed: o.seed, required: o.required, candidates: r.candidates, parameters: r.parameters, efforts: set.efforts, levers: r.levers, reference: r.baseline, derate: r.derate, onProgress: o.onProgress });
+  return budgetDocument(archs, { sizes: o.sizes, target: o.target, metric: o.metric, main: o.main, trials: o.trials, seed: o.seed, required: o.required, candidates: r.candidates, parameters: r.parameters, efforts: set.efforts, levers: r.levers, reference: r.baseline, derate: r.derate, effectiveFloor: o.effectiveFloor, deliveredFloor: o.deliveredFloor, deliveredOnly: r.goodputOnly, onProgress: o.onProgress });
 }

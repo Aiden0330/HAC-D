@@ -55,4 +55,4 @@ jobs:
           B=$(ls -d hacd-*)
           "$B/bin/hacd" records
           "$B/bin/hacd" budget --record a3server --scale 10000 --trials 40 --json > budget.json
-          node -e "const b=require(process.cwd()+'/budget.json'); if (!(b.today && b.required && b.recommended)) throw new Error('budget output incomplete'); console.log('bundle OK on', process.version, '— today effective goodput', b.today.kpiDerated.effective)"
+          node -e "const b=require(process.cwd()+'/budget.json'); if (!(b.today && b.required && b.recommended && b.recommended.tiers && typeof b.today.aOpDerated === 'number')) throw new Error('budget output incomplete'); console.log('bundle OK on', process.version, '— today A_op derated', b.today.aOpDerated, '— G_eff tier', b.recommended.tiers.checkpoint.met, '— G_del tier', b.recommended.tiers.delivered.met)"

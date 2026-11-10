@@ -8,7 +8,7 @@
  *   hacd scenario set <file.json> --set <path>=<value>… [--out <file.json>] [--json]
  *   hacd scenario fit <file.json> --set <class>=<FIT>… [--reset <class>|all] [--out <file.json>] [--json]
  *   hacd scenario mechanisms <file.json> [--apply <ID>[:k=v,…]]… [--remove <ID>]… [--out <file.json>] [--json]
- *   hacd scenario report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target] [--id <id>] [--variants <set>,…] [--json]
+ *   hacd scenario report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target] [--metric aOp|effective] [--effective-floor x|none] [--delivered-floor x|none] [--id <id>] [--variants <set>,…] [--json]
  *
  * A file is a bare scenario JSON (`hacd example`, the web's Export JSON) or a project bundle (`*.hacd.json`, version hacd-project-1):
  * it is written back in the same form, in place unless --out names another file. Exit 0 on success, 1 with the reason on stderr.
@@ -31,7 +31,7 @@ const USAGE = `usage: hacd scenario <new | show | fields | set | fit | mechanism
   set <file.json> --set <path>=<value> [--set …] [--out <file.json>]
   fit <file.json> --set <class>=<FIT> [--set …] [--reset <class>|all] [--out <file.json>]
   mechanisms <file.json> [--apply <ID>[:k=v,…]]… [--remove <ID>]… [--out <file.json>]
-  report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target 0.985] [--id <id>] [--variants <set>,…]
+  report <file.json> --out <dir> [--scales N,…] [--trials 400] [--permutations 300] [--seed 1] [--target 0.985] [--metric aOp|effective] [--effective-floor 0.97|none] [--delivered-floor 0.90|none] [--id <id>] [--variants <set>,…]
   (--json on any command prints the result as JSON; hacd scenario fields lists the settable paths)`;
 
 const fail = (m: string): never => { console.error(`hacd scenario: ${m}`); process.exit(1); };
@@ -74,8 +74,8 @@ function printSummary(sum: ScenarioSummary, file?: string): void {
   const fo = Object.entries(sum.fit.overrides);
   console.log(`FIT overrides: ${fo.length ? fo.map(([id, v]) => `${id} ${v.fit} (library ${Number(v.library.toPrecision(4))})`).join(', ') : 'none'} · hard FIT per NPU ${sum.fit.hardFitPerNpuTotal.toFixed(1)} · ${sum.fit.classes} fault types`);
   console.log(`mechanisms: ${sum.mechanisms.length ? sum.mechanisms.map((m) => `${m.id}{${Object.entries(m.parameters).map(([k, v]) => `${k}=${v}`).join(',')}}`).join(' ') : 'none'}`);
-  if (sum.workload) console.log(`workload: ${sum.workload.durationDays} d · τ ${sum.workload.intervalS ?? 'optimal'} s · δ ${sum.workload.deltaS} s${sum.workload.ownedBy ? ` (owned by ${sum.workload.ownedBy})` : ''} · targets effective goodput ${sum.targets.effective ?? 0.985} (report), A_op ${sum.targets.operational ?? 0.985}, delivered ${sum.targets.goodput ?? 0.9}`);
-  if (sum.kpi) console.log(`KPI: effective goodput ${pct(sum.kpi.effective)} / ${pct(sum.kpi.effectiveDerated)} derated (target ${pct(sum.kpi.targetEffective, 1)}) · delivered ${pct(sum.kpi.delivered, 2)} / ${pct(sum.kpi.deliveredDerated, 2)} derated · A_op ${pct(sum.kpi.aOp)} / ${pct(sum.kpi.aOpDerated)} derated · MTBF_hw ${sum.kpi.mtbfHwH.toFixed(3)} h · MTTR_hw ${sum.kpi.mttrS.toFixed(1)} / ${sum.kpi.mttrDeratedS.toFixed(1)} s`);
+  if (sum.workload) console.log(`workload: ${sum.workload.durationDays} d · τ ${sum.workload.intervalS ?? 'optimal'} s · δ ${sum.workload.deltaS} s${sum.workload.ownedBy ? ` (owned by ${sum.workload.ownedBy})` : ''} · targets A_op ${sum.targets.operational ?? 0.985} (the report's allocation), floors effective goodput ${sum.kpi?.targetEffective ?? sum.targets.effective ?? 0.97}, delivered ${sum.kpi?.targetDelivered ?? sum.targets.goodput ?? 0.9}`);
+  if (sum.kpi) console.log(`KPI: A_op ${pct(sum.kpi.aOp)} / ${pct(sum.kpi.aOpDerated)} derated (target ${pct(sum.kpi.target, 1)}) · effective goodput ${pct(sum.kpi.effective)} / ${pct(sum.kpi.effectiveDerated)} derated (floor ${pct(sum.kpi.targetEffective, 1)}; at the design's own checkpoint period) · delivered ${pct(sum.kpi.delivered, 2)} / ${pct(sum.kpi.deliveredDerated, 2)} derated (floor ${pct(sum.kpi.targetDelivered, 1)}) · MTBF_hw ${sum.kpi.mtbfHwH.toFixed(3)} h · MTTR_hw ${sum.kpi.mttrS.toFixed(1)} / ${sum.kpi.mttrDeratedS.toFixed(1)} s`);
   console.log(`口径: ${sum.koujing}`);
 }
 
@@ -181,18 +181,21 @@ export async function scenario(rest: string[]): Promise<void> {
         if (!dir) fail('--out <dir> is required');
         const sizes = flag(args, 'scales') ? flag(args, 'scales')!.split(',').map(Number).filter((x) => x > 0) : undefined;
         const n = (name: string) => (flag(args, name) !== undefined ? Number(flag(args, name)) : undefined);
+        // v5.12 the allocation basis (A_op by default) and the floors of the two goodput tiers (a number in (0, 1), or none)
+        const metricOf = (v: string | undefined) => { if (v === undefined) return undefined; if (v !== 'aOp' && v !== 'effective') fail(`--metric ${v}: use aOp (the operational availability, default) or effective`); return v as 'aOp' | 'effective'; };
+        const floorOf = (name: string): number | null | undefined => { const v = flag(args, name); if (v === undefined) return undefined; if (v === 'none') return null; const x = Number(v); if (!(x > 0 && x < 1)) fail(`--${name} ${v}: a goodput floor between 0 and 1, or none`); return x; };
         // v5.11 the appendix variants, as hacd findings --variants: set ids of data/mechanism-sets or JSON paths; the report's own set is refused
         const variants = (flag(args, 'variants') ?? '').split(',').map((x) => x.trim()).filter(Boolean).map((spec) => {
           const vs = resolveSet(spec);
           if (vs.id === DEFAULT_MECHANISM_SET.id) fail(`--variants ${spec}: the variant is the report's own set ${DEFAULT_MECHANISM_SET.id}`);
           return vs;
         });
-        const m = renderScenarioReport(p.scenario, { id: flag(args, 'id'), outDir: dir!, sizes, trials: n('trials'), permutations: n('permutations'), seed: n('seed'), target: n('target'), variants, command, onProgress: (x) => console.error(`hacd scenario report: ${x}`) });
+        const m = renderScenarioReport(p.scenario, { id: flag(args, 'id'), outDir: dir!, sizes, trials: n('trials'), permutations: n('permutations'), seed: n('seed'), target: n('target'), metric: metricOf(flag(args, 'metric')), effectiveFloor: floorOf('effective-floor'), deliveredFloor: floorOf('delivered-floor'), variants, command, onProgress: (x) => console.error(`hacd scenario report: ${x}`) });
         if (json) { out(m); return; }
         console.log(`# ${m.name} — report written to ${m.files.dir} in ${m.seconds.toFixed(1)} s`);
         console.log(`files: ${m.files.findings}; ${m.files.methodology}; bundle ${m.files.bundle}; sidecar ${m.files.data}`);
         console.log(`口径: ${m.koujing}`);
-        // v5.6 the table on the report's metric: the effective goodput (derated values, the delivered goodput beside it, R_eff) or A_op
+        // the table on the report's allocation metric: A_op (v5.12 default) or the effective goodput (--metric effective: derated values, the delivered goodput beside it, R_eff)
         const E = m.metric === 'effective';
         const rows: string[][] = [E ? ['scale', 'row', 'G_eff derated', 'G_del derated', 'MTBF_hw (derated)', 'R_eff (derated)', 'P(window)', 'plan'] : ['scale', 'row', 'A_op nominal', 'A_op derated', 'MTBF_hw (derated)', 'MTTR_hw (derated)', 'P(window)', 'plan']];
         const h = (x: number | null) => (x === null || !Number.isFinite(x) ? '—' : `${x.toFixed(3)} h`);
@@ -205,6 +208,11 @@ export async function scenario(rest: string[]): Promise<void> {
         }
         const w = rows[0].map((_c, j) => Math.max(...rows.map((r) => r[j].length)));
         for (const r of rows) console.log(r.map((c, j) => c.padEnd(w[j])).join('  '));
+        // v5.12 the two goodput tiers of the recommended design (derated values)
+        for (const k of m.kpi) {
+          const T = k.recommended.tiers, met = (x: boolean | null) => (x === null ? 'no floor' : x ? 'met' : 'NOT met');
+          console.log(`${k.scale.toLocaleString('en-US')} tiers: G_eff ${pct(T.effective)}${T.basis === 'young' ? ` at Young's period (${pct(T.effectiveAsDesigned)} as designed)` : ''}, floor ${T.effectiveFloor === null ? '—' : pct(T.effectiveFloor, 1)} ${met(T.effectiveMet)}${T.effectiveFloor !== null ? (T.saveAllowedS !== null ? `, save time allowed ≤ ${T.saveAllowedS.toFixed(2)} s` : T.effectiveMet ? '' : ', out of reach by the save time') : ''} · G_del ${pct(T.delivered)}, floor ${T.deliveredFloor === null ? '—' : pct(T.deliveredFloor, 1)} ${met(T.deliveredMet)}${T.deliveredFloor !== null && T.coverageNeeded !== null ? `, joint coverage needed ≥ ${pct(T.coverageNeeded, 2)}${T.delayAllowedH !== null ? ` or discovery within ${T.delayAllowedH.toFixed(1)} h` : ''}` : ''}${T.deliveredWithDetectors !== null ? `, ${pct(T.deliveredWithDetectors)} with the delivered-only mechanisms` : ''}`);
+        }
         return;
       }
       default:

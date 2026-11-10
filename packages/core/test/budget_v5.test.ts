@@ -169,7 +169,7 @@ describe('v5 reproduction of the v4.4 data from the records', () => {
   });
   it('hierarchicalBudget reproduces one results.json block to 1e-9 (native 950 at 500k; fixed seeds)', () => {
     const arch = 'native950', n = 500000;
-    const got = json(hierarchicalBudget(recordScenario(REC[arch], SET, n), { target: R.target, candidates: RS.candidates, parameters: RS.parameters, levers: RS.levers, reference: RS.baseline, derate: RS.derate, trials: R.trials, seed: 1, layerSpec: REC[arch].layers }));
+    const got = json(hierarchicalBudget(recordScenario(REC[arch], SET, n), { target: R.target, metric: R.metric, effectiveFloor: R.floors?.effective, deliveredFloor: R.floors?.delivered, deliveredOnly: R.deliveredOnly, candidates: RS.candidates, parameters: RS.parameters, efforts: SET.efforts, levers: RS.levers, reference: RS.baseline, derate: RS.derate, trials: R.trials, seed: 1, layerSpec: REC[arch].layers }));
     expect(diff(got, R.archs[arch].sizes[String(n)])).toEqual([]);
   }, 120000);
   it('the window rule escalates only by adding moves and reports the binding side', () => {

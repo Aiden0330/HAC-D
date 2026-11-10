@@ -194,7 +194,7 @@ Next: ${m.nextAction.en}
 |---|---|---|---|
 ${stepLines}
 ${failed?.stderrTail ? `\nLast lines of the failed step:\n\`\`\`\n${failed.stderrTail}\n\`\`\`\n` : ''}
-## KPI（干跑 / dry run; 口径: G_eff = effective goodput of one synchronous job over the 30-day window, nominal / derated (the report target, formula 2′); delivered = silent-corruption loss removed (derated); A_op derated (formula 1); MTBF_hw and MTTR_hw of formula 1; P = share of ${m.options.trials} 30-day windows ≥ target; k = uniform hardware factor, — when no move set reaches the target）
+## KPI（干跑 / dry run; 口径: A_op derated = the running share of one synchronous job per cluster-hour (formula 1), the allocation target of the report since v5.12 — P and k refer to it; G_eff = effective goodput over the 30-day window at the design’s own checkpoint period, nominal / derated; delivered = silent-corruption loss removed (derated); MTBF_hw and MTTR_hw of formula 1; P = share of ${m.options.trials} 30-day windows ≥ target; k = uniform hardware factor, — when no move set reaches the target; the Findings page adds the two goodput tiers at Young’s period with their requirements）
 | scale | G_eff nominal / derated | delivered | A_op derated | MTBF_hw | MTTR_hw | P(window) | k | recommended mechanisms \\| levers |
 |---|---|---|---|---|---|---|---|---|
 ${rows || '| — | | | | | | | | |'}

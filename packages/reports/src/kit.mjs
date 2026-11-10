@@ -222,6 +222,9 @@ export function provenanceFooter(p, lang, files, date) {
     o.seed !== undefined ? T(`种子 ${o.seed}`, `seed ${o.seed}`) : null,
     o.permutations !== undefined ? T(`Shapley ${fmt(o.permutations)} 次置换`, `Shapley ${fmt(o.permutations)} permutations`) : null,
     o.variants?.length ? T(`附录变体 ${o.variants.map(code).join('、')}`, `appendix variants ${o.variants.map(code).join(', ')}`) : null,
+    // v5.12 the floors of the goodput tiers (printed when the run recorded them) and the field-level case
+    o.effectiveFloor !== undefined || o.deliveredFloor !== undefined ? T(`goodput 下限 有效 ${o.effectiveFloor == null ? '—' : `${fmt(o.effectiveFloor * 100, 1)} %`} / 交付 ${o.deliveredFloor == null ? '—' : `${fmt(o.deliveredFloor * 100, 1)} %`}`, `goodput floors effective ${o.effectiveFloor == null ? '—' : `${fmt(o.effectiveFloor * 100, 1)} %`} / delivered ${o.deliveredFloor == null ? '—' : `${fmt(o.deliveredFloor * 100, 1)} %`}`) : null,
+    o.fieldRates ? T(`现场水平对照 ${code(o.fieldRates)}`, `field-level case ${code(o.fieldRates)}`) : null,
   ].filter(Boolean);
   const recs = (p.records ?? []).map((r) => code(r.id)).join(T('、', ', '));
   // the engine version only: the commit hash stays in provenance.json so the page reproduces byte for byte after a commit

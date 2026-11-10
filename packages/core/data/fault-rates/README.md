@@ -36,3 +36,23 @@ labels in `note` (legacy `fitEvidence` / `evidence` / `status`, zh), and the fil
 totals 3,333.3 / 69.0 / 48.3 FIT per card) and why every value stays `assumed`: the catalog labels each one a prior pending audit
 or a user modelling assumption. The regeneration command above produces the values; the notes and the `catalog` block were added by
 the reconciliation script of that date (see `docs/markdown/V5_PARAMETER_RECONCILIATION.md`).
+
+## field-llama3-2026-11.json (v5.12, tool review 2026-11-09)
+
+The field-level case of the report (`hacd findings --field-rates field-llama3-2026-11`, Findings Table 9): the same budget on a
+second failure-rate basis, shown beside the main one. The record scales the 18 interruption classes of the catalog above by one
+factor so that their total per card equals a published field total: 419 unplanned job interruptions in 54 days on 16,384 GPUs
+(the library record `gpu.interruption_rate.llama3_h100`), which is 19,732.8 interruptions per 10⁹ card-hours against the
+catalog's 3,333.3, a factor of 5.9198. The split over the classes stays the catalog's; the sub-health and silent-corruption
+classes keep the catalog's values.
+
+What it is and is not:
+
+- a bound taken from another vendor's GPU cluster, not a measurement of this hardware — every class is tagged `assumed`;
+- the event is a job interruption of one training cluster as its operators counted it (hardware and software together), the
+  same event class as the catalog's interruption classes, per card-hour; it is never added to sub-health or silent corruption;
+- the factor is applied to the total only: the record says nothing about which class is worse in the field.
+
+Regenerate (only if the catalog or the field record changes): `node scripts/build-field-rates.mjs` from the repository root.
+The report states the requirement of formula 2 as an absolute FIT per NPU, which is the same on both bases under the same plan;
+only the hardware factor k (the ratio to "today") differs.

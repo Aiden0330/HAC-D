@@ -164,3 +164,27 @@ for (const [arch, n] of [['native', 500000], ['cm384', 200000]]) {
   const dk = S.withHardwareFactors(d1.s, factors(d1.s, p.k));
   write(`${name}.recommended-derated-k.table.json`, table(dk, { arch, npus: n, mechanisms: p.mechanisms, levers: p.levers, k: p.k, binding: p.binding, derated: true, construction: 'applyMechanisms → deratedOf → applyLevers(DERATE_DEFAULT) → withHardwareFactors(k)' }));
 }
+
+// v5.12 G8 the checkpoint tier (budget/tiers.ts, MODEL_REFERENCE §36; tool review 2026-11-09): a derated design at Young's period on its
+// own save time, and the same design at the save time the tier reports as meeting the floor (results.json tiers.checkpoint
+// .saveAllowedS.derated). The Python recomputes the exact renewal goodput from its own class splits (formula 7) — at the reported save
+// time it must equal the floor. `design.young` / `design.saveS` tell the harness how to rebuild the scenario.
+const TI = await import(join(root, 'packages/core/src/budget/tiers.ts'));
+for (const [arch, n, which] of [['native', 500000, 'recommended'], ['cm384', 200000, 'recommended'], ['a3server', 10000, 'today']]) {
+  const name = `${archKey[arch]}-${n / 1000}k`;
+  const z = results.archs[archKey[arch]].sizes[String(n)];
+  const tiers = which === 'recommended' ? z.recommended.tiers : z.today.tiers;
+  if (!tiers) throw new Error(`${name}: results.json has no goodput tiers (regenerate the report set with hacd findings, v5.12)`);
+  let der, design;
+  if (which === 'recommended') {
+    const p = z.recommended, d1 = recommendedDerated1(arch, n);
+    der = S.withHardwareFactors(d1.s, factors(d1.s, p.k));
+    design = { arch, npus: n, mechanisms: p.mechanisms, levers: p.levers, k: p.k, derated: true };
+  } else {
+    der = W.deratedOf(base(arch, n));
+    design = { arch, npus: n, mechanisms: [], levers: [], k: 1, derated: true };
+  }
+  const c = tiers.checkpoint;
+  write(`${name}.tier-young.table.json`, { ...table(TI.withYoungInterval(der), { ...design, young: true }), tier: { floor: c.floor, which } });
+  if (c.saveAllowedS && Number.isFinite(c.saveAllowedS.derated)) write(`${name}.tier-save.table.json`, { ...table(TI.withSaveTime(TI.withYoungInterval(der), c.saveAllowedS.derated), { ...design, young: true, saveS: c.saveAllowedS.derated }), tier: { floor: c.floor, which, saveAllowedS: c.saveAllowedS } });
+}

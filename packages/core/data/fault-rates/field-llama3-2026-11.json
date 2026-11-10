@@ -1,0 +1,170 @@
+{
+  "id": "field-llama3-2026-11",
+  "basis": "per-card",
+  "source": "field-level case (tool review 2026-11-09): field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog; interruption classes only — sub-health and silent-corruption classes keep the catalog's values",
+  "catalog": {
+    "rateBasis": {
+      "zh": "每十亿卡·小时的作业非计划中断（同步训练，实测总量）；类别间比例取审核目录",
+      "en": "unplanned job interruptions per 10⁹ card-hours (synchronous training, measured total); the split over the classes is the audited catalog’s"
+    },
+    "anchor": {
+      "referenceCards": 16384,
+      "hardMtbfHours": 3.0930787589498805,
+      "classFit": {
+        "hard": 19732.816719714505
+      },
+      "note": "419 interruptions / (54 × 24 h × 16384 GPUs); the catalog's own anchor is 30 h at 10,000 cards; factor 5.9198 on every interruption class"
+    },
+    "confidenceNote": "a bound, not a measurement of this hardware: the event is a job interruption of a GPU cluster of another vendor (about 78 % hardware by the source); every class is tagged assumed"
+  },
+  "rates": {
+    "CORE-hard": {
+      "unit": "npu",
+      "fit": 2762.5943407600303,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog CORE-hard: 466.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "SRAM-hard": {
+      "unit": "npu",
+      "fit": 986.640835985725,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog SRAM-hard: 166.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "IOD-hard": {
+      "unit": "npu",
+      "fit": 1183.9690031828702,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog IOD-hard: 200.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "MODULE-hard": {
+      "unit": "npu",
+      "fit": 1006.3736527054396,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog MODULE-hard: 170.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "MEMT-hard": {
+      "unit": "npu",
+      "fit": 2367.9380063657404,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog MEMT-hard: 400.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "MEMP-hard": {
+      "unit": "npu",
+      "fit": 1026.1064694251543,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog MEMP-hard: 173.333 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "NIC-hard": {
+      "unit": "npu",
+      "fit": 591.9845015914353,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog NIC-hard: 100.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "OPT-hard": {
+      "unit": "ub-link",
+      "fit": 394.65633439429007,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog OPT-hard: 66.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "BOXIO-hard": {
+      "unit": "node",
+      "fit": 276.25943407600306,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog BOXIO-hard: 46.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "FABRIC-hard": {
+      "unit": "ub-switch",
+      "fit": 394.65633439429007,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog FABRIC-hard: 66.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "CPU-hard": {
+      "unit": "cpu",
+      "fit": 986.6408359857253,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog CPU-hard: 166.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "DDR-hard": {
+      "unit": "node",
+      "fit": 1183.9690031828702,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog DDR-hard: 200.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "SSD-hard": {
+      "unit": "node",
+      "fit": 986.6408359857253,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog SSD-hard: 166.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "POWER-hard": {
+      "unit": "cabinet",
+      "fit": 986.6408359857253,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog POWER-hard: 166.667 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "COOL-hard": {
+      "unit": "cabinet",
+      "fit": 591.9845015914351,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog COOL-hard: 100.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "MGMT-hard": {
+      "unit": "node",
+      "fit": 789.3126687885801,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog MGMT-hard: 133.333 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "STORAGE-hard": {
+      "unit": "job",
+      "fit": 789.3126687885801,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog STORAGE-hard: 133.333 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    },
+    "UNKNOWN-hard": {
+      "unit": "job",
+      "fit": 2427.1364565248846,
+      "source": "field total of the Llama 3 training cluster (419 unplanned job interruptions in 54 days on 16,384 GPUs, arXiv 2407.21783; HAC-D library record gpu.interruption_rate.llama3_h100) spread over the classes in the proportions of the remap-per-card-2026-10-09 catalog",
+      "confidence": "assumed",
+      "derivation": "catalog UNKNOWN-hard: 410.000 FIT per card-hour × 5.9198 (19732.8 / 3333.3 FIT per card-hour, field total / catalog total)",
+      "note": "the total is derived from a published count; the split over the classes and the transfer to another platform are assumptions"
+    }
+  },
+  "analogues": {
+    "OPT-hard@roce": "OPT-hard",
+    "FABRIC-hard@roce": "FABRIC-hard"
+  }
+}

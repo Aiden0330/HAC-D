@@ -87,7 +87,7 @@ export function diffRates(a: FaultRateOverride | undefined, b: FaultRateOverride
 export interface KpiRow {
   scale: number;
   aOp: number; aOpDerated: number; delivered: number;
-  /** v5.6 the effective goodput nominal / derated (the report's metric; v5.7 on the exact renewal model) */
+  /** the effective goodput nominal / derated at the design's own checkpoint period (v5.7 on the exact renewal model; the report's metric from v5.6 to v5.11, a tier beside the A_op allocation since v5.12) */
   effective: number; effectiveDerated: number;
   mtbfHwH: number; mttrS: number;
   windowP: number; verdict: string;
@@ -150,7 +150,7 @@ export interface DeltaDocument {
 export interface DeltaOptions {
   scales: number[];
   target: number;
-  /** v5.6 the acceptance metric of the budgets (default the effective goodput) */
+  /** the acceptance metric of the budgets (v5.12 default A_op, the report's allocation basis; `effective` the v5.6–v5.11 one) */
   metric?: BudgetMetric;
   trials?: number;
   seed?: number;
@@ -166,7 +166,7 @@ const ids = (x: DeltaInputs | null): DeltaIds => (x ? { record: { id: x.record.i
 /** the delta document: input changes and the KPI table before (when there is a before) and after */
 export function deltaDocument(before: DeltaInputs | null, after: DeltaInputs, o: DeltaOptions): DeltaDocument {
   const trials = o.trials ?? 400, seed = o.seed ?? 1;
-  const metric: BudgetMetric = o.metric ?? 'effective';
+  const metric: BudgetMetric = o.metric ?? 'aOp';
   const run = (x: DeltaInputs) => { const d = budgetFromRecords([x.record], x.set, { sizes: o.scales, target: o.target, metric, trials, seed, rates: x.rates, onProgress: o.onProgress }); return o.scales.map((n) => kpiRow(d.archs[x.record.id].sizes[String(n)], n)); };
   const kAfter = run(after), kBefore = before ? run(before) : null;
   return {

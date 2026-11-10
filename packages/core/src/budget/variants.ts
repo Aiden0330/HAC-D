@@ -12,23 +12,29 @@ import { mechanismLibraryTable } from './index.js';
 import { resolveMechanismSet, type MechanismSet } from '../records/mechanismSet.js';
 import type { LeverId } from '../strategy/index.js';
 import type { Requirement } from '../strategy/requirement.js';
+import type { GoodputTiers } from './tiers.js';
+import type { BudgetMetric } from './kpiForm.js';
 
 export interface VariantSizeRow {
   npus: number;
   /** the reference design under the variant, derated: checkpoint period and save time (s), saves per job hour (3600 δ/τ), the effective and delivered goodput, MTBF_hw (h, null without hard interruptions), R_eff (s) */
-  today: { tauS: number; deltaS: number; saveSPerH: number; effective: number; delivered: number; mtbfHwH: number | null; lossS: number };
-  /** formula (2′) on the variant's derated design */
-  required: Pick<Requirement, 'B' | 'totalBudget' | 'reachable' | 'terms' | 'mtbfAtTodayMttrH' | 'mttrAtTodayMtbfS'>;
+  today: { tauS: number; deltaS: number; saveSPerH: number; effective: number; delivered: number; mtbfHwH: number | null; lossS: number; /** v5.12 A_op and MTTR_hw (s) of the derated design */ aOp: number; mttrS: number };
+  /** formula (2) / (2′) on the variant's derated design (v5.12 `interval`: the engine's root under a period that follows the rollback interval) */
+  required: Pick<Requirement, 'B' | 'totalBudget' | 'reachable' | 'terms' | 'mtbfAtTodayMttrH' | 'mttrAtTodayMtbfS' | 'interval'>;
   /** the window rule's recommended plan under the variant, or (feasible false) the all-moves design at k = 1 with the ceiling at perfect hardware (derated) */
   recommended: {
     feasible: boolean; cause?: NonNullable<BudgetResult['recommended']['cause']>;
     mechanisms: string[]; levers: LeverId[]; k: number; effective: number; delivered: number;
     pWindow: number; verdict: string; ceiling: number | null; constrained: number | null;
+    /** v5.12 A_op of the plan (derated), the derated twin's window share (feasible plans) and the plan's goodput tiers */
+    aOp: number; pWindowDerated: number | null; tiers: GoodputTiers;
   };
 }
 export interface VariantSummary {
   /** the variant's mechanism set */
   id: string;
+  /** v5.12 the acceptance metric the variant was budgeted on (the main run's) */
+  metric: BudgetMetric;
   source: string;
   baseline: string[];
   /** what the variant's baseline adds to / removes from the main run's reference set */
@@ -53,16 +59,17 @@ export function variantSummary(main: BudgetDocument, set: MechanismSet, doc: Bud
       const k = z.today.kpiDerated, q = z.required, rc = z.recommended, f = rc.final.kpiDerated;
       return {
         npus: n,
-        today: { tauS: k.tauS, deltaS: k.deltaS, saveSPerH: 3600 * k.saveFrac, effective: k.effective, delivered: k.delivered, mtbfHwH: Number.isFinite(k.mtbfHwH) ? k.mtbfHwH : null, lossS: k.lossS },
-        required: { B: q.B, totalBudget: q.totalBudget, reachable: q.reachable, terms: { ...q.terms }, mtbfAtTodayMttrH: q.mtbfAtTodayMttrH, mttrAtTodayMtbfS: q.mttrAtTodayMtbfS },
+        today: { tauS: k.tauS, deltaS: k.deltaS, saveSPerH: 3600 * k.saveFrac, effective: k.effective, delivered: k.delivered, mtbfHwH: Number.isFinite(k.mtbfHwH) ? k.mtbfHwH : null, lossS: k.lossS, aOp: k.aOp, mttrS: k.mttrS },
+        required: { B: q.B, totalBudget: q.totalBudget, reachable: q.reachable, terms: { ...q.terms }, mtbfAtTodayMttrH: q.mtbfAtTodayMttrH, mttrAtTodayMtbfS: q.mttrAtTodayMtbfS, ...(q.interval ? { interval: q.interval } : {}) },
         recommended: {
           feasible: rc.feasible !== false, ...(rc.cause ? { cause: rc.cause } : {}),
           mechanisms: [...rc.mechanisms], levers: [...rc.levers], k: rc.k, effective: f.effective, delivered: f.delivered,
           pWindow: rc.window.pAtLeastTarget, verdict: rc.window.verdict,
           ceiling: rc.ceiling ? rc.ceiling.derated : null, constrained: rc.ceiling?.constrained ? rc.ceiling.constrained.derated : null,
+          aOp: f.aOp, pWindowDerated: rc.windowDerated ? rc.windowDerated.pAtLeastTarget : null, tiers: rc.tiers,
         },
       };
     });
   }
-  return { id: set.id, source: set.source, baseline: [...r.baseline], added, removed, mechanisms: mechanismLibraryTable(added, r.parameters, r.derate, r.efforts), archs };
+  return { id: set.id, metric: doc.metric, source: set.source, baseline: [...r.baseline], added, removed, mechanisms: mechanismLibraryTable(added, r.parameters, r.derate, r.efforts), archs };
 }

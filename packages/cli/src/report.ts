@@ -19,8 +19,11 @@ export interface ScenarioReportOptions {
   sizes?: number[];
   main?: number;
   target?: number;
-  /** v5.6 the acceptance metric (default the effective goodput; the target then defaults to targets.effective) */
+  /** the acceptance metric of the allocation (v5.12 default A_op, target targets.operational; `effective` the v5.6–v5.11 basis, target targets.effective) */
   metric?: BudgetMetric;
+  /** v5.12 the floors of the goodput tiers (default: the project's targets.effective / targets.goodput, else 0.97 / 0.90; null: values only) */
+  effectiveFloor?: number | null;
+  deliveredFloor?: number | null;
   trials?: number;
   seed?: number;
   permutations?: number;
@@ -38,7 +41,10 @@ export interface KpiRow {
   required: { metric: BudgetMetric; B: number; reachable: boolean; mtbfAtTodayMttrH: number | null; mttrAtTodayMtbfS: number | null; F: number; phi: number; totalBudget: number; terms: { save: number; other: number; factors: number } };
   recommended: { mechanisms: string[]; levers: string[]; k: number; binding: string; escalated: boolean; feasible: boolean; ceiling: { nominal: number; derated: number; constrained?: { nominal: number; derated: number } } | null; aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; delivered: number; mtbfHwH: number | null; mttrS: number; lossS: number; pWindow: number; verdict: string;
     /** v5.8 why no move set meets the target (absent when feasible); the search's own P of a recommended plan (pWindow is its acceptance on fresh windows); classes the constraints hold */
-    cause?: 'ceiling' | 'constraints' | 'window'; pWindowSearch?: number; fixedClasses?: string[]; atFloor?: string[] };
+    cause?: 'ceiling' | 'constraints' | 'window'; pWindowSearch?: number; fixedClasses?: string[]; atFloor?: string[];
+    /** v5.12 the window share of the derated twin (feasible plans) and the two goodput tiers of the design, derated values on the tiers' basis (Young's period unless the design's own follows the rollback interval) */
+    pWindowDerated?: number;
+    tiers: { basis: 'young' | 'asDesigned'; effective: number; effectiveAsDesigned: number; effectiveFloor: number | null; effectiveMet: boolean | null; saveAllowedS: number | null; delivered: number; deliveredFloor: number | null; deliveredMet: boolean | null; coverageNeeded: number | null; delayAllowedH: number | null; deliveredWithDetectors: number | null } };
   /** v5.8 inputs the training model and the window ledger do not use (absent when none) */
   unmodelled?: { redundancy: string[]; ccf: string[]; nonExponential: string[] };
 }
@@ -75,13 +81,16 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
   const sizes = o.sizes?.length ? [...new Set(o.sizes)].sort((a, b) => a - b) : [N];
   const main = o.main ?? (sizes.includes(N) ? N : sizes[sizes.length - 1]);
   if (!sizes.includes(main)) throw new Error(`main ${main} is not one of the sizes ${sizes.join(', ')}`);
-  const metric: BudgetMetric = o.metric ?? 'effective';
+  const metric: BudgetMetric = o.metric ?? 'aOp';
+  // v5.12 the floors of the goodput tiers: the flags, else the project's own targets (on the A_op basis targets.effective is the checkpoint tier's floor), else the defaults
+  const effectiveFloor = o.effectiveFloor !== undefined ? o.effectiveFloor : metric === 'aOp' ? s.targets.effective : undefined;
+  const deliveredFloor = o.deliveredFloor !== undefined ? o.deliveredFloor : s.targets.goodput;
   const target = o.target ?? (metric === 'aOp' ? s.targets.operational : s.targets.effective) ?? 0.985, trials = o.trials ?? 400, seed = o.seed ?? 1, permutations = o.permutations ?? 300;
   const bil = { zh: name, en: name };
   const variants = o.variants ?? [];
-  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, metric, trials, seed, permutations, ...(variants.length ? { variants } : {}), onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
+  const r: ScenarioReport = reportFromScenario(s, { id, name: bil, short: bil, sizes, main, target, metric, effectiveFloor, deliveredFloor, trials, seed, permutations, ...(variants.length ? { variants } : {}), onProgress: (stage, n, d) => o.onProgress?.(`${stage} ${n.toLocaleString('en-US')} ${d}`.trim()) });
   const set = DEFAULT_MECHANISM_SET;
-  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, metric, trials, seed, permutations, ...(variants.length ? { variants: variants.map((v) => v.id) } : {}) }, engine: engine() };
+  const provenance: ReportProvenance = { command: o.command, records: [{ id, name: bil }], set: { id: set.id, source: set.source }, options: { scales: sizes, target, metric, trials, seed, permutations, ...(variants.length ? { variants: variants.map((v) => v.id) } : {}), effectiveFloor: r.results.floors?.effective ?? null, deliveredFloor: r.results.floors?.delivered ?? null }, engine: engine() };
   const asFile = (v: unknown): Record<string, unknown> => JSON.parse(JSON.stringify(v));
   const R = asFile(r.results), MX = asFile(r.mechanisms), study = asFile(r.studies[id]), record = asFile(r.records[id]);
   o.onProgress?.('render');
@@ -101,13 +110,17 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
   w(join(data, `${id}.json`), r.studies[id]);
   w(files.bundle, { results: r.results, mechanisms: r.mechanisms, provenance, studies: r.studies, records: r.records });
   const A = r.results.archs[id];
+  const tiersOf = (T: typeof A.sizes[string]['recommended']['tiers']): KpiRow['recommended']['tiers'] => {
+    const c = T.checkpoint, d = T.delivered, b = c.basis === 'young' && c.young ? c.young : c.asDesigned;
+    return { basis: c.basis, effective: b.effective.derated, effectiveAsDesigned: c.asDesigned.effective.derated, effectiveFloor: c.floor, effectiveMet: c.met, saveAllowedS: c.saveAllowedS && Number.isFinite(c.saveAllowedS.nominal) ? c.saveAllowedS.nominal : null, delivered: d.asAllocated.delivered.derated, deliveredFloor: d.floor, deliveredMet: d.met, coverageNeeded: d.coverageNeeded ? d.coverageNeeded.derated : null, delayAllowedH: d.delayAllowedH, deliveredWithDetectors: d.withDetectors ? d.withDetectors.delivered.derated : null };
+  };
   const kpi: KpiRow[] = sizes.map((n) => {
     const z = A.sizes[String(n)], rec = z.recommended, f = rec.final;
     return {
       scale: n,
       today: { aOp: z.today.aOp, aOpDerated: z.today.aOpDerated, effective: z.today.kpi.effective, effectiveDerated: z.today.kpiDerated.effective, delivered: z.today.kpiDerated.delivered, mtbfHwH: z.today.kpiDerated.mtbfHwH, mttrS: z.today.kpiDerated.mttrS, lossS: z.today.kpiDerated.lossS, pWindow: z.today.window.pAtLeastTarget, verdict: z.today.window.verdict },
       required: { metric: z.required.metric, B: z.required.B, reachable: z.required.reachable, mtbfAtTodayMttrH: z.required.mtbfAtTodayMttrH, mttrAtTodayMtbfS: z.required.mttrAtTodayMtbfS, F: z.today.kpiDerated.F, phi: z.today.kpiDerated.phi, totalBudget: z.required.totalBudget, terms: z.required.terms },
-      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, feasible: rec.feasible, ceiling: rec.ceiling, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, effective: f.kpi.effective, effectiveDerated: f.kpiDerated.effective, delivered: f.kpiDerated.delivered, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, lossS: f.kpiDerated.lossS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict, ...(rec.cause ? { cause: rec.cause } : {}), ...(rec.search ? { pWindowSearch: rec.search.pAtLeastTarget } : {}), ...(rec.fixedClasses ? { fixedClasses: rec.fixedClasses } : {}), ...(rec.atFloor ? { atFloor: rec.atFloor } : {}) },
+      recommended: { mechanisms: rec.mechanisms, levers: rec.levers, k: rec.k, binding: rec.binding, escalated: rec.escalated, feasible: rec.feasible, ceiling: rec.ceiling, aOp: f.kpi.aOp, aOpDerated: f.kpiDerated.aOp, effective: f.kpi.effective, effectiveDerated: f.kpiDerated.effective, delivered: f.kpiDerated.delivered, mtbfHwH: f.kpiDerated.mtbfHwH, mttrS: f.kpiDerated.mttrS, lossS: f.kpiDerated.lossS, pWindow: rec.window.pAtLeastTarget, verdict: rec.window.verdict, ...(rec.cause ? { cause: rec.cause } : {}), ...(rec.search ? { pWindowSearch: rec.search.pAtLeastTarget } : {}), ...(rec.fixedClasses ? { fixedClasses: rec.fixedClasses } : {}), ...(rec.atFloor ? { atFloor: rec.atFloor } : {}), ...(rec.windowDerated ? { pWindowDerated: rec.windowDerated.pAtLeastTarget } : {}), tiers: tiersOf(rec.tiers) },
       ...(z.unmodelled ? { unmodelled: z.unmodelled } : {}),
     };
   });
@@ -115,7 +128,7 @@ export function renderScenarioReport(s: Scenario, o: ScenarioReportOptions): Sce
     status: 'ok', id, name, npus: N, sizes, main, target, metric, trials, permutations, seed, ...(variants.length ? { variants: variants.map((v) => v.id) } : {}), files, kpi,
     koujing: metric === 'effective'
       ? 'effective goodput G_eff of one synchronous job over the 30-day window (exact renewal model, the window ledger’s; formula 1′ is its first-order loss form: checkpoint saves, recompute per rollback and recovery pauses, times the throughput factors), nominal and derated, against the target; delivered goodput (silent-corruption loss removed), A_op (formula 1), MTBF_hw and the loss per interruption R_eff = MTTR_hw + P̄_rb·W of the derated design; P = share of 30-day windows with G_eff ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side; feasible false = no move set reaches the target (every move on, ceiling at perfect hardware)'
-      : 'A_op of one synchronous job per cluster-hour (formula 1), nominal and derated; MTBF_hw and MTTR_hw of the derated design; P = share of 30-day windows with A_op ≥ target (formula 6); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side',
+      : 'A_op of one synchronous job per cluster-hour (formula 1), nominal and derated, against the target; MTBF_hw and MTTR_hw of the derated design; P = share of 30-day windows with A_op ≥ target (formula 6; pWindowDerated = the same for the derated twin); recommended = added mechanisms | recovery levers · uniform hardware factor k (k < 1 a delivery task) and the binding side; tiers = the two goodput tiers of the recommended design, derated: the effective goodput (at Young’s checkpoint period; effectiveAsDesigned at the design’s own) against its floor with the save time allowed (s, nominal), and the delivered goodput against its floor with the joint detection coverage needed or the discovery delay allowed (h); feasible false = no move set reaches the target (every move on, ceiling at perfect hardware)',
     seconds: (Date.now() - t0) / 1000,
   };
 }

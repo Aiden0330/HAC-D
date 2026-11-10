@@ -55,6 +55,12 @@ export interface Requirement {
   todayLossS: number;
   /** what the non-hardware terms consume of `totalBudget`, seconds per job hour: checkpoint saves, the other event classes (F, their recompute and, on the goodput basis, the episode pauses of undetected corruption), the throughput factors (φ on the A_op basis); B = totalBudget − Σ terms */
   terms: { save: number; other: number; factors: number };
+  /**
+   * v5.12 present ('optimised') when the checkpoint period follows the rollback interval on the goodput basis: formula (2′) holds the
+   * saves at today's period and is then not the requirement — `reachable` and the MTBF end are the engine's hardware-only root
+   * (hierarchicalBudget), the loss end is not defined, `B` and `terms` stay the first-order values at today's period
+   */
+  interval?: 'optimised';
 }
 
 /** the requirement from a KPI form (pass the derated design's form) on the given basis */

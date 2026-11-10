@@ -3,45 +3,20 @@
   "arch": "cm384",
   "npus": 200000,
   "mechanisms": [
-   "R-LINK-LOCAL",
-   "D-HARD",
-   "H-CONTROL-CONTINUITY",
-   "R-RUNTIME-SNAPSHOT",
    "C-LOSSLESS",
-   "D-RECOVERY-CLASSIFY"
+   "D-HARD"
   ],
   "levers": [
    "auto",
-   "success",
    "manual"
   ],
-  "k": 1,
-  "binding": "none",
+  "k": 1.4343749548713602,
+  "binding": "mean",
   "derated": false
  },
  "detectS": 1.0590000000000002,
- "globalS": 61.800000000000004,
+ "globalS": 78.00000000000001,
  "params": {
-  "custom": {
-   "R-LINK-LOCAL": {
-    "success": 0.95,
-    "successSeconds": 2,
-    "failureSeconds": 0,
-    "rollback": false,
-    "detectionDelay": false,
-    "localLossSeconds": 0,
-    "position": "transparent"
-   },
-   "H-CONTROL-CONTINUITY": {
-    "success": 0.95,
-    "successSeconds": 1,
-    "failureSeconds": 0,
-    "rollback": false,
-    "detectionDelay": false,
-    "localLossSeconds": 0,
-    "position": "transparent"
-   }
-  },
   "replay": {
    "success": 0.9,
    "successSeconds": 5,
@@ -69,7 +44,7 @@
    "timeoutSeconds": 60
   },
   "automatic": {
-   "successProbability": 0.999,
+   "successProbability": 0.99,
    "seconds": 60,
    "stages": {
     "startup": 60,
@@ -99,8 +74,8 @@
    "id": "CORE-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.09333333333333331,
-   "meanPauseS": 6.924698776397516,
+   "ratePerHour": 0.1338749957879936,
+   "meanPauseS": 6.927018000000001,
    "pRollback": 0.0020000000000000013,
    "localLossS": 0.3529156399999999,
    "applicable": {
@@ -111,16 +86,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "SRAM-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.03333333333333332,
-   "meanPauseS": 6.924698776397516,
+   "ratePerHour": 0.04781249849571198,
+   "meanPauseS": 6.927018000000001,
    "pRollback": 0.0020000000000000013,
    "localLossS": 0.3529156399999999,
    "applicable": {
@@ -131,59 +104,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "IOD-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.039999999999999994,
-   "meanPauseS": 2.2462349388198763,
-   "pRollback": 0.00010000000000000015,
-   "localLossS": 0.017645782000000013,
-   "applicable": {
-    "replay": 1,
-    "process": 1,
-    "elastic": 1,
-    "predict": 0,
-    "netfail": 0,
-    "hotswap": 1,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
-   },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
-  },
-  {
-   "id": "MODULE-hard",
-   "unit": "npu",
-   "count": 200000,
-   "ratePerHour": 0.03399999999999999,
-   "meanPauseS": 4.715987763975159,
-   "pRollback": 0.020000000000000018,
-   "localLossS": 3.5291563999999997,
-   "applicable": {
-    "replay": 0,
-    "process": 1,
-    "elastic": 1,
-    "predict": 1,
-    "netfail": 0,
-    "hotswap": 1
-   },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
-  },
-  {
-   "id": "MEMT-hard",
-   "unit": "npu",
-   "count": 200000,
-   "ratePerHour": 0.07999999999999999,
-   "meanPauseS": 6.924698776397516,
+   "ratePerHour": 0.0573749981948544,
+   "meanPauseS": 6.927018000000001,
    "pRollback": 0.0020000000000000013,
    "localLossS": 0.3529156399999999,
    "applicable": {
@@ -194,16 +122,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
-   "id": "MEMP-hard",
+   "id": "MODULE-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.034666666666666665,
-   "meanPauseS": 4.715987763975159,
+   "ratePerHour": 0.04876874846562623,
+   "meanPauseS": 4.739180000000004,
    "pRollback": 0.020000000000000018,
    "localLossS": 3.5291563999999997,
    "applicable": {
@@ -214,40 +140,69 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
+  },
+  {
+   "id": "MEMT-hard",
+   "unit": "npu",
+   "count": 200000,
+   "ratePerHour": 0.1147499963897088,
+   "meanPauseS": 6.927018000000001,
+   "pRollback": 0.0020000000000000013,
+   "localLossS": 0.3529156399999999,
+   "applicable": {
+    "replay": 1,
+    "process": 1,
+    "elastic": 1,
+    "predict": 0,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": null
+  },
+  {
+   "id": "MEMP-hard",
+   "unit": "npu",
+   "count": 200000,
+   "ratePerHour": 0.04972499843554048,
+   "meanPauseS": 4.739180000000004,
+   "pRollback": 0.020000000000000018,
+   "localLossS": 3.5291563999999997,
+   "applicable": {
+    "replay": 0,
+    "process": 1,
+    "elastic": 1,
+    "predict": 1,
+    "netfail": 0,
+    "hotswap": 1
+   },
+   "recoveryStages": null
   },
   {
    "id": "NIC-hard",
    "unit": "npu",
    "count": 200000,
-   "ratePerHour": 0.02,
-   "meanPauseS": 2.2462349388198763,
-   "pRollback": 0.00010000000000000015,
-   "localLossS": 0.017645782000000013,
+   "ratePerHour": 0.02868749909742721,
+   "meanPauseS": 6.927018000000001,
+   "pRollback": 0.0020000000000000013,
+   "localLossS": 0.3529156399999999,
    "applicable": {
     "replay": 1,
     "process": 1,
     "elastic": 1,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 1,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "OPT-hard",
    "unit": "ub-link",
    "count": 2800000,
-   "ratePerHour": 0.01333333333333333,
-   "meanPauseS": 2.5369500000000005,
-   "pRollback": 0.005000000000000004,
+   "ratePerHour": 0.019124999398284798,
+   "meanPauseS": 14.358999999999998,
+   "pRollback": 0.09999999999999998,
    "localLossS": 0,
    "applicable": {
     "replay": 1,
@@ -255,10 +210,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 0,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -266,9 +218,9 @@
    "id": "OPT-hard@roce",
    "unit": "roce-link",
    "count": 1600000,
-   "ratePerHour": 0.007619047619047618,
-   "meanPauseS": 2.5369500000000005,
-   "pRollback": 0.005000000000000004,
+   "ratePerHour": 0.01092857108473417,
+   "meanPauseS": 14.358999999999998,
+   "pRollback": 0.09999999999999998,
    "localLossS": 0,
    "applicable": {
     "replay": 1,
@@ -276,10 +228,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 0,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -287,9 +236,9 @@
    "id": "BOXIO-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.009333333333333332,
-   "meanPauseS": 5.042950000000003,
-   "pRollback": 0.050000000000000044,
+   "ratePerHour": 0.013387499578799361,
+   "meanPauseS": 79.05900000000001,
+   "pRollback": 1,
    "localLossS": 0,
    "applicable": {
     "replay": 0,
@@ -297,10 +246,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 0,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -308,9 +254,9 @@
    "id": "FABRIC-hard",
    "unit": "ub-switch",
    "count": 233338,
-   "ratePerHour": 0.013333599999999998,
-   "meanPauseS": 5.042950000000003,
-   "pRollback": 0.050000000000000044,
+   "ratePerHour": 0.019125381898272766,
+   "meanPauseS": 79.05900000000001,
+   "pRollback": 1,
    "localLossS": 0,
    "applicable": {
     "replay": 0,
@@ -318,10 +264,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 0,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -329,9 +272,9 @@
    "id": "FABRIC-hard@roce",
    "unit": "roce-switch",
    "count": 43750,
-   "ratePerHour": 0.0024999999999999996,
-   "meanPauseS": 5.042950000000003,
-   "pRollback": 0.050000000000000044,
+   "ratePerHour": 0.0035859373871783996,
+   "meanPauseS": 79.05900000000001,
+   "pRollback": 1,
    "localLossS": 0,
    "applicable": {
     "replay": 0,
@@ -339,10 +282,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 1,
-    "hotswap": 0,
-    "custom": {
-     "R-LINK-LOCAL": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -350,8 +290,8 @@
    "id": "CPU-hard",
    "unit": "cpu",
    "count": 100000,
-   "ratePerHour": 0.03333333333333333,
-   "meanPauseS": 4.715987763975159,
+   "ratePerHour": 0.047812498495712,
+   "meanPauseS": 4.739180000000004,
    "pRollback": 0.020000000000000018,
    "localLossS": 3.5291563999999997,
    "applicable": {
@@ -362,16 +302,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "DDR-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.039999999999999994,
-   "meanPauseS": 4.715987763975159,
+   "ratePerHour": 0.0573749981948544,
+   "meanPauseS": 4.739180000000004,
    "pRollback": 0.020000000000000018,
    "localLossS": 3.5291563999999997,
    "applicable": {
@@ -382,16 +320,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "SSD-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.03333333333333333,
-   "meanPauseS": 4.715987763975159,
+   "ratePerHour": 0.047812498495712,
+   "meanPauseS": 4.739180000000004,
    "pRollback": 0.020000000000000018,
    "localLossS": 3.5291563999999997,
    "applicable": {
@@ -402,16 +338,14 @@
     "netfail": 0,
     "hotswap": 1
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   },
   {
    "id": "POWER-hard",
    "unit": "cabinet",
    "count": 6250,
-   "ratePerHour": 0.03333333333333333,
-   "meanPauseS": 62.859,
+   "ratePerHour": 0.047812498495712,
+   "meanPauseS": 79.05900000000001,
    "pRollback": 1,
    "localLossS": 0,
    "applicable": {
@@ -428,8 +362,8 @@
    "id": "COOL-hard",
    "unit": "cabinet",
    "count": 6250,
-   "ratePerHour": 0.019999999999999997,
-   "meanPauseS": 62.859,
+   "ratePerHour": 0.0286874990974272,
+   "meanPauseS": 79.05900000000001,
    "pRollback": 1,
    "localLossS": 0,
    "applicable": {
@@ -446,9 +380,9 @@
    "id": "MGMT-hard",
    "unit": "node",
    "count": 25000,
-   "ratePerHour": 0.02666666666666666,
-   "meanPauseS": 4.092950000000003,
-   "pRollback": 0.050000000000000044,
+   "ratePerHour": 0.0382499987965696,
+   "meanPauseS": 79.05900000000001,
+   "pRollback": 1,
    "localLossS": 0,
    "applicable": {
     "replay": 0,
@@ -456,10 +390,7 @@
     "elastic": 0,
     "predict": 0,
     "netfail": 0,
-    "hotswap": 0,
-    "custom": {
-     "H-CONTROL-CONTINUITY": 1
-    }
+    "hotswap": 0
    },
    "recoveryStages": null
   },
@@ -467,8 +398,8 @@
    "id": "STORAGE-hard",
    "unit": "job",
    "count": 200000,
-   "ratePerHour": 0.02666666666666666,
-   "meanPauseS": 62.859,
+   "ratePerHour": 0.0382499987965696,
+   "meanPauseS": 79.05900000000001,
    "pRollback": 1,
    "localLossS": 0,
    "applicable": {
@@ -485,8 +416,8 @@
    "id": "UNKNOWN-hard",
    "unit": "job",
    "count": 200000,
-   "ratePerHour": 0.082,
-   "meanPauseS": 55.86676397515529,
+   "ratePerHour": 0.11761874629945154,
+   "meanPauseS": 79.05900000000001,
    "pRollback": 1,
    "localLossS": 0,
    "applicable": {
@@ -497,24 +428,22 @@
     "netfail": 0,
     "hotswap": 0
    },
-   "recoveryStages": {
-    "startup": 15.368012422360248
-   }
+   "recoveryStages": null
   }
  ],
  "other": {
   "isolationPerHour": 0.013368205926552966,
   "sdcDetectedPerHour": 0.009202635283356969,
   "falseAlarmPerHour": 0,
-  "globalRecoveryS": 61.800000000000004,
+  "globalRecoveryS": 78.00000000000001,
   "predictMigrationS": null
  },
- "aOp": 0.9963552226574652,
- "aRun": 0.9963617512704575,
- "delivered": 0.9283245184141989,
- "effective": 0.9775582707271487,
- "renewalGoodput": 0.9786285441919098,
- "firstOrderGoodput": 0.978276612399279,
+ "aOp": 0.9918388300446935,
+ "aRun": 0.9918469876740104,
+ "delivered": 0.9231500576756173,
+ "effective": 0.9718268742105067,
+ "renewalGoodput": 0.9729816466300136,
+ "firstOrderGoodput": 0.9724839880635725,
  "headlineModel": "first-order",
  "tauS": 60,
  "deltaS": 1,
@@ -526,21 +455,21 @@
  "factors": {
   "blocked": 0,
   "performance": 0.9991051639077078,
-  "localLossFraction": 0.00019243705592222218,
+  "localLossFraction": 0.00028404193819465615,
   "overhead": 0,
-  "pauseFraction": 0.000006552452443990931
+  "pauseFraction": 0.0000082246852772676
  },
  "ledger": {
-  "downtime": 0.0036447773425347593,
-  "save": 0.016310368862915228,
-  "rollback": 0.0014227220196363524,
-  "slowdown": 0.0008757064042281647,
-  "local": 0.00018815464353681143,
+  "downtime": 0.008161169955306465,
+  "save": 0.01621622740270316,
+  "rollback": 0.002648958479800838,
+  "slowdown": 0.0008706519336454335,
+  "local": 0.0002761180180374204,
   "blocked": 0,
   "overhead": 0,
-  "sdcRollback": 0.044779803626791716,
-  "terminal": 0.004453948686158014,
-  "delivered": 0.9283245184141989
+  "sdcRollback": 0.04427313229426994,
+  "terminal": 0.004403684240619444,
+  "delivered": 0.9231500576756173
  },
  "slowSdcByClass": [
   {

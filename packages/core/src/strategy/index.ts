@@ -36,7 +36,7 @@ import { withSize } from '../study/index.js';
 
 export type StrategyId = 'optimal' | 'mttr-first' | 'mttf-first';
 export const STRATEGY_IDS: StrategyId[] = ['optimal', 'mttr-first', 'mttf-first'];
-/** the value function of a strategy: A_op, the delivered goodput, or v5.6 the effective goodput (the report's metric) */
+/** the value function of a strategy: A_op (the allocation basis of the report, v5.12), the delivered goodput, or the effective goodput (the report's basis in v5.6–v5.11) */
 export type StrategyMetric = 'aOp' | 'delivered' | 'effective';
 export type HardwareSplit = 'min-effort' | 'agree' | 'arinc';
 export type LeverId = 'auto' | 'success' | 'manual';

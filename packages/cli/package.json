@@ -1,6 +1,6 @@
 {
   "name": "@hac-d/cli",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "type": "module",
   "description": "Command-line interface for HAC-D scenario evaluation",
   "bin": {
@@ -11,9 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hac-d/agent": "0.5.11",
-    "@hac-d/core": "0.5.11",
-    "@hac-d/importers": "0.5.11",
-    "@hac-d/reports": "0.5.11"
+    "@hac-d/agent": "0.5.12",
+    "@hac-d/core": "0.5.12",
+    "@hac-d/importers": "0.5.12",
+    "@hac-d/reports": "0.5.12"
   }
 }

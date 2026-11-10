@@ -11,7 +11,7 @@
  * job interruption.
  */
 import { z } from 'zod';
-import { ConfidenceSchema, RecoverySchema, RecoveryStagesSchema, type Scenario } from '../scenario/schema.js';
+import { ConfidenceSchema, RecoverySchema, RecoveryStagesSchema, ScaleLawSchema, type Scenario } from '../scenario/schema.js';
 import { MECHANISM_LIBRARY, applyMechanisms, editBase, mechanismById, type MechanismMetadata } from '../mechanisms/index.js';
 import { parameterIssues } from '../mechanisms/parameters.js';
 import type { RecoveryLever } from '../strategy/index.js';
@@ -63,7 +63,8 @@ export const MechanismSetSchema = z.object({
   /** baseline recovery policy (MTTR mixture) with its provenance */
   recovery: z.object({
     detection: z.object({ coverage: z.number().min(0).max(1), autoSeconds: z.number().nonnegative(), timeoutSeconds: z.number().nonnegative() }),
-    automatic: z.object({ seconds: z.number().nonnegative(), successProbability: z.number().min(0).max(1) }),
+    /** v5.12 `scale`: an optional scale law of the automatic attempt with the job size (constant when absent: the same seconds at every scale) */
+    automatic: z.object({ seconds: z.number().nonnegative(), successProbability: z.number().min(0).max(1), scale: ScaleLawSchema.optional() }),
     manual: z.object({ seconds: z.number().nonnegative() }),
     provenance: z.object({ source: z.string(), confidence: ConfidenceSchema }),
   }),
@@ -202,7 +203,7 @@ export function withRecoveryBaseline(scenario: Scenario, set: MechanismSet): Sce
     bare.recovery = RecoverySchema.parse({
       mode: 'mixture',
       detection: { ...rec.detection },
-      automatic: { successProbability: rec.automatic.successProbability, seconds: rec.automatic.seconds, ...(prevScale ? { scale: prevScale } : {}), ...(set.stages ? { stages: { ...set.stages } } : {}) },
+      automatic: { successProbability: rec.automatic.successProbability, seconds: rec.automatic.seconds, ...(rec.automatic.scale ?? prevScale ? { scale: rec.automatic.scale ?? prevScale } : {}), ...(set.stages ? { stages: { ...set.stages } } : {}) },
       manual: { ...rec.manual },
     });
     return bare;

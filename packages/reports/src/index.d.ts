@@ -18,7 +18,7 @@ export interface ReportProvenance {
   records: { id: string; name?: Bilingual | string }[];
   set: { id: string; source?: string };
   rates?: { id: string; basis: string };
-  options: { scales?: number[]; target?: number; /** v5.6 the acceptance metric of the target */ metric?: 'aOp' | 'effective'; trials?: number; seed?: number; permutations?: number; npus?: number; /** v5.9 the mechanism sets of the appendix variants */ variants?: string[] };
+  options: { scales?: number[]; target?: number; /** v5.6 the acceptance metric of the target */ metric?: 'aOp' | 'effective'; trials?: number; seed?: number; permutations?: number; npus?: number; /** v5.9 the mechanism sets of the appendix variants */ variants?: string[]; /** v5.12 the floors of the goodput tiers (null: values only) and the failure-rate override of the field-level case */ effectiveFloor?: number | null; deliveredFloor?: number | null; fieldRates?: string };
   /** version of packages/core/package.json and the short git hash when available */
   engine: { version: string; commit?: string };
 }

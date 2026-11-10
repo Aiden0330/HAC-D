@@ -635,7 +635,38 @@ TABLES = OrderedDict([
     ('a3server-10k.young-derated', 'a3server-10k.young-derated.table.json'),
     ('native950-500k.young', 'native950-500k.young.table.json'),
     ('native950-500k.young-derated', 'native950-500k.young-derated.table.json'),
+    # v5.12 G8 the checkpoint tier: a derated design at Young's period, and at the save time that meets the floor
+    ('native950-500k.tier-young', 'native950-500k.tier-young.table.json'),
+    ('native950-500k.tier-save', 'native950-500k.tier-save.table.json'),
+    ('cm384-200k.tier-young', 'cm384-200k.tier-young.table.json'),
+    ('cm384-200k.tier-save', 'cm384-200k.tier-save.table.json'),
+    ('a3server-10k.tier-young', 'a3server-10k.tier-young.table.json'),
+    ('a3server-10k.tier-save', 'a3server-10k.tier-save.table.json'),
 ])
+
+
+def rollback_rate_per_hour(t, splits):
+    """λ_rb = Σ_i λ_i P_rb,i with P_rb,i from the Python rung tree: the paths that end at the process rung, at the global recovery
+    or at a custom rung that rolls back; plus, without step recovery, the detected silent corruption (MODEL_REFERENCE §19)"""
+    custom = t['params'].get('custom') or {}
+    rb = 0.0
+    for r in t['rows']:
+        pr = splits[r['id']]['probs']
+        p_rb = pr.get('process', 0.0) + pr.get('global', 0.0) + sum(pr.get('custom:' + cid, 0.0) for cid, c in custom.items() if c.get('rollback'))
+        rb += r['ratePerHour'] * p_rb
+    sdc = t['sdc'] or {}
+    return rb + (0.0 if sdc.get('stepRecovery') else t['other']['sdcDetectedPerHour'])
+
+
+def exact_effective(t, form, lam_rb_per_hour, tau, delta):
+    """formula (7): the exact renewal goodput of MODEL_REFERENCE §19 — a segment of τ + δ running seconds commits τ of work when no
+    rollback event falls in it, so work per running second is λ_rb τ / (e^{λ_rb(τ+δ)} − 1); pauses stretch the wall clock by
+    1 + (ΣC + F)/3600 (every event class's rate × mean pause) — times the throughput factors Φ and (1 − p_sdc), the episode pauses of
+    silent corruption (engine outputs, declared). A durable lag of asynchronous saves costs λ_rb·lag of the running share."""
+    lam = lam_rb_per_hour / 3600.0
+    a_run = 1.0 / (1.0 + (form['sumLP'] + form['F']) / 3600.0)
+    tor = lam * tau / math.expm1(lam * (tau + delta)) * a_run - lam * (t.get('rollbackLagS') or 0.0) * a_run
+    return (1 - form['pauseFrac']) * form['factor'] * tor
 
 
 def young_interval(t):
@@ -723,6 +754,33 @@ for name in [n for n in TABLES if '.young' in n]:
                    'identity': ['P_rb,i are engine outputs taken as inputs', 'the engine τ is compared with the rule, not read']},
         'expected': exp, 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
         'note': 'v5.9 appendix (C-YOUNG): the interval floats with the design, so the kpiFormEff and requirementEff cases of this table check formulas (1′) and (2′) at the Young interval; the saves and the rework are equal at the optimum.',
+    })
+# v5.12 G8: the checkpoint tier — Young's period and the exact renewal goodput from the Python class splits; at the save time the
+# tier reports as allowed, that goodput is the floor
+for name in [n for n in TABLES if '.tier-' in n]:
+    a = ANALYSIS[name]
+    t = a['t']
+    lam_rb = rollback_rate_per_hour(t, a['splits'])
+    tau = math.sqrt(2.0 * t['deltaS'] * 3600.0 / lam_rb)
+    g = exact_effective(t, a['form'], lam_rb, tau, t['deltaS'])
+    tier = t['tier']
+    exp = OrderedDict([('rollbackRatePerHour', lam_rb), ('tauS', tau), ('effective', g)])
+    if abs(tau - t['tauS']) > 1e-9 * tau:
+        findings.append('%s: Young period from the Python rollback rate %.12g s vs the engine τ %.12g s' % (name, tau, t['tauS']))
+    if abs(g - t['effective']) > 1e-9:
+        findings.append('%s: exact effective goodput from the Python class splits %r vs the engine %r' % (name, g, t['effective']))
+    if 'saveAllowedS' in tier:
+        exp['floor'] = tier['floor']
+        exp['saveS'] = t['deltaS']
+        if abs(g - tier['floor']) > 1e-9:
+            findings.append('%s: at the save time the tier allows (%.9g s) the independent G_eff is %r, not the floor %r' % (name, t['deltaS'], g, tier['floor']))
+    cases.append({
+        'id': 'tier.%s' % name, 'group': 'tier',
+        'inputs': {'table': TABLES[name], 'design': t['design'], 'floor': tier['floor'], 'which': tier['which'],
+                   'rule': 'τ_Y = √(2δ·M_rb); G_eff = (1 − p_sdc)·Φ·λ_rb τ / ((e^{λ_rb(τ+δ)} − 1)(1 + (ΣC + F)/3600)) (formula 7)',
+                   'identity': ['Φ and p_sdc are engine outputs taken as inputs', 'P_rb,i and t̄_i are the Python rung tree’s']},
+        'expected': exp, 'tolerance': {'rel': 1e-9, 'abs': 1e-12},
+        'note': 'v5.12 the checkpoint tier of the three-target report: the exact renewal goodput is recomputed here, not read; a tier-save table is the design at the save time budget/tiers.ts reports as meeting the floor exactly.',
     })
 # v5.6 G2e: the layer losses on the goodput basis
 for name in ['native950-500k', 'native950-500k.derated', 'native950-500k.recommended-derated-k1', 'cm384-200k', 'a3server-10k.derated', 'a3server-10k.predict']:

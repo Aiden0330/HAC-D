@@ -23,6 +23,7 @@ import { applyMechanisms } from '../src/mechanisms/index.js';
 import { applyLevers, withHardwareFactors, DEFAULT_LEVERS, type LeverId } from '../src/strategy/index.js';
 import { DERATE_DEFAULT } from '../src/mechanisms/plan.js';
 import { youngInterval } from '../src/checkpoint/index.js';
+import { goodputTiers, withYoungInterval, withSaveTime } from '../src/budget/tiers.js';
 import { evaluateScenario } from '../src/scenario/evaluate.js';
 import type { Scenario } from '../src/scenario/schema.js';
 import type { ChainParams, Applicability } from '../src/mechanisms/chain.js';
@@ -30,7 +31,7 @@ import * as A950 from '../../../scripts/ascend950-archs.js';
 import * as A910 from '../../../scripts/ascend910c-archs.js';
 import { REMAP_LATEST_PARAMS } from '../../../scripts/remap-latest-params.js';
 
-interface Design { arch: 'native' | 'ubl128' | 'cm384' | 'a3server'; npus: number; mechanisms: string[]; levers: string[]; k: number; derated: boolean }
+interface Design { arch: 'native' | 'ubl128' | 'cm384' | 'a3server'; npus: number; mechanisms: string[]; levers: string[]; k: number; derated: boolean; /** v5.12 G8: the design at Young's period, optionally at another save time */ young?: boolean; saveS?: number }
 interface GoldenCase {
   id: string;
   group: string;
@@ -49,6 +50,12 @@ const factors = (s: Scenario, k: number) => Object.fromEntries(s.components.filt
 
 /** the scenario of a case: today's design (nominal or derated), the recommended design nominal at k, or the recommended design derated at k = 1 */
 function scenarioOf(d: Design): Scenario {
+  let s = designOf(d);
+  if (d.young) s = withYoungInterval(s);
+  if (d.saveS !== undefined) s = withSaveTime(s, d.saveS);
+  return s;
+}
+function designOf(d: Design): Scenario {
   const b = base(d);
   if (d.mechanisms.length === 0 && d.levers.length === 0) return d.derated ? deratedOf(b) : b;
   const applied = applyMechanisms(b, d.mechanisms, REMAP_LATEST_PARAMS);
@@ -270,6 +277,23 @@ describe('v5 golden vectors (independent Python)', () => {
       expect.soft(Math.abs(youngInterval(k.deltaS, M) - k.tauS), `${c.id}: youngInterval(δ, M_rb) vs the design's τ`).toBeLessThanOrEqual(1e-9 * k.tauS);
       expect.soft(Math.abs(k.saveFrac - k.tauS / (2 * M)), `${c.id}: δ/τ = τ/(2M) at Young's optimum`).toBeLessThanOrEqual(1e-12);
       expect.soft(s.workload.type === 'training' ? s.workload.intervalS : -1, `${c.id}: C-YOUNG clears the fixed interval`).toBeUndefined();
+    }
+  });
+
+  it('G8 the checkpoint tier (v5.12, MODEL_REFERENCE §36): Young’s period and the exact renewal goodput from independent class splits; the allowed save time meets the floor', () => {
+    const cases = byGroup('tier');
+    expect(cases.length).toBeGreaterThanOrEqual(4);
+    for (const c of cases) {
+      const d = c.inputs.design!;
+      const s = scenarioOf(d), t = trainingOf(s);
+      compareNumbers(c.id, { rollbackRatePerHour: t.rollbackRatePerHour, tauS: t.tauS, effective: t.effectiveGoodputExact, floor: c.inputs.floor as number, saveS: s.workload.type === 'training' ? s.workload.deltaS : NaN }, c.expected, c.tolerance);
+      if (d.saveS !== undefined) {
+        // the tier's own root on the derated design (nominal twin not needed for the root): the save time of the case, and G_eff = floor there
+        const der = designOf(d);
+        const tier = goodputTiers(der, der, { floors: { effective: c.inputs.floor as number, delivered: null } }).checkpoint;
+        expect.soft(Math.abs(tier.saveAllowedS!.derated - d.saveS), `${c.id}: goodputTiers save time ${tier.saveAllowedS!.derated} vs the case ${d.saveS}`).toBeLessThanOrEqual(1e-9 * d.saveS);
+        expect.soft(Math.abs(t.effectiveGoodputExact - (c.inputs.floor as number)), `${c.id}: G_eff at the allowed save time`).toBeLessThanOrEqual(1e-9);
+      }
     }
   });
 

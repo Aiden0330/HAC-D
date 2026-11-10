@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_SCALES, TOPOLOGY_EXAMPLES, scaleLabel, resizeTopology, DOMAIN_NAMES, unitFaultLibrary, topologyBom, bomAtSizes, bomRowsAcross, fitOverrides,
-  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, kpiForm, deratedOf, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts, DEFAULT_LAYERS,
+  switchTopologyTemplate, editBase, mechanismOwner, mechanismById, parseScenario, kpiForm, trainingOf, withYoungInterval, DEFAULT_TIER_FLOORS, deratedOf, SUPERPOD_VARIANTS, superpodVariantOf, applySuperpodVariant, withFabric, faultUnitName, withoutSuperpodOverrides, resolveCountOverrides, geometryCounts, DEFAULT_LAYERS,
   type Scenario, type LayerId, type TopologyTemplate, type FaultUnit, type BomRow,
 } from '@hac-d/core';
 import { useStore, useActiveSettings } from '../state/store.js';
@@ -301,9 +301,9 @@ function WorkloadGroup({ s, upBase }: { s: Scenario; upBase: (fn: (b: Scenario) 
           <Row label={t('scenario.deltaS')}><NumberInput value={w.deltaS} min={0} step={0.5} onChange={(v) => setW({ deltaS: Math.max(0, v) })} /></Row>
         </>
       )}
-      <Row label={t('topology.targetEffective')}><NumberInput value={s.targets.effective ?? 0.985} min={0.5} max={0.9999} step={0.001} onChange={(v) => upBase((b) => ({ ...b, targets: { ...b.targets, effective: v } }))} /></Row>
-      <Row label={t('topology.targetDelivered')}><NumberInput value={s.targets.goodput ?? 0.9} min={0.5} max={0.9999} step={0.005} onChange={(v) => upBase((b) => ({ ...b, targets: { ...b.targets, goodput: v } }))} /></Row>
       <Row label={t('topology.targetAop')}><NumberInput value={s.targets.operational ?? 0.985} min={0.5} max={0.99999} step={0.001} onChange={(v) => upBase((b) => ({ ...b, targets: { ...b.targets, operational: v } }))} /></Row>
+      <Row label={t('topology.targetEffective')}><NumberInput value={s.targets.effective ?? DEFAULT_TIER_FLOORS.effective!} min={0.5} max={0.9999} step={0.005} onChange={(v) => upBase((b) => ({ ...b, targets: { ...b.targets, effective: v } }))} /></Row>
+      <Row label={t('topology.targetDelivered')}><NumberInput value={s.targets.goodput ?? DEFAULT_TIER_FLOORS.delivered!} min={0.5} max={0.9999} step={0.005} onChange={(v) => upBase((b) => ({ ...b, targets: { ...b.targets, goodput: v } }))} /></Row>
     </Group>
   );
 }
@@ -342,8 +342,9 @@ function Outputs({ s, tab, setTab, lang, upBase, onAllocation }: { s: Scenario; 
   const tr = active.result.training;
   const bom = useMemo(() => topologyBom(s), [s]);
   const target = s.targets.operational ?? 0.985;
-  // v5.6 the report's metric: the effective goodput against the project's effective-goodput target, the delivered goodput beside it
-  const targetEff = s.targets.effective ?? 0.985;
+  // v5.12 the report's three targets: A_op against the project's A_op target (the allocation), the effective and the delivered
+  // goodput against the floors of the two goodput tiers (the project's targets, else 97 % / 90 %)
+  const targetEff = s.targets.effective ?? DEFAULT_TIER_FLOORS.effective!, targetDel = s.targets.goodput ?? DEFAULT_TIER_FLOORS.delivered!;
   /*
    * v5.3 the strip in the 口径 of the Findings report (hacd findings, Table 1; formula (1) of the methodology):
    * A_op = (1 − φ) / (1 + (Σλ_i t̄_i + F) / 3600) nominal and derated (deratedOf: every applied mechanism's parameters worsened by
@@ -356,18 +357,29 @@ function Outputs({ s, tab, setTab, lang, upBase, onAllocation }: { s: Scenario; 
     if (!tr || s.workload.type !== 'training') return null;
     try { return { nom: kpiForm(s, tr), der: kpiForm(deratedOf(s)) }; } catch { return null; }
   }, [s, tr]);
+  // the goodput tiers as the report quotes them (Findings Tables 7 and 8, "today"): at Young's period on the design's save time when
+  // the design's own period is fixed, else at the design's period; derated values
+  const tier = useMemo(() => {
+    if (!form || s.workload.type !== 'training') return null;
+    const fixed = s.workload.intervalS !== undefined;
+    try {
+      const y = fixed ? trainingOf(withYoungInterval(deratedOf(s))) : null;
+      return { fixed, effective: y ? y.effectiveGoodputExact : form.der.effective, delivered: y ? y.deliveredGoodputExact : form.der.delivered, tauS: y ? y.tauS : form.der.tauS, own: form.der.effective, ownTauS: form.der.tauS };
+    } catch { return null; }
+  }, [s, form]);
   const hrs = (h: number) => `${h.toFixed(h < 100 ? 3 : 1)} h`;
   const sec = (x: number) => `${x.toFixed(1)} s`;
   const pct3 = (x: number) => (x * 100).toFixed(3);
   return (
     <div className="grid" style={{ gap: 12 }}>
       <div className="kpi-row kpi5">
-        {tr && form ? (
+        {tr && form && tier ? (
           <>
-            <Kpi label={t('topology.kpiEffective')} value={fmtPct(form.der.effective, 2)} note={`${t('topology.target')} ${fmtPct(targetEff, 1)} · ${t('topology.kpiEffectiveNote', { nominal: fmtPct(form.nom.effective, 2), aOp: `${pct3(form.der.aOp)} %` })}`} tone={form.der.effective < targetEff ? 'warn' : undefined} />
-            <Kpi label={t('topology.kpiDelivered')} value={fmtPct(form.der.delivered, 2)} note={`${t('topology.target')} ${fmtPct(s.targets.goodput ?? 0.9, 1)} · ${t('topology.deliveredNote')}`} tone={form.der.delivered < (s.targets.goodput ?? 0.9) ? 'warn' : undefined} />
+            <Kpi label={t('topology.kpiAopDer')} value={`${pct3(form.der.aOp)} %`} note={`${t('topology.target')} ${fmtPct(target, 1)} · ${t('topology.kpiAopDerNote', { nominal: `${pct3(form.nom.aOp)} %` })}`} tone={form.der.aOp < target ? 'warn' : undefined} />
+            <Kpi label={t('topology.kpiEffective')} value={fmtPct(tier.effective, 2)} note={`${t('topology.floor')} ${fmtPct(targetEff, 1)} · ${tier.fixed ? t('topology.kpiEffTierNote', { tau: tier.tauS.toFixed(0), own: fmtPct(tier.own, 2), ownTau: tier.ownTauS.toFixed(0) }) : t('topology.kpiEffTierNoteOwn', { tau: tier.tauS.toFixed(0) })}`} tone={tier.effective < targetEff ? 'warn' : undefined} />
+            <Kpi label={t('topology.kpiDeliveredDer')} value={fmtPct(tier.delivered, 2)} note={`${t('topology.floor')} ${fmtPct(targetDel, 1)} · ${t('topology.kpiDelTierNote')}`} tone={tier.delivered < targetDel ? 'warn' : undefined} />
             <Kpi label={t('topology.kpiMtbfHw')} value={hrs(form.nom.mtbfHwH)} note={t('topology.kpiMtbfHwNote', { mtbi: hrs(tr.mtbiS / 3600), perDay: fmtNum(tr.interruptionsPerDay, 1), day: lang === 'zh' ? '天' : 'day' })} />
-            <Kpi label={t('topology.kpiLoss')} value={sec(form.der.lossS)} note={t('topology.kpiLossNote', { mttr: sec(form.der.mttrS), recompute: sec(form.der.lossS - form.der.mttrS) })} />
+            <Kpi label={t('topology.kpiMttrDer')} value={sec(form.der.mttrS)} note={t('topology.kpiMttrDerNote', { nominal: sec(form.nom.mttrS), loss: sec(form.der.lossS) })} />
           </>
         ) : tr ? (
           <>

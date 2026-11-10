@@ -548,11 +548,11 @@ export const SparesSchema = z.object({
 
 export const TargetsSchema = z.object({
   availability: z.number().min(0).max(1).optional(),
-  /** v4 operational-availability (A_op) target of the allocation strategies */
+  /** operational-availability (A_op) target: the allocation target of the report (v5.12) and of the strategies (default 0.985) */
   operational: z.number().min(0).max(1).optional(),
-  /** v5.6 effective-goodput target of the report pipeline (hacd findings, the Report tab; default 0.985) */
+  /** effective-goodput floor of the report's checkpoint tier (v5.12; default 0.97) — the report's target in v5.6–v5.11 (default 0.985 then) */
   effective: z.number().min(0).max(1).optional(),
-  /** delivered-goodput target (silent corruption counted) */
+  /** delivered-goodput target (silent corruption counted); v5.12 the floor of the report's delivered tier (default 0.90) */
   goodput: z.number().min(0).max(1).optional(),
   capacityAvailability: z.number().min(0).max(1).optional(),
 });

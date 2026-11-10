@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Comlink from 'comlink';
-import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, VARIANT_MECHANISM_SETS, resolveMechanismSet, reportCandidates, minWindowTrials, type Scenario, type MechanismSet } from '@hac-d/core';
+import { TOPOLOGY_SCALES, DEFAULT_MECHANISM_SET, VARIANT_MECHANISM_SETS, resolveMechanismSet, reportCandidates, minWindowTrials, type Scenario, type MechanismSet, type GoodputTiers } from '@hac-d/core';
 import { useLang } from '../hooks.js';
 import { compute, cancelCompute, ComputeCancelled } from '../worker/client.js';
 import type { ReportRun } from '../worker/compute.worker.js';
@@ -47,8 +47,10 @@ export function ReportPanel({ s }: { s: Scenario }) {
   const N = s.workload.nGpus;
   const hasPod = !!s.topology.superpod;
   const sizes = allScales ? [...new Set([...TOPOLOGY_SCALES, N])].sort((a, b) => a - b) : [N];
-  // v5.6 the report's metric is the effective goodput; its target is the project's effective-goodput target (default 98.5 %)
-  const target = s.targets.effective ?? 0.985;
+  // v5.12 the report allocates on A_op (the project's A_op target, default 98.5 %); the project's effective / delivered goodput
+  // targets are the floors of its two goodput tiers (absent: the defaults 97 % / 90 %)
+  const target = s.targets.operational ?? 0.985;
+  const effectiveFloor = s.targets.effective, deliveredFloor = s.targets.goodput;
   const candidates = reportCandidates(s);
   const reference = Object.keys(s.mechanisms.applied ?? {});
   const stageText = (stage: string, n: number, detail: string) => t(`findingsTab.stage_${stage}`, { n: fmtInt(n), detail, defaultValue: `${stage} ${fmtInt(n)} ${detail}` });
@@ -61,12 +63,14 @@ export function ReportPanel({ s }: { s: Scenario }) {
     setMsg(null);
     try {
       // the promise is held by the store's run, not by this panel: the worker goes on when the tab is left
-      const r = await compute().report(s, { id, name, short: name, sizes: settings.sizes, main: N, target, trials: settings.trials, seed: 1, permutations: settings.permutations, variants: settings.variants }, Comlink.proxy((stage: string, n: number, detail: string) => useReportRuns.getState().progress(id, stageText(stage, n, detail))));
+      const r = await compute().report(s, { id, name, short: name, sizes: settings.sizes, main: N, target, effectiveFloor, deliveredFloor, trials: settings.trials, seed: 1, permutations: settings.permutations, variants: settings.variants }, Comlink.proxy((stage: string, n: number, detail: string) => useReportRuns.getState().progress(id, stageText(stage, n, detail))));
       useReportRuns.getState().finish(id, r);
     } catch (e) {
       useReportRuns.getState().fail(id, e instanceof ComputeCancelled ? t('mechanisms.cancelled') : (e as Error).message, e instanceof ComputeCancelled);
     }
   };
+  // the row of the checkpoint tier the report quotes: Young's period unless the design's own period already follows the rollback interval
+  const tierRow = (T: GoodputTiers) => (T.checkpoint.basis === 'young' && T.checkpoint.young ? T.checkpoint.young : T.checkpoint.asDesigned);
   const save = async (r: ReportRunState) => {
     const res = r.result!;
     const A = res.sidecar.results.archs[id];
@@ -74,7 +78,7 @@ export function ReportPanel({ s }: { s: Scenario }) {
       const rec: SavedReport = {
         projectId: id, projectName: r.projectName, savedAt: Date.now(), scenarioKey: r.scenarioKey,
         settings: { ...r.settings, seed: 1 }, files: res.files, html: res.html, bundle: JSON.stringify(res.sidecar, null, 1),
-        kpi: res.sidecar.results.sizes.map((n) => { const z = A.sizes[String(n)]; return { scale: n, todayAop: z.today.aOp, todayAopDerated: z.today.aOpDerated, todayEffectiveDerated: z.today.kpiDerated.effective, todayDeliveredDerated: z.today.kpiDerated.delivered, recommendedAopDerated: z.recommended.final.kpiDerated.aOp, recommendedEffectiveDerated: z.recommended.final.kpiDerated.effective, recommendedDeliveredDerated: z.recommended.final.kpiDerated.delivered, feasible: z.recommended.feasible !== false, mechanisms: z.recommended.mechanisms, k: z.recommended.k }; }),
+        kpi: res.sidecar.results.sizes.map((n) => { const z = A.sizes[String(n)]; return { metric: res.sidecar.results.metric, scale: n, todayAop: z.today.aOp, todayAopDerated: z.today.aOpDerated, todayEffectiveDerated: tierRow(z.today.tiers).effective.derated, todayDeliveredDerated: z.today.tiers.delivered.asAllocated.delivered.derated, recommendedAopDerated: z.recommended.final.kpiDerated.aOp, recommendedEffectiveDerated: tierRow(z.recommended.tiers).effective.derated, recommendedDeliveredDerated: z.recommended.tiers.delivered.asAllocated.delivered.derated, feasible: z.recommended.feasible !== false, mechanisms: z.recommended.mechanisms, k: z.recommended.k }; }),
       };
       await saveReport(rec);
       setSaved(rec);
@@ -152,16 +156,20 @@ export function ReportPanel({ s }: { s: Scenario }) {
           </div>
           <div className="muted" style={{ fontSize: 12, marginBottom: 8 }}>{t('findingsTab.fileNote', { findings: result.files.findings, data: result.files.data })} · {t('findingsTab.dataNote')}</div>
           <DataTable
-            columns={[t('topology.npus'), '', t('strategy.colEffDer'), t('strategy.colDelDer'), t('strategy.colMtbfDer'), t('strategy.colLossDer'), t('strategy.colWindow'), t('strategy.colPlan')]}
+            columns={[t('topology.npus'), '', t('strategy.colAopDer'), t('strategy.colEffDer'), t('strategy.colDelDer'), t('strategy.colMtbfDer'), t('strategy.colMttrDer'), t('strategy.colWindow'), t('strategy.colPlan')]}
             numericFrom={2}
             rows={result.sidecar.results.sizes.flatMap((n) => {
-              // v5.6 derated values (the acceptance 口径): the effective goodput against the target, the delivered goodput beside it, MTBF_hw and the loss per interruption R_eff
+              // v5.12 derated values on the three targets: A_op against the allocation target (MTBF_hw, MTTR_hw, P of the nominal design /
+              // its derated twin), the effective goodput (the checkpoint tier's row) and the delivered goodput against their floors
               const z = A.sizes[String(n)];
-              const rec = z.recommended, infeasible = rec.feasible === false;
+              const rec = z.recommended, infeasible = rec.feasible === false, q = z.required;
+              const fl = result.sidecar.results.floors ?? { effective: null, delivered: null };
+              const mark = (m: boolean | null) => (m === null ? '' : m ? ' ✓' : ' ✗');
+              const ok = q.reachable && q.mtbfAtTodayMttrH !== null && q.mttrAtTodayMtbfS !== null;
               return [
-                [fmtInt(n), t('strategy.rowToday'), p(z.today.kpiDerated.effective), p(z.today.kpiDerated.delivered), h(z.today.kpiDerated.mtbfHwH), sec(z.today.kpiDerated.lossS), `${p(z.today.window.pAtLeastTarget, 1)} · ${verdict(z.today.window.verdict)}`, '—'],
-                ['', t('strategy.rowRequired'), p(run.settings.target, 1), '', z.required.reachable ? `≥ ${h(z.required.mtbfAtTodayMttrH)} ${t('strategy.atTodayLoss')}` : '—', z.required.reachable ? `≤ ${sec(z.required.mttrAtTodayMtbfS ?? 0)} ${t('strategy.atTodayMtbf')}` : '—', '', z.required.reachable ? `B = ${z.required.B.toFixed(1)} s/h (${t('strategy.formula2e')})` : t('strategy.unreachableEff', { B: z.required.B.toFixed(1) })],
-                ['', <b key="r">{infeasible ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')}</b>, <b key="d">{p(rec.final.kpiDerated.effective)}</b>, p(rec.final.kpiDerated.delivered), h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.lossS), `${p(rec.window.pAtLeastTarget, 1)} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map((x) => LEV[x] ?? x).join(' + ') || '—'} · ${infeasible ? t('strategy.notFeasible', { ceiling: p(rec.ceiling?.derated ?? 0) }) : `${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`}`],
+                [fmtInt(n), t('strategy.rowToday'), p(z.today.kpiDerated.aOp), p(tierRow(z.today.tiers).effective.derated, 2), p(z.today.tiers.delivered.asAllocated.delivered.derated, 2), h(z.today.kpiDerated.mtbfHwH), sec(z.today.kpiDerated.mttrS), `${p(z.today.window.pAtLeastTarget, 1)} · ${verdict(z.today.window.verdict)}`, '—'],
+                ['', t('strategy.rowRequired'), `≥ ${p(run.settings.target, 1)}`, fl.effective === null ? '—' : `≥ ${p(fl.effective, 1)}`, fl.delivered === null ? '—' : `≥ ${p(fl.delivered, 1)}`, ok ? `≥ ${h(q.mtbfAtTodayMttrH)} ${t('strategy.atTodayMttr')}` : '—', ok ? `≤ ${sec(q.mttrAtTodayMtbfS ?? 0)} ${t('strategy.atTodayMtbf')}` : '—', '', q.reachable ? `B = ${q.B.toFixed(1)} s/h (${t('strategy.formula2')})` : t('strategy.unreachable', { B: q.B.toFixed(1), F: z.today.kpiDerated.F.toFixed(1), phi: p(z.today.kpiDerated.phi, 3) })],
+                ['', <b key="r">{infeasible ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')}</b>, <b key="d">{p(rec.final.kpiDerated.aOp)}</b>, `${p(tierRow(rec.tiers).effective.derated, 2)}${mark(rec.tiers.checkpoint.met)}`, `${p(rec.tiers.delivered.asAllocated.delivered.derated, 2)}${mark(rec.tiers.delivered.met)}`, h(rec.final.kpiDerated.mtbfHwH), sec(rec.final.kpiDerated.mttrS), `${p(rec.window.pAtLeastTarget, 1)}${rec.windowDerated ? ` / ${p(rec.windowDerated.pAtLeastTarget, 1)}` : ''} · ${verdict(rec.window.verdict)}`, `${rec.mechanisms.join(' + ') || '—'} | ${rec.levers.map((x) => LEV[x] ?? x).join(' + ') || '—'} · ${infeasible ? t('strategy.notFeasible', { ceiling: p(rec.ceiling?.derated ?? 0) }) : `${t('strategy.hardwareK')} ${rec.k.toFixed(3)} (${t(`strategy.binding_${rec.binding}`)})${rec.escalated ? ` † ${t('strategy.escalated')}` : ''}`}`],
               ];
             })}
           />
@@ -176,7 +184,9 @@ export function ReportPanel({ s }: { s: Scenario }) {
             <div style={{ fontSize: 13 }}><b>{saved.projectName}</b> · {t('findingsTab.savedAt', { when: when(saved.savedAt) })} · {settingsText(saved.settings)}</div>
             {stale(saved.scenarioKey) && <div className="callout warn" style={{ margin: '6px 0' }}>{t('findingsTab.stale')}</div>}
             <ul className="plain muted" style={{ fontSize: 12, margin: '4px 0' }}>
-              {saved.kpi.map((k) => <li key={k.scale}>{fmtInt(k.scale)} NPU: {t('strategy.rowToday')} G_eff {p(k.todayEffectiveDerated ?? k.todayAopDerated)}{k.todayDeliveredDerated !== undefined ? ` · G_del ${p(k.todayDeliveredDerated)}` : ''} · {k.feasible === false ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')} {p(k.recommendedEffectiveDerated ?? k.recommendedAopDerated)} ({k.mechanisms.join(' + ') || '—'}{k.feasible === false ? '' : ` · k ${k.k.toFixed(3)}`})</li>)}
+              {saved.kpi.map((k) => k.metric === 'aOp' || k.todayEffectiveDerated === undefined
+                ? <li key={k.scale}>{fmtInt(k.scale)} NPU: {t('strategy.rowToday')} A_op {p(k.todayAopDerated)}{k.todayEffectiveDerated !== undefined ? ` · G_eff ${p(k.todayEffectiveDerated, 2)}` : ''}{k.todayDeliveredDerated !== undefined ? ` · G_del ${p(k.todayDeliveredDerated, 2)}` : ''} · {k.feasible === false ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')} A_op {p(k.recommendedAopDerated)}{k.recommendedEffectiveDerated !== undefined ? ` · G_eff ${p(k.recommendedEffectiveDerated, 2)}` : ''}{k.recommendedDeliveredDerated !== undefined ? ` · G_del ${p(k.recommendedDeliveredDerated, 2)}` : ''} ({k.mechanisms.join(' + ') || '—'}{k.feasible === false ? '' : ` · k ${k.k.toFixed(3)}`})</li>
+                : <li key={k.scale}>{fmtInt(k.scale)} NPU: {t('strategy.rowToday')} G_eff {p(k.todayEffectiveDerated ?? k.todayAopDerated)}{k.todayDeliveredDerated !== undefined ? ` · G_del ${p(k.todayDeliveredDerated)}` : ''} · {k.feasible === false ? t('strategy.rowAllMoves') : t('strategy.rowRecommended')} {p(k.recommendedEffectiveDerated ?? k.recommendedAopDerated)} ({k.mechanisms.join(' + ') || '—'}{k.feasible === false ? '' : ` · k ${k.k.toFixed(3)}`})</li>)}
             </ul>
             <div className="btn-row">
               <button type="button" className="btn primary" onClick={() => open(saved.html.findings, saved.files.findings)}>{t('findingsTab.open')}</button>

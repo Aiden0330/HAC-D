@@ -22,6 +22,7 @@ import { mechanismParameterKeys } from '../ingest/fields.js';
 import { DEFAULT_MECHANISM_SET, resolveMechanismSet, type ResolvedMechanismSet } from '../records/mechanismSet.js';
 import { unitFaultLibrary, fitOverrides, resizeTopology, withFabric, applySuperpodVariant, superpodVariantOf, switchTopologyTemplate, SUPERPOD_VARIANTS, TOPOLOGY_TEMPLATES, TOPOLOGY_TEMPLATE_IDS, TOPOLOGY_EXAMPLES, topologyBom, type TopologyTemplate, type UnitFaultType } from '../topology/index.js';
 import { kpiForm, trainingOf } from '../budget/kpiForm.js';
+import { DEFAULT_TIER_FLOORS } from '../budget/tiers.js';
 import { deratedOf } from '../strategy/window.js';
 import { toPerHour } from '../units/index.js';
 
@@ -64,9 +65,9 @@ export const SCENARIO_FIELDS: ScenarioField[] = [
   { path: 'workload.durationDays', kind: 'number', min: 0.1, note: 'job window (days)' },
   { path: 'workload.intervalS', kind: 'number', min: 0, note: 'checkpoint interval τ (s); 0 = the optimal interval; refused while C-FAST owns it' },
   { path: 'workload.deltaS', kind: 'number', min: 0, note: 'checkpoint write time δ (s); refused while a mechanism owns it' },
-  { path: 'targets.effective', kind: 'number', min: 0.5, max: 0.9999, note: 'effective-goodput target (the report target, formula 2′; default 0.985)' },
-  { path: 'targets.operational', kind: 'number', min: 0.5, max: 0.99999, note: 'A_op target (the strategies on the A_op metric; the report target until v5.5)' },
-  { path: 'targets.goodput', kind: 'number', min: 0.5, max: 0.9999, note: 'delivered goodput target' },
+  { path: 'targets.effective', kind: 'number', min: 0.5, max: 0.9999, note: 'effective-goodput floor (the checkpoint tier of the report, formula 7; default 0.97)' },
+  { path: 'targets.operational', kind: 'number', min: 0.5, max: 0.99999, note: 'A_op target (the allocation target of the report, formula 2; default 0.985)' },
+  { path: 'targets.goodput', kind: 'number', min: 0.5, max: 0.9999, note: 'delivered-goodput floor (the delivered tier of the report, formula 8; default 0.90)' },
   { path: 'targets.availability', kind: 'number', min: 0.9, max: 0.999999, note: 'hardware availability target of the classic methods' },
   { path: 'recovery.detection.coverage', kind: 'number', min: 0, max: 1, note: 'MTTR mixture: automatic detection coverage; refused while D-HARD owns it' },
   { path: 'recovery.detection.autoSeconds', kind: 'number', min: 0, note: 'MTTR mixture: automatic detection time (s); refused while D-HARD owns it' },
@@ -269,8 +270,8 @@ export interface ScenarioSummary {
   targets: Scenario['targets'];
   workload?: { durationDays: number; intervalS?: number; deltaS: number; ownedBy?: string };
   recovery?: { detection: { coverage: number; autoSeconds: number; timeoutSeconds: number; ownedBy?: string }; automatic: { seconds: number; successProbability: number }; manual: { seconds: number } } | { mode: string };
-  /** the KPI strip of the Topology page: v5.6 the effective goodput nominal / derated against the report target, the delivered goodput, A_op nominal / derated (formula 1), MTBF_hw, MTTR_hw */
-  kpi: { aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; mtbfHwH: number; mttrS: number; mttrDeratedS: number; delivered: number; deliveredDerated: number; target: number; targetEffective: number } | null;
+  /** the KPI strip of the Topology page: A_op nominal / derated (formula 1) against the allocation target (v5.12), the effective and the delivered goodput nominal / derated against the floors of their tiers, MTBF_hw, MTTR_hw */
+  kpi: { aOp: number; aOpDerated: number; effective: number; effectiveDerated: number; mtbfHwH: number; mttrS: number; mttrDeratedS: number; delivered: number; deliveredDerated: number; /** the A_op target of the report's allocation and (v5.12) the floors of its two goodput tiers */ target: number; targetEffective: number; targetDelivered: number } | null;
   koujing: string;
 }
 
@@ -288,7 +289,7 @@ export function scenarioSummary(s: Scenario): ScenarioSummary {
     try {
       const tr = trainingOf(s);
       const nom = kpiForm(s, tr), der = kpiForm(deratedOf(s));
-      kpi = { aOp: nom.aOp, aOpDerated: der.aOp, effective: nom.effective, effectiveDerated: der.effective, mtbfHwH: nom.mtbfHwH, mttrS: nom.mttrS, mttrDeratedS: der.mttrS, delivered: tr.deliveredGoodput, deliveredDerated: der.delivered, target: s.targets.operational ?? 0.985, targetEffective: s.targets.effective ?? 0.985 };
+      kpi = { aOp: nom.aOp, aOpDerated: der.aOp, effective: nom.effective, effectiveDerated: der.effective, mtbfHwH: nom.mtbfHwH, mttrS: nom.mttrS, mttrDeratedS: der.mttrS, delivered: tr.deliveredGoodput, deliveredDerated: der.delivered, target: s.targets.operational ?? 0.985, targetEffective: s.targets.effective ?? DEFAULT_TIER_FLOORS.effective!, targetDelivered: s.targets.goodput ?? DEFAULT_TIER_FLOORS.delivered! };
     } catch { kpi = null; }
   }
   const applied = Object.entries(s.mechanisms.applied ?? {}).sort((a, b) => a[1].order - b[1].order).map(([id, rec]) => ({ id, order: rec.order, parameters: rec.parameters, name: MECHANISM_LIBRARY.find((m) => m.id === id)?.name ?? { zh: id, en: id } }));
@@ -304,7 +305,7 @@ export function scenarioSummary(s: Scenario): ScenarioSummary {
     workload: w ? { durationDays: w.durationDays, intervalS: w.intervalS, deltaS: w.deltaS, ownedBy: mechanismOwner(s, 'workload.deltaS') ?? mechanismOwner(s, 'workload.intervalS') } : undefined,
     recovery: r.mode === 'mixture' ? { detection: { coverage: r.detection.coverage, autoSeconds: r.detection.autoSeconds, timeoutSeconds: r.detection.timeoutSeconds, ownedBy: mechanismOwner(s, 'recovery.detection') }, automatic: { seconds: r.automatic.seconds, successProbability: r.automatic.successProbability }, manual: { seconds: r.manual.seconds } } : { mode: r.mode },
     kpi,
-    koujing: 'effective goodput of one synchronous job over the 30-day window, nominal and derated, against the report target (formula 2′): the checkpoint model (saves, recompute, recovery pauses) times the throughput factors; delivered goodput = the same with the silent-corruption loss removed; A_op = the running share per cluster-hour (formula 1); MTBF_hw = 1/Σλ of the hard interruption classes, MTTR_hw = the rate-weighted mean pause; FIT per unit-hour (business impact) on the unit library’s units',
+    koujing: 'A_op = the running share of one synchronous job per cluster-hour (formula 1), nominal and derated, against the allocation target (formula 2); MTBF_hw = 1/Σλ of the hard interruption classes, MTTR_hw = the rate-weighted mean pause; effective goodput over the 30-day window at the design’s own checkpoint period = the checkpoint model (saves, recompute, recovery pauses) times the throughput factors, against the floor of the checkpoint tier (formula 7); delivered goodput = the same with the silent-corruption loss removed, against the floor of the delivered tier (formula 8); FIT per unit-hour (business impact) on the unit library’s units',
   };
 }
 
